@@ -21,7 +21,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 Route::group(['prefix' => 'm/{uniacid}', 'namespace' => 'Api'], function () {
 
-    Route::get('/{modulename}', 'ModuleController@Main');
+    Route::get('/{modulename}', 'ModuleController@entry');
 
 });
 

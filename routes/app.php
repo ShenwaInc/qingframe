@@ -1,5 +1,5 @@
 <?php
 
-Route::group(['namespace' => 'App','middleware' => [\App\Http\Middleware\ModulePermission::class]],function (){
-    Route::get('{uniacid}/{module}', 'ModuleController@index');
+Route::group(['prefix' => 'app/{uniacid}','namespace' => 'App'],function (){
+    Route::get('auth', 'AuthController@index');
 });

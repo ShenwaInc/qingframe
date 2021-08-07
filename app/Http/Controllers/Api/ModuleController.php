@@ -14,4 +14,9 @@ class ModuleController extends Controller
         die($route);
     }
 
+    public function entry($uniacid,$modulename){
+        $route = \request('r');
+        die($route);
+    }
+
 }
