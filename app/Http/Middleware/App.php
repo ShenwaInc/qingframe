@@ -59,8 +59,8 @@ class App
         $urls['scheme'] = !empty($urls['scheme']) ? $urls['scheme'] : 'http';
         $urls['host'] = !empty($urls['host']) ? $urls['host'] : '';
         $_W['siteroot'] = $urls['scheme'] . '://' . $urls['host'] . ((!empty($urls['port']) && '80' != $urls['port']) ? ':' . $urls['port'] : '') . $urls['path'];
-        $_GPC = $this->InitGPC();
-        $_W['siteurl'] = $urls['scheme'] . '://' . $urls['host'] . ((!empty($urls['port']) && '80' != $urls['port']) ? ':' . $urls['port'] : '').$_SERVER["REQUEST_URI"];
+        $_GPC = $request->all();
+        $_W['siteurl'] = url()->full();
         $_W['uniacid'] = $_W['uid'] = 0;
         SettingService::Load();
         if ($_W['config']['setting']['development'] == 1 || $_W['setting']['copyright']['develop_status'] ==1) {
@@ -68,55 +68,6 @@ class App
             error_reporting(E_ALL ^ E_NOTICE);
         }
         return $next($request);
-    }
-
-    public function InitGPC(){
-        $GPC = array();
-        if (MAGIC_QUOTES_GPC) {
-            $_GET = $this->istripslashes($_GET);
-            $_POST = $this->istripslashes($_POST);
-        }
-        foreach ($_GET as $key => $value) {
-            if (is_string($value) && !is_numeric($value)) {
-                $value = $this->safe_gpc_string($value);
-            }
-            $GPC[$key] = $value;
-        }
-        return array_merge($GPC, $_POST);
-    }
-
-    public function safe_gpc_string($value, $default = '') {
-        $value = $this->safe_bad_str_replace($value);
-        $value = preg_replace('/&((#(\d{3,5}|x[a-fA-F0-9]{4}));)/', '&\\1', $value);
-
-        if (empty($value) && $default != $value) {
-            $value = $default;
-        }
-
-        return $value;
-    }
-
-    public function safe_bad_str_replace($string) {
-        if (empty($string)) {
-            return '';
-        }
-        $badstr = array("\0", '%00', '%3C', '%3E', '<?', '<%', '<?php', '{php', '{if', '{loop', '../', '%0D%0A');
-        $newstr = array('_', '_', '&lt;', '&gt;', '_', '_', '_', '_', '_', '_', '.._', '_');
-        $string = str_replace($badstr, $newstr, $string);
-
-        return $string;
-    }
-
-    public function istripslashes($var) {
-        if (is_array($var)) {
-            foreach ($var as $key => $value) {
-                $var[stripslashes($key)] = istripslashes($value);
-            }
-        } else {
-            $var = stripslashes($var);
-        }
-
-        return $var;
     }
 
     public function GetIp(){

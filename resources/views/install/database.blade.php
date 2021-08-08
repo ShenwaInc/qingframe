@@ -80,6 +80,7 @@
                 <div class="layui-form-item">
                     <div class="layui-input-block">
                         <button class="layui-btn layui-btn-normal" lay-submit lay-filter="formDemo" type="submit" value="true" name="savedata">下一步</button>
+                        <a class="layui-btn layui-btn-primary" href="{{url('installer')}}?reset=1">上一步</a>
                         <button type="reset" class="layui-btn layui-btn-primary">重填</button>
                     </div>
                 </div>
