@@ -2,7 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use App\Services\AgentService;
 use App\Services\SettingService;
 use Closure;
 
@@ -26,8 +25,6 @@ class App
     public function handle($request, Closure $next)
     {
         global $_W,$_GPC;
-        $deviceType = AgentService::deviceType();
-        $_W['os'] = ['unknown','mobile','windows'][$deviceType];
         $_W['config'] = config('system');
         $_W['timestamp'] = TIMESTAMP;
         $_W['charset'] = $_W['config']['setting']['charset'];

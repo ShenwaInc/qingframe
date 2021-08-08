@@ -2,8 +2,8 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\View\View;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -25,8 +25,5 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
         //
-        global $_W,$_GPC;
-        View::share('_W',$_W);
-        View::share('_GPC',$_GPC);
     }
 }

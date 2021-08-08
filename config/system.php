@@ -1,6 +1,8 @@
 <?php
 
 return [
+    'version'=>env('APP_VERSION','3.0.47'),
+    'release'=>env('APP_RELEASE','2021081901'),
     'setting'=>array(
         'charset'=>'utf-8',
         'cache'=>'mysql',

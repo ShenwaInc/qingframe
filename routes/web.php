@@ -27,7 +27,8 @@ Route::group(['prefix' => 'console', 'namespace' => 'Console', 'middleware'=>[\A
 
 Route::group(['prefix'=>'installer', 'middleware'=>[\App\Http\Middleware\Installed::class]],function (){
     Route::get('/', 'installController@index');
-    Route::get('/detect', 'installController@detect');
+    Route::post('/agreement', 'installController@agreement');
+    Route::get('/database', 'installController@database');
     Route::get('/render', 'installController@render');
     Route::post('/render', 'installController@install');
     Route::get('/complete', 'installController@complete');

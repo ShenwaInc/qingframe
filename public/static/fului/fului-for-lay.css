@@ -1,0 +1,19 @@
+.bg-gray{background-color: #F1F1F1; color: #333333}
+
+.shadows{box-shadow: 0px 6px 14px 0px rgba(35, 35, 35, 0.3), inset 0px 3px 0px 0px #FFFFFF;}
+
+.fui-agreement{overflow: hidden; overflow-y: auto; height: 480px; max-height: 60vh; padding-right: 20px}
+
+.solid-top{border-top: 1px solid #dddddd;}
+
+.text-center{text-align: center}
+
+.fui-step{height: 56px; padding: 15px 0 10px;}
+.fui-step .fui-item{line-height: 32px; position: relative; font-size: 16px;}
+.fui-step .fui-item:before{content: ""; display: block; position: absolute; height: 0; width: calc(100% - 44px); border-bottom: 1px solid #ccc; left: calc(0px - (100% - 44px) / 2); z-index: 0; bottom: 12px;}
+.fui-step .fui-item:first-child:before{display: none}
+.fui-step .fui-item.cur,.fui-step .fui-item.end{color: #0081ff; font-weight: bold}
+.fui-step .num{width: 22px; height: 22px; border-radius: 50%; line-height: 22px; margin: 0px auto; font-size: 13px; border: 1px solid currentColor; position: relative; overflow: hidden;display: block}
+.fui-step .fui-item.cur .num{border: none; font-family: layui-icon!important; font-size: 24px; font-style: normal; width: 24px; height: 24px}
+.fui-step .fui-item.cur .num:before{content: "\e643"}
+.fui-step .layui-container{width: 100%; padding: 0}
