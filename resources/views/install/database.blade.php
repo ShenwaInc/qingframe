@@ -70,6 +70,12 @@
                 </div>
                 <div class="dbconnect form-item1 layui-hide">
                     <div class="layui-form-item must">
+                        <label class="layui-form-label">创始人密码</label>
+                        <div class="layui-input-block">
+                            <input type="password" name="founderpwd" value="" placeholder="请输入微擎站点创始人的登录密码，以确认您的身份" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item must">
                         <label class="layui-form-label">微擎安全码</label>
                         <div class="layui-input-block">
                             <input type="password" name="authkey" value="{{$authkey}}" placeholder="请输入微擎系统的安全码" autocomplete="off" class="layui-input">
@@ -95,6 +101,14 @@
             var target = $(data.elem).data('target');
             $(target).addClass('layui-hide');;
             $(target+'.form-item'+data.value).removeClass('layui-hide');
+        });
+        form.on('submit(formDemo)',function (data){
+            let dbconfig = data.field;
+            Core.post('installer.database',function (res){
+                if (res.type!=='success') return Core.report(res);
+                window.location.href = "{{url('installer/socket')}}";
+            },{dbconfig:dbconfig});
+            return false;
         });
     });
 </script>
