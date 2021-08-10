@@ -78,9 +78,14 @@ class installController extends Controller
                 if(!isset($this->installer['database'][$key])) continue;
                 $databasecfg[$key] = $this->installer['database'][$key];
             }
+            $databasecfg['strict'] = false;
             Config::set('database.connections.'.$dbconfig['default'],$databasecfg);
 
-            Artisan::call('migrate');
+            try {
+                Artisan::call('migrate');
+            }catch (\Exception $exception){
+                $this->message('数据库安装失败');
+            }
 
             $salt = \Str::random(8);
             $founderpwd = trim($manager['password']);
@@ -94,7 +99,7 @@ class installController extends Controller
                 'status'=>2,
                 'joindate'=>TIMESTAMP
             );
-            $dbconnect->table('users')->insert($founder);
+            DB::table('users')->insert($founder);
         }
         //写入配置文件
         $this->message('安装失败，请重试');
@@ -236,6 +241,7 @@ class installController extends Controller
     public function dbConnect($database=array()){
         if(empty($database['host']) || empty($database['database']) || empty($database['username']) || empty($database['password'])) return false;
         if (!$database['port']) $database['port'] = 3306;
+        $database['strict'] = false;
         $capsule = new Capsule();
         $capsule->addConnection($database,'mysqldetect');
         $capsule->bootEloquent();
