@@ -3,8 +3,12 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\Capsule\Manager as Capsule;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
+use mysql_xdevapi\Exception;
 
 class installController extends Controller
 {
@@ -40,6 +44,60 @@ class installController extends Controller
             return redirect()->action('installController@database');
         }
         return view('install.index');
+    }
+
+    public function install(Request $request){
+        if (!$request->isMethod('post')){
+            $this->message('安装失败，请重试');
+        }
+        if (!$this->installer['isagree']){
+            $this->message('请先同意安装协议',url('installer'));
+        }
+        if (isset($this->installer['database']['unix_socket'])){
+            $this->message('数据库未配置',url('installer/database'));
+        }
+        //写入数据库
+        $dbconnect = $this->dbConnect($this->installer['database']);
+        if ($dbconnect===false){
+            $this->message('数据库连接失败，请检查配置信息是否正确');
+        }
+        $authkey = $this->installer['authkey'];
+        if ($this->installer['dbconnect']==0){
+            $authkey = \Str::random(8);
+            $manager = $request->input('render');
+            if (!isset($manager['username']) || trim($manager['username'])==''){
+                $this->message('请填写您的超管账号');
+            }
+            if (!isset($manager['password']) || trim($manager['password'])==''){
+                $this->message('请设置超管的登录密码');
+            }
+
+            $dbconfig = config('database');
+            $databasecfg = $dbconfig['connections'][$dbconfig['default']];
+            foreach ($databasecfg as $key=>$cfg){
+                if(!isset($this->installer['database'][$key])) continue;
+                $databasecfg[$key] = $this->installer['database'][$key];
+            }
+            Config::set('database.connections.'.$dbconfig['default'],$databasecfg);
+
+            Artisan::call('migrate');
+
+            $salt = \Str::random(8);
+            $founderpwd = trim($manager['password']);
+            $pwdhash = sha1("{$founderpwd}-{$salt}-{$authkey}");
+            $founder = array(
+                'groupid'=>1,
+                'founder_groupid'=>1,
+                'username'=>trim($manager['username']),
+                'password'=>$pwdhash,
+                'salt'=>$salt,
+                'status'=>2,
+                'joindate'=>TIMESTAMP
+            );
+            $dbconnect->table('users')->insert($founder);
+        }
+        //写入配置文件
+        $this->message('安装失败，请重试');
     }
 
     public function agreement(){
@@ -88,11 +146,15 @@ class installController extends Controller
                 $this->message('数据库连接失败，请检查配置信息是否正确');
             }
             if ($dbconnect==1){
-                if (is_numeric($isconnect) && $isconnect==-1){
-                    //Table doesn't exist
-                    $this->message('非微擎站点数据库');
+                try {
+                    $founder = $isconnect->table('users')->select('uid','password','salt')->where('founder_groupid',1)->orderBy('uid','asc')->first();
+                }catch (\Exception $e){
+                    if (!empty($e->errorInfo) && $e->errorInfo[0]=='42S02'){
+                        //Table dosn't exist
+                        $this->message('非微擎站点数据库');
+                    }
+                    $this->message('数据库连接异常');
                 }
-                $founder = $isconnect->table('users')->select('uid','password','salt')->where('founder_groupid',1)->orderBy('uid','asc')->first();
                 if (isset($founder->uid)){
                     $pwdhash = sha1("{$founderpwd}-{$founder->salt}-{$authkey}");
                     if ($pwdhash!=$founder->password){
@@ -102,7 +164,13 @@ class installController extends Controller
                     $this->message('该创始人不存在');
                 }
             }else{
-                if (!is_numeric($isconnect) || $isconnect!=-1){
+                try {
+                    $accounts = $isconnect->table('account')->count();
+                }catch (\Exception $e){
+                    //Todo something
+                    unset($accounts);
+                }
+                if (isset($accounts)){
                     //Table exist
                     $this->message('该数据库已经存在对应数据表');
                 }
@@ -173,13 +241,11 @@ class installController extends Controller
         $capsule->bootEloquent();
         try {
             $conn = $capsule->getConnection('mysqldetect');
-            $conn->table('account')->count();
+            //$conn->raw()
             return $conn;
         } catch (\Exception $e){
-            if (empty($e->errorInfo)) return false;
-            //Table doesn't exist
-            if ($e->errorInfo[0]=='42S02') return -1;
-            return @json_decode(json_encode($e->errorInfo),true);
+            //if (empty($e->errorInfo)) return false;
+            return false;//@json_decode(json_encode($e->errorInfo),true);
         }
     }
 

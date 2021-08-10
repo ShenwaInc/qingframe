@@ -22,7 +22,7 @@
         <div class="layui-card-body">
             <form action="{{ url('installer/socket') }}" method="post" class="layui-form">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-                <input type="hidden" name="savedbset" value="true">
+                <input type="hidden" name="saveskset" value="true">
                 <div class="layui-form-item">
                     <label class="layui-form-label">连接方式</label>
                     <div class="layui-input-block">
@@ -47,6 +47,7 @@
                 <div class="layui-form-item">
                     <div class="layui-input-block">
                         <button class="layui-btn layui-btn-normal" lay-submit lay-filter="formDemo" type="submit" value="true" name="savedata">下一步</button>
+                        <a class="layui-btn layui-btn-primary" href="{{url('installer/render')}}">跳过</a>
                         <a class="layui-btn layui-btn-primary" href="{{url('installer/database')}}">上一步</a>
                         <button type="reset" class="layui-btn layui-btn-primary">重填</button>
                     </div>
@@ -55,11 +56,14 @@
                     <div class="layui-form-item must">
                         <label class="layui-form-label">本地安装步骤</label>
                         <div class="layui-input-block">
-                            <div class="layui-tab fui-tab">
+                            <div class="layui-tab fui-tab" style="height: 320px; overflow:hidden; overflow-y: auto">
                                 <ul class="layui-tab-title">
                                     <li class="layui-this">1.创建站点</li>
                                     <li>2.安装Golang</li>
                                     <li>3.配置站点</li>
+                                    <li class="fr">
+                                        <a href="https://www.whotalk.com.cn/" target="_blank" class="text-blue">安装遇到困难？</a>
+                                    </li>
                                 </ul>
                                 <div class="layui-tab-content">
                                     <div class="layui-tab-item layui-show">
@@ -79,8 +83,7 @@
                                             <strong>使用宝塔面板的【终端】功能或ssh远程管理工具登录服务器后运行如下指令</strong>
                                         </div>
                                         <pre class="layui-code">
-cd {{ str_replace("\\",'/',base_path('socket')) }}/
-sh install_socket.sh</pre>
+sh {{ str_replace("\\",'/',base_path('socket')) }}/install_socket.sh</pre>
                                     </div>
                                     <div class="layui-tab-item">
                                         <strong>宝塔面板的【站点】点击编辑该站点，在【配置文件】中参考如下代码设置</strong>
@@ -116,6 +119,7 @@ server {
      proxy_read_timeout 1200s;
  }
 }</pre>
+                                        <img width="720" src="/static/installer/inst-socket2.png" alt="SOCKET站点创建示意图" />
                                     </div>
                                 </div>
                             </div>

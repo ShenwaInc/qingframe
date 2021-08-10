@@ -20,6 +20,18 @@ if(typeof Basetoken == 'undefined'){
         post : function (u,c,d,t,l) {
             return this.request(u,'POST',d,t,c,l);
         },
+        confirm : function (msg,success=false,cancle=false,option={icon:3,title:'温馨提示'}){
+            layer.confirm(msg, option, function(index){
+                if (typeof (success)=='function'){
+                    success();
+                }
+                layer.close(index);
+            },function (){
+                if (typeof (cancle)=='function'){
+                    cancle();
+                }
+            });
+        },
         request : function (u,m,d,t,c,l) {
             var url = this.url(u);
             var method = m ? m : 'GET';
@@ -27,7 +39,7 @@ if(typeof Basetoken == 'undefined'){
             var datatype = t ? t : 'json';
             data.inajax = 1;
             if (l && !this.loading){
-                this.loading = layer.load(1);
+                this.loading = layer.load(1,{shade:0.3});
             }
             var callback = typeof(c)=='function' ? c : false;
             var hreq = this;
