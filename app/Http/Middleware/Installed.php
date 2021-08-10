@@ -30,11 +30,21 @@ class Installed
     }
 
     public function initApp(){
-        global $_W;
+        global $_W,$_GPC;
         $_W['config'] = config('system');
         $_W['config']['db'] = config('database');
         $_W['timestamp'] = TIMESTAMP;
         $_W['isajax'] = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && 'xmlhttprequest' == strtolower($_SERVER['HTTP_X_REQUESTED_WITH']);
+        if (isset($_W['config']['setting']['https']) && $_W['config']['setting']['https'] == '1') {
+            $_W['ishttps'] = $_W['config']['setting']['https'];
+        } else {
+            $_W['ishttps'] = isset($_SERVER['SERVER_PORT']) && 443 == $_SERVER['SERVER_PORT'] ||
+            isset($_SERVER['HTTP_FROM_HTTPS']) && 'on' == strtolower($_SERVER['HTTP_FROM_HTTPS']) ||
+            (isset($_SERVER['HTTPS']) && 'off' != strtolower($_SERVER['HTTPS'])) ||
+            isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && 'https' == strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']) ||
+            isset($_SERVER['HTTP_X_CLIENT_SCHEME']) && 'https' == strtolower($_SERVER['HTTP_X_CLIENT_SCHEME']) 			? true : false;
+        }
+        $_GPC = request()->all();
         View::share('_W',$_W);
     }
 }

@@ -29,6 +29,9 @@ Route::group(['prefix'=>'installer', 'middleware'=>[\App\Http\Middleware\Install
     Route::get('/', 'installController@index');
     Route::post('/agreement', 'installController@agreement');
     Route::get('/database', 'installController@database');
+    Route::post('/database', 'installController@dbDetect');
+    Route::get('/socket', 'installController@socket');
+    Route::post('/socket', 'installController@wsDetect');
     Route::get('/render', 'installController@render');
     Route::post('/render', 'installController@install');
     Route::get('/complete', 'installController@complete');
