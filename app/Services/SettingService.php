@@ -34,4 +34,8 @@ class SettingService{
         }
     }
 
+    static function uni_load(){
+
+    }
+
 }

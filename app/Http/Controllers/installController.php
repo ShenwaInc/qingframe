@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Account;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
-use mysql_xdevapi\Exception;
 
 class installController extends Controller
 {
@@ -47,6 +47,7 @@ class installController extends Controller
     }
 
     public function install(Request $request){
+        global $_W;
         if (!$request->isMethod('post')){
             $this->message('安装失败，请重试');
         }
@@ -82,6 +83,8 @@ class installController extends Controller
             Config::set('database.connections.'.$dbconfig['default'],$databasecfg);
 
             try {
+                @ini_set('max_execution_time',900);
+                //import database
                 Artisan::call('migrate');
             }catch (\Exception $exception){
                 $this->message('数据库安装失败');
@@ -97,9 +100,77 @@ class installController extends Controller
                 'password'=>$pwdhash,
                 'salt'=>$salt,
                 'status'=>2,
-                'joindate'=>TIMESTAMP
+                'joindate'=>TIMESTAMP,
+                'endtime'=>0
             );
-            DB::table('users')->insert($founder);
+            //inser founder
+            $uid =  (int)DB::table('users')->insertGetId($founder);
+            if(!$uid) $this->message('数据写入失败');
+            $founder['uid'] = $uid;
+            $_W['user'] = $founder;
+            $_W['uid'] = $uid;
+            DB::table('users_profile')->insert(array(
+                'avatar'=>'/static/icon200.jpg',
+                'edittime'=>TIMESTAMP,
+                'uid'=>$uid,
+                'createtime'=>TIMESTAMP,
+                'nickname'=>$founder['username']
+            ));
+            //create account
+            $post = array('name'=>'Whotalk','description'=>'做社交从未如此简单');
+            $uniacid = DB::table('uni_account')->insertGetId(array(
+                'groupid' => 0,
+                'default_acid' => 0,
+                'name' => $post['name'],
+                'description' => $post['description'],
+                'title_initial' => 'W',
+                'createtime' => TIMESTAMP,
+                'create_uid' => $uid,
+            ));
+            if (empty($uniacid)) $this->message('系统初始化失败');
+            $account_data = array('name' => $post['name']);
+
+            $acid = Account::account_create($uniacid,$account_data);
+            DB::table('uni_account')->where('uniacid',$uniacid)->update(array('default_acid' => $acid,'logo'=>'/static/icon200.jpg'));
+            Account::user_role_insert($uniacid,$uid);
+
+            //insert default group
+            DB::table('mc_groups')->insert(array('uniacid' => $uniacid, 'title' => '默认会员组', 'isdefault' => 1));
+
+            DB::table('uni_settings')->insert(array(
+                'creditnames' => serialize(array('credit1' => array('title' => '积分', 'enabled' => 1), 'credit2' => array('title' => '余额', 'enabled' => 1))),
+                'creditbehaviors' => serialize(array('activity' => 'credit1', 'currency' => 'credit2')),
+                'uniacid' => $uniacid,
+                'default_site' => 0,
+                'sync' => serialize(array('switch' => 0, 'acid' => '')),
+            ));
+//5.配置默认设置
+            $setting = array(
+                'basic'=>array(
+                    'name'=>$account_data['name'],
+                    'description'=>$post['description'],
+                    'icon'=>'/static/icon200.jpg',
+                    'logo'=>'/static/icon200.jpg',
+                    'defaultimg'=>'/static/icon200.jpg',
+                    'defaultlanguage'=>'zh'
+                ),
+                'socket'=>array(
+                    'type'=>$this->installer['socket']['type'],
+                    'server'=>$this->installer['socket']['server'],
+                    'api'=>$this->installer['socket']['webapi']
+                ),
+                'theme'=>array(
+                    'link'=>'#0081ff',
+                    'color'=>'#36373C',
+                    'active'=>'#04be02',
+                    'chatbg'=>'#5FB878',
+                    'navbg'=>'bg-gray',
+                    'actcolor'=>'limegreen'
+                ),
+                'album'=>array('switch'=>1,'square'=>1,'scan'=>1,'search'=>1,'popupscan'=>1,'allowpost'=>1)
+            );
+            $pars = array('module' => 'xfy_whotalk', 'uniacid' => $uniacid, 'settings'=>serialize($setting), 'enabled'=>1);
+            DB::table('uni_account_modules')->insert($pars);
         }
         //写入配置文件
         $this->message('安装失败，请重试');
