@@ -11,12 +11,12 @@
 |
 */
 
-Route::group(['namespace'=>'Auth', 'middleware'=>\App\Http\Middleware\App::class],function (){
+Route::group(['namespace'=>'Auth', 'middleware'=>[\App\Http\Middleware\App::class]],function (){
     Route::any('/login', 'LoginController@index');
 });
 
 Route::group(['namespace'=>'Console', 'middleware'=>[\App\Http\Middleware\Installer::class, \App\Http\Middleware\App::class]],function (){
-    Route::match(['get', 'post'], '/', 'EntryController@index');
+    Route::get('/', 'EntryController@index');
 });
 
 Route::group(['prefix' => 'console', 'namespace' => 'Console', 'middleware'=>['auth',\App\Http\Middleware\App::class,\App\Http\Middleware\ConsolePermission::class]], function () {
@@ -41,6 +41,10 @@ Route::group(['prefix'=>'installer', 'middleware'=>[\App\Http\Middleware\Install
     Route::post('/render', 'installController@install');
     Route::get('/complete', 'installController@complete');
 });
+
+Auth::routes();
+
+Route::get('/home', 'HomeController@index')->name('home');
 
 Auth::routes();
 

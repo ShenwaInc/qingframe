@@ -10,15 +10,15 @@
     <meta name="format-detection" content="telephone=no">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="shortcut icon" href="/favicon.ico" />
-    <title>Whotalk安装向导</title>
+    <title>{{$_W['page']['title']}}</title>
+    <link rel="stylesheet" href="{{ asset('/static/bootstrap/css/bootstrap.min.css') }}?v={{ $_W['config']['release'] }}" />
     <link rel="stylesheet" href="{{ asset('/static/layui/css/layui.css') }}?v={{ $_W['config']['release'] }}" />
     <link rel="stylesheet" href="{{ asset('/static/fului/fului-for-lay.css') }}?v={{ $_W['config']['release'] }}" />
-    <link rel="stylesheet" href="{{ asset('/static/installer/style.css') }}?v={{ $_W['config']['release'] }}" />
     <script type="text/javascript" src="{{ asset('/static/layui/layui.js') }}?v={{ $_W['config']['release'] }}"></script>
     <script type="text/javascript" src="{{ asset('/static/js/jquery-1.11.1.min.js') }}?v={{ $_W['config']['release'] }}"></script>
     <script type="text/javascript" src="{{ asset('/static/js/core.jquery.js') }}?v={{ $_W['config']['release'] }}"></script>
 </head>
 
 <body class="layui-layout-admin">
-    <div class="layui-body" style="left: 0; top: 0">
-        <div class="main-panel">
+<div class="layui-body" style="left: 0; top: 0">
+    <div class="main-panel">
