@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Account;
+use App\Models\Module;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
@@ -62,8 +63,9 @@ class installController extends Controller
         if ($dbconnect===false){
             $this->message('数据库连接失败，请检查配置信息是否正确');
         }
-        $authkey = $this->installer['authkey'];
-        if ($this->installer['dbconnect']==0){
+        $installer = $this->installer;
+        $authkey = $installer['authkey'];
+        if ($installer['dbconnect']==0){
             $authkey = \Str::random(8);
             $manager = $request->input('render');
             if (!isset($manager['username']) || trim($manager['username'])==''){
@@ -76,8 +78,8 @@ class installController extends Controller
             $dbconfig = config('database');
             $databasecfg = $dbconfig['connections'][$dbconfig['default']];
             foreach ($databasecfg as $key=>$cfg){
-                if(!isset($this->installer['database'][$key])) continue;
-                $databasecfg[$key] = $this->installer['database'][$key];
+                if(!isset($installer['database'][$key])) continue;
+                $databasecfg[$key] = $installer['database'][$key];
             }
             $databasecfg['strict'] = false;
             Config::set('database.connections.'.$dbconfig['default'],$databasecfg);
@@ -89,6 +91,19 @@ class installController extends Controller
             }catch (\Exception $exception){
                 $this->message('数据库安装失败');
             }
+
+            //initialize modules
+            try {
+                //import database
+                Module::Initializer();
+            }catch (\Exception $exception){
+                $this->message('初始化数据失败');
+            }
+
+            //initialize group
+            DB::table('whotalk_group')->insert(array(
+                'id'=>random_int(100000,999999)
+            ));
 
             $salt = \Str::random(8);
             $founderpwd = trim($manager['password']);
@@ -103,7 +118,7 @@ class installController extends Controller
                 'joindate'=>TIMESTAMP,
                 'endtime'=>0
             );
-            //inser founder
+            //create founder
             $uid =  (int)DB::table('users')->insertGetId($founder);
             if(!$uid) $this->message('数据写入失败');
             $founder['uid'] = $uid;
@@ -134,9 +149,10 @@ class installController extends Controller
             DB::table('uni_account')->where('uniacid',$uniacid)->update(array('default_acid' => $acid,'logo'=>'/static/icon200.jpg'));
             Account::user_role_insert($uniacid,$uid);
 
-            //insert default group
+            //initialize mc group
             DB::table('mc_groups')->insert(array('uniacid' => $uniacid, 'title' => '默认会员组', 'isdefault' => 1));
 
+            //initialize uni setting
             DB::table('uni_settings')->insert(array(
                 'creditnames' => serialize(array('credit1' => array('title' => '积分', 'enabled' => 1), 'credit2' => array('title' => '余额', 'enabled' => 1))),
                 'creditbehaviors' => serialize(array('activity' => 'credit1', 'currency' => 'credit2')),
@@ -144,7 +160,7 @@ class installController extends Controller
                 'default_site' => 0,
                 'sync' => serialize(array('switch' => 0, 'acid' => '')),
             ));
-//5.配置默认设置
+            //initialize whotalk setting
             $setting = array(
                 'basic'=>array(
                     'name'=>$account_data['name'],
@@ -155,9 +171,9 @@ class installController extends Controller
                     'defaultlanguage'=>'zh'
                 ),
                 'socket'=>array(
-                    'type'=>$this->installer['socket']['type'],
-                    'server'=>$this->installer['socket']['server'],
-                    'api'=>$this->installer['socket']['webapi']
+                    'type'=>$installer['socket']['type'],
+                    'server'=>$installer['socket']['server'],
+                    'api'=>$installer['socket']['webapi']
                 ),
                 'theme'=>array(
                     'link'=>'#0081ff',
@@ -171,9 +187,41 @@ class installController extends Controller
             );
             $pars = array('module' => 'xfy_whotalk', 'uniacid' => $uniacid, 'settings'=>serialize($setting), 'enabled'=>1);
             DB::table('uni_account_modules')->insert($pars);
+
+        }else{
+            if (empty($authkey)) $this->message('微擎站点安全码不能为空');
+            $installer['database']['prefix'] = 'ims_';
         }
         //写入配置文件
-        $this->message('安装失败，请重试');
+        $envfile_tmp = base_path(".env.example");
+        $reader = fopen($envfile_tmp,'r');
+        $envdata = fread($reader,filesize($envfile_tmp));
+        fclose($reader);
+        $baseurl = str_replace('/installer/render','',url()->current());
+        $database = $installer['database'];
+        $envdata = str_replace(array('{AUTHKEY}','{BASEURL}','{DB_HOST}','{DB_PORT}','{DB_DATABASE}','{DB_USERNAME}','{DB_PASSWORD}','{DB_PREFIX}'),array(
+            $authkey,$baseurl,$database['host'],$database['port'],$database['database'],$database['username'],$database['password'],$database['prefix']
+        ),$envdata);
+        $envfile = base_path(".env");
+        if (file_exists($envfile)){
+            @unlink($envfile);
+        }
+        $writer = fopen($envfile,'w');
+        if(!fwrite($writer,$envdata)){
+            fclose($writer);
+            $this->message('文件写入失败，请检查根目录权限');
+        }
+        fclose($writer);
+        //写入安装文件
+        $instlock = base_path('storage/installed.bin');
+        $writer = fopen($instlock,'w');
+        $installer['baseurl'] = $baseurl;
+        $complete = fwrite($writer,base64_encode(json_encode($installer)));
+        fclose($writer);
+        if(!$complete){
+            $this->message('文件写入失败，请检查storage目录权限');
+        }
+        $this->message('恭喜您，安装成功！','','success');
     }
 
     public function agreement(){

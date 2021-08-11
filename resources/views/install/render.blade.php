@@ -137,7 +137,7 @@
                     if (res.type!=='success') return Core.report(res);
                     layer.msg('恭喜您，安装完成！',{icon:1});
                     setTimeout(function (){
-                        //window.location.href = "{{ url('') }}";
+                        window.location.href = "{{ url('') }}";
                     },1200);
                 },{render:postdata},'json',true);
             });
