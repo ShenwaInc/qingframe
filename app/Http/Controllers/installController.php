@@ -221,6 +221,7 @@ class installController extends Controller
         if(!$complete){
             $this->message('文件写入失败，请检查storage目录权限');
         }
+        Cache::forget('installer');
         $this->message('恭喜您，安装成功！','','success');
     }
 
@@ -282,7 +283,7 @@ class installController extends Controller
                 if (isset($founder->uid)){
                     $pwdhash = sha1("{$founderpwd}-{$founder->salt}-{$authkey}");
                     if ($pwdhash!=$founder->password){
-                        $this->message('创始人密码或安全码不正确:'.$pwdhash);
+                        $this->message('创始人密码或安全码不正确');
                     }
                 }else{
                     $this->message('该创始人不存在');
