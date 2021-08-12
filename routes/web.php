@@ -11,8 +11,8 @@
 |
 */
 
-Route::group(['namespace'=>'Auth', 'middleware'=>[\App\Http\Middleware\App::class]],function (){
-    Route::any('/login', 'LoginController@index');
+Route::group(['prefix' => 'auth','namespace'=>'Auth', 'middleware'=>[\App\Http\Middleware\App::class]],function (){
+    Route::post('/login', 'AuthController@Login');
 });
 
 Route::group(['namespace'=>'Console', 'middleware'=>[\App\Http\Middleware\Installer::class, \App\Http\Middleware\App::class]],function (){
@@ -22,7 +22,6 @@ Route::group(['namespace'=>'Console', 'middleware'=>[\App\Http\Middleware\Instal
 Route::group(['prefix' => 'console', 'namespace' => 'Console', 'middleware'=>['auth',\App\Http\Middleware\App::class,\App\Http\Middleware\ConsolePermission::class]], function () {
 
     Route::get('/', 'PlatformController@index');
-    //Route::get('/login', 'LoginController@index');
     Route::get('/account/{uniacid?}', 'PlatformController@account');
     Route::get('/utils/{uniacid?}', 'PlatformController@utils');
     Route::get('/payment/{uniacid?}', 'PlatformController@payment');

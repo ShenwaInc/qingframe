@@ -3,11 +3,11 @@ body{
 }
 .fr{float: right}
 
-.layui-layout-admin .layui-body{padding-bottom: 0}
+.layui-layout-admin .layui-body{padding-bottom: 0; background: linear-gradient(135deg, #e1201c, #151e65);}
 .layui-form-checked[lay-skin=primary] i{border-color: #1E9FFF !important; background-color: #1E9FFF;}
 .layui-form-radio:hover *, .layui-form-radioed, .layui-form-radioed>i{color: #1E9FFF;}
 
-.main-panel{position: fixed; left: 0; top: 0; height: 100vh; width: 100vw; box-sizing: border-box; background: url(bg.jpg) no-repeat center center; background-size: cover; display: block;}
+.main-panel{position: fixed; left: 0; top: 0; height: 100vh; width: 100vw; box-sizing: border-box; background-image: url(bg.jpg); background-repeat: no-repeat; background-position: center center;  background-size: cover; display: block;}
 .main-panel > .wp{width: 960px; max-width: 60vw; position: absolute; left: 50%; top: 50%;transform: translate(-50%,-50%);}
 .main-panel > .installer{width: 960px; position: absolute; left: 50%; top: 50%;transform: translate(-50%,-50%); max-height: 90vh; overflow: hidden; overflow-y: auto;}
 .installer .layui-form-label{width: 100px}

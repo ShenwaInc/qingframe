@@ -1,67 +1,78 @@
-@extends('layouts.app')
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="shortcut icon" href="{{ asset('/favicon.ico') }}" />
+    <title>后台管理系统</title>
+    @php
+        !(defined('TIMESTAMP')) && define('TIMESTAMP', time());
+    @endphp
+    <link rel="stylesheet" href="{{ asset('/static/bootstrap/css/bootstrap.min.css') }}?v={{ TIMESTAMP }}" />
+    <link rel="stylesheet" href="{{ asset('/static/layui/css/layui.css') }}?v={{ TIMESTAMP }}" />
+    <link rel="stylesheet" href="{{ asset('/static/fului/fului-for-lay.css') }}?v={{ TIMESTAMP }}" />
+    <script type="text/javascript" src="{{ asset('/static/layui/layui.js') }}?v={{ TIMESTAMP }}"></script>
+    <script type="text/javascript" src="{{ asset('/static/js/jquery-1.11.1.min.js') }}?v={{ TIMESTAMP }}"></script>
+    <script type="text/javascript" src="{{ asset('/static/js/core.jquery.js') }}?v={{ TIMESTAMP }}"></script>
+    <link rel="stylesheet" href="{{ asset('/static/css/auth.css') }}?v={{ TIMESTAMP }}" />
+</head>
 
-@section('content')
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">{{ __('Login') }}</div>
+<body layadmin-themealias="ocean-header" class="layui-layout-body" style="position:inherit !important;">
+    <div class="layui-layout layui-layout-admin">
+        <!-- 主体内容 -->
+        <div class="layui-body" style="left: 0; top: 0;">
+            <div class="layadmin-user-login layadmin-user-display-show">
 
-                <div class="card-body">
-                    <form method="POST" action="{{ route('login') }}">
-                        @csrf
-
-                        <div class="form-group row">
-                            <label for="email" class="col-md-4 col-form-label text-md-right">{{ __('E-Mail Address') }}</label>
-
-                            <div class="col-md-6">
-                                <input id="email" type="text" class="form-control" name="email" value="{{ old('email') }}" required autocomplete="username" autofocus>
+                <div class="layadmin-user-login-main">
+                    <div class="layadmin-user-login-box layadmin-user-login-header">
+                        <p class="text-lg">Whotalk后台管理系统</p>
+                    </div>
+                    <div class="layadmin-user-login-box layadmin-user-login-body layui-form">
+                        <form action="{{ url('auth/login') }}" id="loginform" method="post">
+                            <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                            <div class="layui-form-item">
+                                <label class="layadmin-user-login-icon layui-icon layui-icon-username" for="LAY-user-login-username"></label>
+                                <input type="text" name="username" value="{{ old('email') }}" autocomplete="username" required lay-verify="required" placeholder="用户名" class="layui-input @error('username') is-invalid @enderror" autofocus />
                             </div>
-                        </div>
-
-                        <div class="form-group row">
-                            <label for="password" class="col-md-4 col-form-label text-md-right">{{ __('Password') }}</label>
-
-                            <div class="col-md-6">
-                                <input id="password" type="password" class="form-control @error('password') is-invalid @enderror" name="password" required autocomplete="current-password">
-
-                                @error('password')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
+                            <div class="layui-form-item">
+                                <label class="layadmin-user-login-icon layui-icon layui-icon-password" for="LAY-user-login-password"></label>
+                                <input type="password" name="password" value="" autocomplete="current-password" required lay-verify="required" placeholder="密码" class="layui-input @error('password') is-invalid @enderror" />
                             </div>
-                        </div>
-
-                        <div class="form-group row">
-                            <div class="col-md-6 offset-md-4">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
-
-                                    <label class="form-check-label" for="remember">
-                                        {{ __('Remember Me') }}
-                                    </label>
-                                </div>
+                            <div class="layui-form-item" style="margin-bottom: 20px;">
+                                <input type="checkbox" name="remember" id="remember" lay-skin="primary" title="记住身份" {{ old('remember') ? 'checked' : '' }} /><div class="layui-unselect layui-form-checkbox" lay-skin="primary"><span>记住身份</span><i class="layui-icon layui-icon-ok"></i></div>
                             </div>
-                        </div>
-
-                        <div class="form-group row mb-0">
-                            <div class="col-md-8 offset-md-4">
-                                <button type="submit" class="btn btn-primary">
-                                    {{ __('Login') }}
-                                </button>
-
-                                @if (Route::has('password.request'))
-                                    <a class="btn btn-link" href="{{ route('password.request') }}">
-                                        {{ __('Forgot Your Password?') }}
-                                    </a>
-                                @endif
+                            <div class="layui-form-item">
+                                <button class="layui-btn layui-btn-normal layui-btn-fluid layui-btn-submit js-login" type="submit" lay-submit value="true" name="submit" lay-filter="formLogin">登 入</button>
                             </div>
-                        </div>
-                    </form>
+                        </form>
+                    </div>
                 </div>
+
             </div>
         </div>
+        <!-- 辅助元素，一般用于移动设备下遮罩 -->
+        <div class="layadmin-body-shade" layadmin-event="shade"></div>
     </div>
-</div>
-@endsection
+    <script type="text/javascript">
+        layui.use(['form'],function (){
+            var form = layui.form;
+            form.on('submit(formLogin)',function (data){
+                Core.post('auth.login',function (res){
+                    if (res.type!=='success') return Core.report(res);
+                    layer.msg('登录成功！',{icon:1});
+                    setTimeout(function (){
+                        window.location.href = '{{ url('console') }}';
+                    },1200);
+                },data.field);
+                return false;
+            });
+        });
+    </script>
+</body>
+</html>

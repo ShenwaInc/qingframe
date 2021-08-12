@@ -2,14 +2,14 @@
 
 return [
     'version'=>env('APP_VERSION','3.0.47'),
-    'release'=>env('APP_RELEASE','2021081901'),
+    'release'=>env('APP_RELEASE','2021081902'),
     'setting'=>array(
         'charset'=>'utf-8',
         'cache'=>'mysql',
         'timezone'=>'Asia/Shanghai',
         'memory_limit'=>env('INI_MEMORY','256M'),
         'filemode'=>'0644',
-        'authkey'=>env('APP_AUTHKEY'),
+        'authkey'=>env('APP_AUTHKEY',''),
         'founder'=>1,
         'development'=>0,
         'referrer'=>0,

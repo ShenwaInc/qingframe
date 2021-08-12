@@ -171,7 +171,7 @@ class installController extends Controller
                     'defaultlanguage'=>'zh'
                 ),
                 'socket'=>array(
-                    'type'=>$installer['socket']['type'],
+                    'type'=>'local',
                     'server'=>$installer['socket']['server'],
                     'api'=>$installer['socket']['webapi']
                 ),
