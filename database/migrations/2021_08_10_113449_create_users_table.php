@@ -35,6 +35,7 @@ class CreateUsersTable extends Migration {
 			$table->boolean('welcome_link');
 			$table->string('notice_setting', 5000);
 			$table->boolean('is_bind');
+            $table->rememberToken();
 		});
 	}
 
