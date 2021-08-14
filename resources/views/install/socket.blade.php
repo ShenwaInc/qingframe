@@ -27,7 +27,8 @@
                     <label class="layui-form-label">连接方式</label>
                     <div class="layui-input-block">
                         <input type="radio" lay-filter="ctrls" data-target=".wsconnect" value="remote" name="wstype" title="远程SOCKET" checked="checked" />
-                        <input type="radio" lay-filter="ctrls" data-target=".wsconnect" value="local" name="wstype" title="本地SOCKET" />
+                        <input type="radio" disabled lay-filter="ctrls" data-target=".wsconnect" value="local" name="wstype" title="本地SOCKET" />
+                        <div class="layui-word-aux">本地SOCKET请激活后再使用</div>
                     </div>
                 </div>
                 <div class="layui-form-item must">

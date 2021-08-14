@@ -38,4 +38,10 @@ class User extends Authenticatable
 //    protected $casts = [
 //        'email_verified_at' => 'datetime',
 //    ];
+
+    public function getAuthPassword()
+    {
+        return ['password' => $this->attributes['password'], 'salt' => $this->attributes['salt']];
+    }
+
 }

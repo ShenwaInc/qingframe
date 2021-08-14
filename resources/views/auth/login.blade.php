@@ -35,7 +35,7 @@
                     </div>
                     <div class="layadmin-user-login-box layadmin-user-login-body layui-form">
                         <form action="{{ url('auth/login') }}" id="loginform" method="post">
-                            <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                            @csrf
                             <div class="layui-form-item">
                                 <label class="layadmin-user-login-icon layui-icon layui-icon-username" for="LAY-user-login-username"></label>
                                 <input type="text" name="username" value="{{ old('email') }}" autocomplete="username" required lay-verify="required" placeholder="用户名" class="layui-input @error('username') is-invalid @enderror" autofocus />
@@ -65,7 +65,7 @@
             form.on('submit(formLogin)',function (data){
                 Core.post('auth.login',function (res){
                     if (res.type!=='success') return Core.report(res);
-                    layer.msg('登录成功！',{icon:1});
+                    layer.msg(res.message,{icon:1});
                     setTimeout(function (){
                         window.location.href = '{{ url('console') }}';
                     },1200);

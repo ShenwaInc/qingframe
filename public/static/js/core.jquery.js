@@ -71,8 +71,11 @@ if(typeof Basetoken == 'undefined'){
             }
             if (method==='POST'){
                 AjaxObj.data.submit = 1;
+                if (typeof(AjaxObj.data._token)=='undefined'){
+                    AjaxObj.data._token = Basetoken;
+                }
             }
-            if(Basetoken!=''){
+            if(Basetoken!==''){
                 AjaxObj.headers = {
                     'X-CSRF-TOKEN':Basetoken
                 }

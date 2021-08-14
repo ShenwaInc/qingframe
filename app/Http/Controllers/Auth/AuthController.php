@@ -13,6 +13,7 @@ class AuthController extends Controller
     //
     public $username = '';
     public $failed_logins = 0;
+    public $failed_loginid = 0;
     public $clientip = '';
 
     public function Login(Request $request){
@@ -22,14 +23,16 @@ class AuthController extends Controller
         if (empty($username) || empty($password)) $this->message('您输入的用户名或密码不正确');
         $this->clientip = $request->getClientIp();
         $this->username = $username;
-        $failed_login = DB::table('users_failed_login')->where('username',$username)->first(['ip','lastupdate','count']);
+        $failed_login_query = DB::table('users_failed_login')->where('username',$username);
+        $failed_login = $failed_login_query->orWhere('ip',$this->clientip)->orderByDesc('lastupdate')->first(['id','ip','count','lastupdate']);
         if (!empty($failed_login)){
+            $this->failed_loginid = $failed_login['id'];
             $lastupdate = TIMESTAMP - 900;
             if ($failed_login['count']>=5 && $failed_login['lastupdate']>$lastupdate  && $failed_login['ip']==$this->clientip){
                 $this->message('您登录错误次数过多，请15分钟后再试');
             }else{
                 if ($failed_login['lastupdate']<=$lastupdate || $failed_login['ip']!=$this->clientip){
-                    DB::table('users_failed_login')->where('username',$username)->delete();
+                    DB::table('users_failed_login')->where('ip',$this->clientip)->delete();
                 }else{
                     $this->failed_logins = $failed_login['count'];
                 }
@@ -45,11 +48,11 @@ class AuthController extends Controller
             $LoginUser->lastvisit = TIMESTAMP;
             $LoginUser->lastip = $this->clientip;
             $remember = !empty($request->input('remember'));
-            if (!Auth::attempt(['username'=>$username,'password'=>$password], $remember)){
-                $this->message('登录失败，请重试','','success');
+            if (!Auth::attempt(['username'=>$username], $remember)){
+                $this->message('登录失败，请重试');
             }
             if ($this->failed_logins>0){
-                DB::table('users_failed_login')->where('username',$username)->delete();
+                DB::table('users_failed_login')->where('ip',$this->clientip)->delete();
             }
             DB::table('users_login_logs')->insert(array(
                 'uid'=>$user['uid'],
@@ -64,8 +67,8 @@ class AuthController extends Controller
 
     public function failed_login($msg='您输入的用户名或密码不正确'){
         if ($this->failed_logins>0){
-            DB::table('users_failed_login')->where('username',$this->username)->update(
-                array('count'=>$this->failed_logins+1,'lastupdate'=>TIMESTAMP)
+            DB::table('users_failed_login')->where('id',$this->failed_loginid)->update(
+                array('count'=>$this->failed_logins+1,'lastupdate'=>TIMESTAMP,'username'=>$this->username)
             );
         }else{
             DB::table('users_failed_login')->insert(array(
