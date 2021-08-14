@@ -45,7 +45,7 @@ class AuthController extends Controller
             $LoginUser->lastvisit = TIMESTAMP;
             $LoginUser->lastip = $this->clientip;
             $remember = !empty($request->input('remember'));
-            if (!Auth::attempt(['username'=>$username], $remember)){
+            if (!Auth::attempt(['username'=>$username,'password'=>$password], $remember)){
                 $this->message('登录失败，请重试','','success');
             }
             if ($this->failed_logins>0){

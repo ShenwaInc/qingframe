@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Console;
 
 use App\Http\Controllers\Controller;
-use App\Services\SettingService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PlatformController extends Controller
 {
