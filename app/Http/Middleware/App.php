@@ -67,6 +67,24 @@ class App
             ini_set('display_errors', '1');
             error_reporting(E_ALL ^ E_NOTICE);
         }
+        $_W['uid'] = 0;
+        $_W['user'] = array('uid'=>0,'username'=>'未登录');
+        if (!isset($_W['setting']['page']) || empty($_W['setting']['page'])){
+            $_W['page'] = array(
+                'title'=>'Whotalk即时通讯系统',
+                'icon'=>'/favicon.ico',
+                'logo'=>'/static/icon200.jpg',
+                'copyright'=>'© 2019-2022 Shenwa Studio. All Rights Reserved.',
+                'links'=>'
+                <a class="copyright-link" href="https://www.whotalk.com.cn/" target="_blank">Whotalk官网</a>
+                <a class="copyright-link" href="https://chat.gxit.org/app/index.php?i=4&c=entry&m=swa_supersale&do=app&r=whotalkcloud.post" target="_blank">制作APP</a>
+                <a class="copyright-link" href="https://shimo.im/docs/XRkgJOKZ41UrFbqM" target="_blank">使用教程</a>
+                <a class="copyright-link" href="https://www.yuque.com/docs/share/84abf7ef-7d11-44f1-a510-ed70ef14ef3d?#" target="_blank">更新日志</a>
+                '
+            );
+        }else{
+            $_W['page'] = $_W['setting']['page'];
+        }
         return $next($request);
     }
 

@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
 
 class AuthController extends Controller
 {
@@ -20,7 +20,7 @@ class AuthController extends Controller
         global $_W;
         $username = trim((string)$request->input('username'));
         $password = trim((string)$request->input('password'));
-        if (empty($username) || empty($password)) $this->message('您输入的用户名或密码不正确');
+        if (empty($username) || empty($password)) return $this->message('您输入的用户名或密码不正确');
         $this->clientip = $request->getClientIp();
         $this->username = $username;
         $failed_login_query = DB::table('users_failed_login')->where('username',$username);
@@ -29,7 +29,7 @@ class AuthController extends Controller
             $this->failed_loginid = $failed_login['id'];
             $lastupdate = TIMESTAMP - 900;
             if ($failed_login['count']>=5 && $failed_login['lastupdate']>$lastupdate  && $failed_login['ip']==$this->clientip){
-                $this->message('您登录错误次数过多，请15分钟后再试');
+                return $this->message('您登录错误次数过多，请15分钟后再试');
             }else{
                 if ($failed_login['lastupdate']<=$lastupdate || $failed_login['ip']!=$this->clientip){
                     DB::table('users_failed_login')->where('ip',$this->clientip)->delete();
@@ -42,6 +42,7 @@ class AuthController extends Controller
         if (empty($user)) $this->failed_login('找不到该用户');
         $remember = !empty($request->input('remember'));
         if (Auth::attempt(['username'=>$username,'password'=>$password], $remember)){
+            Session::save();
             if ($this->failed_logins>0){
                 DB::table('users_failed_login')->where('ip',$this->clientip)->delete();
             }
@@ -51,9 +52,9 @@ class AuthController extends Controller
                 'city'=>'',
                 'createtime'=>TIMESTAMP
             ));
-            $this->message('登录成功','','success');
+            return $this->message('恭喜您，登录成功',url('console'),'success');
         }
-        $this->failed_login();
+        return $this->failed_login();
     }
 
     public function failed_login($msg='用户名或密码不正确'){
@@ -69,6 +70,6 @@ class AuthController extends Controller
                 'lastupdate'=>TIMESTAMP
             ));
         }
-        $this->message($msg);
+        return $this->message($msg);
     }
 }

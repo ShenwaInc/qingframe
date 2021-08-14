@@ -15,9 +15,6 @@ class PlatformController extends Controller
 
     public function account($uniacid){
         global $_W,$_GPC;
-        print_r($_W);
-        print_r($_GPC);
-        die($uniacid);
     }
 
     public function utils($uniacid){

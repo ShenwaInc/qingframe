@@ -19,7 +19,7 @@ Route::group(['namespace'=>'Console', 'middleware'=>[\App\Http\Middleware\Instal
     Route::get('/', 'EntryController@index');
 });
 
-Route::group(['prefix' => 'console', 'namespace' => 'Console', 'middleware'=>['auth',\App\Http\Middleware\App::class,\App\Http\Middleware\ConsolePermission::class]], function () {
+Route::group(['prefix' => 'console', 'namespace' => 'Console', 'middleware'=>['auth', \App\Http\Middleware\App::class,\App\Http\Middleware\ConsolePermission::class]], function () {
 
     Route::get('/', 'PlatformController@index');
     Route::get('/account/{uniacid?}', 'PlatformController@account');
