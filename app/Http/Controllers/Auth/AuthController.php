@@ -41,19 +41,19 @@ class AuthController extends Controller
         $user = DB::table('users')->where('username',$username)->first(['uid','username','password','salt','remember_token','status','endtime','welcome_link']);
         if (empty($user)) $this->failed_login('找不到该用户');
         $remember = !empty($request->input('remember'));
-        if (!Auth::attempt(['username'=>$username,'password'=>$password], $remember)){
-            $this->failed_login();
+        if (Auth::attempt(['username'=>$username,'password'=>$password], $remember)){
+            if ($this->failed_logins>0){
+                DB::table('users_failed_login')->where('ip',$this->clientip)->delete();
+            }
+            DB::table('users_login_logs')->insert(array(
+                'uid'=>$user['uid'],
+                'ip'=>$this->clientip,
+                'city'=>'',
+                'createtime'=>TIMESTAMP
+            ));
+            $this->message('登录成功','','success');
         }
-        if ($this->failed_logins>0){
-            DB::table('users_failed_login')->where('ip',$this->clientip)->delete();
-        }
-        DB::table('users_login_logs')->insert(array(
-            'uid'=>$user['uid'],
-            'ip'=>$this->clientip,
-            'city'=>'',
-            'createtime'=>TIMESTAMP
-        ));
-        $this->message('登录成功','','success');
+        $this->failed_login();
     }
 
     public function failed_login($msg='用户名或密码不正确'){
