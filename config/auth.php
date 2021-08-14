@@ -67,7 +67,7 @@ return [
 
     'providers' => [
         'users' => [
-            'driver' => 'eloquent',
+            'driver' => 'weengine-eloquent',
             'model' => App\User::class,
         ],
 

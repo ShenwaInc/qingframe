@@ -40,32 +40,23 @@ class AuthController extends Controller
         }
         $user = DB::table('users')->where('username',$username)->first(['uid','username','password','salt','remember_token','status','endtime','welcome_link']);
         if (empty($user)) $this->failed_login('找不到该用户');
-        $passwordhash = sha1("{$password}-{$user['salt']}-{$_W['config']['setting']['authkey']}");
-        if ($passwordhash==$user['password']){
-            //login
-            $LoginUser = User::where(['username'=>$username,'password'=>$passwordhash])->first();
-            $LoginUser->username = $user['username'];
-            $LoginUser->lastvisit = TIMESTAMP;
-            $LoginUser->lastip = $this->clientip;
-            $remember = !empty($request->input('remember'));
-            if (!Auth::attempt(['username'=>$username], $remember)){
-                $this->message('登录失败，请重试');
-            }
-            if ($this->failed_logins>0){
-                DB::table('users_failed_login')->where('ip',$this->clientip)->delete();
-            }
-            DB::table('users_login_logs')->insert(array(
-                'uid'=>$user['uid'],
-                'ip'=>$this->clientip,
-                'city'=>'',
-                'createtime'=>TIMESTAMP
-            ));
-            $this->message('登录成功','','success');
+        $remember = !empty($request->input('remember'));
+        if (!Auth::attempt(['username'=>$username,'password'=>$password], $remember)){
+            $this->failed_login();
         }
-        $this->failed_login("密码错误");
+        if ($this->failed_logins>0){
+            DB::table('users_failed_login')->where('ip',$this->clientip)->delete();
+        }
+        DB::table('users_login_logs')->insert(array(
+            'uid'=>$user['uid'],
+            'ip'=>$this->clientip,
+            'city'=>'',
+            'createtime'=>TIMESTAMP
+        ));
+        $this->message('登录成功','','success');
     }
 
-    public function failed_login($msg='您输入的用户名或密码不正确'){
+    public function failed_login($msg='用户名或密码不正确'){
         if ($this->failed_logins>0){
             DB::table('users_failed_login')->where('id',$this->failed_loginid)->update(
                 array('count'=>$this->failed_logins+1,'lastupdate'=>TIMESTAMP,'username'=>$this->username)
