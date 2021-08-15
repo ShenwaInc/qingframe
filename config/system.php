@@ -10,7 +10,7 @@ return [
         'memory_limit'=>env('INI_MEMORY','256M'),
         'filemode'=>'0644',
         'authkey'=>env('APP_AUTHKEY',''),
-        'founder'=>1,
+        'founder'=>env('APP_FOUNDER',1),
         'development'=>0,
         'referrer'=>0,
         'memcache'=>array(

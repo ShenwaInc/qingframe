@@ -10,6 +10,7 @@ define('IA_ROOT', base_path('public'));
 define('MAGIC_QUOTES_GPC', (function_exists('get_magic_quotes_gpc') && @get_magic_quotes_gpc()) || @ini_get('magic_quotes_sybase'));
 define('ATTACHMENT_ROOT', IA_ROOT . '/attachment/');
 define('TIMESTAMP', time());
+define('DEVELOPMENT', env('APP_DEVELOPMENT',0));
 global $_W,$_GPC;
 $_W = $_GPC = array();
 
@@ -26,6 +27,8 @@ class App
     {
         global $_W,$_GPC;
         $_W['config'] = config('system');
+        $dbconfig = config('database');
+        $_W['config']['db'] = $dbconfig['connections'][$dbconfig['default']];
         $_W['timestamp'] = TIMESTAMP;
         $_W['charset'] = $_W['config']['setting']['charset'];
         $_W['clientip'] = $this->GetIp();

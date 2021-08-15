@@ -15,4 +15,8 @@ class Setting extends Model
     public static function uni_save($uniacid,$key,$value){
         return DB::table(self::$table_uni)->updateOrInsert(['uniacid'=>$uniacid],[$key=>$value]);
     }
+
+    public static function getUni($uniacid){
+        return DB::table(self::$table_uni)->where('uniacid',$uniacid)->first()->toArray();
+    }
 }

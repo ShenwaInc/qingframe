@@ -2,8 +2,9 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\AttachmentService;
+use App\Services\UserService;
 use Closure;
-use Illuminate\Support\Facades\Auth;
 
 class ConsolePermission
 {
@@ -18,8 +19,19 @@ class ConsolePermission
     {
         global $_W;
         $user = $request->user();
-        $_W['uid'] = $user['uid'];
         $_W['user'] = $user->toArray();
+        $_W['uid'] = $_W['user']['uid'];
+        $_W['username'] = $_W['user']['username'];
+        $_W['isfounder'] = UserService::isFounder($_W['uid']);
+        $_W['isadmin'] = UserService::isFounder($_W['uid'],true);
+        $_W['highest_role'] = UserService::AccountRole($_W['uid']);
+        $_W['role'] = '';
+        $uniacid = (int)session('uniacid',0);
+        if ($uniacid){
+            $_W['uniacid'] = $uniacid;
+            $_W['role'] = UserService::AccountRole($_W['uid'],$uniacid);
+        }
+        $_W['attachurl'] = AttachmentService::SetAttachUrl();
         return $next($request);
     }
 }
