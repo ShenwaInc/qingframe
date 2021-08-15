@@ -1,0 +1,5 @@
+body{background-color: #f6f8f9; min-width: 768px;}
+a:hover, a:active{text-decoration: none;}
+.layui-layout-admin .layui-header{background-color: #FFFFFF; box-sizing: border-box}
+.layui-nav, .layui-nav .layui-nav-item a{color: #333 !important;}
+.layui-layout-admin .layui-logo{box-shadow: none; color: #606060 !important;}

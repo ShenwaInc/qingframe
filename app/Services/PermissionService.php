@@ -5,6 +5,7 @@ namespace App\Services;
 
 
 use App\Models\Account;
+use App\User;
 use Illuminate\Support\Facades\DB;
 
 class PermissionService {
@@ -39,7 +40,7 @@ class PermissionService {
                 $key_name = $type_info . '_num';
                 $group_num[$key_name] = 0;
             }
-            $fouder_own_users_owner_account = Account::searchAccountList(false, 1, $fields = 'a.uniacid, b.type', $user['uid']);
+            $fouder_own_users_owner_account = Account::searchAccountList(false, 1, $fields = 'uni_account.uniacid, account.type', $user['uid']);
             $current_vice_founder_user_group_nums = 0;
             if (!empty($fouder_own_users_owner_account)) {
                 foreach ($fouder_own_users_owner_account as $account) {
@@ -56,13 +57,13 @@ class PermissionService {
         } else {
             $role = 'owner';
             $group = DB::table('users_group')->where('id',$user['groupid'])->first();
-            $group_num = uni_owner_account_nums($user['uid'], $role);
+            $group_num = AccountService::OwnerAccountNums($user['uid'], $role);
             if (empty($_W['isfounder'])) {
                 if (!empty($user['owner_uid'])) {
-                    $owner_info = table('users')->getById($user['owner_uid']);
-                    $group_vice = table('users_founder_group')->getById($owner_info['groupid']);
+                    $owner_info = User::where('uid',$user['owner_uid'])->first();
+                    $group_vice = DB::table('users_founder_group')->where('id',$owner_info['groupid'])->first();
 
-                    $founder_group_num = uni_owner_account_nums($owner_info['uid'], ACCOUNT_MANAGE_NAME_VICE_FOUNDER);
+                    $founder_group_num = AccountService::OwnerAccountNums($owner_info['uid'], 'vice_founder');
                     foreach ($account_all_type_sign as $sign) {
                         $maxsign = 'max' . $sign;
                         $group[$maxsign] = min(intval($group[$maxsign]), intval($group_vice[$maxsign]));
@@ -71,27 +72,30 @@ class PermissionService {
             }
         }
         if (!empty($user_founder_info['founder_uid'])) {
-            $owner_info = table('users')->getById($user_founder_info['founder_uid']);
-            $group_vice = table('users_founder_group')->getById($owner_info['groupid']);
-            $founder_group_num = uni_owner_account_nums($owner_info['uid'], ACCOUNT_MANAGE_NAME_VICE_FOUNDER);
+            $owner_info = User::where('uid',$user_founder_info['founder_uid'])->first();
+            $group_vice = DB::table('users_founder_group')->where('id',$owner_info['groupid'])->first();
+            $founder_group_num = AccountService::OwnerAccountNums($owner_info['uid'], 'vice_founder');
         }
-        $store_order_table = table('site_store_order');
-        $store_create_table = table('site_store_create_account');
-        foreach ($account_all_type_sign as $type_sign) {
-            $create_buy_num[$type_sign] = $store_create_table->getUserCreateNumByType($user['uid'], $type_sign);
-        }
-        foreach ($account_all_type_sign as $type_sign) {
-            $store_buy[$type_sign] = $store_order_table->getUserBuyNumByType($user['uid'], $type_sign);
-            $store_buy[$type_sign] = $store_buy[$type_sign] < 0 ? 0 : $store_buy[$type_sign];
-        }
+        $store_create_table = DB::table('site_store_create_account');
+        $create_buy_num['account'] = $store_create_table->leftJoin('account','site_store_create_account.uniacid','=','account.uniacid')->where(array(
+            ['site_store_create_account.uid',$user['uid']],
+            ['site_store_create_account.type','account']
+        ))->count();
+        $store_buy['account'] = 0;
 
-        $extra_create_group_info  = array_keys($extra_group_table->getCreateGroupsByUid($user['uid']));
-        $extra_limits_info = $extra_limit_table->getExtraLimitByUid($user['uid']);
+        $extra_create_group_info  = array_keys($extra_group_table->where(array(
+            ['uid',$user['uid']],
+            ['create_group_id','>',0]
+        ))->get()->keyBy('create_group_id')->toArray());
+        $extra_limits_info = $extra_limit_table->where('uid',$user['uid'])->first();
         if (!empty($user_founder_info['founder_uid'])) {
-            $founder_extra_create_group_info  = array_keys($extra_group_table->getCreateGroupsByUid($user_founder_info['founder_uid']));
-            $founder_extra_limits_info = $extra_limit_table->getExtraLimitByUid($user_founder_info['founder_uid']);
+            $founder_extra_create_group_info  = array_keys($extra_group_table->where(array(
+                ['uid',$user_founder_info['founder_uid']],
+                ['create_group_id','>',0]
+            ))->get()->keyBy('create_group_id')->toArray());
+            $founder_extra_limits_info = $extra_limit_table->where('uid',$user_founder_info['founder_uid'])->first();
 
-            $vice_founder_own_users_create_accounts = table('account')->searchAccountList(false, 1, $fields = 'a.uniacid, b.type', $user_founder_info['founder_uid']);
+            $vice_founder_own_users_create_accounts = Account::searchAccountList(false, 1, $fields = 'uni_account.uniacid, account.type', $user_founder_info['founder_uid']);
             $vice_founder_own_users_create_nums = array();
             foreach ($account_all_type_sign as $type_info) {
                 $key_name = $type_info . '_num';
@@ -111,11 +115,11 @@ class PermissionService {
 
         }
         $create_group_info_all = array();
+        $create_group_table = DB::table('users_create_group');
         if (!empty($extra_create_group_info)) {
-            $create_group_table = table('users_create_group');
             $create_groups = array();
             foreach($extra_create_group_info as $create_group_id) {
-                $create_group_info = $create_group_table->getById($create_group_id);
+                $create_group_info = $create_group_table->where('id',$create_group_id)->first();
                 $create_groups[] = $create_group_info;
                 foreach ($account_all_type_sign as $sign) {
                     $maxsign = 'max' . $sign;
@@ -125,10 +129,9 @@ class PermissionService {
         }
         $founcder_create_group_info_all = array();
         if (!empty($user_founder_info['founder_uid']) && !empty($extra_create_group_info)) {
-            $create_group_table = table('users_create_group');
             $founder_create_groups = array();
             foreach($founder_extra_create_group_info as $create_group_id) {
-                $create_group_info = $create_group_table->getById($create_group_id);
+                $create_group_info = $create_group_table->where('id',$create_group_id)->first();
                 $founder_create_groups[] = $create_group_info;
                 foreach ($account_all_type_sign as $sign) {
                     $maxsign = 'max' . $sign;

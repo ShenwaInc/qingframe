@@ -6,6 +6,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
+use Illuminate\Support\Facades\View;
 
 class Controller extends BaseController
 {
@@ -22,6 +23,13 @@ class Controller extends BaseController
         }else{
             return response()->view('message', $data, 200)->header('Content-Type','text/html; charset=UTF-8')->content();
         }
+    }
+
+    public function globalview($view,$data=array()){
+        global $_W,$_GPC;
+        View::share('_W',$_W);
+        View::share('_GPC',$_GPC);
+        return view($view,$data);
     }
 
 }

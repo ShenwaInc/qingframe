@@ -93,6 +93,34 @@ function error($errno, $message = '') {
     );
 }
 
+function uni_fetch($uniacid = 0) {
+    global $_W;
+    $uniacid = empty($uniacid) ? $_W['uniacid'] : intval($uniacid);
+    $account_api = \App\Services\AccountService::createByUniacid($uniacid);
+    if (is_error($account_api)) {
+        return $account_api;
+    }
+    $account_api->__toArray();
+    $account_api['accessurl'] = $account_api['manageurl'] = url("console/account/{$uniacid}/post", array('account_type' => $account_api['type']), true);
+    $account_api['roleurl'] = url("console/account/{$uniacid}/postuser", array('account_type' => $account_api['type']), true);
+    return $account_api;
+}
+
+if (!function_exists('getglobal')) {
+    function getglobal($key) {
+        global $_W;
+        $key = explode('/', $key);
+        $v = &$_W;
+        foreach ($key as $k) {
+            if (!isset($v[$k])) {
+                return null;
+            }
+            $v = &$v[$k];
+        }
+        return $v;
+    }
+}
+
 function tablename($table) {
     if (empty($GLOBALS['_W']['config']['db']['master'])) {
         return "`{$GLOBALS['_W']['config']['db']['prefix']}{$table}`";

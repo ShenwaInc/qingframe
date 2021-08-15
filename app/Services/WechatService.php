@@ -8,7 +8,7 @@ use App\Models\Account;
 use App\Models\AccountWechat;
 use Illuminate\Support\Facades\Cache;
 
-class WechatService
+class WechatService extends AccountService
 {
 
     protected $tablename = 'account_wechats';
@@ -24,10 +24,6 @@ class WechatService
     );
 
     public $HttpService = null;
-
-    function __construct(){
-        $this->HttpService = new HttpService();
-    }
 
     protected function getAccountInfo($uniacid) {
         $account = AccountWechat::where('uniacid',$uniacid)->first()->toArray();
@@ -282,7 +278,7 @@ class WechatService
             $url = "https://api.weixin.qq.com/cgi-bin/menu/addconditional?access_token={$token}";
         }
         $data = urldecode(json_encode($menu));
-        $response = $this->HttpService->ihttp_post($url, $data);
+        $response = HttpService::ihttp_post($url, $data);
         if (is_error($response)) {
             return error(-1, "访问公众平台接口失败, 错误: {$response['message']}");
         }
@@ -404,10 +400,10 @@ class WechatService
             $data = array(
                 'menuid' => $menuid,
             );
-            $response = $this->HttpService->ihttp_post($url, json_encode($data));
+            $response = HttpService::ihttp_post($url, json_encode($data));
         } else {
             $url = "https://api.weixin.qq.com/cgi-bin/menu/delete?access_token={$token}";
-            $response = $this->HttpService->ihttp_get($url);
+            $response = HttpService::ihttp_get($url);
         }
         if (is_error($response)) {
             return error(-1, "访问公众平台接口失败, 错误: {$response['message']}");
@@ -440,7 +436,7 @@ class WechatService
             return $token;
         }
         $url = "https://api.weixin.qq.com/cgi-bin/menu/get?access_token={$token}";
-        $response = $this->HttpService->ihttp_get($url);
+        $response = HttpService::ihttp_get($url);
         if (is_error($response)) {
             return error(-1, "访问公众平台接口失败, 错误: {$response['message']}");
         }
@@ -463,7 +459,7 @@ class WechatService
             return $token;
         }
         $url = "https://api.weixin.qq.com/cgi-bin/user/info?access_token={$token}&openid={$openid}&lang=zh_CN";
-        $response = $this->HttpService->ihttp_get($url);
+        $response = HttpService::ihttp_get($url);
         if (is_error($response)) {
             return error(-1, "访问公众平台接口失败, 错误: {$response['message']}");
         }
@@ -505,7 +501,7 @@ class WechatService
             return $token;
         }
         $url = "https://api.weixin.qq.com/cgi-bin/user/info/batchget?access_token={$token}";
-        $response = $this->HttpService->ihttp_post($url, json_encode($data));
+        $response = HttpService::ihttp_post($url, json_encode($data));
         if (is_error($response)) {
             return error(-1, "访问公众平台接口失败, 错误: {$response['message']}");
         }
@@ -532,7 +528,7 @@ class WechatService
         if (!empty($startopenid)) {
             $url .= '&next_openid=' . $startopenid;
         }
-        $response = $this->HttpService->ihttp_get($url);
+        $response = HttpService::ihttp_get($url);
         if (is_error($response)) {
             return error(-1, "访问公众平台接口失败, 错误: {$response['message']}");
         }
@@ -560,7 +556,7 @@ class WechatService
             return error('1', 'Invalid params');
         }
         $token = $this->getAccessToken();
-        $response = $this->HttpService->ihttp_request('https://api.weixin.qq.com/cgi-bin/qrcode/create?access_token=' . $token, json_encode($barcode));
+        $response = HttpService::ihttp_request('https://api.weixin.qq.com/cgi-bin/qrcode/create?access_token=' . $token, json_encode($barcode));
         if (is_error($response)) {
             return $response;
         }
@@ -584,7 +580,7 @@ class WechatService
             return error('1', '场景字符串错误');
         }
         $token = $this->getAccessToken();
-        $response = $this->HttpService->ihttp_request('https://api.weixin.qq.com/cgi-bin/qrcode/create?access_token=' . $token, json_encode($barcode));
+        $response = HttpService::ihttp_request('https://api.weixin.qq.com/cgi-bin/qrcode/create?access_token=' . $token, json_encode($barcode));
         if (is_error($response)) {
             return $response;
         }
@@ -630,7 +626,7 @@ class WechatService
             return $token;
         }
         $sendapi = 'https://api.weixin.qq.com/pay/delivernotify?access_token=' . $token;
-        $response = $this->HttpService->ihttp_request($sendapi, json_encode($send));
+        $response = HttpService::ihttp_request($sendapi, json_encode($send));
         $response = json_decode($response['content'], true);
         if (empty($response)) {
             return error(-1, '发货失败，请检查您的公众号权限或是公众号AppId和公众号AppSecret！');
@@ -655,7 +651,7 @@ class WechatService
             return error('-1', '未填写公众号的 appid 或 appsecret！');
         }
         $url = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid={$this->account['key']}&secret={$this->account['secret']}";
-        $content = $this->HttpService->ihttp_get($url);
+        $content = HttpService::ihttp_get($url);
         if (is_error($content)) {
             return error('-1', '获取微信公众号授权失败, 请稍后重试！错误详情: ' . $content['message']);
         }
@@ -730,7 +726,7 @@ class WechatService
             return $access_token;
         }
         $url = "https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token={$access_token}&type=jsapi";
-        $content = $this->HttpService->ihttp_get($url);
+        $content = HttpService::ihttp_get($url);
         if (is_error($content)) {
             return error(-1, '调用接口获取微信公众号 jsapi_ticket 失败, 错误信息: ' . $content['message']);
         }
@@ -784,7 +780,7 @@ class WechatService
         $send = array();
         $send['action'] = 'long2short';
         $send['long_url'] = $longurl;
-        $response = $this->HttpService->ihttp_request($url, json_encode($send));
+        $response = HttpService::ihttp_request($url, json_encode($send));
         if (is_error($response)) {
             return error(-1, "访问公众平台接口失败, 错误: {$response['message']}");
         }
@@ -822,7 +818,7 @@ class WechatService
             return $token;
         }
         $url = "https://api.weixin.qq.com/customservice/msgrecord/getrecord?access_token={$token}";
-        $response = $this->HttpService->ihttp_request($url, json_encode($params));
+        $response = HttpService::ihttp_request($url, json_encode($params));
         if (is_error($response)) {
             return error(-1, "访问公众平台接口失败, 错误: {$response['message']}");
         }
@@ -1086,7 +1082,7 @@ class WechatService
         }
         $url = "https://api.weixin.qq.com/cgi-bin/message/mass/sendall?access_token={$token}";
         $data = urldecode(json_encode($data, JSON_UNESCAPED_UNICODE));
-        $response = $this->HttpService->ihttp_request($url, $data);
+        $response = HttpService::ihttp_request($url, $data);
         if (is_error($response)) {
             return error(-1, "访问公众平台接口失败, 错误: {$response['message']}");
         }
@@ -1130,7 +1126,7 @@ class WechatService
             );
         }
 
-        $response = $this->HttpService->ihttp_request($url, json_encode($send, JSON_UNESCAPED_UNICODE));
+        $response = HttpService::ihttp_request($url, json_encode($send, JSON_UNESCAPED_UNICODE));
         if (is_error($response)) {
             return error(-1, "访问公众平台接口失败, 错误: {$response['message']}");
         }
@@ -1153,7 +1149,7 @@ class WechatService
             return $token;
         }
         $url = "https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token={$token}";
-        $response = $this->HttpService->ihttp_request($url, urldecode(json_encode($data)));
+        $response = HttpService::ihttp_request($url, urldecode(json_encode($data)));
         if (is_error($response)) {
             return error(-1, "访问公众平台接口失败, 错误: {$response['message']}");
         }
@@ -1197,7 +1193,7 @@ class WechatService
         $data['data'] = $postdata;
         $data = json_encode($data);
         $post_url = "https://api.weixin.qq.com/cgi-bin/message/template/send?access_token={$token}";
-        $response = $this->HttpService->ihttp_request($post_url, $data);
+        $response = HttpService::ihttp_request($post_url, $data);
         if (is_error($response)) {
             return error(-1, "访问公众平台接口失败, 错误: {$response['message']}");
         }
@@ -1338,7 +1334,7 @@ class WechatService
             return $token;
         }
         $url = "https://file.api.weixin.qq.com/cgi-bin/media/uploadvideo?access_token={$token}";
-        $response = $this->HttpService->ihttp_request($url, urldecode(json_encode($data)));
+        $response = HttpService::ihttp_request($url, urldecode(json_encode($data)));
         if (is_error($response)) {
             return error(-1, "访问公众平台接口失败, 错误: {$response['message']}");
         }
@@ -1362,7 +1358,7 @@ class WechatService
             return $token;
         }
         $url = "https://api.weixin.qq.com/cgi-bin/media/uploadnews?access_token={$token}";
-        $response = $this->HttpService->ihttp_request($url, urldecode(json_encode($data)));
+        $response = HttpService::ihttp_request($url, urldecode(json_encode($data)));
         if (is_error($response)) {
             return error(-1, "访问公众平台接口失败, 错误: {$response['message']}");
         }
@@ -1418,7 +1414,7 @@ class WechatService
         $data = array(
             'media_id' => trim($media_id),
         );
-        $response = $this->HttpService->ihttp_request($url, json_encode($data));
+        $response = HttpService::ihttp_request($url, json_encode($data));
         if (is_error($response)) {
             return error(-1, "访问公平台接口失败, 错误: {$response['message']}");
         }
@@ -1432,7 +1428,7 @@ class WechatService
                 if (empty($savefile)) {
                     return $response;
                 }
-                $response = $this->HttpService->ihttp_get($response['down_url']);
+                $response = HttpService::ihttp_get($response['down_url']);
                 $response['headers']['Content-disposition'] = $response['headers']['Content-Disposition'];
             } elseif (!empty($response['news_item'])) {
                 return $response;
@@ -1475,12 +1471,12 @@ class WechatService
             return $token;
         }
         $url = "https://api.weixin.qq.com/cgi-bin/media/get?access_token={$token}&media_id={$media_id}";
-        $response = $this->HttpService->ihttp_get($url);
+        $response = HttpService::ihttp_get($url);
 
         if (empty($response['headers']['Content-disposition'])) {
             $response = json_decode($response['content'], true);
             if (!empty($response['video_url'])) {
-                $response = $this->HttpService->ihttp_get($response['video_url']);
+                $response = HttpService::ihttp_get($response['video_url']);
                 $response['headers']['Content-disposition'] = $response['headers']['Content-Disposition'];
             }
         }
@@ -1547,7 +1543,7 @@ class WechatService
             return $token;
         }
         $sendapi = 'https://api.weixin.qq.com/pay/delivernotify?access_token=' . $token;
-        $response = $this->HttpService->ihttp_request($sendapi, json_encode($send));
+        $response = HttpService::ihttp_request($sendapi, json_encode($send));
         $response = json_decode($response['content'], true);
         if (empty($response)) {
             return error(-1, '发货失败，请检查您的公众号权限或是公众号AppId和公众号AppSecret！');
@@ -1796,7 +1792,7 @@ class WechatService
     }
 
     protected function requestApi($url, $post = '') {
-        $response = $this->HttpService->ihttp_request($url, $post);
+        $response = HttpService::ihttp_request($url, $post);
 
         $result = @json_decode($response['content'], true);
         if (is_error($response)) {

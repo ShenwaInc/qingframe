@@ -16,8 +16,18 @@ class AuthController extends Controller
     public $failed_loginid = 0;
     public $clientip = '';
 
+    public function Logout(Request $request){
+        if($request->isMethod('post')){
+            global $_W;
+            Auth::logout();
+            $_W['uid'] = 0;
+            $_W['user'] = array('uid'=>0,'username'=>'未登录');
+            return $this->message('即将退出...',url('/login'),'success');
+        }
+        return $this->message();
+    }
+
     public function Login(Request $request){
-        global $_W;
         $username = trim((string)$request->input('username'));
         $password = trim((string)$request->input('password'));
         if (empty($username) || empty($password)) return $this->message('您输入的用户名或密码不正确');

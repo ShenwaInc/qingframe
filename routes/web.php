@@ -13,6 +13,7 @@
 
 Route::group(['prefix' => 'auth','namespace'=>'Auth', 'middleware'=>[\App\Http\Middleware\App::class]],function (){
     Route::post('/login', 'AuthController@Login');
+    Route::post('/logout', 'AuthController@Logout');
 });
 
 Route::group(['namespace'=>'Console', 'middleware'=>[\App\Http\Middleware\Installer::class, \App\Http\Middleware\App::class]],function (){

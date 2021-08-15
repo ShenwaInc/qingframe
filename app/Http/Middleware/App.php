@@ -72,6 +72,7 @@ class App
         }
         $_W['uid'] = 0;
         $_W['user'] = array('uid'=>0,'username'=>'未登录');
+        $_W['account'] = array('uniacid'=>0);
         if (!isset($_W['setting']['page']) || empty($_W['setting']['page'])){
             $_W['page'] = array(
                 'title'=>'Whotalk即时通讯系统',

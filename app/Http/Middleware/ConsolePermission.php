@@ -30,6 +30,7 @@ class ConsolePermission
         if ($uniacid){
             $_W['uniacid'] = $uniacid;
             $_W['role'] = UserService::AccountRole($_W['uid'],$uniacid);
+            $_W['account'] = uni_fetch($uniacid);
         }
         $_W['attachurl'] = AttachmentService::SetAttachUrl();
         return $next($request);
