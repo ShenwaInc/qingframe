@@ -10,14 +10,27 @@
 
         <ul class="layui-nav layui-layout-right">
             <li class="layui-nav-item layui-hide layui-show-md-inline-block">
-                <a href="{{url('user/profile')}}">
+                <a href="javascript:;">
                     {{$_W['user']['username']}}
                 </a>
-                <dl class="layui-nav-child layui-anim layui-anim-upbit">
-                    <dd><a href="">Your Profile</a></dd>
-                    <dd><a href="">Settings</a></dd>
-                    <dd><a href="javascript:Core.logout();">Sign out</a></dd>
+                <dl id="layui-admin-usermenu" class="layui-nav-child layui-anim layui-anim-upbit">
+                    <dd><a href="{{url('user/profile')}}">账户管理</a></dd>
+                    @if($_W['isfounder'])
+                        @if($_W['config']['site']['id']==0)
+                        <dd>
+                            <a href="{{url('console/active')}}">系统激活<span class="layui-badge-dot"></span></a>
+                        </dd>
+                        @else
+                        <dd><a href="{{url('console/setting')}}">站点设置</a></dd>
+                        @endif
+                    @endif
+                    <dd><a href="javascript:Core.logout();">退出账户</a></dd>
                 </dl>
+            </li>
+            <li class="layui-nav-item" lay-header-event="menuRight" lay-unselect>
+                <a href="javascript:;">
+                    <i class="layui-icon layui-icon-more-vertical"></i>
+                </a>
             </li>
         </ul>
     </div>

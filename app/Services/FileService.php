@@ -29,9 +29,9 @@ class FileService
         return file_get_contents($filename);
     }
 
-    function file_move($filename, $dest) {
+    public static function file_move($filename, $dest) {
         global $_W;
-        $this->mkdirs(dirname($dest));
+        self::mkdirs(dirname($dest));
         if (is_uploaded_file($filename)) {
             move_uploaded_file($filename, $dest);
         } else {
@@ -165,14 +165,14 @@ class FileService
     }
 
 
-    function rmdirs($path, $clean = false) {
+    public static function rmdirs($path, $clean = false) {
         if (!is_dir($path)) {
             return false;
         }
         $files = glob($path . '/*');
         if ($files) {
             foreach ($files as $file) {
-                is_dir($file) ? $this->rmdirs($file) : @unlink($file);
+                is_dir($file) ? self::rmdirs($file) : @unlink($file);
             }
         }
 
@@ -344,7 +344,8 @@ class FileService
         if ($_W['setting']['remote']['type'] == 1) {
             return error(1, '远程附件上传失败，暂不支持FTP');
         } elseif ($_W['setting']['remote']['type'] == 2) {
-            AttachmentService::initOss();
+            $loadoss = CloudService::LoadCom('alioss');
+            if (is_error($loadoss)) return $loadoss;
             $buckets = AttachmentService::alioss_buctkets($_W['setting']['remote']['alioss']['key'], $_W['setting']['remote']['alioss']['secret']);
             $host_name = $_W['setting']['remote']['alioss']['internal'] ? '-internal.aliyuncs.com' : '.aliyuncs.com';
             $endpoint = 'http://' . $buckets[$_W['setting']['remote']['alioss']['bucket']]['location'] . $host_name;
@@ -360,7 +361,8 @@ class FileService
         } elseif ($_W['setting']['remote']['type'] == 3) {
             return error(1, '远程附件上传失败，暂不支持七牛云存储');
         } elseif ($_W['setting']['remote']['type'] == 4) {
-            AttachmentService::initCos();
+            $loadcos = CloudService::LoadCom('cosv5');
+            if (is_error($loadcos)) return $loadcos;
             try {
                 $bucket = $_W['setting']['remote']['cos']['bucket'] . '-' . $_W['setting']['remote']['cos']['appid'];
                 $cosClient = new \Qcloud\Cos\Client(
@@ -452,7 +454,8 @@ class FileService
         if ($_W['setting']['remote']['type'] == '1') {
             return error(1, '删除附件失败，暂不支持FTP');
         } elseif ($_W['setting']['remote']['type'] == '2') {
-            AttachmentService::initOss();
+            $loadoss = CloudService::LoadCom('alioss');
+            if (is_error($loadoss)) return $loadoss;
             $buckets = AttachmentService::alioss_buctkets($_W['setting']['remote']['alioss']['key'], $_W['setting']['remote']['alioss']['secret']);
             $endpoint = 'http://' . $buckets[$_W['setting']['remote']['alioss']['bucket']]['location'] . '.aliyuncs.com';
             try {
@@ -464,7 +467,8 @@ class FileService
         } elseif ($_W['setting']['remote']['type'] == '3') {
             return error(1, '删除七牛远程文件失败');
         } elseif ($_W['setting']['remote']['type'] == '4') {
-            AttachmentService::initCos();
+            $loadcos = CloudService::LoadCom('cosv5');
+            if (is_error($loadcos)) return $loadcos;
             try {
                 $key = $file;
                 $bucket = $_W['setting']['remote']['cos']['bucket'] . '-' . $_W['setting']['remote']['cos']['appid'];

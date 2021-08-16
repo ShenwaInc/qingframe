@@ -22,6 +22,11 @@ return [
         ),
         'proxy'=>['host'=>'','auth'=>'']
     ),
+    'site'=>array(
+        'id'=>env('APP_SITEID',0),
+        'key'=>env('APP_AUTHKEY',''),
+        'name'=>env('APP_NAME', 'Whotalk')
+    ),
     'upload'=>array(
         'image'=>array('extentions'=>['gif', 'jpg', 'jpeg', 'png'],'limit'=>5000),
         'attachdir'=>'attachment',

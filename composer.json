@@ -19,7 +19,8 @@
         "ext-libxml": "*",
         "ext-simplexml": "*",
         "ext-exif": "*",
-        "ext-gd": "*"
+        "ext-gd": "*",
+      "ext-zip": "*"
     },
     "require-dev": {
         "facade/ignition": "^1.4",

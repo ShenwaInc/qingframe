@@ -26,6 +26,7 @@ class App
     public function handle($request, Closure $next)
     {
         global $_W,$_GPC;
+        $_GPC = $request->all();
         $_W['config'] = config('system');
         $dbconfig = config('database');
         $_W['config']['db'] = $dbconfig['connections'][$dbconfig['default']];
@@ -40,30 +41,12 @@ class App
                 @ini_set('memory_limit', $_W['config']['setting']['memory_limit']);
             }
         }
-        if (isset($_W['config']['setting']['https']) && $_W['config']['setting']['https'] == '1') {
-            $_W['ishttps'] = $_W['config']['setting']['https'];
-        } else {
-            $_W['ishttps'] = isset($_SERVER['SERVER_PORT']) && 443 == $_SERVER['SERVER_PORT'] ||
-            isset($_SERVER['HTTP_FROM_HTTPS']) && 'on' == strtolower($_SERVER['HTTP_FROM_HTTPS']) ||
-            (isset($_SERVER['HTTPS']) && 'off' != strtolower($_SERVER['HTTPS'])) ||
-            isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && 'https' == strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']) ||
-            isset($_SERVER['HTTP_X_CLIENT_SCHEME']) && 'https' == strtolower($_SERVER['HTTP_X_CLIENT_SCHEME']) 			? true : false;
-        }
         $_W['isajax'] = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && 'xmlhttprequest' == strtolower($_SERVER['HTTP_X_REQUESTED_WITH']);
         $_W['ispost'] = isset($_SERVER['REQUEST_METHOD']) && 'POST' == $_SERVER['REQUEST_METHOD'];
-        $_W['sitescheme'] = $_W['ishttps'] ? 'https://' : 'http://';
-        $sitepath = substr($_SERVER['PHP_SELF'], 0, strrpos($_SERVER['PHP_SELF'], '/'));
-        $_W['siteroot'] = htmlspecialchars($_W['sitescheme'] . (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '') . $sitepath);
-        if ('/' != substr($_W['siteroot'], -1)) {
-            $_W['siteroot'] .= '/';
-        }
-        $urls = parse_url($_W['siteroot']);
-        $urls['path'] = str_replace(array('/web', '/app', '/payment/wechat', '/payment/alipay', '/payment/jueqiymf', '/api'), '', $urls['path']);
-        $urls['scheme'] = !empty($urls['scheme']) ? $urls['scheme'] : 'http';
-        $urls['host'] = !empty($urls['host']) ? $urls['host'] : '';
-        $_W['siteroot'] = $urls['scheme'] . '://' . $urls['host'] . ((!empty($urls['port']) && '80' != $urls['port']) ? ':' . $urls['port'] : '') . $urls['path'];
-        $_GPC = $request->all();
         $_W['siteurl'] = url()->full();
+        $_W['ishttps'] = \Str::startsWith($_W['siteroot'],'https');
+        $_W['sitescheme'] = $_W['ishttps'] ? 'https://' : 'http://';
+        $_W['siteroot'] = $_W['sitescheme'] . $_SERVER['HTTP_HOST'] .'/';
         $_W['uniacid'] = $_W['uid'] = 0;
         SettingService::Load();
         if ($_W['config']['setting']['development'] == 1 || $_W['setting']['copyright']['develop_status'] ==1) {
