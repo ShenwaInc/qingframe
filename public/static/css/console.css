@@ -7,6 +7,7 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 .layui-layout-admin .layui-logo{box-shadow: none; color: #606060 !important;}
 
 .fr{float: right;}
+.fl{float: left;}
 
 .layui-layout-admin .layui-body{padding-top: 32px; left: 0px !important;}
 

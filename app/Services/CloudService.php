@@ -12,7 +12,7 @@ class CloudService
     static $cloudactive = 'https://chat.gxit.org/app/index.php?i=4&c=entry&m=swa_supersale&do=app&r=whotalkcloud.active&siteroot=';
     static $apilist = array('getcom'=>'cloud.vendor','rmcom'=>'cloud.vendor.remove','require'=>'cloud.install','structure'=>'cloud.structure','upgrade'=>'cloud.makepatch');
     static $vendors = array('aliyun'=>'阿里短信SDK','aop'=>'支付宝支付SDK','wxpayv3'=>'微信支付SDK','tim'=>'接口签名验证工具','getui'=>'APP推送SDK','alioss'=>'阿里云存储','cosv5'=>'腾讯云存储');
-    static $identity = 'xfy_whotalk_for_lar';
+    static $identity = 'swa_framework_laravel';
 
     static function ComExists($component){
         return is_dir(self::com_path("{$component}/"));
@@ -69,7 +69,10 @@ class CloudService
                         'type'=>2,
                         'logo'=>'https://shenwahuanan.oss-cn-shenzhen.aliyuncs.com/images/4/2021/08/Mpar00P5PjJPrxAW1FWCP3CPz87qjc.png',
                         'website'=>'https://www.whotalk.com.cn/',
+                        'version'=>'1.0.1',
+                        'releasedate'=>2021081901,
                         'rootpath'=>'',
+                        'online'=>'',
                         'addtime'=>TIMESTAMP,
                         'dateline'=>TIMESTAMP
                     ));
@@ -84,13 +87,14 @@ class CloudService
             $requirename = "laravel_module_{$identity}";
         }
         $targetpath = base_path("public/{$path}/{$identity}");
-        if (is_dir($targetpath)) return true;
-        $result = self::CloudRequire($requirename,$targetpath);
-        if (!is_error($result)){
-            //进入模块安装流程，待完善
-            $result = ModuleService::install($identity,$path);
+        $from = 'local';
+        if (!is_dir($targetpath)){
+            $result = self::CloudRequire($requirename,$targetpath);
+            if(is_error($result)) return $result;
+            $from = 'cloud';
         }
-        return $result;
+        //进入模块安装流程
+        return ModuleService::install($identity,$path,$from);
     }
 
     static function com_path($path=""){
@@ -291,6 +295,9 @@ class CloudService
         if (!$data['appsecret']) $data['appsecret'] = self::AppSecret();
         if (!isset($data['r'])){
             $data['r'] = self::$apilist[$apiname];
+        }
+        if (!isset($data['fp'])){
+            $data['fp'] = self::$identity;
         }
         $data['t'] = TIMESTAMP;
         $data['siteroot'] = $_W['siteroot'];

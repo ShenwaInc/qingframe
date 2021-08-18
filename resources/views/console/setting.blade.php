@@ -24,7 +24,7 @@
     @if($op=='main')
     <div class="fui-card layui-card">
         <div class="layui-card-header nobd">
-            <a href="{{ url('console/setting/page') }}" class="fr text-blue ajaxshow" title="编辑站点信息"><i class="glyphicon glyphicon-edit"></i></a>
+            <a href="{{ url('console/setting/pageset') }}" class="fr text-blue ajaxshow" title="编辑站点信息"><i class="glyphicon glyphicon-edit"></i></a>
             <span class="title">站点信息</span>
         </div>
         <div class="layui-card-body">
@@ -103,11 +103,71 @@
                 </div>
             @elseif($op=='socket')
                 <div class="layui-card-header nobd">
-                    <span class="title">SOCKET设置</span>
+                    <a href="{{ url('console/setting/socketset') }}" class="fr text-blue ajaxshow" title="修改SOCKET配置"><i class="glyphicon glyphicon-edit"></i></a>
+                    <span class="title">SOCKET配置</span>
                 </div>
             @elseif($op=='component')
                 <div class="layui-card-header nobd">
+                    <a href="https://www.whotalk.com.cn/" target="_blank" class="fr layui-btn layui-btn-sm layui-btn-normal">获取更多组件</a>
                     <span class="title">服务组件</span>
+                </div>
+                <div class="layui-card-body">
+                    <div class="un-padding">
+                        <table class="layui-table fui-table lines" lay-even lay-skin="nob">
+                            <colgroup>
+                                <col width="280" />
+                                <col width="200" />
+                                <col width="130" />
+                                <col width="130" />
+                                <col />
+                                <col width="120" />
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th>组件</th>
+                                    <th>路径</th>
+                                    <th>安装时间</th>
+                                    <th>上次更新</th>
+                                    <th>线上版本</th>
+                                    <th><div class="text-right">操作</div></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($components as $com)
+                                <tr>
+                                    <td>
+                                        <img src="{{ $com['logo'] }}" class="fl bg-gray radius margin-right-sm" height="48" />
+                                        <div class="fui-table-name">
+                                            <a href="{{$com['website']}}" class="text-blue" target="_blank">{{$com['name']}}</a><br/>
+                                            V{{$com['version']}}&nbsp;<span class="layui-badge layui-bg-{{ $colors[$com['type']] }}">{{ $types[$com['type']] }}</span>
+                                        </div>
+                                    </td>
+                                    <td>{{ !empty($com['rootpath']) ? '/'.$com['rootpath'] : '根目录' }}</td>
+                                    <td>{{ $com['installtime'] }}</td>
+                                    <td>{{ $com['lastupdate'] }}</td>
+                                    <td>
+                                        @if(empty($com['cloudinfo']))
+                                            未开始检测
+                                        @else
+                                            V{{ $com['cloudinfo']['version'] }}&nbsp;&nbsp;Release{{ $com['cloudinfo']['releasedate'] }}
+                                            @if($com['cloudinfo']['isnew'])
+                                                <span class="layui-badge layui-bg-red">{{ $com['cloudinfo']['releasedate']==$com['releasedate'] ? '有改动' : '有更新' }}</span>
+                                            @else
+                                                <span class="layui-badge layui-bg-green">最新</span>
+                                            @endif
+                                        @endif
+                                    </td>
+                                    <td class="text-right">
+                                        @if(!empty($com['cloudinfo']) && $com['cloudinfo']['isnew'])
+                                            <a href="{{ url('console/setting/comupdate') }}?cid={{ $com['id'] }}" class="text-red confirm" data-text="升级前请做好源码和数据备份，避免升级故障导致系统无法正常运行">升级</a>
+                                        @endif
+                                        <a href="{{ url('console/setting/comcheck') }}?cid={{ $com['id'] }}" class="text-blue ajaxshow">{{ empty($com['cloudinfo']) ? '检测更新' : '重新检测' }}</a>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             @endif
         </div>

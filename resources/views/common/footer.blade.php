@@ -19,17 +19,7 @@
         Core.get(geturl,function(Html){
             if(Core.isJsonString(Html)){
                 var obj = jQuery.parseJSON(Html);
-                if(typeof(obj.message)!='undefined'){
-                    layer.msg(obj.message,{icon:0});
-                }
-                setTimeout(function(){
-                    if(typeof(obj.url)!='undefined'){
-                        window.location.href = obj.url;
-                    }
-                    if(typeof(obj.redirect)!='undefined'){
-                        window.location.href = obj.redirect;
-                    }
-                },1500);
+                return Core.report(obj);
             }else{
                 let WindowId = 'ajaxwindow' + Wrandom(6);
                 layer.open({type:1,content:Html,id:WindowId,title:title,shade:0.3,area:width,shadeClose:true});
