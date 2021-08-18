@@ -5,6 +5,7 @@
 /storage/logs
 /storage/installed.bin
 /vendor
+/socket
 /.idea
 .env
 .env.backup
