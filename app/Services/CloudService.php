@@ -50,14 +50,14 @@ class CloudService
     }
 
     static function RequireCom(){
-        return self::CloudUpdate('swa_whotalk_componet',self::com_path());
+        return self::CloudRequire('swa_whotalk_componet',self::com_path());
     }
 
     static function com_path($path=""){
         global $_W;
         if (!isset($_W['com_path'])){
             $compath = substr(sha1($_W['config']['setting']['authkey']."-".$_W['config']['site']['id']),5,6);
-            $_W['com_path'] = base_path("com{$compath}/");
+            $_W['com_path'] = base_path("bootstrap/com{$compath}/");
         }
         return $_W['com_path'] . $path;
     }
@@ -96,26 +96,23 @@ class CloudService
             'identity'=>$identity,
             'fp'=>self::$identity
         );
-        $zipcontent = self::CloudApi('require',$data);
+        $zipcontent = self::CloudApi('require',$data,true);
         if (is_error($zipcontent)) return $zipcontent;
+        if (!$zipcontent) return error(-1,'安装包提取失败');
         if (!$patch){
-            $patch = base_path("storage/patch");
+            $patch = base_path("storage/patch/");
         }
         if (!is_dir($patch)){
             FileService::mkdirs($patch);
         }
         $filename = FileService::file_random_name($patch,'zip');
         if (false == file_put_contents($patch.$filename, $zipcontent)) {
-            return error(-1,'安装包获取失败：权限不足');
+            return error(-1,'安装包解压失败：权限不足');
         }
 
         $zip = new \ZipArchive();
         $openRes = $zip->open($patch.$filename);
         if ($openRes === TRUE) {
-            //如果不存在路径则创建
-            if (!is_dir($targetpath)){
-                FileService::mkdirs($targetpath);
-            }
             $zip->extractTo($targetpath);
             $zip->close();
             //删除补丁包
@@ -153,7 +150,7 @@ class CloudService
             'releasedate'=>$ugradeinfo['releasedate'],
             'difference'=>base64_encode(json_encode($difference))
         );
-        $zipcontent = self::CloudApi('upgrade',$data);
+        $zipcontent = self::CloudApi('upgrade',$data,true);
         if (is_error($zipcontent)) return $zipcontent;
         if (!$patch){
             $patch = base_path('storage/patch/');
@@ -171,7 +168,7 @@ class CloudService
             FileService::rmdirs($patchpath);
         }
         $zip = new \ZipArchive();
-        $openRes = $zip->open($fullname);
+        $openRes = $zip->open($fullname, \ZipArchive::OVERWRITE);
         if ($openRes === TRUE) {
             $zip->extractTo($patchpath);
             $zip->close();
@@ -249,16 +246,19 @@ class CloudService
         return true;
     }
 
-    static function CloudApi($apiname='',$data=array()){
+    static function CloudApi($apiname,$data=array(),$return=false){
         global $_W;
         if (!$data['appsecret']) $data['appsecret'] = self::AppSecret();
-        $data['r'] = self::$apilist[$apiname];
+        if (!isset($data['r'])){
+            $data['r'] = self::$apilist[$apiname];
+        }
         $data['t'] = TIMESTAMP;
         $data['siteroot'] = $_W['siteroot'];
         $data['siteid'] = $_W['config']['site']['id'];
         $data['sign'] = self::GetSignature($data['appsecret'],$data);
         $res = HttpService::ihttp_post(self::$cloudapi,$data);
         if (is_error($res)) return $res;
+        if($return) return $res['content'];
         $result = json_decode($res['content'],true);
         if (isset($result['message']) && isset($result['type'])){
             if ($result['type']!='success' && !is_array($result['message']) && !$result['redirect']){
@@ -266,6 +266,33 @@ class CloudService
             }
         }
         return $result;
+    }
+
+    static function CloudActive(){
+        global $_W;
+        $res = self::CloudApi('',array('r'=>'whotalkcloud.active.state'));
+        $authorize = array('state'=>'已授权','siteid'=>0,'siteroot'=>$_W['siteroot'],'expiretime'=>0,'status'=>0);
+        if (is_error($res)){
+            $authorize['state'] = $res['message'];
+            return $authorize;
+        }
+        if (!isset($res['site']) || !isset($res['authorize'])){
+            $authorize['state'] = '授权状态查询失败';
+            return $authorize;
+        }
+
+        $authorize['siteid'] = $res['site']['id'];
+        if ($res['site']['status']==1 && $res['authorize']['status']==1){
+            $authorize['expiretime'] = $res['authorize']['expiretime'];
+            if ($res['authorize']['expiretime']>0 && $res['authorize']['expiretime']<TIMESTAMP){
+                $authorize['status'] = 2;
+                $authorize['state'] = '授权已到期';
+            }else{
+                $authorize['status'] = 1;
+            }
+        }
+
+        return $authorize;
     }
 
     static function AppSecret(){

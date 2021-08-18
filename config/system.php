@@ -3,6 +3,7 @@
 return [
     'version'=>env('APP_VERSION','3.0.47'),
     'release'=>env('APP_RELEASE','2021081902'),
+    'defaultmodule'=>env('APP_MODULE','whotalk'),
     'setting'=>array(
         'charset'=>'utf-8',
         'cache'=>'mysql',
