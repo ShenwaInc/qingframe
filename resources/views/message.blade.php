@@ -52,7 +52,7 @@
                         </div>
                         @if($redirect!='')
                         <div class="message-redirect">
-                            <a href="{{$redirect}}" class="message-light">即将自动跳转...</a>
+                            <a href="javascript:location.href=Redirect;" class="message-light">即将自动跳转...</a>
                         </div>
                         @endif
                     </div>
@@ -62,11 +62,15 @@
     </div>
 
     <script type="text/javascript">
+        @php
+        echo "var Redirect = '{$redirect}';";
+        @endphp
+
         layui.use(['element'],function (){
             var element = layui.element;
             @if($redirect!='')
             setTimeout(function (){
-                window.location.href = '{{$redirect}}';
+                window.location.href = Redirect;
             },3*1e3);
             @endif
         });

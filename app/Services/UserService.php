@@ -217,4 +217,11 @@ class UserService
         return $role;
     }
 
+    static function AccountRoleUpdate($uniacid,$uid,$role='owner'){
+        return DB::table('uni_account_users')->updateOrInsert(
+            ['uniacid' => $uniacid, 'uid' => $uid],
+            ['role'=>trim($role)]
+        );
+    }
+
 }

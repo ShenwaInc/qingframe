@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class CloudService
 {
@@ -59,7 +60,19 @@ class CloudService
         }else{
             $requirecom = self::CloudRequire('swa_whotalk_componet',self::com_path());
             if (!is_error($requirecom)){
-                //组件包下载标记，待完善
+                //组件包下载标记
+                DB::table('gxswa_cloud')->updateOrInsert(array(
+                        'identity'=>'swa_whotalk_componet'
+                    ),array(
+                        'name'=>'Whotalk独立版组件包',
+                        'modulename'=>'',
+                        'type'=>2,
+                        'logo'=>'https://shenwahuanan.oss-cn-shenzhen.aliyuncs.com/images/4/2021/08/Mpar00P5PjJPrxAW1FWCP3CPz87qjc.png',
+                        'website'=>'https://www.whotalk.com.cn/',
+                        'rootpath'=>'',
+                        'addtime'=>TIMESTAMP,
+                        'dateline'=>TIMESTAMP
+                    ));
             }
             return $requirecom;
         }
@@ -75,7 +88,7 @@ class CloudService
         $result = self::CloudRequire($requirename,$targetpath);
         if (!is_error($result)){
             //进入模块安装流程，待完善
-            //进入
+            $result = ModuleService::install($identity,$path);
         }
         return $result;
     }

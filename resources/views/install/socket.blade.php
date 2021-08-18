@@ -133,7 +133,7 @@ server {
 </div>
 <script type="text/javascript" src="/static/js/swasocket.js?v={{ $_W['config']['release'] }}"></script>
 <script type="text/javascript">
-    var ishttps = {{$_W['ishttps']?'true':'false'}},UserSign = "{{$usersign}}";
+    var ishttps = {{$_W['ishttps']?'true':'false'}},UserSign = "{{$usersign}}",CheckWs=false;
     layui.use(['form','code'],function(){
         var form = layui.form;
         layui.code();
@@ -144,17 +144,25 @@ server {
         });
         form.on('submit(formDemo)',function (data){
             let wsserver = data.field.ws_server;
-            Swaws.init(UserSign, wsserver,function (res){
-                if(res.type==='User/Connect'){
-                    Core.post('installer.socket',function (res){
-                        if (res.type!=='success') return Core.report(res);
-                        //Swaws.io.close();
-                        window.location.href = "{{url('installer/render')}}";
-                    },{wsconfig:data.field});
-                }
-            },function (){
-                Core.report({type:'error',redirect:'',message:'服务器连接失败,请重试'});
-            })
+            let doNext = function (){
+                Core.post('installer.socket',function (res){
+                    if (res.type!=='success') return Core.report(res);
+                    //Swaws.io.close();
+                    window.location.href = "{{url('installer/render')}}";
+                },{wsconfig:data.field});
+            }
+            if (CheckWs){
+                //检测SOCKET连接状态
+                Swaws.init(UserSign, wsserver,function (res){
+                    if(res.type==='User/Connect'){
+                        doNext();
+                    }
+                },function (){
+                    Core.report({type:'error',redirect:'',message:'服务器连接失败,请重试'});
+                })
+            }else {
+                doNext();
+            }
             return false;
         });
     });

@@ -1,5 +1,8 @@
 <?php
 
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+
 function strexists($string, $find) {
     return \Str::contains($string,$find);
 }
@@ -121,16 +124,29 @@ if (!function_exists('getglobal')) {
     }
 }
 
-function tablename($table) {
-    if (empty($GLOBALS['_W']['config']['db']['master'])) {
-        return "`{$GLOBALS['_W']['config']['db']['prefix']}{$table}`";
+if (!function_exists('post_var')){
+    function post_var($keys,$datas=array()){
+        global $_GPC;
+        if(empty($keys)) return array();
+        $data = array();
+        if (empty($datas)){
+            $datas = $_GPC;
+        }
+        foreach ($keys as $key){
+            if (isset($datas[$key])){
+                $data[$key] = $datas[$key];
+            }
+        }
+        return $data;
     }
+}
 
+function tablename($table) {
     return "`{$GLOBALS['_W']['config']['db']['prefix']}{$table}`";
 }
 
-function pdo_get($tablename, $condition = array(), $fields = null) {
-    $query = \Illuminate\Support\Facades\DB::table($tablename)->where($condition);
+function pdo_get($tablename, $condition = array(), $fields = array()) {
+    $query = DB::table($tablename)->where($condition);
     if (empty($fields)){
         return $query->first();
     }
@@ -138,7 +154,7 @@ function pdo_get($tablename, $condition = array(), $fields = null) {
 }
 
 function pdo_getall($tablename, $condition = array(), $fields = array(), $keyfield = '', $orderby = array(), $limit = array()) {
-    $query = \Illuminate\Support\Facades\DB::table($tablename)->where($condition);
+    $query = DB::table($tablename)->where($condition);
     if ($fields){
         $query = $query->select($fields);
     }
@@ -160,11 +176,11 @@ function pdo_getall($tablename, $condition = array(), $fields = array(), $keyfie
 }
 
 function pdo_fetchall($sql, $params = array()) {
-    return \Illuminate\Support\Facades\DB::select($sql,$params);
+    return DB::select($sql,$params);
 }
 
 function pdo_fetchcolumn($sql, $params = array(), $column = 0) {
-    $result = \Illuminate\Support\Facades\DB::selectOne($sql,$params);
+    $result = DB::selectOne($sql,$params);
     if (!empty($result)){
         $keys = array_keys($result);
         if (isset($result[$keys[$column]])){
@@ -175,15 +191,15 @@ function pdo_fetchcolumn($sql, $params = array(), $column = 0) {
 }
 
 function pdo_fetch($sql, $params = array()) {
-    return \Illuminate\Support\Facades\DB::selectOne($sql,$params);
+    return DB::selectOne($sql,$params);
 }
 
 function pdo_getcolumn($tablename, $condition, $field) {
-    return \Illuminate\Support\Facades\DB::table($tablename)->where($condition)->value($field);
+    return DB::table($tablename)->where($condition)->value($field);
 }
 
 function pdo_insert($tablename,$data,$insertgetid=false){
-    $query = \Illuminate\Support\Facades\DB::table($tablename);
+    $query = DB::table($tablename);
     if ($insertgetid){
         return $query->insertGetId($data);
     }
@@ -191,11 +207,31 @@ function pdo_insert($tablename,$data,$insertgetid=false){
 }
 
 function pdo_update($table, $data = array(), $params = array()) {
-    return \Illuminate\Support\Facades\DB::table($table)->where($params)->update($data);
+    return DB::table($table)->where($params)->update($data);
 }
 
 function pdo_delete($table, $params = array()) {
-    return \Illuminate\Support\Facades\DB::table($table)->where($params)->delete();
+    return DB::table($table)->where($params)->delete();
+}
+
+function pdo_count($tablename, $condition = array(), $cachetime = 15) {
+    return DB::table($tablename)->where($condition)->count();
+}
+
+function pdo_fieldexists($tablename, $fieldname = '') {
+    return Schema::hasColumn($tablename,$fieldname);
+}
+
+function pdo_tableexists($tablename) {
+    return Schema::hasTable($tablename);
+}
+
+function pdo_run($sql) {
+    dd(error(-1,'Function pdo_run() was deprecated. Try Schema::'));
+}
+
+function pdo_query($sql, $params = array()) {
+    dd(error(-1,'Function pdo_query() was deprecated. Try Schema::'));
 }
 
 function array_elements($keys, $src, $default = false) {

@@ -6,6 +6,7 @@ use App\Models\Account;
 use App\Models\Module;
 use App\Models\UniAccountUser;
 use App\Services\ModuleService;
+use App\Services\UserService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
@@ -102,11 +103,6 @@ class installController extends Controller
                 return $this->message('初始化数据失败');
             }
 
-            //initialize group
-            DB::table('whotalk_group')->insert(array(
-                'id'=>random_int(100000,999999)
-            ));
-
             $salt = \Str::random(8);
             $founderpwd = trim($manager['password']);
             $pwdhash = sha1("{$founderpwd}-{$salt}-{$authkey}");
@@ -149,7 +145,7 @@ class installController extends Controller
 
             $acid = Account::account_create($uniacid,$account_data);
             DB::table('uni_account')->where('uniacid',$uniacid)->update(array('default_acid' => $acid,'logo'=>'/static/icon200.jpg'));
-            UniAccountUser::AddRole($uniacid,$uid);
+            UserService::AccountRoleUpdate($uniacid,$uid);
 
             //initialize mc group
             DB::table('mc_groups')->insert(array('uniacid' => $uniacid, 'title' => '默认会员组', 'isdefault' => 1));
@@ -162,38 +158,37 @@ class installController extends Controller
                 'default_site' => 0,
                 'sync' => serialize(array('switch' => 0, 'acid' => '')),
             ));
-            //initialize whotalk setting
-            $setting = array(
-                'basic'=>array(
-                    'name'=>$account_data['name'],
-                    'description'=>$post['description'],
-                    'icon'=>'/static/icon200.jpg',
-                    'logo'=>'/static/icon200.jpg',
-                    'defaultimg'=>'/static/icon200.jpg',
-                    'defaultlanguage'=>'zh'
-                ),
-                'socket'=>array(
+
+            //initializer laravel framework
+            DB::table('gxswa_cloud')->insert(array(
+                'identity'=>'swa_framework_laravel',
+                'name'=>'独立版主框架V1',
+                'modulename'=>'',
+                'type'=>0,
+                'logo'=>'https://shenwahuanan.oss-cn-shenzhen.aliyuncs.com/images/4/2021/08/pK8iHw0eQg5hHgg4Kqe5E1E1hSBpZS.png',
+                'website'=>'https://www.gxswa.com/laravel/',
+                'rootpath'=>'',
+                'version'=>$_W['config']['version'],
+                'releasedate'=>$_W['config']['release'],
+                'addtime'=>TIMESTAMP,
+                'dateline'=>TIMESTAMP
+            ));
+
+            //initializer socket connect
+            DB::table("core_settings")->insert(array(
+                'key'=>"swasocket",
+                'value'=>serialize(array(
                     'type'=>'local',
                     'server'=>$installer['socket']['server'],
                     'api'=>$installer['socket']['webapi']
-                ),
-                'theme'=>array(
-                    'link'=>'#0081ff',
-                    'color'=>'#36373C',
-                    'active'=>'#04be02',
-                    'chatbg'=>'#5FB878',
-                    'navbg'=>'bg-gray',
-                    'actcolor'=>'limegreen'
-                ),
-                'album'=>array('switch'=>1,'square'=>1,'scan'=>1,'search'=>1,'popupscan'=>1,'allowpost'=>1)
-            );
-            $pars = array('module' => 'xfy_whotalk', 'uniacid' => $uniacid, 'settings'=>serialize($setting), 'enabled'=>1);
-            DB::table('uni_account_modules')->insert($pars);
+                ))
+            ));
 
         }else{
             if (empty($authkey)) return $this->message('微擎站点安全码不能为空');
             $installer['database']['prefix'] = 'ims_';
             $uid = (int)$dbconnect->table('users')->where('founder_groupid',1)->orderBy('uid','asc')->value('uid');
+            //数据表检测，待完善
         }
         //写入配置文件
         $envfile_tmp = base_path(".env.example");

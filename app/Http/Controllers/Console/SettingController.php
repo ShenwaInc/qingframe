@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Console;
 
 use App\Http\Controllers\Controller;
 use App\Services\CloudService;
-use Illuminate\Http\Request;
+use App\Services\SocketService;
 
 class SettingController extends Controller
 {
@@ -30,16 +30,19 @@ class SettingController extends Controller
                     $cloudrequire = CloudService::RequireModule($_W['config']['defaultmodule'],'addons');
                     if (is_error($cloudrequire)) return $this->message($cloudrequire['message']);
                     $redirect = url('console/active',array('op'=>'socket'));
-                    return $this->message('模块初始化完成！即将获取SOCKET源码...',$redirect,'success');
+                    return $this->message('模块初始化完成！即将初始化SOCKET...',$redirect,'success');
                 }elseif ($op=='socket'){
                     $socketdir = base_path("socket/");
                     if (!is_dir($socketdir)){
                         $cloudrequire = CloudService::CloudRequire("laravel_whotalk_socket", $socketdir);
                         if (is_error($cloudrequire)) return $this->message($cloudrequire['message']);
-                        //安装SOCKET白名单，待完善
+                        $socketinit = SocketService::Initializer();
+                        if (!$socketinit){
+                            return $this->message('SOCKET初始化失败');
+                        }
                     }
                     $redirect = url('console/active',array('op'=>'initsite'));
-                    return $this->message('SOCKET源码获取成功！即将激活站点...',$redirect,'success');
+                    return $this->message('SOCKET初始化完成！即将激活站点...',$redirect,'success');
                 }elseif ($op=='initsite'){
                     $envfile = base_path(".env");
                     $reader = fopen($envfile,'r');
