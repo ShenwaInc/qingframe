@@ -424,7 +424,7 @@ class HttpService
             'body'=>$body,
             'global'=>$global
         );
-        Mail::to($to)->send(new OrderShipped($order));
+        return Mail::to($to)->send(new OrderShipped($order));
     }
 
 }

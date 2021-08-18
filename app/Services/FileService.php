@@ -43,7 +43,7 @@ class FileService
     }
 
 
-    function file_tree($path, $include = array()) {
+    static function file_tree($path, $include = array()) {
         $files = array();
         if (!empty($include)) {
             $ds = glob($path . '/{' . implode(',', $include) . '}', GLOB_BRACE);
@@ -56,7 +56,7 @@ class FileService
                     $files[] = $entry;
                 }
                 if (is_dir($entry)) {
-                    $rs = $this->file_tree($entry);
+                    $rs = self::file_tree($entry);
                     foreach ($rs as $f) {
                         $files[] = $f;
                     }
@@ -180,7 +180,7 @@ class FileService
     }
 
 
-    function file_upload($file, $type = 'image', $name = '', $compress = false) {
+    static function file_upload($file, $type = 'image', $name = '', $compress = false) {
         $harmtype = array('asp', 'php', 'jsp', 'js', 'css', 'php3', 'php4', 'php5', 'ashx', 'aspx', 'exe', 'cgi');
         if (empty($file)) {
             return error(-1, '没有上传内容');
@@ -225,12 +225,12 @@ class FileService
         if (empty($name) || 'auto' == $name) {
             $uniacid = intval($_W['uniacid']);
             $path = "{$type}s/{$uniacid}/" . date('Y/m/');
-            $this->mkdirs(ATTACHMENT_ROOT . '/' . $path);
-            $filename = $this->file_random_name(ATTACHMENT_ROOT . '/' . $path, $ext);
+            self::mkdirs(ATTACHMENT_ROOT . '/' . $path);
+            $filename = self::file_random_name(ATTACHMENT_ROOT . '/' . $path, $ext);
 
             $result['path'] = $path . $filename;
         } else {
-            $this->mkdirs(dirname(ATTACHMENT_ROOT . '/' . $name));
+            self::mkdirs(dirname(ATTACHMENT_ROOT . '/' . $name));
             if (!strexists($name, $ext)) {
                 $name .= '.' . $ext;
             }
@@ -261,7 +261,7 @@ class FileService
             }
         }
         if (empty($image)) {
-            $newimage = $this->file_move($file['tmp_name'], $save_path);
+            $newimage = self::file_move($file['tmp_name'], $save_path);
         } else {
             $newimage = imagejpeg($image,$save_path);
             imagedestroy($image);
@@ -271,11 +271,11 @@ class FileService
         }
 
         if ('image' == $type && $compress) {
-            $this->file_image_quality($save_path, $save_path, $ext);
+            self::file_image_quality($save_path, $save_path, $ext);
         }
 
-        if ($this->file_is_uni_attach($save_path)) {
-            $check_result = $this->file_check_uni_space($save_path);
+        if (self::file_is_uni_attach($save_path)) {
+            $check_result = self::file_check_uni_space($save_path);
             if (is_error($check_result)) {
                 @unlink($save_path);
 
@@ -283,7 +283,7 @@ class FileService
             }
             $uni_remote_setting = uni_setting_load('remote');
             if (empty($uni_remote_setting['remote']) && empty($_W['setting']['remote']['type'])) {
-                $this->file_change_uni_attchsize($save_path);
+                self::file_change_uni_attchsize($save_path);
             }
         }
 
@@ -446,7 +446,7 @@ class FileService
         return true;
     }
 
-    function file_remote_delete($file) {
+    public static function file_remote_delete($file) {
         global $_W;
         if (empty($file)) {
             return true;
@@ -736,7 +736,7 @@ class FileService
     }
 
 
-    function file_image_quality($src, $to_path, $ext) {
+    public static function file_image_quality($src, $to_path, $ext) {
         global $_W;
         if ('gif' == strtolower($ext)) {
             return false;
@@ -764,15 +764,14 @@ class FileService
         return strpos($file, "/{$_W['uniacid']}/") > 0;
     }
 
-
-    function file_check_uni_space($file) {
+    public static function file_check_uni_space($file) {
         global $_W;
         if (!is_file($file)) {
             return error(-1, '未找到上传的文件。');
         }
         $uni_remote_setting = SettingService::uni_load('remote');
         if (empty($uni_remote_setting['remote']['type'])) {
-            $uni_setting = uni_setting_load(array('attachment_limit', 'attachment_size'));
+            $uni_setting = SettingService::uni_load(array('attachment_limit', 'attachment_size'));
 
             $attachment_limit = intval($uni_setting['attachment_limit']);
             if (0 == $attachment_limit) {
