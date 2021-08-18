@@ -11,6 +11,9 @@ class SettingController extends Controller
     //
     public function active($op=''){
         global $_W;
+        if(!$_W['isfounder']){
+            return $this->message('暂无权限');
+        }
         if ($_W['config']['site']['id']==0){
             $activestate = CloudService::CloudActive();
             if ($activestate['status']==1){
@@ -33,6 +36,7 @@ class SettingController extends Controller
                     if (!is_dir($socketdir)){
                         $cloudrequire = CloudService::CloudRequire("laravel_whotalk_socket", $socketdir);
                         if (is_error($cloudrequire)) return $this->message($cloudrequire['message']);
+                        //安装SOCKET白名单，待完善
                     }
                     $redirect = url('console/active',array('op'=>'initsite'));
                     return $this->message('SOCKET源码获取成功！即将激活站点...',$redirect,'success');
@@ -41,6 +45,7 @@ class SettingController extends Controller
                     $reader = fopen($envfile,'r');
                     $envdata = fread($reader,filesize($envfile));
                     fclose($reader);
+                    $envdata = str_replace('APP_SITEID=0',"APP_SITEID={$activestate['siteid']}",$envdata);
                     $writer = fopen($envfile,'w');
                     if(!fwrite($writer,$envdata)){
                         fclose($writer);
@@ -56,6 +61,18 @@ class SettingController extends Controller
             }
         }
         return $this->message('您的站点已激活','','success');
+    }
+
+    public function index($op='main'){
+        global $_W;
+        if($op=='page'){
+            return $this->globalview('console.settingpage');
+        }
+        $return = array('title'=>'站点设置','op'=>$op);
+        if (!isset($_W['setting']['page'])){
+            $_W['setting']['page'] = $_W['page'];
+        }
+        return $this->globalview('console.setting', $return);
     }
 
 }

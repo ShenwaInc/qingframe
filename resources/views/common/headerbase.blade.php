@@ -10,7 +10,11 @@
     <meta name="format-detection" content="telephone=no">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="shortcut icon" href="{{ asset($_W['page']['icon']) }}" />
-    <title>{{$_W['page']['title']}}</title>
+    <title>
+        @if(!empty($title))
+            {{ $title }} -
+        @endif{{$_W['page']['title']}}
+    </title>
     <link rel="stylesheet" href="{{ asset('/static/bootstrap/css/bootstrap.min.css') }}?v={{ $_W['config']['release'] }}" />
     <link rel="stylesheet" href="{{ asset('/static/layui/css/layui.css') }}?v={{ $_W['config']['release'] }}" />
     <link rel="stylesheet" href="{{ asset('/static/fului/fului-for-lay.css') }}?v={{ $_W['config']['release'] }}" />

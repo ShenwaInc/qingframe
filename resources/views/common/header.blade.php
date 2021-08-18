@@ -1,9 +1,12 @@
+@if(!$_W['isajax'])
 @include('common.headerbase')
 <link rel="stylesheet" href="{{ asset('/static/css/console.css') }}?v={{ $_W['config']['release'] }}" />
 <body layadmin-themealias="ocean-header" class="layui-layout-body" style="position:inherit !important;">
 <div class="layui-layout layui-layout-admin">
     <div class="layui-header">
-        <div class="layui-logo layui-hide-xs">Whotalk</div>
+        <div class="layui-logo layui-hide-xs">
+            <a href="{{ url('console') }}">Whotalk</a>
+        </div>
 
         <ul class="layui-nav layui-layout-left layui-hide">
         </ul>
@@ -27,11 +30,12 @@
                     <dd><a href="javascript:Core.logout();">退出账户</a></dd>
                 </dl>
             </li>
-            <li class="layui-nav-item" lay-header-event="menuRight" lay-unselect>
-                <a href="javascript:;">
-                    <i class="layui-icon layui-icon-more-vertical"></i>
+            <li class="layui-nav-item layui-hide-xs" lay-unselect>
+                <a href="javascript:;" layadmin-event="fullscreen">
+                    <i class="layui-icon layui-icon-screen-full"></i>
                 </a>
             </li>
         </ul>
     </div>
     <div class="layui-body">
+@endif

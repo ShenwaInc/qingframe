@@ -41,7 +41,7 @@ class App
                 @ini_set('memory_limit', $_W['config']['setting']['memory_limit']);
             }
         }
-        $_W['isajax'] = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && 'xmlhttprequest' == strtolower($_SERVER['HTTP_X_REQUESTED_WITH']);
+        $_W['isajax'] = (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && 'xmlhttprequest' == strtolower($_SERVER['HTTP_X_REQUESTED_WITH'])) || !empty($_GPC['inajax']);
         $_W['ispost'] = isset($_SERVER['REQUEST_METHOD']) && 'POST' == $_SERVER['REQUEST_METHOD'];
         $_W['siteurl'] = url()->full();
         $_W['ishttps'] = \Str::startsWith($_W['siteroot'],'https');

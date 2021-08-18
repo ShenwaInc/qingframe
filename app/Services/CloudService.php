@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\Cache;
+
 class CloudService
 {
 
@@ -70,7 +72,12 @@ class CloudService
         }
         $targetpath = base_path("public/{$path}/{$identity}");
         if (is_dir($targetpath)) return true;
-        return self::CloudRequire($requirename,$targetpath);
+        $result = self::CloudRequire($requirename,$targetpath);
+        if (!is_error($result)){
+            //进入模块安装流程，待完善
+            //进入
+        }
+        return $result;
     }
 
     static function com_path($path=""){
@@ -279,7 +286,7 @@ class CloudService
         $res = HttpService::ihttp_post(self::$cloudapi,$data);
         if (is_error($res)) return $res;
         $result = json_decode($res['content'],true);
-        if(empty($return) && $return) return $res['content'];
+        if(empty($result) && $return) return $res['content'];
         if (isset($result['message']) && isset($result['type'])){
             if ($result['type']!='success' && !is_array($result['message']) && !$result['redirect']){
                 return error(-1,$result['message']);
@@ -290,8 +297,10 @@ class CloudService
 
     static function CloudActive(){
         global $_W;
+        $default = array('state'=>'已授权','siteid'=>0,'siteroot'=>$_W['siteroot'],'expiretime'=>0,'status'=>0);
+        $cachekey = CacheService::system_key('Whotalk:Authorize:Active');
+        $authorize = Cache::get($cachekey,$default);
         $res = self::CloudApi('',array('r'=>'whotalkcloud.active.state'));
-        $authorize = array('state'=>'已授权','siteid'=>0,'siteroot'=>$_W['siteroot'],'expiretime'=>0,'status'=>0);
         if (is_error($res)){
             $authorize['state'] = $res['message'];
             return $authorize;
@@ -311,6 +320,8 @@ class CloudService
                 $authorize['status'] = 1;
             }
         }
+
+        Cache::put($cachekey, $authorize, 3600);
 
         return $authorize;
     }

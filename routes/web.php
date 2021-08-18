@@ -24,7 +24,7 @@ Route::group(['prefix' => 'console', 'namespace' => 'Console', 'middleware'=>['a
 
     Route::get('/', 'PlatformController@index');
     Route::get('/active/{op?}', 'SettingController@active');
-    Route::get('/setting', 'SettingController@index');
+    Route::get('/setting/{op?}', 'SettingController@index');
     Route::post('/setting', 'SettingController@save');
     Route::get('/account/{uniacid}', 'PlatformController@checkout')->where('uniacid','[0-9]+');
     Route::get('/account/{action}', 'PlatformController@account')->where('action','[a-z]+');

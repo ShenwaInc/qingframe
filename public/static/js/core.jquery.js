@@ -92,7 +92,7 @@ if(typeof Basetoken == 'undefined'){
             return jQuery.ajax(AjaxObj);
         },
         report: function (res) {
-            if (typeof (res) != 'object' && isJsonString(res)) {
+            if (typeof (res) != 'object' && this.isJsonString(res)) {
                 res = jQuery.parseJSON(res);
             }
             if (this.debug) {
@@ -117,6 +117,15 @@ if(typeof Basetoken == 'undefined'){
                 if (act==='redirect') return direction();
                 setTimeout(direction, 1200);
             }
+        },
+        isJsonString: function (str){
+            try {
+                if(typeof(jQuery.parseJSON(str)) == "object") {
+                    return true;
+                }
+            } catch(e) {
+            }
+            return false;
         },
         url: function (route) {
             if (route.indexOf('http') === 0 || route.indexOf('index.php') > -1) return route;

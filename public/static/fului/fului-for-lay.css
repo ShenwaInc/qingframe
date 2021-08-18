@@ -1,10 +1,13 @@
 .bg-gray{background-color: #F1F1F1; color: #333333}
 
 .shadows{box-shadow: 0px 6px 14px 0px rgba(35, 35, 35, 0.3), inset 0px 3px 0px 0px #FFFFFF;}
+.radius{border-radius: 5px;}
 
 .fui-agreement{overflow: hidden; overflow-y: auto; height: 480px; max-height: 60vh; padding-right: 20px}
 
-.solid-top{border-top: 1px solid #dddddd;}
+.solid-top{border-top: 1px solid #e4e8eb;}
+.soild-after{position: relative;}
+.soild-after:after{position: absolute; content: " "; display: block; left: 0; bottom: 0; width: 100%; height: 0.5px; background-color: #e4e8eb;}
 
 .text-center{text-align: center}
 .text-lg{font-size: 20px;}
@@ -12,8 +15,13 @@
 .text-black, .layui-word-aux .text-black{color: #333333}
 .text-blue{color: #0081ff;}
 
+.nobd{border: none !important;}
+
 .padding{padding: 15px;}
 .padding-lr{padding-left: 15px; padding-right: 15px;}
+.padding-left-0{padding-left: 0 !important;}
+
+.margin-bottom-xl{margin-bottom: 40px;}
 
 .fui-step{height: 56px; padding: 15px 0 10px;}
 .fui-step .fui-item{line-height: 32px; position: relative; font-size: 16px;}
@@ -26,3 +34,19 @@
 .fui-step .fui-item.cur .num:before{content: "\e643"}
 .fui-step .fui-item.done .num:before{content: "\1005";}
 .fui-step .layui-container{width: 100%; padding: 0}
+
+.fui-tab .layui-tab-title{text-align: left; line-height: 40px; border-bottom: 1px solid #e0e1e2; font-size: 16px; height: auto;}
+.fui-tab .layui-tab-title > *{position: relative; margin-right: 24px; margin-bottom: -1px;}
+.fui-tab .layui-tab-title a{color: #353535; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 1; max-width: 120px; padding: 0}
+.fui-tab .layui-tab-title .layui-this{border-bottom: 2px solid #07c160;}
+.fui-tab .layui-tab-title .layui-this a{color: #07c160;}
+.fui-tab .layui-tab-title .layui-this:after{display: none}
+
+.fui-card{padding: 25px; box-shadow: 0 1px 5px 0 rgb(0 0 0 / 5%); margin-bottom: 30px;}
+.fui-card .layui-card-header{height: auto; min-height: 42px;}
+.fui-card .layui-card-header .title{font-size: 20px; font-weight: 400; line-height: 1;}
+
+.fui-table{color: inherit;}
+.fui-table-lable{color: #9a9a9a; font-weight: bold;}
+.fui-table.lines td{padding-top: 20px; padding-bottom: 20px;}
+.fui-table tr:last-child .soild-after:after{display: none;}

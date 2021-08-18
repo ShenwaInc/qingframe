@@ -65,7 +65,6 @@ class ModuleService
     }
 
     static function install($identity,$from='cloud'){
-
     }
 
 }

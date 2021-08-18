@@ -1,0 +1,48 @@
+version: "2"
+services:
+    # MySQL 5.7: https://hub.docker.com/_/mysql/
+    # 外部连接
+    # mysql -h 127.0.0.1 -P 13306 -u root -proot
+    # 内部连接
+    # mysql -h mysql -u root -proot
+#    mysql:
+#        container_name: mysql
+#        image: mysql:5.7
+#        environment:
+#            MYSQL_ROOT_PASSWORD: "root"
+#            MYSQL_USER: "linmaogan"
+#            MYSQL_PASSWORD: "123456"
+#            MYSQL_DATABASE: "test"
+#        volumes:
+#            - ~/docker/mysql:/var/lib/mysql
+#        ports:
+#            - "13306:3306"
+#
+#    # Redis 3.2.10: https://hub.docker.com/_/redis/
+#    # 外部连接
+#    # redis-cli -h 127.0.0.1 -p 16379 monitor
+#    # 内部连接
+#    # redis-cli -h redis monitor
+#    redis:
+#        container_name: redis
+#        image: redis:3.2.10
+#        volumes:
+#            - ~/docker/redis:/data
+#        ports:
+#            - "16379:6379"
+
+    # SD框架阿里云内网registry-internal.cn-hangzhou.aliyuncs.com/youwoxing/dev
+    # ssh root@127.0.0.1 -p 10022
+    go:
+        container_name: go
+        image: caoxiukang123456/golang-1.13.7:lates
+        #image: swoole:v1
+        #command: php /www/bin/start_swoole_server.php start
+#        links:
+#            - mysql
+#            - redis
+        volumes:
+            - /home/wwwroot:/www
+        ports:
+            - "3000:3000"
+        tty: true # 如果不启动服务，需要打开这个让镜像启动

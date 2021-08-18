@@ -1,6 +1,24 @@
-body{background-color: #f6f8f9; min-width: 768px;}
+@font-face{font-family:"mp-quote";src:url(/static/fonts/Helvetica.ttf) format('truetype'); unicode-range:U+201c,U+201d,U+2018,U+2019}
+body{background-color: #f6f8f9; min-width: 768px; font-family: "mp-quote",-apple-system-font,BlinkMacSystemFont,"Helvetica Neue","PingFang SC","Hiragino Sans GB","Microsoft YaHei UI","Microsoft YaHei",Arial,sans-serif; color: #353535}
 a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 .layui-layout-admin .layui-header{background-color: #FFFFFF; box-sizing: border-box}
 .layui-nav, .layui-nav .layui-nav-item a{color: #333 !important;}
 .layui-nav, .layui-nav .layui-nav-item .layui-nav-child a{line-height: 36px;}
 .layui-layout-admin .layui-logo{box-shadow: none; color: #606060 !important;}
+
+.fr{float: right;}
+
+.layui-layout-admin .layui-body{padding-top: 32px; left: 0px !important;}
+
+.main-content{width: 90%; margin: 0 auto; max-width: 1340px; min-width: 980px; padding-bottom: 30px;}
+.main-content > h2 {font-size: 26px; font-weight: 400; line-height: 1; margin-bottom: 20px;}
+
+.main-content .un-padding{margin-left: -15px; margin-right: -15px;}
+
+.fui-footer{width: 90%; margin: 0 auto; max-width: 1340px; min-width: 980px; padding-top: 64px; padding-bottom: 40px;}
+.fui-footer-info{padding-bottom: 10px; margin-bottom: 8px;}
+.fui-footer-link a{font-size: 12px; position: relative; margin: 0 14px; color: #9a9a9a;}
+.fui-footer-link a::after{content: "|"; position: absolute; left: -14.4px; vertical-align: middle; font-size: .8em; top: 50%; margin-top: -0.8em;}
+.fui-footer-link a:first-child{margin-left: 0;}
+.fui-footer-link a:first-child:after{display: none;}
+.fui-footer-copyright{color: #9a9a9a; font-size: 12px;}
