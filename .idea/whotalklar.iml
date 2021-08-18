@@ -100,6 +100,12 @@
       <excludeFolder url="file://$MODULE_DIR$/vendor/phpunit/phpunit" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/laravel/ui" />
       <excludeFolder url="file://$MODULE_DIR$/public/addons/xfy_whotalk/.idea" />
+      <excludeFolder url="file://$MODULE_DIR$/storage/framework/cache/data/01" />
+      <excludeFolder url="file://$MODULE_DIR$/storage/framework/cache/data/4a" />
+      <excludeFolder url="file://$MODULE_DIR$/storage/framework/cache/data/44" />
+      <excludeFolder url="file://$MODULE_DIR$/storage/framework/cache/data/47" />
+      <excludeFolder url="file://$MODULE_DIR$/storage/framework/cache/data/c2" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
