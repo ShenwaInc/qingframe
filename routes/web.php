@@ -23,7 +23,7 @@ Route::group(['namespace'=>'Console', 'middleware'=>[\App\Http\Middleware\Instal
 Route::group(['prefix' => 'console', 'namespace' => 'Console', 'middleware'=>['auth', \App\Http\Middleware\App::class,\App\Http\Middleware\ConsolePermission::class]], function () {
 
     Route::get('/', 'PlatformController@index');
-    Route::get('/active', 'SettingController@active');
+    Route::get('/active/{op?}', 'SettingController@active');
     Route::get('/setting', 'SettingController@index');
     Route::post('/setting', 'SettingController@save');
     Route::get('/account/{uniacid}', 'PlatformController@checkout')->where('uniacid','[0-9]+');

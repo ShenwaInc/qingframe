@@ -6,6 +6,7 @@ class CloudService
 {
 
     static $cloudapi = 'https://chat.gxit.org/app/index.php?i=4&c=entry&m=swa_supersale&do=api';
+    static $cloudactive = 'https://chat.gxit.org/app/index.php?i=4&c=entry&m=swa_supersale&do=app&r=whotalkcloud.active&siteroot=';
     static $apilist = array('getcom'=>'cloud.vendor','rmcom'=>'cloud.vendor.remove','require'=>'cloud.install','structure'=>'cloud.structure','upgrade'=>'cloud.makepatch');
     static $vendors = array('aliyun'=>'阿里短信SDK','aop'=>'支付宝支付SDK','wxpayv3'=>'微信支付SDK','tim'=>'接口签名验证工具','getui'=>'APP推送SDK','alioss'=>'阿里云存储','cosv5'=>'腾讯云存储');
     static $identity = 'xfy_whotalk_for_lar';
@@ -50,7 +51,26 @@ class CloudService
     }
 
     static function RequireCom(){
-        return self::CloudRequire('swa_whotalk_componet',self::com_path());
+        $hasCom = self::ComExists('aliyun');
+        if ($hasCom){
+            return self::CloudUpdate('swa_whotalk_componet',self::com_path());
+        }else{
+            $requirecom = self::CloudRequire('swa_whotalk_componet',self::com_path());
+            if (!is_error($requirecom)){
+                //组件包下载标记，待完善
+            }
+            return $requirecom;
+        }
+    }
+
+    static function RequireModule($identity,$path='addons'){
+        $requirename = $identity;
+        if (!strexists($identity,'_')){
+            $requirename = "laravel_module_{$identity}";
+        }
+        $targetpath = base_path("public/{$path}/{$identity}");
+        if (is_dir($targetpath)) return true;
+        return self::CloudRequire($requirename,$targetpath);
     }
 
     static function com_path($path=""){
@@ -258,8 +278,8 @@ class CloudService
         $data['sign'] = self::GetSignature($data['appsecret'],$data);
         $res = HttpService::ihttp_post(self::$cloudapi,$data);
         if (is_error($res)) return $res;
-        if($return) return $res['content'];
         $result = json_decode($res['content'],true);
+        if(empty($return) && $return) return $res['content'];
         if (isset($result['message']) && isset($result['type'])){
             if ($result['type']!='success' && !is_array($result['message']) && !$result['redirect']){
                 return error(-1,$result['message']);

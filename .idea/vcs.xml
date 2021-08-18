@@ -2,6 +2,7 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/public/addons/whotalk" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/public/addons/xfy_whotalk" vcs="Git" />
   </component>
 </project>

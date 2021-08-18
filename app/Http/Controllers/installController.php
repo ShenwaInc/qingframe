@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Account;
 use App\Models\Module;
 use App\Models\UniAccountUser;
+use App\Services\ModuleService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
@@ -96,7 +97,7 @@ class installController extends Controller
             //initialize modules
             try {
                 //import database
-                Module::Initializer();
+                ModuleService::Initializer();
             }catch (\Exception $exception){
                 return $this->message('初始化数据失败');
             }
