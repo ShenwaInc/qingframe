@@ -3,7 +3,7 @@
     <div class="fui-footer-info soild-after">
         <div class="fui-footer-link">
             @php
-                echo $_W['setting']['page']['links'];
+                echo $_W['page']['links'];
             @endphp
         </div>
     </div>
@@ -28,6 +28,11 @@
                     var filter = Ajaxwindow.find('form.layui-form').attr('lay-filter');
                     let initdate = Ajaxwindow.find('.layui-input-laydate').length>0;
                     FormInit(filter,initdate);
+                }
+                if(Ajaxwindow.find('.layui-code').length>0){
+                    layui.use(['code'],function (){
+                        layui.code();
+                    });
                 }
             }
         },{inajax:1},'html',true);

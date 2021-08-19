@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Console;
 use App\Http\Controllers\Controller;
 use App\Services\CloudService;
 use App\Services\ModuleService;
+use App\Services\SettingService;
 use App\Services\SocketService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -72,12 +73,19 @@ class SettingController extends Controller
 
     public function index($op='main'){
         global $_W,$_GPC;
-        if($op=='pageset'){
-            return $this->globalview('console.settingpage');
-        }
+        $ajaxviews = array('socketset'=>'socketset','pageset'=>'settingpage','sockethelp'=>'socket');
         $return = array('title'=>'站点设置','op'=>$op,'components'=>array());
         if (!isset($_W['setting']['page'])){
             $_W['setting']['page'] = $_W['page'];
+        }
+        if (isset($ajaxviews[$op])){
+            return $this->globalview("console.{$ajaxviews[$op]}",$return);
+        }
+        if (!isset($_W['setting']['swasocket']['whitelist'])){
+            $_W['setting']['swasocket']['whitelist'] = CloudService::CloudSocket('',1);
+        }
+        if ($op=='socket'){
+            $return['usersign'] = md5("{$_W['uid']}-{$_W['config']['setting']['authkey']}-{$_W['config']['site']['id']}");
         }
         if ($op=='component'){
             $return['types'] = array('框架','模块','组件','资源');
@@ -183,6 +191,40 @@ class SettingController extends Controller
         if (!$request->isMethod('post')){
             return $this->message();
         }
+        if ($op=='savewhitelist'){
+            $active = CloudService::CloudActive();
+            if ($active['status']!=1){
+                return $this->message('该功能已暂停使用');
+            }
+            $complete = CloudService::CloudSocket(trim($_GPC['domain']));
+            if ($complete){
+                return $this->message('新域名添加成功',url('console/setting/socket'),'success');
+            }
+        }elseif ($op=='resetwhitelist'){
+            $active = CloudService::CloudActive();
+            if ($active['status']!=1){
+                return $this->message('该功能已暂停使用');
+            }
+            $complete = CloudService::CloudSocket('',2);
+            if ($complete){
+                return $this->message('重置成功',url('console/setting/socket'),'success');
+            }
+        }elseif ($op=='socketset'){
+            $active = CloudService::CloudActive();
+            if ($active['status']!=1){
+                return $this->message('该功能已暂停使用');
+            }
+            $data = $_GPC['data'];
+            $data['type'] = in_array($data['type'],array('local','remote')) ? $data['type'] : 'remote';
+            if (empty($data['server'])) return $this->message('SOCKET服务器不能为空');
+            if (empty($data['api'])) return $this->message('WEB推送接口不能为空');
+            if (!\Str::endsWith($data['api'],'/api/message/sendMessageToUser')) return $this->message('推送接口格式不正确');
+            $complete = SettingService::Save($data,'swasocket');
+            if ($complete){
+                return $this->message('保存成功',url('console/setting/socket'),'success');
+            }
+        }
+        return $this->message();
     }
 
 }

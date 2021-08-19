@@ -174,15 +174,42 @@ class installController extends Controller
                 'dateline'=>TIMESTAMP
             ));
 
-            //initializer socket connect
-            DB::table("core_settings")->insert(array(
-                'key'=>"swasocket",
-                'value'=>serialize(array(
-                    'type'=>'local',
-                    'server'=>$installer['socket']['server'],
-                    'api'=>$installer['socket']['webapi']
-                ))
-            ));
+            //initializer default setting
+            DB::table("core_settings")->insert([
+                array(
+                    'key'=>"swasocket",
+                    'value'=>serialize(array(
+                        'type'=>'remote',
+                        'server'=>$installer['socket']['server'],
+                        'api'=>$installer['socket']['webapi']
+                    ))
+                ),
+                array(
+                    'key'=>"page",
+                    'value'=>serialize(array(
+                        'title'=>'Whotalk即时通讯系统',
+                        'icon'=>'/favicon.ico',
+                        'logo'=>'/static/icon200.jpg',
+                        'copyright'=>'© 2019-2022 Shenwa Studio. All Rights Reserved.',
+                        'links'=>'
+                <a class="copyright-link" href="https://www.whotalk.com.cn/" target="_blank">Whotalk官网</a>
+                <a class="copyright-link" href="https://chat.gxit.org/app/index.php?i=4&c=entry&m=swa_supersale&do=app&r=whotalkcloud.post" target="_blank">制作APP</a>
+                <a class="copyright-link" href="https://shimo.im/docs/XRkgJOKZ41UrFbqM" target="_blank">使用教程</a>
+                <a class="copyright-link" href="https://www.yuque.com/docs/share/84abf7ef-7d11-44f1-a510-ed70ef14ef3d?#" target="_blank">更新日志</a>
+                ',
+                        'keywords'=>'Whotalk,IM,即时通讯,客服系统,SaaS即时通讯,开源,社交软件,WEB即时通讯,公众号客服,多开聊天软件,在线聊天,群聊,微擎模块,快速生成APP,聊天APP,群聊APP',
+                        'description'=>'Whotalk是一款精巧灵活的SaaS-IM基础服务软件，提供即时通讯软件的基础功能，具备强大的开放能力和极高的自由度，可快速编译为各类平台应用软件。'
+                    ))
+                ),
+                array(
+                    'key'=>"upload",
+                    'value'=>serialize(array(
+                        'image'=>array('extentions'=>['gif','jpg','png','webp','jpeg'],'limit'=>5120),
+                        'attachdir'=>'attachment',
+                        'media'=>array('extentions'=>['mp3','amr','wav','rm', 'rmvb', 'wmv', 'avi', 'mpg', 'mpeg', 'mp4'],'limit'=>51200)
+                    ))
+                )
+            ]);
 
         }else{
             if (empty($authkey)) return $this->message('微擎站点安全码不能为空');

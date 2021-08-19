@@ -95,17 +95,126 @@
             <span class="title">系统参数</span>
         </div>
     </div>
+    @elseif($op=='attach')
+        <div class="fui-card layui-card">
+            <div class="layui-card-header nobd">
+                <a href="{{ url('console/setting/attachset') }}" class="fr text-blue ajaxshow" title="修改上传设置"><i class="glyphicon glyphicon-edit"></i></a>
+                <span class="title">上传设置</span>
+            </div>
+            <div class="layui-card-body">
+                <div class="un-padding">
+                    <table class="layui-table fui-table lines" lay-skin="nob">
+                        <colgroup>
+                            <col width="120" />
+                            <col />
+                            <col width="100" />
+                        </colgroup>
+                        <tbody>
+                            <tr>
+                                <td><span class="fui-table-lable">图片格式</span></td>
+                                <td class="soild-after">{{ $_W['setting']['upload']['image']['extentions'] }}</td>
+                                <td class="text-right soild-after"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="fui-card layui-card">
+            <div class="layui-card-header nobd">
+                <span class="title">远程附件</span>
+            </div>
+        </div>
     @else
         <div class="fui-card layui-card">
-            @if($op=='attach')
-                <div class="layui-card-header nobd">
-                    <span class="title">附件设置</span>
-                </div>
-            @elseif($op=='socket')
+            @if($op=='socket')
                 <div class="layui-card-header nobd">
                     <a href="{{ url('console/setting/socketset') }}" class="fr text-blue ajaxshow" title="修改SOCKET配置"><i class="glyphicon glyphicon-edit"></i></a>
                     <span class="title">SOCKET配置</span>
                 </div>
+                <div class="layui-card-body">
+                    <div class="un-padding">
+                        <table class="layui-table fui-table lines" lay-skin="nob">
+                            <colgroup>
+                                <col width="150" />
+                                <col />
+                                <col width="150" />
+                            </colgroup>
+                            <tbody>
+                                <tr>
+                                    <td><span class="fui-table-lable">链接方式</span></td>
+                                    <td class="soild-after">{{ $_W['setting']['swasocket']['type']=='local' ? '本地SOCKET' : '远程SOCKET' }}</td>
+                                    <td class="text-right soild-after">
+                                        @if($_W['setting']['swasocket']['type']=='local')
+                                            <a href="{{ url('console/setting/sockethelp') }}" class="text-blue ajaxshow" title="本地SOCKET安装步骤">本地安装步骤</a>
+                                        @endif
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><span class="fui-table-lable">SOCKET服务器</span></td>
+                                    <td class="soild-after">{{ $_W['setting']['swasocket']['server'] }}</td>
+                                    <td class="text-right soild-after">
+                                        <button class="layui-btn layui-btn-sm layui-btn-normal" type="button" onclick="WsDetect()">测试连接</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><span class="fui-table-lable">推送接口</span></td>
+                                    <td class="soild-after">{{ $_W['setting']['swasocket']['api'] }}</td>
+                                    <td class="text-right soild-after"></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="fui-table-lable">域名白名单</span></td>
+                                    <td class="soild-after">
+                                        @php
+                                        echo implode("; ",$_W['setting']['swasocket']['whitelist']);
+                                        @endphp
+                                    </td>
+                                    <td class="text-right soild-after">
+                                        <a href="javascript:WsException();" class="text-blue">添加</a>
+                                        <a href="javascript:WsRestore();" class="text-red">重置</a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <script type="text/javascript" src="{{ asset("/static/js/swasocket.js") }}?v={{ $_W['config']['release'] }}"></script>
+                <script type="text/javascript">
+                    var UserSign = "{{$usersign}}";
+                    function WsRestore(){
+                        return Core.confirm('重置后将只保留当前域名，是否确定要重置?',function (){
+                            Core.post('console.setting',function (res){
+                                return Core.report(res);
+                            },{
+                                op:'resetwhitelist'
+                            });
+                        },false,{title:'重置域名白名单'})
+                    }
+                    function WsException(){
+                        layer.prompt({title:'添加新域名'},function(value, index, elem){
+                            layer.close(index);
+                            if(value!==''){
+                                Core.post('console.setting',function (res){
+                                    return Core.report(res);
+                                },{
+                                    op:'savewhitelist',
+                                    domain:value
+                                });
+                            }
+                        });
+                    }
+                    function WsDetect(){
+                        //检测SOCKET连接状态
+                        Swaws.init(UserSign, '{{ $_W['setting']['swasocket']['server'] }}',function (res){
+                            if(res.type==='User/Connect'){
+                                layer.msg("SOCKET服务器连接成功",{icon:1});
+                                Swaws.io.close();
+                            }
+                        },function (){
+                            Core.report({type:'error',redirect:'',message:'服务器连接失败,请重试'});
+                        })
+                    }
+                </script>
             @elseif($op=='component')
                 <div class="layui-card-header nobd">
                     <a href="https://www.whotalk.com.cn/" target="_blank" class="fr layui-btn layui-btn-sm layui-btn-normal">获取更多组件</a>

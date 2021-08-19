@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Setting;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class SettingService{
 
@@ -74,5 +75,30 @@ class SettingService{
 
     static function check_php_ext($extension) {
         return extension_loaded($extension) ? true : false;
+    }
+
+    static function Save($data = '', $key = ''){
+        if (empty($data) && empty($key)) {
+            return FALSE;
+        }
+        if (is_array($data) && empty($key)) {
+            $record = array();
+            $keys = array_keys($data);
+            foreach ($data as $key => $value) {
+                $record[] = ['key'=>$key,'value'=>serialize($value)];
+            }
+            if (!empty($record)) {
+                DB::table('core_settings')->whereIn('key',$keys)->delete();
+                $return = DB::table('core_settings')->insert($record);
+            }
+        } else {
+            $return = DB::table('core_settings')->updateOrInsert(
+                array('key'=>$key),
+                array('value'=>serialize($data))
+            );
+        }
+        $cachekey = CacheService::system_key('setting');
+        Cache::forget($cachekey);
+        return $return;
     }
 }

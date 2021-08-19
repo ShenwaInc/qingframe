@@ -53,80 +53,6 @@
                         <button type="reset" class="layui-btn layui-btn-primary">重填</button>
                     </div>
                 </div>
-                <div class="wsconnect form-itemlocal layui-hide">
-                    <div class="layui-form-item must">
-                        <label class="layui-form-label">本地安装步骤</label>
-                        <div class="layui-input-block">
-                            <div class="layui-tab fui-tab" style="height: 320px; overflow:hidden; overflow-y: auto">
-                                <ul class="layui-tab-title">
-                                    <li class="layui-this">1.创建站点</li>
-                                    <li>2.安装Golang</li>
-                                    <li>3.配置站点</li>
-                                    <li class="fr">
-                                        <a href="https://www.whotalk.com.cn/" target="_blank" class="text-blue">安装遇到困难？</a>
-                                    </li>
-                                </ul>
-                                <div class="layui-tab-content">
-                                    <div class="layui-tab-item layui-show">
-                                        <div class="layui-text">1&nbsp;准备一个SOCKET通讯专用的域名并解析到当前服务器</div>
-                                        <div class="layui-text">2&nbsp;到安全组开放服务器的3000端口</div>
-                                        <div class="layui-text">3&nbsp;到宝塔创建新站点:</div>
-                                        <div class="layui-text">3.1&nbsp;<strong>域名</strong>填写上一步骤准备的域名</div>
-                                        <div class="layui-text">3.2&nbsp;<strong>根目录</strong>必须选择或直接填写&nbsp;<strong class="text-black">{{ str_replace("\\",'/',base_path('socket')) }}</strong></div>
-                                        <div class="layui-text">3.3&nbsp;<strong>PHP版本</strong>请选择&nbsp;<strong>纯静态</strong></div>
-                                        @if($_W['ishttps'])
-                                        <div class="layui-text">4&nbsp;为该站点配置HTTPS并强制开启</div>
-                                        @endif
-                                        <img width="593" src="/static/installer/inst-socket.png" alt="SOCKET站点创建示意图" />
-                                    </div>
-                                    <div class="layui-tab-item">
-                                        <div class="layui-text">
-                                            <strong>使用宝塔面板的【终端】功能或ssh远程管理工具登录服务器后运行如下指令</strong>
-                                        </div>
-                                        <pre class="layui-code">
-sh {{ str_replace("\\",'/',base_path('socket')) }}/install_socket.sh</pre>
-                                    </div>
-                                    <div class="layui-tab-item">
-                                        <strong>宝塔面板的【站点】点击编辑该站点，在【配置文件】中参考如下代码设置</strong>
-                                        <pre class="layui-code">
-//注：以下内容需要根据站点实际情况调整，未开启https则监听80端口，否则监听443端口
-server {
-    listen 443;
-    server_name xxxxxxxxx.cn;
-    ssl on;
-    ssl_certificate  /etc/nginx/conf.d/cert/socket.whotalk.com.cn.pem;
-    ssl_certificate_key /etc/nginx/conf.d/cert/socket.whotalk.com.cn.key;
-    ssl_session_timeout 5m;
-    ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE:ECDH:AES:HIGH:!NULL:!aNULL:!MD5:!ADH:!RC4;
-    ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
-    ssl_prefer_server_ciphers on;
-    client_header_buffer_size 16k;
-    large_client_header_buffers 4 64k;
-    location /api {
-          proxy_pass http://xxxxxxxxx:3000;
-          proxy_http_version 1.1;
-          proxy_set_header Upgrade $http_upgrade;
-          proxy_set_header Connection keep-alive;
-          proxy_set_header Host $host;
-          proxy_cache_bypass $http_upgrade;
-          proxy_set_header X-Real-IP $remote_addr;
-          proxy_set_header X-Forwarded-Proto  $scheme;
-    }
-    location /wss{
- proxy_pass http://xxxxxxxxxxxxxxxxxxxx:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "Upgrade";
-     proxy_read_timeout 1200s;
- }
-}</pre>
-                                        <img width="720" src="/static/installer/inst-socket2.png" alt="SOCKET站点创建示意图" />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </form>
         </div>
     </div>
@@ -134,14 +60,8 @@ server {
 <script type="text/javascript" src="/static/js/swasocket.js?v={{ $_W['config']['release'] }}"></script>
 <script type="text/javascript">
     var ishttps = {{$_W['ishttps']?'true':'false'}},UserSign = "{{$usersign}}",CheckWs=false;
-    layui.use(['form','code'],function(){
+    layui.use(['form'],function(){
         var form = layui.form;
-        layui.code();
-        form.on('radio(ctrls)', function(data){
-            var target = $(data.elem).data('target');
-            $(target).addClass('layui-hide');;
-            $(target+'.form-item'+data.value).removeClass('layui-hide');
-        });
         form.on('submit(formDemo)',function (data){
             let wsserver = data.field.ws_server;
             let doNext = function (){

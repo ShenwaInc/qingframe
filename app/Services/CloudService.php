@@ -69,8 +69,8 @@ class CloudService
                         'type'=>2,
                         'logo'=>'https://shenwahuanan.oss-cn-shenzhen.aliyuncs.com/images/4/2021/08/Mpar00P5PjJPrxAW1FWCP3CPz87qjc.png',
                         'website'=>'https://www.whotalk.com.cn/',
-                        'version'=>'1.0.1',
-                        'releasedate'=>2021081901,
+                        'version'=>'1.0.2',
+                        'releasedate'=>2021081902,
                         'rootpath'=>'',
                         'online'=>'',
                         'addtime'=>TIMESTAMP,
@@ -344,6 +344,34 @@ class CloudService
         Cache::put($cachekey, $authorize, 3600);
 
         return $authorize;
+    }
+
+    static function CloudSocket($domain='',$require=0){
+        $domains = array("host"=>array());
+        $domainfile = base_path("socket/composer.json");
+        if (file_exists($domainfile)){
+            $reader = fopen($domainfile,'r');
+            $domaintext = fread($reader,filesize($domainfile));
+            fclose($reader);
+            if (!empty($domaintext)){
+                $domains = @json_decode($domaintext, true);
+            }
+        }
+        if (empty($domain)){
+            if ($require==1) return $domains['host'];
+            $domain = $_SERVER['HTTP_HOST'];
+        }
+        if ($require==2){
+            $domains['host'] = array();
+        }
+        if (!in_array($domain,$domains['host'])){
+            $domains['host'][] = $domain;
+            $writer = fopen($domainfile,'w');
+            $complete = fwrite($writer,json_encode($domains));
+            fclose($writer);
+            return $complete;
+        }
+        return true;
     }
 
     static function AppSecret(){

@@ -18,19 +18,14 @@ class SocketService
             'logo'=>'https://shenwahuanan.oss-cn-shenzhen.aliyuncs.com/images/4/2021/08/gdSI484HDp4pXxHshPxXpShdi3XHP8.png',
             'website'=>'https://www.whotalk.com.cn/',
             'rootpath'=>'socket/',
-            'version'=>'1.0.1',
+            'version'=>'1.0.2',
             'online'=>'',
-            'releasedate'=>2021081901,
+            'releasedate'=>2021081905,
             'addtime'=>TIMESTAMP,
             'dateline'=>TIMESTAMP
         ));
         //初始化域名白名单
-        $domains = array("host"=>array($_SERVER['HTTP_HOST']));
-        $domainfile = base_path("socket/composer.json");
-        $writer = fopen($domainfile,'w');
-        $complete = fwrite($writer,json_encode($domains));
-        fclose($writer);
-        return $complete;
+        return CloudService::CloudSocket();
     }
 
 }
