@@ -43,6 +43,9 @@ function tomedia($src, $local_path = false, $is_cahce = false) {
     if (empty($src)) {
         return '';
     }
+    if (file_exists(public_path($src))){
+        return asset($src);
+    }
     if ($is_cahce) {
         $src .= '?v=' . time();
     }
