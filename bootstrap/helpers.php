@@ -37,6 +37,32 @@ function wurl($segment, $params = array(), $contain_domain = false){
     return $url;
 }
 
+function murl($segment, $params = array(), $noredirect = true, $addhost = false) {
+    global $_W;
+    if (strexists($segment,'.')){
+        $segment = str_replace('.','/',$segment);
+    }
+    if (!empty($addhost)) {
+        $url = $_W['siteroot'] . 'app';
+    } else {
+        $url = '/app';
+    }
+
+    if (!empty($segment)){
+        $url .= '/' .$segment;
+    }
+
+    if (!empty($params)) {
+        $queryString = http_build_query($params, '', '&');
+        $url .= '?' . $queryString;
+        if (false === $noredirect) {
+            $url .= '&wxref=mp.weixin.qq.com#wechat_redirect';
+        }
+    }
+
+    return $url;
+}
+
 function tomedia($src, $local_path = false, $is_cahce = false) {
     global $_W;
     $src = trim($src);

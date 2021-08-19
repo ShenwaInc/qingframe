@@ -98,6 +98,9 @@ class WeModule
         global $_W;
         $name = strtolower($this->modulename);
         $defineDir = dirname($this->__define);
+        if (!function_exists('template_compile')){
+            require_once base_path("bootstrap/functions/template.func.php");
+        }
         if (defined('IN_SYS')) {
             $source = IA_ROOT . "/web/themes/{$_W['template']}/{$name}/{$filename}.html";
             $compile = IA_ROOT . "/data/tpl/web/{$_W['template']}/{$name}/{$filename}.tpl.php";

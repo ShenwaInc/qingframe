@@ -10,10 +10,11 @@ class ModuleController extends Controller
 {
     //
 
-    public function entry(Request $request, $modulename){
+    public function entry(Request $request, $modulename,$do='index'){
         $WeModule = new WeModule();
         $site = $WeModule->create($modulename);
-        return $site->doWebIndex();
+        $method = "doWeb" . ucfirst($do);
+        return $site->$method();
     }
 
 }
