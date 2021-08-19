@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\Cache;
+
 class CacheService
 {
 
@@ -496,6 +498,11 @@ class CacheService
         }
 
         return $cache_key;
+    }
+
+    static function build_module($module_name){
+        $cachekey = self::system_key($module_name);
+        Cache::forget($cachekey);
     }
 
 }

@@ -204,7 +204,7 @@ class installController extends Controller
                 array(
                     'key'=>"upload",
                     'value'=>serialize(array(
-                        'image'=>array('extentions'=>['gif','jpg','png','webp','jpeg'],'limit'=>5120),
+                        'image'=>array('extentions'=>['gif','jpg','png','webp','jpeg'],'limit'=>5120,'zip_percentage'=>100),
                         'attachdir'=>'attachment',
                         'media'=>array('extentions'=>['mp3','amr','wav','rm', 'rmvb', 'wmv', 'avi', 'mpg', 'mpeg', 'mp4'],'limit'=>51200)
                     ))
@@ -218,14 +218,15 @@ class installController extends Controller
             //数据表检测，待完善
         }
         //写入配置文件
+        $appname = !empty($manager['appname']) ? trim($manager['appname']) : 'Whotalk';
         $envfile_tmp = base_path(".env.example");
         $reader = fopen($envfile_tmp,'r');
         $envdata = fread($reader,filesize($envfile_tmp));
         fclose($reader);
         $baseurl = str_replace('/installer/render','',url()->current());
         $database = $installer['database'];
-        $envdata = str_replace(array('{AUTHKEY}','{BASEURL}','{FOUNDER}','{DB_HOST}','{DB_PORT}','{DB_DATABASE}','{DB_USERNAME}','{DB_PASSWORD}','{DB_PREFIX}'),array(
-            $authkey,$baseurl,$uid,$database['host'],$database['port'],$database['database'],$database['username'],$database['password'],$database['prefix']
+        $envdata = str_replace(array('{APP_NAME}','{AUTHKEY}','{BASEURL}','{FOUNDER}','{DB_HOST}','{DB_PORT}','{DB_DATABASE}','{DB_USERNAME}','{DB_PASSWORD}','{DB_PREFIX}'),array(
+            $appname,$authkey,$baseurl,$uid,$database['host'],$database['port'],$database['database'],$database['username'],$database['password'],$database['prefix']
         ),$envdata);
         $envfile = base_path(".env");
         if (file_exists($envfile)){

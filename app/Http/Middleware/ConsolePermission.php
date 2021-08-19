@@ -6,6 +6,8 @@ use App\Services\AttachmentService;
 use App\Services\UserService;
 use Closure;
 
+define('IN_SYS', true);
+
 class ConsolePermission
 {
     /**

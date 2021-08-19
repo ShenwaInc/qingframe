@@ -179,6 +179,15 @@ class FileService
         return $clean ? true : @rmdir($path);
     }
 
+    static function file_upload_path($type='image'){
+        global $_W;
+        $uniacid = intval($_W['uniacid']);
+        $path = "{$type}s/{$uniacid}/" . date('Y/m/');
+        if (!is_dir(ATTACHMENT_ROOT.$path)){
+            self::mkdirs(ATTACHMENT_ROOT.$path);
+        }
+        return $path;
+    }
 
     static function file_upload($file, $type = 'image', $name = '', $compress = false) {
         $harmtype = array('asp', 'php', 'jsp', 'js', 'css', 'php3', 'php4', 'php5', 'ashx', 'aspx', 'exe', 'cgi');
@@ -801,7 +810,7 @@ class FileService
 
         $result = true;
         $uni_remote_setting = uni_setting_load('remote');
-        if (empty($uni_remote_setting['remote']['type'])) {
+        if (empty($uni_remote_setting['remote']['type']) && !empty($_W['uniacid'])) {
             $uniacid = pdo_getcolumn('uni_settings', array('uniacid' => $_W['uniacid']), 'uniacid');
             if (empty($uniacid)) {
                 $result = pdo_insert('uni_settings', array('attachment_size' => $file_size, 'uniacid' => $_W['uniacid']));

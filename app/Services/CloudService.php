@@ -374,6 +374,19 @@ class CloudService
         return true;
     }
 
+    static function CloudEnv($search, $replace){
+        if (empty($search) || empty($replace)) return false;
+        $envfile = base_path(".env");
+        $reader = fopen($envfile,'r');
+        $envdata = fread($reader,filesize($envfile));
+        fclose($reader);
+        $envdata = str_replace($search, $replace,$envdata);
+        $writer = fopen($envfile,'w');
+        $complete = fwrite($writer,$envdata);
+        fclose($writer);
+        return $complete;
+    }
+
     static function AppSecret(){
         global $_W;
         return sha1($_W['config']['setting']['authkey'].'-'.$_W['siteroot'].'-'.$_W['config']['site']['id']);

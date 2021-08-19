@@ -7,9 +7,9 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 .layui-layout-admin .layui-logo{box-shadow: none; color: #606060 !important;}
 
 .layui-layer-content{max-height: calc(90vh - 50px);}
-.layui-layer-content .layui-form *{box-sizing: content-box;}
-.layui-layer-content .layui-form-label{width: 95px;}
-.layui-layer-content .layui-form-label ~ .layui-input-block{margin-left: 125px;}
+.layui-layout-admin *, .layui-layer-content .layui-form *{box-sizing: content-box;}
+.layui-form-label{width: 105px;}
+.layui-input-block{margin-left: 135px;}
 
 .layui-layer-title{background-color: #F5F5F5;}
 

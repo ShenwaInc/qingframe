@@ -2,7 +2,7 @@
 
 @if(!$_W['isajax'])
     <div class="main-content">
-        <h2 class="weui-desktop-page__title">本地SOCKET安装步骤</h2>
+        <h2 class="weui-desktop-page__title">SOCKET配置</h2>
         <div class="fui-card layui-card">
             <div class="layui-card-body">
                 @else

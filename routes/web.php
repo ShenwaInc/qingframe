@@ -23,14 +23,15 @@ Route::group(['namespace'=>'Console', 'middleware'=>[\App\Http\Middleware\Instal
 Route::group(['prefix' => 'console', 'namespace' => 'Console', 'middleware'=>['auth', \App\Http\Middleware\App::class,\App\Http\Middleware\ConsolePermission::class]], function () {
 
     Route::get('/', 'PlatformController@index');
+    Route::get('/util/{op?}', 'UtilController@index');
+    Route::post('/util/{op?}', 'UtilController@save');
     Route::get('/active/{op?}', 'SettingController@active');
     Route::get('/setting/{op?}', 'SettingController@index');
     Route::post('/setting', 'SettingController@save');
     Route::get('/account/{uniacid}', 'PlatformController@checkout')->where('uniacid','[0-9]+');
     Route::get('/account/{action}', 'PlatformController@account')->where('action','[a-z]+');
-    Route::get('/utils/{uniacid?}', 'PlatformController@utils');
-    Route::get('/payment/{uniacid?}', 'PlatformController@payment');
     Route::get('/m/{modulename}', 'ModuleController@entry');
+    Route::get('/m/{modulename}/{$do}', 'ModuleController@doweb');
 
 });
 

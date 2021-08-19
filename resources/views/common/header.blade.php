@@ -5,7 +5,7 @@
 <div class="layui-layout layui-layout-admin">
     <div class="layui-header">
         <div class="layui-logo layui-hide-xs">
-            <a href="{{ url('console') }}">Whotalk</a>
+            <a href="{{ url('console') }}">{{ $_W['config']['name'] }}</a>
         </div>
 
         <ul class="layui-nav layui-layout-left layui-hide">

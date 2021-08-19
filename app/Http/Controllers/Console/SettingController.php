@@ -49,17 +49,10 @@ class SettingController extends Controller
                     $redirect = url('console/active',array('op'=>'initsite'));
                     return $this->message('SOCKET初始化完成！即将激活站点...',$redirect,'success');
                 }elseif ($op=='initsite'){
-                    $envfile = base_path(".env");
-                    $reader = fopen($envfile,'r');
-                    $envdata = fread($reader,filesize($envfile));
-                    fclose($reader);
-                    $envdata = str_replace('APP_SITEID=0',"APP_SITEID={$activestate['siteid']}",$envdata);
-                    $writer = fopen($envfile,'w');
-                    if(!fwrite($writer,$envdata)){
-                        fclose($writer);
+                    $complete = CloudService::CloudEnv('APP_SITEID=0', "APP_SITEID={$activestate['siteid']}");
+                    if (!$complete){
                         return $this->message('文件写入失败，请检查根目录权限');
                     }
-                    fclose($writer);
                     return $this->message('恭喜您，激活成功！',url('console'),'success');
                 }
                 return $this->message('站点激活成功！即将加载程序所需的源码库',url('console/active',array('op'=>'com')),'success');
@@ -73,7 +66,7 @@ class SettingController extends Controller
 
     public function index($op='main'){
         global $_W,$_GPC;
-        $ajaxviews = array('socketset'=>'socketset','pageset'=>'settingpage','sockethelp'=>'socket');
+        $ajaxviews = array('socketset'=>'socketset','pageset'=>'settingpage','sockethelp'=>'socket','attachset'=>'settingupload');
         $return = array('title'=>'站点设置','op'=>$op,'components'=>array());
         if (!isset($_W['setting']['page'])){
             $_W['setting']['page'] = $_W['page'];
@@ -83,6 +76,18 @@ class SettingController extends Controller
         }
         if (!isset($_W['setting']['swasocket']['whitelist'])){
             $_W['setting']['swasocket']['whitelist'] = CloudService::CloudSocket('',1);
+        }
+        if ($op=='envdebug'){
+            $debug = env('APP_DEBUG',false);
+            if ($debug){
+                $complete = CloudService::CloudEnv('APP_DEBUG=true','APP_DEBUG=false');
+            }else{
+                $complete = CloudService::CloudEnv('APP_DEBUG=false','APP_DEBUG=true');
+            }
+            if (!$complete){
+                return $this->message('文件写入失败，请检查根目录权限');
+            }
+            return $this->message('操作成功！',url('console/setting'),'success');
         }
         if ($op=='socket'){
             $return['usersign'] = md5("{$_W['uid']}-{$_W['config']['setting']['authkey']}-{$_W['config']['site']['id']}");
@@ -219,9 +224,38 @@ class SettingController extends Controller
             if (empty($data['server'])) return $this->message('SOCKET服务器不能为空');
             if (empty($data['api'])) return $this->message('WEB推送接口不能为空');
             if (!\Str::endsWith($data['api'],'/api/message/sendMessageToUser')) return $this->message('推送接口格式不正确');
-            $complete = SettingService::Save($data,'swasocket');
+            $config = $_W['setting']['swasocket'];
+            $config['type'] = $data['type'];
+            $config['server'] = $data['server'];
+            $config['api'] = $data['api'];
+            $complete = SettingService::Save($config,'swasocket');
             if ($complete){
                 return $this->message('保存成功',url('console/setting/socket'),'success');
+            }
+        }elseif ($op=='attachset'){
+            $config = $_W['setting']['upload'];
+            $config['image']['extentions'] = !empty($_GPC['imgextentions']) ? explode(',',trim($_GPC['imgextentions'])) : array();
+            $config['image']['limit'] = intval($_GPC['imglimit']);
+            $config['image']['zip_percentage'] = intval($_GPC['imgzip']);
+            $config['image']['zip_percentage'] = min(100,max(0,$config['image']['zip_percentage']));
+            if ($config['image']['zip_percentage']==0) $config['image']['zip_percentage'] = 100;
+            $config['media']['extentions'] = !empty($_GPC['mediaext']) ? explode(',',trim($_GPC['mediaext'])) : array();
+            $config['media']['limit'] = intval($_GPC['medialimit']);
+            $complete = SettingService::Save($config,'upload');
+            if ($complete){
+                return $this->message('保存成功',url('console/setting/attach'),'success');
+            }
+        }elseif ($op=='pageset'){
+            $data = $request->input('data');
+            $config = $_W['setting']['page'];
+            if (!empty($data)){
+                foreach ($data as $key=>$value){
+                    $config[$key] = trim($value);
+                }
+            }
+            $complete = SettingService::Save($config,'page');
+            if ($complete){
+                return $this->message('保存成功',url('console/setting'),'success');
             }
         }
         return $this->message();

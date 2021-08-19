@@ -17,6 +17,6 @@ class Setting extends Model
     }
 
     public static function getUni($uniacid){
-        return DB::table(self::$table_uni)->where('uniacid',$uniacid)->first()->toArray();
+        return DB::table(self::$table_uni)->where('uniacid',$uniacid)->first();
     }
 }

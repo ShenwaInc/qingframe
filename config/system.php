@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'name'=>env('APP_NAME','Whotalk'),
     'version'=>env('APP_VERSION','3.0.47'),
     'release'=>env('APP_RELEASE',2021081902),
     'defaultmodule'=>env('APP_MODULE','whotalk'),

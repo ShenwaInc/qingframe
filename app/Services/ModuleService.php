@@ -4,6 +4,8 @@
 namespace App\Services;
 
 
+use App\Models\Module;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class ModuleService
@@ -123,6 +125,85 @@ class ModuleService
             ));
         }
         return true;
+    }
+
+    static function fetch($name, $enabled = true) {
+        global $_W;
+        $cachekey = CacheService::system_key('module_info', array('module_name' => $name));
+        $module = Cache::get($cachekey,array());
+        if (empty($module)) {
+            $module_info = Module::where('name',$name)->first();
+            if (empty($module_info)) {
+                return array();
+            }
+            $module_info['isdisplay'] = 1;
+            $module_info['logo'] = tomedia($module_info['logo']);
+            $module_info['preview'] = tomedia(IA_ROOT . '/addons/' . $module_info['name'] . '/preview.jpg', '', true);
+            if (file_exists(IA_ROOT . '/addons/' . $module_info['name'] . '/preview-custom.jpg')) {
+                $module_info['preview'] = tomedia(IA_ROOT . '/addons/' . $module_info['name'] . '/preview-custom.jpg', '', true);
+            }
+            $module_receive_ban = (array)SettingService::Load('module_receive_ban');
+            if (is_array($module_receive_ban['module_receive_ban']) && in_array($name, $module_receive_ban['module_receive_ban'])) {
+                $module_info['is_receive_ban'] = true;
+            }
+            $module_ban = (array)SettingService::Load('module_ban');
+            if (is_array($module_ban['module_ban']) && in_array($name, $module_ban['module_ban'])) {
+                $module_info['is_ban'] = true;
+            }
+            $module_upgrade = (array)SettingService::Load('module_upgrade');
+            if (is_array($module_upgrade['module_upgrade']) && in_array($name, array_keys($module_upgrade['module_upgrade']))) {
+                $module_info['is_upgrade'] = true;
+            }
+
+            $module_info['recycle_info'] = array();
+            $recycle_info = DB::table('modules_recycle')->where('name',$name)->first();
+            if (!empty($recycle_info)) {
+                $is_delete = true;
+                $account_support = array(
+                    'account_support' => array(
+                        'type' => 'account',
+                        'type_name' => '公众号',
+                        'support' => 2,
+                        'not_support' => 1,
+                        'store_type' => 1,
+                    )
+                );
+                foreach ($account_support as $support => $value) {
+                    if (!empty($recycle_info[2][$support])) {
+                        $module_info['recycle_info'][$support] = 2; 				} else {
+                        $module_info['recycle_info'][$support] = empty($recycle_info[1][$support]) ? 0 : 1;
+                    }
+                    if ($module_info[$support] == $value['support'] && empty($module_info['recycle_info'][$support])) {
+                        $is_delete = false;
+                    }
+                }
+                $module_info['is_delete'] = $is_delete; 		}
+
+            $module = $module_info;
+            Cache::put($cachekey, $module_info, 86400*7);
+        }
+
+        if (!empty($enabled)) {
+            if (!empty($module['is_delete'])) {
+                return array();
+            }
+        }
+
+        if (!empty($module) && !empty($_W['uniacid'])) {
+            $setting_cachekey = CacheService::system_key('module_setting', array('module_name' => $name, 'uniacid' => $_W['uniacid']));
+            $setting = Cache::get($setting_cachekey,array());
+            if (empty($setting)) {
+                $setting = DB::table('uni_account_modules')->where(array('module'=>$name,'uniacid'=>$_W['uniacid']))->first();
+                $setting = empty($setting) ? array('module' => $name) : $setting;
+                Cache::put($setting_cachekey, $setting, 86400*7);
+            }
+            $module['config'] = $setting['settings'];
+            $module['enabled'] = $module['issystem'] || !isset($setting['enabled']) ? 1 : $setting['enabled'];
+            $module['displayorder'] = $setting['displayorder'];
+            $module['shortcut'] = $setting['shortcut'];
+            $module['module_shortcut'] = $setting['module_shortcut'];
+        }
+        return $module;
     }
 
     static function ModuleData($application,$subscribes=array(),$handles=array()){

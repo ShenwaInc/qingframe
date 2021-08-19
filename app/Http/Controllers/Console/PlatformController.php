@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Console;
 use App\Http\Controllers\Controller;
 use App\Models\Account;
 use App\Services\AccountService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -86,6 +87,17 @@ class PlatformController extends Controller
         }
 
         return $this->globalview('console.platform',array('list'=>$list,'total'=>$total));
+    }
+
+    public function checkout(Request $request,$uniacid){
+        global $_W;
+        $_W['uniacid'] = intval($uniacid);
+        $request->session()->put('uniacid',$_W['uniacid']);
+        $lastuse = DB::table('users_lastuse')->where(array('uid'=>$_W['uid'],'uniacid'=>$_W['uniacid']))->value('modulename');
+        if (empty($lastuse)){
+            $lastuse = $_W['config']['defaultmodule'];
+        }
+        return redirect("console/m/{$lastuse}");
     }
 
     public function account($uniacid){

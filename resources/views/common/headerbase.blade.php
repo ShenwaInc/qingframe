@@ -9,7 +9,9 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="format-detection" content="telephone=no">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="shortcut icon" href="{{ asset($_W['page']['icon']) }}" />
+    <meta name="description" content="{{ $_W['page']['description'] }}" />
+    <meta name="keywords" content="{{ $_W['page']['keywords'] }}" />
+    <link rel="shortcut icon" href="{{ tomedia($_W['page']['icon']) }}" />
     <title>
         @if(!empty($title))
             {{ $title }} -

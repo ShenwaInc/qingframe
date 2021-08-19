@@ -11,6 +11,32 @@ function uni_setting_load($name = '', $uniacid = 0){
     return \App\Services\SettingService::uni_load($name, $uniacid);
 }
 
+function checksubmit($var){
+    global $_GPC,$_W;
+    return $_W['ispost'] && isset($_GPC[$var]);
+}
+
+function wurl($segment, $params = array(), $contain_domain = false){
+    global $_W;
+    $url = 'console';
+    if ($contain_domain){
+        $url = $_W['siteroot'] . $url;
+    }else{
+        $url = '/' . $url;
+    }
+    if (strexists($segment,'.')){
+        $segment = str_replace('.','/',$segment);
+    }
+    if (!empty($segment)){
+        $url .= '/' . $segment;
+    }
+    if (!empty($params)) {
+        $queryString = http_build_query($params, '', '&');
+        $url .= '?' . $queryString;
+    }
+    return $url;
+}
+
 function tomedia($src, $local_path = false, $is_cahce = false) {
     global $_W;
     $src = trim($src);
@@ -49,7 +75,7 @@ function tomedia($src, $local_path = false, $is_cahce = false) {
         $urls = parse_url($src);
         $src = $t = substr($urls['path'], strpos($urls['path'], 'images'));
     }
-    $uni_remote_setting = uni_setting_load('remote');
+    $uni_remote_setting = \App\Services\SettingService::uni_load('remote');
     if ($local_path || empty($_W['setting']['remote']['type']) && (empty($_W['uniacid']) || !empty($_W['uniacid']) && empty($uni_remote_setting['remote']['type'])) || file_exists(IA_ROOT . '/' . $_W['config']['upload']['attachdir'] . '/' . $src)) {
         $src = $_W['siteroot'] . $_W['config']['upload']['attachdir'] . '/' . $src;
     } else {

@@ -17,11 +17,11 @@ class Controller extends BaseController
         if ($redirect && isset($extra['light']) && $extra['light']!=''){
             $msg = str_replace($extra['light'],'<a href="'.$redirect.'" class="message-light">'.$extra['light'].'</a>',$msg);
         }
-        $data = array('message'=>$msg,'redirect'=>$redirect,'type'=>$type, '_W'=>$_W);
+        $data = array('message'=>$msg,'redirect'=>$redirect,'type'=>$type);
         if ($_W['isajax']){
             return json_encode($data);
         }else{
-            return response()->view('message', $data, 200)->header('Content-Type','text/html; charset=UTF-8')->content();
+            return $this->globalview('message', $data);
         }
     }
 

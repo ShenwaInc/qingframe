@@ -99,23 +99,29 @@
                         </div>
                         <div class="layui-col-md12">
                             <div class="padding">
-                            @if($dbconnect==0)
-                                <fieldset class="layui-elem-field layui-field-title site-title">
-                                    <legend><a name="passport"></a></legend>
-                                </fieldset>
                                 <div class="layui-form-item must">
-                                    <label class="layui-form-label">超管账号</label>
+                                    <label class="layui-form-label">系统名称</label>
                                     <div class="layui-input-block">
-                                        <input type="text" required lay-verify="required" name="username" value="admin" placeholder="请输入超级管理员(创始人)登录账号" autocomplete="off" class="layui-input">
+                                        <input type="text" required lay-verify="required" name="appname" value="Whotalk" placeholder="请输入系统软件名称" autocomplete="off" class="layui-input">
                                     </div>
                                 </div>
+                                @if($dbconnect==0)
+                                    <fieldset class="layui-elem-field layui-field-title site-title">
+                                        <legend><a name="passport"></a></legend>
+                                    </fieldset>
+                                    <div class="layui-form-item must">
+                                        <label class="layui-form-label">超管账号</label>
+                                        <div class="layui-input-block">
+                                            <input type="text" required lay-verify="required" name="username" value="admin" placeholder="请输入超级管理员(创始人)登录账号" autocomplete="off" class="layui-input">
+                                        </div>
+                                    </div>
                                     <div class="layui-form-item must">
                                         <label class="layui-form-label">登录密码</label>
                                         <div class="layui-input-block">
                                             <input type="text" required lay-verify="required" name="password" value="123456" placeholder="请输入超级管理员登录密码" autocomplete="off" class="layui-input">
                                         </div>
                                     </div>
-                            @endif
+                                @endif
                                 <div class="text-center">
                                     <button type="submit" lay-submit lay-filter="formDemo" class="layui-btn layui-btn-lg layui-btn-normal">立即安装</button>
                                 </div>
