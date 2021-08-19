@@ -30,7 +30,7 @@ Route::group(['prefix' => 'console', 'namespace' => 'Console', 'middleware'=>['a
     Route::post('/setting', 'SettingController@save');
     Route::get('/account/{uniacid}', 'PlatformController@checkout')->where('uniacid','[0-9]+');
     Route::get('/account/{action}', 'PlatformController@account')->where('action','[a-z]+');
-    Route::get('/m/{modulename}/{do?}', 'ModuleController@entry');
+    Route::any('/m/{modulename}/{do?}', 'ModuleController@entry');
 });
 
 Route::group(['prefix'=>'installer', 'middleware'=>[\App\Http\Middleware\Installed::class]],function (){
