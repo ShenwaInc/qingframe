@@ -100,7 +100,7 @@ class WeModule
         }
         if (defined('IN_SYS')) {
             $source = IA_ROOT . "/web/themes/{$_W['template']}/{$name}/{$filename}.html";
-            $compile = IA_ROOT . "/data/tpl/web/{$_W['template']}/{$name}/{$filename}.tpl.php";
+            $compile = storage_path("framework/tpls/web/{$name}/{$filename}.tpl.php");
             if (!is_file($source)) {
                 $source = IA_ROOT . "/web/themes/default/{$name}/{$filename}.html";
             }
@@ -115,7 +115,7 @@ class WeModule
             }
         } else {
             $source = IA_ROOT . "/app/themes/{$_W['template']}/{$name}/{$filename}.html";
-            $compile = IA_ROOT . "/data/tpl/app/{$_W['template']}/{$name}/{$filename}.tpl.php";
+            $compile = storage_path("framework/tpls/app/{$_W['template']}/{$name}/{$filename}.tpl.php");
             if (!is_file($source)) {
                 $source = IA_ROOT . "/app/themes/default/{$name}/{$filename}.html";
             }

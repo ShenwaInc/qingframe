@@ -20,3 +20,4 @@ yarn-error.log
 /component/
 /storage/patch/*
 /bootstrap/com*
+/public/data/
