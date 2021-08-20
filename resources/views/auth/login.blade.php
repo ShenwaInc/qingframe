@@ -31,7 +31,7 @@
 
                 <div class="layadmin-user-login-main">
                     <div class="layadmin-user-login-box layadmin-user-login-header">
-                        <p class="text-lg">Whotalk后台管理系统</p>
+                        <p class="text-lg">{{ env('APP_NAME','Whotalk') }}后台管理系统</p>
                     </div>
                     <div class="layadmin-user-login-box layadmin-user-login-body layui-form">
                         <form action="{{ url('auth/login') }}" id="loginform" method="post">

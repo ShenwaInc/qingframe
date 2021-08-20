@@ -24,8 +24,29 @@ class SocketService
             'addtime'=>TIMESTAMP,
             'dateline'=>TIMESTAMP
         ));
+        //更新安装包文件
+        $initshell = self::InitShell();
+        if (is_error($initshell)) return $initshell;
         //初始化域名白名单
         return CloudService::CloudSocket();
+    }
+
+    static function InitShell(){
+        if (file_exists(base_path('socket/install_socket.sh'))){
+            $installfile = base_path("socket/install_socket.sh");
+            $reader = fopen($installfile,'r');
+            $socketdata = fread($reader,filesize($installfile));
+            fclose($reader);
+            if (strexists($socketdata,'{{GOPATH}}')){
+                $basepath = str_replace('\\','/',base_path('socket'));
+                $socketdata = str_replace('{{GOPATH}}',$basepath,$socketdata);
+                $writer = fopen($installfile,'w');
+                $complete = fwrite($writer,$socketdata);
+                fclose($writer);
+                if (!$complete) return error(-1,'SOCKET安装脚本写入失败');
+            }
+        }
+        return true;
     }
 
 }

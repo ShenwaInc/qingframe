@@ -212,7 +212,7 @@ class CloudService
             FileService::rmdirs($patchpath);
         }
         $zip = new \ZipArchive();
-        $openRes = $zip->open($fullname, \ZipArchive::OVERWRITE);
+        $openRes = $zip->open($fullname);
         if ($openRes === TRUE) {
             $zip->extractTo($patchpath);
             $zip->close();
@@ -229,7 +229,7 @@ class CloudService
 
     static function CloudCompare($structures=array(),$target='',$basedir=''){
         if (empty($structures) || !$target) return false;
-        if (!is_dir($target)) return  false;
+        if (!is_dir($target)) return  $structures;
         $difference = array();
         foreach ($structures as $item){
             if (is_array($item)){
@@ -261,7 +261,14 @@ class CloudService
 
     static function CloudPatch($target,$source,$overwrite=false){
         if (!$target || !$source) return false;
-        if (!is_dir($target) || !is_dir($source)) return  false;
+        if (!is_dir($target)){
+            if ($overwrite){
+                FileService::mkdirs($target);
+            }else{
+                return false;
+            }
+        }
+        if (!is_dir($source)) return  false;
         $handle = dir($source);
         if ($dh = opendir($source)){
             while ($entry = $handle->read()) {

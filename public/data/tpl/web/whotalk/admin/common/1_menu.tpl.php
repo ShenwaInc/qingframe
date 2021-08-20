@@ -46,7 +46,7 @@
                 <dd><a href="<?php  echo weburl('system/passport')?>" data-width="460" class="ajaxshow"><span class="layui-icon layui-icon-password"></span>&nbsp;修改密码</a></dd>
                 <hr style="margin: 5px 0;">
                 <dd><a href="javascript:;" layadmin-event="updateCache"><span class="layui-icon layui-icon-refresh"></span>&nbsp;更新缓存</a></dd>
-                <?php  if($_W['isfounder'] || !$_S['basic']['hidecopyright']) { ?><dd><a href="<?php  echo url('console')?>" target="_blank"><span class="layui-icon layui-icon-website"></span>&nbsp;平台管理</a></dd><?php  } ?>
+                <?php  if($_W['isfounder'] || !$_S['basic']['hidecopyright']) { ?><dd><a href="<?php  echo url('console')?>"><span class="layui-icon layui-icon-website"></span>&nbsp;返回系统</a></dd><?php  } ?>
                 <dd><a href="<?php  echo weburl('logout')?>" onclick="if(!confirm('退出后需要重新登录，是否确定要退出？')){return false;}"><span class="layui-icon layui-icon-password"></span>&nbsp;退出登录</a></dd>
             </dl>
         </li>

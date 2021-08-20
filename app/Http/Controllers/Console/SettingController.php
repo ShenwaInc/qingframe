@@ -8,6 +8,7 @@ use App\Services\ModuleService;
 use App\Services\SettingService;
 use App\Services\SocketService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -106,7 +107,7 @@ class SettingController extends Controller
                 $return['components'] = $components;
             }
         }elseif ($op=='comcheck'){
-            $component = DB::table('gxswa_cloud')->where('id',intval($_GPC['cid']))->first(['id','identity','type','releasedate','rootpath']);
+            $component = DB::table('gxswa_cloud')->where('id',intval($_GPC['cid']))->first(['id','identity','type','online','releasedate','rootpath']);
             if (empty($component)) return $this->message('找不到该服务组件');
             $cloudinfo = $this->checkcloud($component);
             if (is_error($cloudinfo)){
@@ -114,7 +115,7 @@ class SettingController extends Controller
             }
             return $this->message('检测完成！',url('console/setting/component'),'success');
         }elseif ($op=='comupdate'){
-            $component = DB::table('gxswa_cloud')->where('id',intval($_GPC['cid']))->first(['id','identity','type','releasedate','rootpath']);
+            $component = DB::table('gxswa_cloud')->where('id',intval($_GPC['cid']))->first(['id','identity','modulename','type','releasedate','rootpath']);
             if (empty($component)) return $this->message('找不到该组件信息');
             $cloudinfo = $this->checkcloud($component,2);
             if ($cloudinfo['isnew']){
@@ -125,9 +126,21 @@ class SettingController extends Controller
                 }
             }
             if ($component['type']==1){
-                $moduleupdate = ModuleService::upgrade($component['identity']);
+                //模块升级
+                $identity = !empty($component['modulename']) ? $component['modulename'] : $component['identity'];
+                $moduleupdate = ModuleService::upgrade($identity);
                 if (is_error($moduleupdate)) return $this->message($moduleupdate['message']);
             }else{
+                if ($component['type']==0){
+                    //框架升级，未完善
+                    //Artisan::call('whotalk:upgrade');
+                    //更新路由
+                    Artisan::call('route:clear');
+                }
+                if ($component['identity']=='laravel_whotalk_socket'){
+                    //更新SOCKET初始化
+                    SocketService::InitShell();
+                }
                 unset($cloudinfo['structure']);
                 $cloudinfo['isnew'] = false;
                 DB::table('gxswa_cloud')->where('id',$component['id'])->update(array(
@@ -170,7 +183,12 @@ class SettingController extends Controller
                 $ugradeinfo['difference'] = $difference;
             }
         }
-        if ($fromcache) return $ugradeinfo;
+        if ($fromcache){
+            $onlineinfo = $component['online'] ? unserialize($component['online']) : array();
+            if ($onlineinfo['isnew']==$ugradeinfo['isnew']){
+                return $ugradeinfo;
+            }
+        }
         unset($ugradeinfo['structure']);
         $update = array('dateline'=>TIMESTAMP,'online'=>serialize($ugradeinfo));
         pdo_update('gxswa_cloud',$update,array('identity'=>$component['identity']));

@@ -17,7 +17,7 @@
                     {{$_W['user']['username']}}
                 </a>
                 <dl id="layui-admin-usermenu" class="layui-nav-child layui-anim layui-anim-upbit">
-                    <dd><a href="{{url('user/profile')}}">账户管理</a></dd>
+                    <dd><a href="{{ wurl('user/profile') }}">账户管理</a></dd>
                     @if($_W['isfounder'])
                         @if($_W['config']['site']['id']==0)
                         <dd>
