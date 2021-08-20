@@ -16,7 +16,7 @@ jQuery(function () {
         var memberpicker = $(this).data('mp');
         var _this = this;
         if(keyword=='') return false;
-        $.ajax({url:'<?php  echo weburl("util/memberpicker")?>',type:'POST',data:{token:'<?php  echo $_W["token"];?>',keyword:keyword},dataType:'html',success:function (Html) {
+        $.ajax({url:'<?php  echo weburl("util/memberpicker")?>',type:'POST',data:{_token:'<?php  echo $_W["token"];?>',keyword:keyword},dataType:'html',success:function (Html) {
             $('.'+memberpicker+'-menu').html(Html).removeClass('layui-hide');
             if($(_this).parent().hasClass('open')){
                 $(_this).dropdown('toggle');

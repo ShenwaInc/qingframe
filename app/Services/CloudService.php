@@ -251,8 +251,12 @@ class CloudService
                 $filepath = $basedir.$fileinfo[0];
                 if (!file_exists($target.$filepath)){
                     $difference[] = $item;
-                }elseif(md5_file($target.$filepath)!=$fileinfo[1]){
-                    $difference[] = $item;
+                }else{
+                    $md5 = md5_file($target.$filepath);
+                    $hash = substr($md5,0,4).substr($md5,-4);
+                    if($hash!=$fileinfo[1]){
+                        $difference[] = $item;
+                    }
                 }
             }
         }

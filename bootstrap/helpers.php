@@ -11,9 +11,31 @@ function uni_setting_load($name = '', $uniacid = 0){
     return \App\Services\SettingService::uni_load($name, $uniacid);
 }
 
-function checksubmit($var){
+function checksubmit($var='_token'){
     global $_GPC,$_W;
-    return $_W['ispost'] && isset($_GPC[$var]);
+    if (!$_W['ispost']) return false;
+    if ($_W['inconsole']){
+        $headers = request()->header('X-CSRF-TOKEN');
+        return !empty($_GPC[$var]) || !empty($headers);
+    }
+    return isset($_GPC[$var]);
+}
+
+function referer() {
+    global $_GPC, $_W;
+    $_W['referer'] = !empty($_GPC['referer']) ? $_GPC['referer'] : $_SERVER['HTTP_REFERER'];
+    $_W['referer'] = '?' == substr($_W['referer'], -1) ? substr($_W['referer'], 0, -1) : $_W['referer'];
+
+    $_W['referer'] = str_replace('&amp;', '&', $_W['referer']);
+    $reurl = parse_url($_W['referer']);
+
+    if (!empty($reurl['host']) && !in_array($reurl['host'], array($_SERVER['HTTP_HOST'], 'www.' . $_SERVER['HTTP_HOST'])) && !in_array($_SERVER['HTTP_HOST'], array($reurl['host'], 'www.' . $reurl['host']))) {
+        $_W['referer'] = $_W['siteroot'];
+    } elseif (empty($reurl['host'])) {
+        $_W['referer'] = $_W['siteroot'] . './' . $_W['referer'];
+    }
+
+    return strip_tags($_W['referer']);
 }
 
 function wurl($segment, $params = array(), $contain_domain = false){
@@ -43,9 +65,9 @@ function murl($segment, $params = array(), $noredirect = true, $addhost = false)
         $segment = str_replace('.','/',$segment);
     }
     if (!empty($addhost)) {
-        $url = $_W['siteroot'] . 'app';
+        $url = $_W['siteroot'] . "app/{$_W['uniacid']}";
     } else {
-        $url = '/app';
+        $url = "/app/{$_W['uniacid']}";
     }
 
     if (!empty($segment)){

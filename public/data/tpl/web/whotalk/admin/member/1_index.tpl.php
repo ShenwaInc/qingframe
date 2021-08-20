@@ -23,7 +23,7 @@
                                 <div class="layui-btn-container layui-inline">
                                     <a href="<?php  echo url('mc/member/add')?>" target="_blank" class="layui-btn layui-btn-normal" lay-tips="后台添加用户后，需要登录一次才会在此列表中出现">添加用户</a>
                                 </div>
-                                <input type="hidden" name="token" value="<?php  echo $_W['token'];?>" />
+                                <input type="hidden" name="_token" value="<?php  echo $_W['token'];?>" />
                                 <div class="layui-inline">
                                     <div class="layui-input-inline" style="width: 320px;">
                                         <input type="text" name="keyword" value="<?php  echo $_GPC['keyword'];?>" placeholder="请输入关键字搜索，如昵称/手机号/邮箱/UID" autocomplete="off" class="layui-input">
@@ -76,7 +76,7 @@
                     </div>
                     <?php  } ?>
                     <form class="layui-form" method="post" action="<?php  echo weburl('member/'.$_W['action'])?>" lay-filter="component-form-element">
-                        <input type="hidden" name="token" value="<?php  echo $_W['token'];?>" />
+                        <input type="hidden" name="_token" value="<?php  echo $_W['token'];?>" />
                         <?php  if($_W['action']=='list') { ?>
                         <table class="layui-table" style="margin-top: 0;" id="table-checkbox" lay-filter="advstable" lay-even>
                             <colgroup>
@@ -192,7 +192,7 @@ layui.use(['form','element'], function(){
     });
     form.on('switch(userstatus)',function(data){
         var uid = jQuery(data.elem).attr('data-uid');
-        var postdata = {uid:uid,token:'<?php  echo $_W["token"];?>',updatestatus:'yes',inajax:1,status:(data.elem.checked?1:0)};
+        var postdata = {uid:uid,_token:'<?php  echo $_W["token"];?>',updatestatus:'yes',inajax:1,status:(data.elem.checked?1:0)};
         jQuery.ajax({url:'<?php  echo weburl("member/list")?>',type:"POST",data:postdata,dataType: 'json',success:function (data) {
             layer.msg(data.message,{icon:(data.type=='success'?1:2)});
             if(data.type=='success'){
@@ -272,7 +272,7 @@ $(function () {
             title: '请输入起始UID（不能小于当前最大UID）',
             maxlength:20
         }, function(value, index){
-            $.ajax({url:'<?php  echo weburl("member/uidinit")?>',type:"POST",data: {token:'<?php  echo $_W["token"];?>',uidinit:value,submit:1},dataType: 'json',success:function (ret) {
+            $.ajax({url:'<?php  echo weburl("member/uidinit")?>',type:"POST",data: {_token:'<?php  echo $_W["token"];?>',uidinit:value,submit:1},dataType: 'json',success:function (ret) {
                     layer.close(index);
                     var icon = ret.type=='success' ? 1 : 2;
                     layer.msg(ret.message,{icon:icon});
@@ -292,7 +292,7 @@ $(function () {
             title: '请输入标签名（如标签不存在则自动创建）',
             maxlength:20
         }, function(value, index){
-            $.ajax({url:'<?php  echo weburl("member/batchtagging")?>',type:"POST",data: {token:'<?php  echo $_W["token"];?>',tagname:value,submit:1},dataType: 'json',success:function (ret) {
+            $.ajax({url:'<?php  echo weburl("member/batchtagging")?>',type:"POST",data: {_token:'<?php  echo $_W["token"];?>',tagname:value,submit:1},dataType: 'json',success:function (ret) {
                 layer.close(index);
                 var icon = ret.type=='success' ? 1 : 2;
                 layer.msg(ret.message,{icon:icon});

@@ -23,11 +23,11 @@
             <form action="{{ url('installer/database') }}" method="post" class="layui-form">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                 <input type="hidden" name="savedbset" value="true">
-                <div class="layui-form-item">
+                <div class="layui-form-item layui-hide">
                     <label class="layui-form-label">数据库连接</label>
                     <div class="layui-input-block">
                         <input type="radio" lay-filter="ctrls" data-target=".dbconnect" value="0" name="dbconnect" title="全新安装" checked="checked" />
-                        <input type="radio" lay-filter="ctrls" data-target=".dbconnect" value="1" name="dbconnect" title="指定微擎数据库" />
+                        <input type="radio" disabled lay-filter="ctrls" data-target=".dbconnect" value="1" name="dbconnect" title="指定微擎数据库" />
                     </div>
                 </div>
                 <div class="layui-form-item must">

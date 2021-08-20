@@ -20,8 +20,8 @@ class ConsolePermission
     public function handle($request, Closure $next)
     {
         global $_W;
-        $user = $request->user();
-        $_W['user'] = $user->toArray();
+        $_W['inconsole'] = true;
+        $_W['user'] = $request->user()->toArray();
         $_W['uid'] = $_W['user']['uid'];
         $_W['username'] = $_W['user']['username'];
         $_W['isfounder'] = UserService::isFounder($_W['uid']);

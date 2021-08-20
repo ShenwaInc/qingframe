@@ -6,7 +6,7 @@ use App\Services\CacheService;
 use App\Services\ModuleService;
 use Illuminate\Support\Facades\DB;
 
-define('IN_IA', true);
+define('IN_IA', 2);
 
 class WeModule
 {
@@ -69,28 +69,25 @@ class WeModule
         $row['settings'] = serialize($settings);
         $module = DB::table('uni_account_modules')->where(array('module'=>$this->modulename,'uniacid'=>$_W['uniacid']))->value('module');
         if ($module) {
-            $result = false !== pdo_update('uni_account_modules', $row, $pars);
+            $result = pdo_update('uni_account_modules', $row, $pars);
         } else {
-            $result = false !== pdo_insert('uni_account_modules', array('settings' => serialize($settings), 'module' => $this->modulename, 'uniacid' => $_W['uniacid'], 'enabled' => 1));
+            $result = pdo_insert('uni_account_modules', array('settings' => serialize($settings), 'module' => $this->modulename, 'uniacid' => $_W['uniacid'], 'enabled' => 1));
         }
-        CacheService::build_module($this->modulename);
+        CacheService::build_module($this->modulename, $_W['uniacid']);
 
         return $result;
     }
 
 
     protected function createMobileUrl($do, $query = array(), $noredirect = true) {
-        global $_W;
-        $query['do'] = $do;
-        $query['m'] = strtolower($this->modulename);
-
-        return murl('entry', $query, $noredirect);
+        $module_name = strtolower($this->modulename);
+        return murl("m/$module_name".($do?'/'.$do:''), $query, $noredirect);
     }
 
 
     protected function createWebUrl($do, $query = array()) {
         $module_name = strtolower($this->modulename);
-        return wurl("m/{$module_name}/{$do}", $query);
+        return wurl("m/{$module_name}".($do?'/'.$do:''), $query);
     }
 
 

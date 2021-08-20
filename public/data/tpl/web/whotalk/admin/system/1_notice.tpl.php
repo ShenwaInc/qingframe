@@ -26,7 +26,7 @@
                 <div class="layui-card-header">消息通知</div>
                 <div class="layui-card-body">
                     <form class="layui-form" id="system-notice-form" method="post" action="<?php  echo $this->createWebUrl('saveset')?>" lay-filter="component-form-element">
-                        <input type="hidden" name="token" value="<?php  echo $_W['token'];?>" />
+                        <input type="hidden" name="_token" value="<?php  echo $_W['token'];?>" />
                         <input type="hidden" name="showtab" id="showtab" value="" />
                         <div class="layui-tab">
                             <ul class="layui-tab-title">
@@ -198,7 +198,7 @@
                         autotplid:"true",
                         tid:tid,
                         submit:1,
-                        token:"<?php  echo $_W['token'];?>"
+                        _token:"<?php  echo $_W['token'];?>"
                     },
                     type:"POST",
                     dataType:"json",

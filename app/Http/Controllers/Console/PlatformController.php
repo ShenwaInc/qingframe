@@ -100,14 +100,4 @@ class PlatformController extends Controller
         return redirect("console/m/{$lastuse}");
     }
 
-    public function account($uniacid){
-        global $_W,$_GPC;
-    }
-
-    public function utils($uniacid){
-        die();
-    }
-
-    public function payment(){
-    }
 }

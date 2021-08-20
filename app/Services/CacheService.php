@@ -500,8 +500,8 @@ class CacheService
         return $cache_key;
     }
 
-    static function build_module($module_name){
-        $cachekey = self::system_key($module_name);
+    static function build_module($module_name,$uniacid){
+        $cachekey = self::system_key('module_setting', array('module_name' => $module_name, 'uniacid' => $uniacid));
         Cache::forget($cachekey);
     }
 

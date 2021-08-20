@@ -8,7 +8,6 @@ use App\Services\ModuleService;
 
 defined('IN_IA') or exit('Access Denied');
 
-
 function template($filename, $flag = 0) {
 	global $_W;
 	$source = IA_ROOT . "/web/themes/{$_W['template']}/{$filename}.html";

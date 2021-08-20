@@ -192,12 +192,12 @@ class ModuleService
         if (!empty($module) && !empty($_W['uniacid'])) {
             $setting_cachekey = CacheService::system_key('module_setting', array('module_name' => $name, 'uniacid' => $_W['uniacid']));
             $setting = Cache::get($setting_cachekey,array());
-            if (empty($setting)) {
+            if (!isset($setting['settings'])) {
                 $setting = DB::table('uni_account_modules')->where(array('module'=>$name,'uniacid'=>$_W['uniacid']))->first();
                 $setting = empty($setting) ? array('module' => $name) : $setting;
                 Cache::put($setting_cachekey, $setting, 86400*7);
             }
-            $module['config'] = $setting['settings'];
+            $module['config'] = unserialize($setting['settings']);
             $module['enabled'] = $module['issystem'] || !isset($setting['enabled']) ? 1 : $setting['enabled'];
             $module['displayorder'] = $setting['displayorder'];
             $module['shortcut'] = $setting['shortcut'];

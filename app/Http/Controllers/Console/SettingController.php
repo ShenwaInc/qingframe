@@ -23,6 +23,7 @@ class SettingController extends Controller
         if ($_W['config']['site']['id']==0){
             $activestate = CloudService::CloudActive();
             if ($activestate['status']==1){
+                $_W['config']['site']['id'] = $activestate['siteid'];
                 $steps = array('com','module','socket','initsite');
                 $op = in_array($op, $steps) ? trim($op) : 'index';
                 if ($op=='com'){
@@ -158,7 +159,6 @@ class SettingController extends Controller
 
     public function checkcloud($component,$compare=1,$nocache=false){
         $cachekey = "cloud:structure:{$component['identity']}";
-        $ugradeinfo = $nocache ? array() : Cache::get($cachekey,array());
         $fromcache = true;
         if (empty($ugradeinfo)){
             $fromcache = false;
@@ -167,21 +167,15 @@ class SettingController extends Controller
             );
             $ugradeinfo = CloudService::CloudApi('structure',$data);
             if (is_error($ugradeinfo)) return $ugradeinfo;
-            Cache::put($cachekey,$ugradeinfo,1800);
         }
         if ($compare==0) return $ugradeinfo;
         $structure = $ugradeinfo['structure'];
         $ugradeinfo['isnew'] = false;
-        $ugradeinfo['difference'] = array();
+        $ugradeinfo['difference'] = $this->compare($component,$ugradeinfo['structure']);
         if ($component['releasedate']<$ugradeinfo['releasedate'] && $compare<2){
             $ugradeinfo['isnew'] = true;
         }else{
-            $difference = $this->compare($component,$ugradeinfo['structure']);
-            $hasdifference = $this->hasdifference($difference,$component['type']);
-            if ($hasdifference){
-                $ugradeinfo['isnew'] = true;
-                $ugradeinfo['difference'] = $difference;
-            }
+            $ugradeinfo['isnew'] = $this->hasdifference($ugradeinfo['difference'],$component['type']);
         }
         if ($fromcache){
             $onlineinfo = $component['online'] ? unserialize($component['online']) : array();
@@ -189,21 +183,36 @@ class SettingController extends Controller
                 return $ugradeinfo;
             }
         }
-        unset($ugradeinfo['structure']);
+        $difference = $ugradeinfo['difference'];
+        unset($ugradeinfo['structure'],$ugradeinfo['difference']);
         $update = array('dateline'=>TIMESTAMP,'online'=>serialize($ugradeinfo));
         pdo_update('gxswa_cloud',$update,array('identity'=>$component['identity']));
         $ugradeinfo['structure'] = $structure;
+        $ugradeinfo['difference'] = $difference;
+        Cache::put($cachekey,$ugradeinfo,1800);
         return $ugradeinfo;
     }
 
     public function compare($component,$structure=''){
         if (!$structure) return array();
-        $targetpath = $component['type']==2 ? CloudService::com_path() : $component['rootpath'];
+        $targetpath = $component['type']==2 ? CloudService::com_path() : base_path($component['rootpath']);
         $structures = json_decode(base64_decode($structure), true);
         return CloudService::CloudCompare($structures,$targetpath);
     }
 
     public function hasdifference($difference,$type=0){
+        if (empty($difference)) return false;
+        if ($type==3){
+            foreach ($difference as $key=>$value){
+                if(!is_array($value)){
+                    $fileinfo = explode('|', $value);
+                    if ($fileinfo[0]=='install_socket.sh' && file_exists(base_path('socket/install_socket.sh'))){
+                        unset($difference[$key]);
+                        break;
+                    }
+                }
+            }
+        }
         if (empty($difference)) return false;
         return true;
     }
