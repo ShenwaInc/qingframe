@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class installController extends Controller
 {
@@ -218,7 +219,12 @@ class installController extends Controller
             //数据表检测，待完善
         }
         //创建文件符号链接
-        Artisan::call('storage:link');
+        try {
+            Artisan::call('storage:link');
+        }catch (\Exception $exception){
+            //创建文件映射失败
+            Log::error('storage_link_fail',array('errno'=>-1,'message'=>$exception->getMessage()));
+        }
         //写入配置文件
         $appname = !empty($manager['appname']) ? trim($manager['appname']) : 'Whotalk';
         $envfile_tmp = base_path(".env.example");
