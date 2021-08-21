@@ -10,17 +10,19 @@
     "require": {
         "php": "^7.2",
         "ext-curl": "*",
-        "ext-json": "*",
-        "ext-zlib": "*",
-        "fideloper/proxy": "^4.0",
-        "laravel/framework": "^6.0",
-        "laravel/tinker": "^1.0",
-        "ext-openssl": "*",
-        "ext-libxml": "*",
-        "ext-simplexml": "*",
         "ext-exif": "*",
         "ext-gd": "*",
-      "ext-zip": "*"
+        "ext-json": "*",
+        "ext-libxml": "*",
+        "ext-openssl": "*",
+        "ext-simplexml": "*",
+        "ext-zip": "*",
+        "ext-zlib": "*",
+        "fideloper/proxy": "^4.0",
+        "johnlui/aliyun-oss": "^2.2",
+        "laravel/framework": "^6.0",
+        "laravel/tinker": "^1.0",
+        "qcloud/cos-sdk-v5": "^2.2"
     },
     "require-dev": {
         "facade/ignition": "^1.4",

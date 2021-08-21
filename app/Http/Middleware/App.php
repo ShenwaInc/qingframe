@@ -8,7 +8,7 @@ use Closure;
 error_reporting(0);
 define('IA_ROOT', base_path('public'));
 define('MAGIC_QUOTES_GPC', (function_exists('get_magic_quotes_gpc') && @get_magic_quotes_gpc()) || @ini_get('magic_quotes_sybase'));
-define('ATTACHMENT_ROOT', IA_ROOT . '/attachment/');
+define('ATTACHMENT_ROOT', storage_path('app/public/'));
 define('TIMESTAMP', time());
 define('DEVELOPMENT', env('APP_DEVELOPMENT',0));
 global $_W,$_GPC;

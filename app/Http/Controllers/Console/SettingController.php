@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Console;
 
 use App\Http\Controllers\Controller;
+use App\Services\AttachmentService;
 use App\Services\CloudService;
 use App\Services\ModuleService;
 use App\Services\SettingService;
@@ -68,16 +69,17 @@ class SettingController extends Controller
 
     public function index($op='main'){
         global $_W,$_GPC;
-        $ajaxviews = array('socketset'=>'socketset','pageset'=>'settingpage','sockethelp'=>'socket','attachset'=>'settingupload');
+        $ajaxviews = array('socketset'=>'set.socket','pageset'=>'set.page','sockethelp'=>'socket','attachset'=>'set.upload','remoteset'=>'set.remote');
         $return = array('title'=>'站点设置','op'=>$op,'components'=>array());
         if (!isset($_W['setting']['page'])){
             $_W['setting']['page'] = $_W['page'];
         }
+        if (!isset($_W['setting']['remote'])){
+            $_W['setting']['remote'] = array('type'=>0);
+        }
+        $return['attachs'] = array('关闭','FTP','阿里云存储','七牛云存储','腾讯云存储','亚马逊S3');
         if (isset($ajaxviews[$op])){
             return $this->globalview("console.{$ajaxviews[$op]}",$return);
-        }
-        if (!isset($_W['setting']['swasocket']['whitelist'])){
-            $_W['setting']['swasocket']['whitelist'] = CloudService::CloudSocket('',1);
         }
         if ($op=='envdebug'){
             $debug = env('APP_DEBUG',false);
@@ -92,6 +94,9 @@ class SettingController extends Controller
             return $this->message('操作成功！',url('console/setting'),'success');
         }
         if ($op=='socket'){
+            if (!isset($_W['setting']['swasocket']['whitelist'])){
+                $_W['setting']['swasocket']['whitelist'] = CloudService::CloudSocket('',1);
+            }
             $return['usersign'] = md5("{$_W['uid']}-{$_W['config']['setting']['authkey']}-{$_W['config']['site']['id']}");
         }
         if ($op=='component'){
@@ -261,6 +266,7 @@ class SettingController extends Controller
             }
         }elseif ($op=='attachset'){
             $config = $_W['setting']['upload'];
+            if (!isset($_GPC['imgextentions']) || !isset($_GPC['mediaext'])) return $this->message();
             $config['image']['extentions'] = !empty($_GPC['imgextentions']) ? explode(',',trim($_GPC['imgextentions'])) : array();
             $config['image']['limit'] = intval($_GPC['imglimit']);
             $config['image']['zip_percentage'] = intval($_GPC['imgzip']);
@@ -284,6 +290,64 @@ class SettingController extends Controller
             if ($complete){
                 return $this->message('保存成功',url('console/setting'),'success');
             }
+        }elseif ($op=='remoteset'){
+            return $this->remoteset($request);
+        }
+        return $this->message();
+    }
+
+    public function remoteset(Request $request){
+        global $_W;
+        if (empty($_W['setting']['remote'])) $_W['setting']['remote'] = array('type'=>0);
+        $attachs = array('','ftp','alioss','qiniu','cos','s3');
+        $type = (int)$request->input('type');
+        $type = isset($attachs[$type]) ? $type : 0;
+        $method = $attachs[$type];
+        $config = $_W['setting']['remote'];
+        $config['type'] = $type;
+        if (!empty($method)){
+            $remote = $request->input($method);
+            if (empty($remote) && $type!=5) return $this->message('保存失败，请重试');
+            if ($method=='alioss'){
+                $ossClient = AttachmentService::InitOss($remote);
+                if (is_error($ossClient)) return false;
+                $remote['city'] = AttachmentService::alioss_city($remote['bucket']);
+                if (!isset($_W['setting']['remote']['alioss']) || $_W['setting']['remote']['alioss']['key']!=$remote['key'] || $_W['setting']['remote']['alioss']['bucket']!=$remote['bucket'] || $_W['setting']['remote']['alioss']['secret']!=$remote['secret']){
+                    $aliossupload = AttachmentService::alioss_upload('favicon.ico',storage_path('app/public/favicon.ico'), $remote, true);
+                    if (is_error($aliossupload)){
+                        return $this->message($aliossupload['message']);
+                    }
+                    $remoteurl = $ossClient->getPublicUrl('favicon.ico');
+                    $remote['url'] = str_replace('/favicon.ico','',$remoteurl);
+                }
+                $config['alioss'] = $remote;
+            }elseif ($method=='cos'){
+                if (empty($remote['appid']) || empty($remote['secretid']) || empty($remote['secretkey']) || empty($remote['bucket']) || empty($remote['local'])){
+                    return $this->message('腾讯云存储配置未完善');
+                }
+                if(empty($remote['url'])){
+                    $remote['url'] = sprintf('https://%s-%s.cos%s.myqcloud.com', trim($remote['bucket']), trim($remote['appid']), trim($remote['local']));
+                }
+                $defaultset = (array)$_W['setting']['remote']['cos'];
+                if ($remote['appid']!=$defaultset['appid'] || $remote['secretid']!=$defaultset['secretid'] || $remote['secretkey']!=$defaultset['secretkey'] || $remote['bucket']!=$defaultset['bucket'] || $remote['local']!=$defaultset['local'] || $remote['url']!=$defaultset['url']){
+                    $auth = AttachmentService::cos_upload('favicon.ico',$remote,true);
+                    if (is_error($auth)) {
+                        return $this->message($auth['message']);
+                    }
+                }
+                $config['cos'] = $remote;
+            }elseif ($method=='s3'){
+                $_config = config('filesystems');
+                $remote = $_config['disks']['s3'];
+                if (empty($remote['key']) || empty($remote['secret']) || empty($remote['region']) || empty($remote['bucket']) || empty($remote['url'])){
+                    return $this->message('AmazonS3配置未完善');
+                }
+                $config['s3'] = $remote;
+            }
+        }
+        $complete = SettingService::Save($config,'remote');
+        if ($complete){
+            return $this->message('保存成功',wurl('setting/attach'),'success');
         }
         return $this->message();
     }

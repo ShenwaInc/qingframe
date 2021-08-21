@@ -11,7 +11,7 @@ class CloudService
     static $cloudapi = 'https://chat.gxit.org/app/index.php?i=4&c=entry&m=swa_supersale&do=api';
     static $cloudactive = 'https://chat.gxit.org/app/index.php?i=4&c=entry&m=swa_supersale&do=app&r=whotalkcloud.active&siteroot=';
     static $apilist = array('getcom'=>'cloud.vendor','rmcom'=>'cloud.vendor.remove','require'=>'cloud.install','structure'=>'cloud.structure','upgrade'=>'cloud.makepatch');
-    static $vendors = array('aliyun'=>'阿里短信SDK','aop'=>'支付宝支付SDK','wxpayv3'=>'微信支付SDK','tim'=>'接口签名验证工具','getui'=>'APP推送SDK','alioss'=>'阿里云存储','cosv5'=>'腾讯云存储');
+    static $vendors = array('aliyun'=>'阿里短信SDK','aop'=>'支付宝支付SDK','wxpayv3'=>'微信支付SDK','tim'=>'接口签名验证工具','getui'=>'APP推送SDK');
     static $identity = 'swa_framework_laravel';
 
     static function ComExists($component){
@@ -20,7 +20,7 @@ class CloudService
 
     static function LoadCom($component){
         if (!self::ComExists($component)) return error(-1,'未安装对应组件:'.self::$vendors[$component]);
-        $mainclass = array('aliyun'=>'SmsDemo','aop'=>'AopClient','wxpayv3'=>'WxPayApi','tim'=>'TLSSigAPIv2','getui'=>'IGeTui','alioss'=>'\OSS\OssClient','cosv5'=>'\Qcloud\Cos\Client');
+        $mainclass = array('aliyun'=>'SmsDemo','aop'=>'AopClient','wxpayv3'=>'WxPayApi','tim'=>'TLSSigAPIv2','getui'=>'IGeTui');
         if (class_exists($mainclass[$component])) return true;
         $compath = self::com_path();
         switch ($component){
@@ -40,12 +40,6 @@ class CloudService
                 break;
             case 'getui' :
                 require_once "{$compath}getui/autoload.php";
-                break;
-            case 'cosv5' :
-                include_once "{$compath}cosv5/index.php";
-                break;
-            case 'alioss' :
-                include_once "{$compath}alioss/src/autoload.php";
                 break;
             default :
                 break;

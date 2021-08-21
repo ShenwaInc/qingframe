@@ -31,7 +31,7 @@ return [
     ),
     'upload'=>array(
         'image'=>array('extentions'=>['gif', 'jpg', 'jpeg', 'png'],'limit'=>5000),
-        'attachdir'=>'attachment',
-        'audio'=>array('extentions'=>array('mp3'),'limit'=>5000)
+        'attachdir'=>'storage',
+        'media'=>array('extentions'=>array('mp3','mp4','mov','avi','rm','rmvb','m3u8','amr','acc','3gp','vod'),'limit'=>5000)
     )
 ];

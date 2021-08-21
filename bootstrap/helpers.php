@@ -98,37 +98,23 @@ function tomedia($src, $local_path = false, $is_cahce = false) {
         $src .= '?v=' . time();
     }
 
-    if (strexists($src, 'c=utility&a=wxcode&do=image&attach=')) {
-        return $src;
-    }
-
     $t = strtolower($src);
     if (strexists($t, '//mmbiz.qlogo.cn') || strexists($t, '//mmbiz.qpic.cn')) {
-        $url = url('utility/wxcode/image', array('attach' => $src));
+        $url = '?a=image&attach='.$src;
 
-        return $_W['siteroot'] . 'web' . ltrim($url, '.');
+        return url('console/util/wxcode') . ltrim($url, '.');
     }
 
-    if ('//' == substr($src, 0, 2)) {
-        return 'http:' . $src;
+    if (\Str::startsWith($src,'https://')) {
+        return ($_W['ishttps']?'https:':'http:') . $src;
     }
-    if (('http://' == substr($src, 0, 7)) || ('https://' == substr($src, 0, 8))) {
+    if (\Str::startsWith($src,'http://') || \Str::startsWith($src,'https://')) {
         return $src;
     }
 
-    if (strexists($src, 'addons/')) {
-        return $_W['siteroot'] . substr($src, strpos($src, 'addons/'));
-    }
-    if (strexists($src, 'app/themes/')) {
-        return $_W['siteroot'] . substr($src, strpos($src, 'app/themes/'));
-    }
-    if (strexists($src, $_W['siteroot']) && !strexists($src, '/addons/')) {
-        $urls = parse_url($src);
-        $src = $t = substr($urls['path'], strpos($urls['path'], 'images'));
-    }
     $uni_remote_setting = \App\Services\SettingService::uni_load('remote');
-    if ($local_path || empty($_W['setting']['remote']['type']) && (empty($_W['uniacid']) || !empty($_W['uniacid']) && empty($uni_remote_setting['remote']['type'])) || file_exists(IA_ROOT . '/' . $_W['config']['upload']['attachdir'] . '/' . $src)) {
-        $src = $_W['siteroot'] . $_W['config']['upload']['attachdir'] . '/' . $src;
+    if ($local_path || empty($_W['setting']['remote']['type']) && (empty($_W['uniacid']) || !empty($_W['uniacid']) && empty($uni_remote_setting['remote']['type'])) || file_exists(storage_path("app/public/{$src}") )) {
+        $src = $_W['siteroot'] . 'storage/' . $src;
     } else {
         if (!empty($uni_remote_setting['remote']['type'])) {
             if (1 == $uni_remote_setting['remote']['type']) {

@@ -223,8 +223,95 @@
         </div>
         <div class="fui-card layui-card">
             <div class="layui-card-header nobd">
-                <a href="javascript:;" class="fr text-muted">敬请期待</a>
+                <a href="{{ url('console/setting/remoteset') }}" class="fr text-blue ajaxshow" title="修改远程附件配置"><i class="glyphicon glyphicon-edit"></i></a>
                 <span class="title">远程附件</span>
+            </div>
+            <div class="layui-card-body">
+                <div class="un-padding">
+                    <table class="layui-table fui-table lines" lay-skin="nob">
+                        <colgroup>
+                            <col width="120" />
+                            <col />
+                            <col width="100" />
+                        </colgroup>
+                        <tbody>
+                            <tr>
+                                <td><span class="fui-table-lable">远程附件设置</span></td>
+                                <td class="soild-after">{{ $attachs[$_W['setting']['remote']['type']] }}</td>
+                                <td class="text-right soild-after"></td>
+                            </tr>
+                        @if($_W['setting']['remote']['type']==2)
+                            <tr>
+                                <td><span class="fui-table-lable">Account Key</span></td>
+                                <td class="soild-after">已配置</td>
+                                <td class="text-right soild-after"></td>
+                            </tr>
+                            <tr>
+                                <td><span class="fui-table-lable">Bucket名称</span></td>
+                                <td class="soild-after">{{ $_W['setting']['remote']['alioss']['bucket'] }}</td>
+                                <td class="text-right soild-after"></td>
+                            </tr>
+                            <tr>
+                                <td><span class="fui-table-lable">所在地区</span></td>
+                                <td class="soild-after">{{ $_W['setting']['remote']['alioss']['city'] }}</td>
+                                <td class="text-right soild-after"></td>
+                            </tr>
+                            <tr>
+                                <td><span class="fui-table-lable">外网访问地址</span></td>
+                                <td class="soild-after">{{ $_W['setting']['remote']['alioss']['url'] }}</td>
+                                <td class="text-right soild-after"></td>
+                            </tr>
+                        @elseif($_W['setting']['remote']['type']==4)
+                            <tr>
+                                <td><span class="fui-table-lable">APPID</span></td>
+                                <td class="soild-after">{{ $_W['setting']['remote']['cos']['appid'] }}</td>
+                                <td class="text-right soild-after"></td>
+                            </tr>
+                            <tr>
+                                <td><span class="fui-table-lable">API密钥</span></td>
+                                <td class="soild-after"> 已配置 </td>
+                                <td class="text-right soild-after"></td>
+                            </tr>
+                            <tr>
+                                <td><span class="fui-table-lable">Bucket名称</span></td>
+                                <td class="soild-after"> {{ $_W['setting']['remote']['cos']['bucket'] }} ({{ $_W['setting']['remote']['cos']['local'] }}) </td>
+                                <td class="text-right soild-after"></td>
+                            </tr>
+                            <tr>
+                                <td><span class="fui-table-lable">外网访问地址</span></td>
+                                <td class="soild-after">{{ $_W['setting']['remote']['cos']['url'] }}</td>
+                                <td class="text-right soild-after"></td>
+                            </tr>
+                        @elseif($_W['setting']['remote']['type']==5)
+                            <tr>
+                                <td><span class="fui-table-lable">AWS_KEY_ID</span></td>
+                                <td class="soild-after">{{ env('AWS_ACCESS_KEY_ID', '未配置') }}</td>
+                                <td class="text-right soild-after"></td>
+                            </tr>
+                            <tr>
+                                <td><span class="fui-table-lable">AWS_SECRET</span></td>
+                                <td class="soild-after">{{ env('AWS_SECRET_ACCESS_KEY', '未配置') }}</td>
+                                <td class="text-right soild-after"></td>
+                            </tr>
+                            <tr>
+                                <td><span class="fui-table-lable">AWS_REGION</span></td>
+                                <td class="soild-after">{{ env('AWS_DEFAULT_REGION', '未配置') }}</td>
+                                <td class="text-right soild-after"></td>
+                            </tr>
+                            <tr>
+                                <td><span class="fui-table-lable">AWS_BUCKET</span></td>
+                                <td class="soild-after">{{ env('AWS_BUCKET', '未配置') }}</td>
+                                <td class="text-right soild-after"></td>
+                            </tr>
+                            <tr>
+                                <td><span class="fui-table-lable">AWS_URL</span></td>
+                                <td class="soild-after">{{ env('AWS_URL', '未配置') }}</td>
+                                <td class="text-right soild-after"></td>
+                            </tr>
+                        @endif
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     @else
@@ -387,11 +474,5 @@
     @endif
 
 </div>
-
-<script type="text/javascript">
-    layui.use(['element'],function (){
-        var element = layui.element;
-    });
-</script>
 
 @include('common.footer')

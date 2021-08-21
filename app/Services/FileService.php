@@ -5,7 +5,10 @@ namespace App\Services;
 
 
 use App\Utils\Image;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
+use Qcloud\Cos\Client;
 
 class FileService
 {
@@ -189,6 +192,49 @@ class FileService
         return $path;
     }
 
+    static function Upload(Request $request,$type='image',$field='file'){
+        global $_W;
+        if (!$request->hasFile($field)) return error(-1,'没有上传内容');
+        if (!in_array($type, array('image', 'media', 'attach'))) {
+            return error(-2, '未知的上传类型');
+        }
+        $harmtype = array('asp', 'php', 'jsp', 'js', 'css', 'php3', 'php4', 'php5', 'ashx', 'aspx', 'exe', 'cgi');
+        $Upload = $request->file($field);
+        $ext = $Upload->getClientOriginalExtension();
+        $size = $Upload->getSize();
+        $setting = SettingService::Load('upload');
+        if (in_array($ext, $harmtype)){
+            return error(-3, '不允许上传此类文件');
+        }
+        if ($type!='attach'){
+            $allowExt = $setting['upload'][$type]['extentions'];
+            $limit = $setting['upload'][$type]['limit'];
+            if (!in_array($ext, $allowExt)) {
+                return error(-3, '不允许上传此类文件');
+            }
+            if (!empty($limit) && $limit * 1024 < $size) {
+                return error(-4, "上传的文件超过大小限制({$size}byte)");
+            }
+        }
+        $path = $Upload->store("{$type}s/{$_W['uniacid']}/".date('Y/m'));
+        if (!$path) return error(-1,'上传失败，请重试');
+        //图片压缩
+        if ($type=='image'){
+            $quality = intval($setting['upload']['image']['zip_percentage']);
+            if ($quality>0 && $quality<100){
+                $savepath = ATTACHMENT_ROOT . $path;
+                self::file_image_quality($savepath, $savepath, $ext);
+            }
+        }
+        //远程附件
+        $remotesave = self::file_remote_upload($path);
+        if (is_error($remotesave)){
+            Log::error("remote{$_W['uniacid']}_error",$remotesave);
+            //return error(-1,"远程附件上传失败：{$remotesave['message']}");
+        }
+        return $path;
+    }
+
     static function file_upload($file, $type = 'image', $name = '', $compress = false) {
         $harmtype = array('asp', 'php', 'jsp', 'js', 'css', 'php3', 'php4', 'php5', 'ashx', 'aspx', 'exe', 'cgi');
         if (empty($file)) {
@@ -344,7 +390,6 @@ class FileService
         return $result;
     }
 
-
     public static function file_remote_upload($filename, $auto_delete_local = true) {
         global $_W;
         if (empty($_W['setting']['remote']['type'])) {
@@ -353,44 +398,25 @@ class FileService
         if ($_W['setting']['remote']['type'] == 1) {
             return error(1, '远程附件上传失败，暂不支持FTP');
         } elseif ($_W['setting']['remote']['type'] == 2) {
-            $loadoss = CloudService::LoadCom('alioss');
-            if (is_error($loadoss)) return $loadoss;
-            $buckets = AttachmentService::alioss_buctkets($_W['setting']['remote']['alioss']['key'], $_W['setting']['remote']['alioss']['secret']);
-            $host_name = $_W['setting']['remote']['alioss']['internal'] ? '-internal.aliyuncs.com' : '.aliyuncs.com';
-            $endpoint = 'http://' . $buckets[$_W['setting']['remote']['alioss']['bucket']]['location'] . $host_name;
             try {
-                $ossClient = new \OSS\OssClient($_W['setting']['remote']['alioss']['key'], $_W['setting']['remote']['alioss']['secret'], $endpoint);
-                $ossClient->uploadFile($_W['setting']['remote']['alioss']['bucket'], $filename, ATTACHMENT_ROOT . $filename);
-            } catch (\OSS\Core\OssException $e) {
-                return error(1, $e->getMessage());
-            }
-            if ($auto_delete_local) {
-                self::file_delete($filename);
+                AttachmentService::alioss_upload($filename, ATTACHMENT_ROOT . $filename);
+                if ($auto_delete_local) {
+                    self::file_delete($filename);
+                }
+            }catch (\Exception $exception){
+                return error(-1,$exception->getMessage());
             }
         } elseif ($_W['setting']['remote']['type'] == 3) {
             return error(1, '远程附件上传失败，暂不支持七牛云存储');
         } elseif ($_W['setting']['remote']['type'] == 4) {
-            $loadcos = CloudService::LoadCom('cosv5');
-            if (is_error($loadcos)) return $loadcos;
-            try {
-                $bucket = $_W['setting']['remote']['cos']['bucket'] . '-' . $_W['setting']['remote']['cos']['appid'];
-                $cosClient = new \Qcloud\Cos\Client(
-                    array(
-                        'region' => $_W['setting']['remote']['cos']['local'],
-                        'credentials'=> array(
-                            'secretId'  => $_W['setting']['remote']['cos']['secretid'],
-                            'secretKey' => $_W['setting']['remote']['cos']['secretkey'])));
-                $cosClient->Upload($bucket, $filename, fopen(ATTACHMENT_ROOT . $filename, 'rb'));
-                if ($auto_delete_local) {
-                    self::file_delete($filename);
-                }
-            } catch (\Exception $e) {
-                return error(1, $e->getMessage());
+            $result = AttachmentService::cos_upload($filename,$_W['setting']['remote']['cos']);
+            if (is_error($result)) return $result;
+            if ($auto_delete_local) {
+                self::file_delete($filename);
             }
         }
         return true;
     }
-
 
     function file_dir_remote_upload($dir_path, $limit = 200) {
         global $_W;
@@ -419,7 +445,6 @@ class FileService
         return true;
     }
 
-
     public static function file_random_name($dir, $ext) {
         do {
             $filename = random(30) . '.' . $ext;
@@ -427,7 +452,6 @@ class FileService
 
         return $filename;
     }
-
 
     public static function file_delete($file) {
         global $_W;
@@ -481,7 +505,7 @@ class FileService
             try {
                 $key = $file;
                 $bucket = $_W['setting']['remote']['cos']['bucket'] . '-' . $_W['setting']['remote']['cos']['appid'];
-                $cosClient = new \Qcloud\Cos\Client(
+                $cosClient = new Client(
                     array(
                         'region' => $_W['setting']['remote']['cos']['local'],
                         'credentials'=> array(
@@ -497,7 +521,6 @@ class FileService
         }
         return true;
     }
-
 
     function file_image_thumb($srcfile, $desfile = '', $width = 0) {
         global $_W;
@@ -539,7 +562,6 @@ class FileService
         return str_replace(ATTACHMENT_ROOT . '/', '', $desfile);
     }
 
-
     function file_image_crop($src, $desfile, $width = 400, $height = 300, $position = 1) {
         $des = dirname($desfile);
         if (!file_exists($des)) {
@@ -554,7 +576,6 @@ class FileService
             ->crop($width, $height, $position)
             ->saveTo($desfile);
     }
-
 
     function file_lists($filepath, $subdir = 1, $ex = '', $isdir = 0, $md5 = 0, $enforcement = 0) {
         static $file_list = array();
@@ -588,7 +609,6 @@ class FileService
 
         return $file_list;
     }
-
 
     function file_remote_attach_fetch($url, $limit = 0, $path = '') {
         global $_W;
@@ -650,7 +670,6 @@ class FileService
         return $pathname;
     }
 
-
     public static function file_media_content_type($url) {
         $file_header = iget_headers($url, 1);
         if (empty($url) || !is_array($file_header)) {
@@ -700,7 +719,6 @@ class FileService
         return array('ext' => $ext, 'type' => $type);
     }
 
-
     function file_allowed_media($type) {
         global $_W;
         if (!in_array($type, array('image', 'audio'))) {
@@ -744,7 +762,6 @@ class FileService
         return true;
     }
 
-
     public static function file_image_quality($src, $to_path, $ext) {
         global $_W;
         if ('gif' == strtolower($ext)) {
@@ -766,8 +783,8 @@ class FileService
 
     public static function file_is_uni_attach($file) {
         global $_W;
-        if (!is_file($file)) {
-            return error(-1, '未找到的文件。');
+        if (!is_file($file) || !$_W['uniacid']) {
+            return false;
         }
 
         return strpos($file, "/{$_W['uniacid']}/") > 0;
@@ -799,7 +816,6 @@ class FileService
         return true;
     }
 
-
     public static function file_change_uni_attchsize($file, $is_add = true) {
         global $_W;
         if (!is_file($file)) {
@@ -830,6 +846,5 @@ class FileService
 
         return $result;
     }
-
 
 }

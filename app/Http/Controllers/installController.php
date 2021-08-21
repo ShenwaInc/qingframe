@@ -205,7 +205,7 @@ class installController extends Controller
                     'key'=>"upload",
                     'value'=>serialize(array(
                         'image'=>array('extentions'=>['gif','jpg','png','webp','jpeg'],'limit'=>5120,'zip_percentage'=>100),
-                        'attachdir'=>'attachment',
+                        'attachdir'=>'storage',
                         'media'=>array('extentions'=>['mp3','amr','wav','rm', 'rmvb', 'wmv', 'avi', 'mpg', 'mpeg', 'mp4'],'limit'=>51200)
                     ))
                 )
@@ -217,6 +217,8 @@ class installController extends Controller
             $uid = (int)$dbconnect->table('users')->where('founder_groupid',1)->orderBy('uid','asc')->value('uid');
             //数据表检测，待完善
         }
+        //创建文件符号链接
+        Artisan::call('storage:link');
         //写入配置文件
         $appname = !empty($manager['appname']) ? trim($manager['appname']) : 'Whotalk';
         $envfile_tmp = base_path(".env.example");

@@ -13,6 +13,12 @@
 </div>
 <script type="text/javascript">
     layui.use(['element','form','laydate','upload','code'],function (){
+        var form = layui.form,element = layui.element;
+        form.on('radio(ctrls)', function(data){
+            var target = $(data.elem).data('target');
+            $(target).addClass('layui-hide');;
+            $(target+'.form-item'+data.value).removeClass('layui-hide');
+        });
         $('.layui-fluid [lay-tips]').each(function (index,element) {
             $(element).on({
                 mouseenter:function () {
