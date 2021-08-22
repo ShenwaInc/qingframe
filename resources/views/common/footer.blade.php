@@ -167,10 +167,11 @@
                 ,exts:"{{ implode('|',$_W['setting']['upload']['image']['extentions']) }}"
                 ,data:{_token:"{{ csrf_token() }}"}
                 ,done:function (res, index, upload){
-                    if(res.type!=='success') return Core.report(res);
+                    if(typeof(res.type)!='undefined' && typeof(res.message)!='undefined') return Core.report(res);
+                    if(res.state!=='SUCCESS') return layer.msg('上传失败，请重试',{icon:2});
                     let Elem = $(element);
-                    Elem.prev().attr('data-src',res.message.url);
-                    Elem.parent().parent().find('input.layui-input').val(res.message.path);
+                    Elem.prev().attr('data-src',res.url);
+                    Elem.parent().parent().find('input.layui-input').val(res.attachment);
                 }
             });
         });

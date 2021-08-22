@@ -141,6 +141,7 @@ class WeModule
         }
 
         if (!is_file($source)) {
+            session()->save();
             exit("Error: template source '{$filename}' is not exist!");
         }
         $paths = pathinfo($compile);
