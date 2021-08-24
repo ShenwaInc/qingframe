@@ -180,6 +180,7 @@ function tpl_form_field_multi_image($name, $value = array(), $options = array())
 	function uploadMultiImage(elm) {
 		var name = $(elm).next().val();
 		util.image( "", function(urls){
+		    console.log(urls);
 			$.each(urls, function(idx, url){
 				$(elm).parent().parent().next().append(\'<div class="multi-item"><img onerror="this.src=\\\'./resource/images/nopic.jpg\\\'; this.title=\\\'图片未找到.\\\'" src="\'+url.url+\'" class="img-responsive img-thumbnail"><input type="hidden" name="\'+name+\'[]" value="\'+url.attachment+\'"><em class="close" title="删除这张图片" onclick="deleteMultiImage(this)">×</em></div>\');
 			});

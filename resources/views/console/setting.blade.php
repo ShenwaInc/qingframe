@@ -24,7 +24,7 @@
     @if($op=='main')
     <div class="fui-card layui-card">
         <div class="layui-card-header nobd">
-            <a href="{{ url('console/setting/pageset') }}" class="fr text-blue ajaxshow" title="编辑站点信息"><i class="glyphicon glyphicon-edit"></i></a>
+            <a href="{{ url('console/setting/pageset') }}" class="fr text-blue" title="编辑站点信息"><i class="glyphicon glyphicon-edit"></i></a>
             <span class="title">站点信息</span>
         </div>
         <div class="layui-card-body">

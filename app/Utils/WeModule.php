@@ -6,7 +6,7 @@ use App\Services\CacheService;
 use App\Services\ModuleService;
 use Illuminate\Support\Facades\DB;
 
-define('IN_IA', 2);
+!(defined('IN_IA')) && define('IN_IA', 2);
 
 class WeModule
 {

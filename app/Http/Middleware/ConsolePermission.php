@@ -35,6 +35,7 @@ class ConsolePermission
             $_W['account'] = uni_fetch($uniacid);
         }
         $_W['attachurl'] = AttachmentService::SetAttachUrl();
+        include_once base_path("bootstrap/functions/console.func.php");
         return $next($request);
     }
 }
