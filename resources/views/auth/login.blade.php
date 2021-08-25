@@ -67,7 +67,7 @@
                     if (res.type!=='success') return Core.report(res);
                     layer.msg(res.message,{icon:1});
                     setTimeout(function (){
-                        window.location.href = '{{ url('console') }}';
+                        window.location.href = '{{ url($_GPC['referer']) }}';
                     },1200);
                 },data.field);
                 return false;

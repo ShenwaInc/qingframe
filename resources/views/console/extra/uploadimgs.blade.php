@@ -23,7 +23,7 @@
 		<input type="hidden" value="{{ $name }}" />
 	</span>
 </div>
-<div class="layui-input-block multi-img-details" style="overflow: hidden;">
+<div class="layui-input-block multi-img-details" style="overflow: hidden; min-height: unset">
 @foreach($value as $pic)
     <div class="multi-item">
         <img src="{{ tomedia($pic) }}" class="img-responsive img-thumbnail">

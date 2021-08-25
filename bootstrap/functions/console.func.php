@@ -2,17 +2,17 @@
 
 function ImagePicker($name,$value,$placeholder='请选择图片上传',$required=false){
     global $_W;
-    $_W['layuploader'] = isset($_W['layuploader']) ? $_W['layuploader'] : array();
     $imagepicker = 'ip'.random(8,true);
-    $_W['layuploader'][] = $imagepicker;
     $options = array(
         'name'=>$name,
         'value'=>$value,
         'placeholder'=>$placeholder,
         'required'=>$required,
         'src'=>$value?tomedia($value):asset('static/images/nopic.jpg'),
-        'picker'=>$imagepicker
+        'picker'=>$imagepicker,
+        'initimgupload'=>isset($_W['initimgupload']) ? true : false
     );
+    $_W['initimgupload'] = true;
     return view('console.extra.uploadimg',$options);
 }
 
@@ -29,8 +29,8 @@ function ImagesPicker($name,$value=array(),$placeholder='请选择图片（可�
         'placeholder'=>$placeholder,
         'picker'=>$imagepicker,
         'params'=>$params,
-        'initmulti'=>isset($_W['initmulti']) ? true : false
+        'initmulti'=>isset($_W['initimgmulti']) ? true : false
     );
-    $_W['initmulti'] = true;
+    $_W['initimgmulti'] = true;
     return view('console.extra.uploadimgs',$options);
 }

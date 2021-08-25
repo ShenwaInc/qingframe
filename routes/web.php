@@ -16,6 +16,11 @@ Route::group(['prefix' => 'auth','namespace'=>'Auth', 'middleware'=>[\App\Http\M
     Route::post('/logout', 'AuthController@Logout');
 });
 
+Route::group(['prefix' => 'app','namespace' => 'App', 'middleware'=>[\App\Http\Middleware\App::class, \App\Http\Middleware\AppRuntime::class]],function (){
+    Route::match(['get', 'post'],'/m/{modulename}/{do?}', 'ModuleController@entry');
+    Route::get('auth', 'AuthController@index');
+});
+
 Route::group(['namespace'=>'Console', 'middleware'=>[\App\Http\Middleware\Installer::class, \App\Http\Middleware\App::class]],function (){
     Route::get('/', 'EntryController@index');
 });
@@ -31,7 +36,7 @@ Route::group(['prefix' => 'console', 'namespace' => 'Console', 'middleware'=>['a
     Route::get('/account/{uniacid}', 'PlatformController@checkout')->where('uniacid','[0-9]+');
     Route::get('/account/{action}', 'PlatformController@account')->where('action','[a-z]+');
     Route::match(['get', 'post'],'/user/{op?}', 'UserController@index');
-    Route::match(['get', 'post'],'/m/{modulename}/{do?}', 'ModuleController@entry');
+    Route::match(['get', 'post'],'/m/{modulename}/{do?}', 'ModuleController@entry')->middleware(\App\Http\Middleware\ModulePermission::class);
 });
 
 Route::group(['prefix'=>'installer', 'middleware'=>[\App\Http\Middleware\Installed::class]],function (){
@@ -50,6 +55,11 @@ Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
 
-Auth::routes();
-
-Route::get('/home', 'HomeController@index')->name('home');
+Route::get('/admin/{modulename}', function (\Illuminate\Http\Request $request,$modulename){
+    $user = $request->user();
+    if (empty($user)){
+        $referer = url('login') ."?referer=console/m/{$modulename}";
+        return response()->redirectTo($referer);
+    }
+    return response()->redirectTo("console/m/{$modulename}");
+});

@@ -65,21 +65,24 @@ function murl($segment, $params = array(), $noredirect = true, $addhost = false)
         $segment = str_replace('.','/',$segment);
     }
     if (!empty($addhost)) {
-        $url = $_W['siteroot'] . "app/{$_W['uniacid']}";
+        $url = $_W['siteroot'] . "app";
     } else {
-        $url = "/app/{$_W['uniacid']}";
+        $url = "/app";
     }
 
     if (!empty($segment)){
         $url .= '/' .$segment;
     }
 
-    if (!empty($params)) {
-        $queryString = http_build_query($params, '', '&');
-        $url .= '?' . $queryString;
-        if (false === $noredirect) {
-            $url .= '&wxref=mp.weixin.qq.com#wechat_redirect';
-        }
+    if (empty($params)){
+        $params = array();
+    }
+    $params['i'] = $_W['uniacid'];
+
+    $queryString = http_build_query($params, '', '&');
+    $url .= '?' . $queryString;
+    if (false === $noredirect) {
+        $url .= '&wxref=mp.weixin.qq.com#wechat_redirect';
     }
 
     return $url;
