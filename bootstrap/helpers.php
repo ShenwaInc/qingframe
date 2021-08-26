@@ -169,6 +169,7 @@ function uni_fetch($uniacid = 0) {
     if (is_error($account_api)) {
         return $account_api;
     }
+    $account_api->uniacid = $uniacid;
     $account_api->__toArray();
     $account_api['accessurl'] = $account_api['manageurl'] = url("console/account/{$uniacid}/post", array('account_type' => $account_api['type']), true);
     $account_api['roleurl'] = url("console/account/{$uniacid}/postuser", array('account_type' => $account_api['type']), true);

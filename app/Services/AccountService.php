@@ -100,7 +100,7 @@ class AccountService extends ArrayObject {
         if (!empty(self::$accountObj[$uniacid])) {
             return self::$accountObj[$uniacid];
         }
-        $uniaccount = Account::getUniAccountByUniacid($uniacid);
+        $uniaccount = Account::getByUniacid($uniacid);
         if (empty($uniaccount)) {
             return error('-1', '帐号不存在或是已经被删除');
         }
@@ -120,9 +120,9 @@ class AccountService extends ArrayObject {
             $uniaccount = $acidOrAccount;
         } else {
             if (!empty($acidOrAccount)) {
-                $uniaccount = Account::getUniAccountByAcid(intval($acidOrAccount));
+                $uniaccount = Account::getByAcid(intval($acidOrAccount));
             } elseif(!empty($_W['account']['uniacid'])) {
-                $uniaccount = Account::getUniAccountByUniacid($_W['account']['uniacid']);
+                $uniaccount = Account::getByUniacid($_W['account']['uniacid']);
             }
         }
         if (is_error($uniaccount) || empty($uniaccount)) {
@@ -194,10 +194,19 @@ class AccountService extends ArrayObject {
         return $num;
     }
 
+    protected function fetchGroups() {
+        $groups = DB::table('mc_groups')->where('uniacid',$this->uniacid)->get();
+        if (!empty($groups)){
+            $this->groups = $groups->toArray();
+        }
+        return $this->groups;
+    }
+
     public function __toArray() {
         foreach ($this->account as $key => $property) {
             $this[$key] = $property;
         }
+
         foreach ($this->toArrayMap as $key => $type) {
             if (isset($this->$type) && !empty($this->$type)) {
                 $this[$key] = $this->$type;
@@ -210,13 +219,18 @@ class AccountService extends ArrayObject {
     }
 
     public function __get($name) {
-        if ('module' == $name) {
-            if (!empty($this->module)) {
-                return $this->module;
-            } else {
-                return getglobal('current_module');
-            }
+        if (method_exists($this, $name)) {
+            return $this->$name();
         }
+        $funcname = 'fetch' . ucfirst($name);
+        if (method_exists($this, $funcname)) {
+            return $this->$funcname();
+        }
+        if (isset($this->$name)) {
+            return $this->$name;
+        }
+
+        return false;
     }
 
 }

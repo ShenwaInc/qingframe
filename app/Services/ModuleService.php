@@ -105,7 +105,7 @@ class ModuleService
             try {
                 $ManiFest->upgrader();
             } catch (\Exception $exception){
-                return error(-1,'升级失败：运行脚本出现错误');
+                return error(-1,'升级失败：运行脚本出现错误:'.$exception->getMessage());
             }
         }
         //更新模块数据表

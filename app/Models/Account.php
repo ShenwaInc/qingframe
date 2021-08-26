@@ -77,11 +77,11 @@ class Account extends Model
         return $query;
     }
 
-    static function getUniAccountByAcid($acid){
+    static function getByAcid($acid){
         return DB::table('account')->leftJoin('uni_account','account.uniacid','=','uni_account.uniacid')->where('account.acid',$acid)->first();
     }
 
-    static function getUniAccountByUniacid($uniacid){
+    static function getByUniacid($uniacid){
         return DB::table('account')->leftJoin('uni_account','account.uniacid','=','uni_account.uniacid')->where('account.uniacid',$uniacid)->first();
     }
 

@@ -135,6 +135,34 @@ function template_modulehook_parser($params = array()) {
     return $php;
 }
 
+function tpl_ueditor($id, $value = '', $options = array()) {
+    global $_W;
+    $options['uniacid'] = isset($options['uniacid']) ? intval($options['uniacid']) : $_W['uniacid'];
+    $options['global'] = empty($options['global']) ? '' : $options['global'];
+    $options['height'] = empty($options['height']) ? 200 : $options['height'];
+    $options['allow_upload_video'] = isset($options['allow_upload_video']) ? $options['allow_upload_video'] : true;
+
+    $s = '';
+    $s .= !empty($id) ? "<textarea id=\"{$id}\" name=\"{$id}\" type=\"text/plain\" style=\"height:{$options['height']}px;\">{$value}</textarea>" : '';
+    $s .= "
+	<script type=\"text/javascript\">
+		require(['util'], function(util){
+			util.editor('" . ($id ? $id : '') . "', {
+			uniacid : {$options['uniacid']},
+			global : '" . $options['global'] . "',
+			height : {$options['height']},
+			dest_dir : '" . ($options['dest_dir'] ? $options['dest_dir'] : '') . "',
+			image_limit : " . (intval($GLOBALS['_W']['setting']['upload']['image']['limit']) * 1024) . ',
+			allow_upload_video : ' . ($options['allow_upload_video'] ? 'true' : 'false') . ',
+			audio_limit : ' . (intval($GLOBALS['_W']['setting']['upload']['audio']['limit']) * 1024) . ",
+			callback : ''
+			});
+		});
+	</script>";
+
+    return $s;
+}
+
 function tpl_form_field_image($name, $value) {
     $thumb = empty($value) ? 'images/global/nopic.jpg' : $value;
     $thumb = tomedia($thumb);
@@ -214,6 +242,95 @@ EOF;
         }
     }
     $s .= '</div>';
+
+    return $s;
+}
+
+function tpl_form_field_daterange($name, $value = array(), $time = false, $clear = true) {
+    $s = '';
+
+    if (empty($time) && !defined('TPL_INIT_DATERANGE_DATE')) {
+        $s = '
+<script type="text/javascript">
+	require(["daterangepicker"], function(){
+		$(function(){
+			$(".daterange.daterange-date").each(function(){
+				var elm = this;
+				$(this).daterangepicker({
+					startDate: $(elm).prev().prev().val() || moment("不限", "Y"),
+					endDate: $(elm).prev().val() || moment("不限", "Y"),
+					format: "YYYY-MM-DD",
+					clear: '. $clear .'
+				}, function(start, end){
+					start = start.toDateStr().indexOf("0000-01-01") != -1 ? "" : start.toDateStr();
+					end = end.toDateStr().indexOf("0000-01-01") != -1 ? "" : end.toDateStr();
+					var html = (start == "" ? "不限时间" : start) + (start == "" && end === "" ? "" : (" 至" + end))
+					$(elm).find(".date-title").html(html);
+					$(elm).prev().prev().val(start);
+					$(elm).prev().val(end);
+				});
+			});
+		});
+	});
+</script>
+';
+        define('TPL_INIT_DATERANGE_DATE', true);
+    }
+
+    if (!empty($time) && !defined('TPL_INIT_DATERANGE_TIME')) {
+        $s = '
+<script type="text/javascript">
+	require(["daterangepicker"], function(){
+		$(function(){
+			$(".daterange.daterange-time").each(function(){
+				var elm = this;
+				$(this).daterangepicker({
+					startDate: $(elm).prev().prev().val() || moment("不限", "Y"),
+					endDate: $(elm).prev().val() || moment("不限", "Y"),
+					format: "YYYY-MM-DD HH:mm",
+					timePicker: true,
+					timePicker12Hour : false,
+					timePickerIncrement: 1,
+					minuteStep: 1,
+					clear: '. $clear .'
+				}, function(start, end){
+					start = start.toDateStr().indexOf("0000-01-01") != -1 ? "" : start.toDateTimeStr();
+					end = end.toDateStr().indexOf("0000-01-01") != -1 ? "" : end.toDateTimeStr();
+					var html = (start == "" ? "不限时间" : start) + (start == "" && end === "" ? "" : (" 至" + end))
+					$(elm).find(".date-title").html(html);
+					$(elm).prev().prev().val(start);
+					$(elm).prev().val(end);
+				});
+			});
+		});
+	});
+</script>
+';
+        define('TPL_INIT_DATERANGE_TIME', true);
+    }
+    if (!empty($value['starttime']) || !empty($value['start'])) {
+        if ($value['start'] && strtotime($value['start'])) {
+            $value['starttime'] = empty($time) ? date('Y-m-d', strtotime($value['start'])) : date('Y-m-d H:i', strtotime($value['start']));
+        }
+        $value['starttime'] = empty($value['starttime']) ? '' : $value['starttime'];
+    } else {
+        $value['starttime'] = '';
+    }
+
+    if (!empty($value['endtime']) || !empty($value['end'])) {
+        if ($value['end'] && strtotime($value['end'])) {
+            $value['endtime'] = empty($time) ? date('Y-m-d', strtotime($value['end'])) : date('Y-m-d H:i', strtotime($value['end']));
+        }
+        $value['endtime'] = empty($value['endtime']) ? $value['starttime'] : $value['endtime'];
+    } else {
+        $value['endtime'] = '';
+    }
+    $s .= '
+	<input name="' . $name . '[start]' . '" type="hidden" value="' . $value['starttime'] . '" />
+	<input name="' . $name . '[end]' . '" type="hidden" value="' . $value['endtime'] . '" />
+	<button class="btn btn-default daterange ' . (!empty($time) ? 'daterange-time' : 'daterange-date') . '" type="button"><span class="date-title">' .
+        ($value['starttime'] == "" ? "不限时间" : $value['starttime']) . ($value['starttime'] == "" && $value['endtime'] === "" ? "" : (" 至" . $value['endtime'])) . '</span> <i class="fa fa-calendar"></i></button>
+	';
 
     return $s;
 }

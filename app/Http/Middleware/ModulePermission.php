@@ -38,6 +38,7 @@ class ModulePermission
             $_W['uniacid'] = $uniacid;
             $_W['role'] = UserService::AccountRole($_W['uid'],$uniacid);
             $_W['account'] = uni_fetch($uniacid);
+            session()->put('uniacid',$uniacid);
         }
         //查询应用权限，待完善
         return $next($request);

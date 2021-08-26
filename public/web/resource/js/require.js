@@ -88,7 +88,7 @@ var requireConfig = {
 	},
 	shim:{
 		'ueditor': {
-			deps: ['./resource/components/ueditor/third-party/zeroclipboard/ZeroClipboard.min.js', './resource/components/ueditor/ueditor.config.js'],
+			deps: ['/web/resource/components/ueditor/third-party/zeroclipboard/ZeroClipboard.min.js', '/web/resource/components/ueditor/ueditor.config.js'],
 			exports: 'UE',
 			init:function(ZeroClipboard){
 				//导出到全局变量，供ueditor使用
