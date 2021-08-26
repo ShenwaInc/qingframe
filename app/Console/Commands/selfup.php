@@ -43,6 +43,12 @@ class selfup extends Command
     public function handle()
     {
         //框架升级
+        global $_W;
+        if (empty($_W['siteroot'])){
+            $appurl = env('APP_URL');
+            if (empty($appurl)) return $this->error('Invaild website url.') || "";
+            $_W['siteroot'] = $appurl . "/";
+        }
         $component = DB::table('gxswa_cloud')->where('type',0)->first(['id','identity','modulename','type','releasedate','rootpath']);
         $cloudupdate = CloudService::CloudUpdate($component['identity'],base_path().'/');
         if (is_error($cloudupdate)) return $this->error($cloudupdate['message']) || "";
