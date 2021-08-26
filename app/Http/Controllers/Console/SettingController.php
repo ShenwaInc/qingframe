@@ -126,6 +126,7 @@ class SettingController extends Controller
             $cloudinfo = $this->checkcloud($component,2);
             if ($cloudinfo['isnew']){
                 $basepath = $component['type']==2 ? CloudService::com_path() : base_path($component['rootpath']);
+                if ($component['type']==0) $basepath = base_path() . "/";
                 $cloudupdate = CloudService::CloudUpdate($component['identity'],$basepath);
                 if (is_error($cloudupdate)){
                     return $this->message($cloudupdate['message']);
@@ -138,8 +139,12 @@ class SettingController extends Controller
                 if (is_error($moduleupdate)) return $this->message($moduleupdate['message']);
             }else{
                 if ($component['type']==0){
-                    //框架升级，未完善
-                    //Artisan::call('whotalk:upgrade');
+                    //框架升级
+                    try {
+                        Artisan::call('self:migrate');
+                    }catch (\Exception $exception){
+                        //Todo something
+                    }
                     //更新路由
                     Artisan::call('route:clear');
                 }
