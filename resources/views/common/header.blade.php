@@ -30,7 +30,7 @@
                     <dd><a href="javascript:Core.logout();">退出账户</a></dd>
                 </dl>
             </li>
-            <li class="layui-nav-item layui-hide-xs" lay-unselect>
+            <li class="layui-nav-item layui-hide-xs js-fullscreen" lay-unselect>
                 <a href="javascript:;" layadmin-event="fullscreen">
                     <i class="layui-icon layui-icon-screen-full"></i>
                 </a>

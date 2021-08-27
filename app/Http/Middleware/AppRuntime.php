@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\MemberService;
 use Closure;
 
 define('IN_MOBILE', true);
@@ -20,7 +21,18 @@ class AppRuntime
         global $_W;
         $uniacid = $request->input('i',0);
         if (empty($uniacid)) abort(404,'找不到该平台');
-        $_W['uniacid'] = $uniacid;
+        $_W['uniacid'] = intval($uniacid);
+        $_W['openid'] = session()->get('openid','');
+        $_W['member'] = array('uid'=>0);
+        //自动登录
+        $authtoken = $request->header('x-auth-token');
+        if (!empty($authtoken)){
+            MemberService::UniAuth($authtoken);
+        }
+        if (!$_W['member']['uid'] && !empty($_W['openid'])){
+            MemberService::AuthFetch($_W['openid']);
+        }
+        include_once base_path("bootstrap/functions/app.func.php");
         return $next($request);
     }
 }

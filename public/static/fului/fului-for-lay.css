@@ -5,6 +5,7 @@
 
 .fui-agreement{overflow: hidden; overflow-y: auto; height: 480px; max-height: 60vh; padding-right: 20px}
 
+.dashed{border: 1px dashed #e4e8eb !important;}
 .solid-top{border-top: 1px solid #e4e8eb;}
 .soild-after{position: relative;}
 .soild-after:after{position: absolute; content: " "; display: block; left: 0; bottom: 0; width: 100%; height: 0.5px; background-color: #e4e8eb;}
@@ -15,6 +16,7 @@
 .text-black, .layui-word-aux .text-black{color: #333333}
 .text-blue{color: #0081ff;}
 .text-red{color: #e54d42;}
+.text-gray{color:#aaa}
 
 .nobd{border: none !important;}
 
@@ -60,4 +62,6 @@
 .fui-list .fui-content{border-radius: 4px; -moz-border-radius: 4px; -webkit-border-radius: 4px; margin: 0 20px 20px 0; padding: 15px 20px; border: 1px solid #e7e7eb; position: relative; cursor: pointer; display: block}
 .fui-list .fui-info{padding: 10px 0; padding-left: 66px; min-height: 50px; position: relative;}
 .fui-list .fui-info img{width: 50px; height: 50px; border-radius: 50%; -moz-border-radius: 50%; -webkit-border-radius: 50%;  position: absolute; top: 10px; left: 0;}
+.fui-list.card .fui-item{position: relative;}
+.fui-list.card .card-icon{position: absolute; font-size: 50px; top: 10px; left: 18px; height: 50px; width: 50px; text-align: center; line-height: 50px; transform: scale(0.6);}
 .fui-list.card .card-name{font-weight: 400; font-style: normal; display: block; width: auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; word-wrap: normal; line-height: 50px; font-size: 18px;}

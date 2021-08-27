@@ -32,3 +32,12 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 .fui-footer-link a:first-child{margin-left: 0;}
 .fui-footer-link a:first-child:after{display: none;}
 .fui-footer-copyright{color: #9a9a9a; font-size: 12px;}
+
+.card .js-dropdown{position: absolute; top: 15px; right: 15px;}
+.card.layui-col-space15 .js-dropdown{right: 35px;}
+.js-dropdown .layui-icon{height: 20px; line-height: 20px; background-color: #FFFFFF; position: absolute; right: 0; padding: 0 5px; border-radius: 2px 2px 0 0; z-index: 101; border: 1px solid #FFFFFF; border-bottom: 0;}
+.js-dropdown .js-dropdown-menu{top: 20px; left: auto; right: 0; border-radius: 2px 0 2px 2px; box-shadow: none;}
+.js-dropdown .js-dropdown-menu a{line-height: 28px; padding: 0 10px;}
+.js-dropdown:hover .js-dropdown-menu{display: block;}
+.js-dropdown:hover .layui-icon{border-color: #eee;}
+.js-dropdown:hover .layui-icon:before{content: "\e619"}

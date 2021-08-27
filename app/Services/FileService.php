@@ -827,15 +827,16 @@ class FileService
         $result = true;
         $uni_remote_setting = uni_setting_load('remote');
         if (empty($uni_remote_setting['remote']['type']) && !empty($_W['uniacid'])) {
-            $uniacid = pdo_getcolumn('uni_settings', array('uniacid' => $_W['uniacid']), 'uniacid');
-            if (empty($uniacid)) {
+            $uni_settings = pdo_get('uni_settings', array('uniacid' => $_W['uniacid']), array('uniacid','attachment_size'));
+            if (empty($uni_settings)) {
                 $result = pdo_insert('uni_settings', array('attachment_size' => $file_size, 'uniacid' => $_W['uniacid']));
             } else {
                 if (!$is_add) {
                     $file_size = -$file_size;
                 }
-                $result = pdo_update('uni_settings', array('attachment_size +=' => $file_size), array('uniacid' => $_W['uniacid']));
+                $result = pdo_update('uni_settings', array('attachment_size' => (intval($uni_settings['attachment_size']) +$file_size)), array('uniacid' => $_W['uniacid']));
             }
+            $uniacid = $_W['uniacid'];
 
             $cachekey = CacheService::system_key('unisetting', array('uniacid' => $uniacid));
             $unisetting = Cache::get($cachekey);

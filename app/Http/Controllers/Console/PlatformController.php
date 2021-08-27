@@ -100,4 +100,8 @@ class PlatformController extends Controller
         return redirect("console/m/{$lastuse}");
     }
 
+    public function account(Request $request,$action='profile'){
+        return $this->message('敬请期待');
+    }
+
 }

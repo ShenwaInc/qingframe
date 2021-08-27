@@ -176,21 +176,6 @@ function uni_fetch($uniacid = 0) {
     return $account_api;
 }
 
-if (!function_exists('getglobal')) {
-    function getglobal($key) {
-        global $_W;
-        $key = explode('/', $key);
-        $v = &$_W;
-        foreach ($key as $k) {
-            if (!isset($v[$k])) {
-                return null;
-            }
-            $v = &$v[$k];
-        }
-        return $v;
-    }
-}
-
 if (!function_exists('post_var')){
     function post_var($keys,$datas=array()){
         global $_GPC;
