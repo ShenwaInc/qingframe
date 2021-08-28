@@ -206,6 +206,7 @@ class SettingController extends Controller
     public function compare($component,$structure=''){
         if (!$structure) return array();
         $targetpath = $component['type']==2 ? CloudService::com_path() : base_path($component['rootpath']);
+        if ($component['type']==0) $targetpath = base_path() . "/";
         $structures = json_decode(base64_decode($structure), true);
         return CloudService::CloudCompare($structures,$targetpath);
     }
