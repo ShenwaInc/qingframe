@@ -41,3 +41,22 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 .js-dropdown:hover .js-dropdown-menu{display: block;}
 .js-dropdown:hover .layui-icon{border-color: #eee;}
 .js-dropdown:hover .layui-icon:before{content: "\e619"}
+
+.fui-header{width: 100%; max-width: 1340px; margin: 0 auto; position: relative;}
+.fui-header .layui-logo{width: auto;}
+.fui-header .layui-nav.layui-layout-right{padding-right: 0}
+
+@media screen and (max-width: 768px){
+    .layui-header{border-bottom: 1px solid #eee;}
+    .fui-header{width: 95%}
+    .fui-footer{min-width: unset;}
+    .main-content{min-width: unset; width: 100%;}
+    .main-content > h2{padding: 0 15px;}
+    .layui-layout-admin .layui-body{padding-top: 16px}
+    .fui-card{padding: 15px;}
+    .fui-list .fui-content{margin:0; padding: 15px;}
+    .fui-list.card .fui-item{box-sizing: border-box;}
+    .card.layui-col-space15 .js-dropdown{right: 15px;}
+    .fui-tab .layui-tab-title{max-width: 100%;}
+    .fui-tab .layui-tab-title > *{margin-right: 0}
+}

@@ -33,42 +33,35 @@
                     <colgroup>
                         <col width="120" />
                         <col />
-                        <col width="100" />
                     </colgroup>
                     <tbody>
                         <tr>
                             <td><span class="fui-table-lable">站点名称</span></td>
                             <td class="soild-after">{{ $_W['setting']['page']['title'] }}</td>
-                            <td class="text-right soild-after"></td>
                         </tr>
                         <tr>
                             <td><span class="fui-table-lable">站点LOGO</span></td>
                             <td class="soild-after">
                                 <img class="radius" src="{{ tomedia($_W['setting']['page']['logo']) }}" width="120" />
                             </td>
-                            <td class="text-right soild-after"></td>
                         </tr>
                         <tr>
                             <td><span class="fui-table-lable">系统图标</span></td>
                             <td class="soild-after">
                                 <img class="radius" src="{{ tomedia($_W['setting']['page']['icon']) }}" width="36" />
                             </td>
-                            <td class="text-right soild-after"></td>
                         </tr>
                         <tr>
                             <td><span class="fui-table-lable">SEO关键字</span></td>
                             <td class="soild-after">{{ $_W['setting']['page']['keywords'] ? $_W['setting']['page']['keywords'] : '暂未设置' }}</td>
-                            <td class="text-right soild-after"></td>
                         </tr>
                         <tr>
                             <td><span class="fui-table-lable">SEO描述</span></td>
                             <td class="soild-after">{{ $_W['setting']['page']['description'] ? $_W['setting']['page']['description'] : '暂无描述' }}</td>
-                            <td class="text-right soild-after"></td>
                         </tr>
                         <tr>
                             <td><span class="fui-table-lable">底部版权信息</span></td>
                             <td class="soild-after">{{ $_W['setting']['page']['copyright'] }}</td>
-                            <td class="text-right soild-after"></td>
                         </tr>
                         <tr>
                             <td><span class="fui-table-lable">底部导航连接</span></td>
@@ -77,7 +70,6 @@
                                 echo $_W['setting']['page']['links'];
                                 @endphp
                             </td>
-                            <td class="text-right soild-after"></td>
                         </tr>
                     </tbody>
                 </table>
@@ -136,39 +128,32 @@
                     <colgroup>
                         <col width="120" />
                         <col />
-                        <col width="100" />
                     </colgroup>
                     <tbody>
                     <tr>
                         <td><span class="fui-table-lable">系统名称</span></td>
                         <td class="soild-after">{{ $_W['config']['name'] }}</td>
-                        <td class="text-right soild-after"></td>
                     </tr>
                     <tr>
                         <td><span class="fui-table-lable">系统版本</span></td>
                         <td class="soild-after">V{{ $_W['config']['version'] }} Release{{$_W['config']['release']}}</td>
-                        <td class="text-right soild-after"></td>
                     </tr>
                     <tr>
                         <td><span class="fui-table-lable">容器信息</span></td>
                         <td class="soild-after">{{ php_uname() }}</td>
-                        <td class="text-right soild-after"></td>
                     </tr>
                     <tr>
                         <td><span class="fui-table-lable">运行环境</span></td>
                         <td class="soild-after">{{ $_SERVER['SERVER_SOFTWARE'] ? $_SERVER['SERVER_SOFTWARE'] : php_sapi_name() }}&nbsp;&nbsp;&nbsp;&nbsp;</td>
-                        <td class="text-right soild-after"></td>
                     </tr>
                     @if($_W['isfounder'])
                         <tr>
                             <td><span class="fui-table-lable">系统内核</span></td>
                             <td class="soild-after">Shenwa FrameWork Laravel 6.2.0</td>
-                            <td class="text-right soild-after"></td>
                         </tr>
                         <tr>
                             <td><span class="fui-table-lable">版权所有</span></td>
                             <td class="soild-after">广西神蛙网络科技有限公司</td>
-                            <td class="text-right soild-after"></td>
                         </tr>
                     @endif
                     </tbody>
@@ -319,6 +304,7 @@
             @if($op=='socket')
                 <div class="layui-card-header nobd">
                     <a href="{{ url('console/setting/socketset') }}" class="fr text-blue ajaxshow" title="修改SOCKET配置"><i class="glyphicon glyphicon-edit"></i></a>
+                    <a href="{{ url('console/setting/sockethelp') }}" class="fr text-blue ajaxshow margin-right" title="本地SOCKET安装步骤">本地安装步骤</a>
                     <span class="title">SOCKET配置</span>
                 </div>
                 <div class="layui-card-body">
@@ -333,11 +319,7 @@
                                 <tr>
                                     <td><span class="fui-table-lable">链接方式</span></td>
                                     <td class="soild-after">{{ $_W['setting']['swasocket']['type']=='local' ? '本地SOCKET' : '远程SOCKET' }}</td>
-                                    <td class="text-right soild-after">
-                                        @if($_W['setting']['swasocket']['type']=='local')
-                                            <a href="{{ url('console/setting/sockethelp') }}" class="text-blue ajaxshow" title="本地SOCKET安装步骤">本地安装步骤</a>
-                                        @endif
-                                    </td>
+                                    <td class="text-right soild-after"></td>
                                 </tr>
                                 <tr>
                                     <td><span class="fui-table-lable">SOCKET服务器</span></td>

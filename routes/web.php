@@ -55,6 +55,8 @@ Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
 
+Route::get('/debug', 'Controller@message')->middleware(\App\Http\Middleware\App::class);
+
 Route::get('/admin/{modulename}', function (\Illuminate\Http\Request $request,$modulename){
     $user = $request->user();
     if (empty($user)){
