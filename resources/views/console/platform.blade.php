@@ -8,7 +8,7 @@
             <div class="layui-col-md3 layui-col-xs6 fui-item">
                 <a href="{{ url("console/account",array('uniacid'=>$item['uniacid'])) }}" class="fui-content">
                     <div class="fui-info">
-                        <img src="{{ asset($item['logo']) }}" />
+                        <img src="{{ tomedia($item['logo']) }}" />
                         <strong class="card-name">{{ $item['name'] }}</strong>
                     </div>
                 </a>
@@ -22,7 +22,7 @@
             </div>
             @endforeach
             <div class="layui-col-md3 layui-col-xs6 fui-item">
-                <a href="{{ wurl("account/create") }}" title="创建新平台" class="fui-content dashed ajaxshow">
+                <a href="{{ wurl("account/create") }}" title="创建新平台" class="fui-content dashed">
                     <div class="fui-info">
                         <span class="card-icon layui-icon layui-icon-add-1 text-gray"></span>
                         <strong class="card-name text-gray">新建平台</strong>

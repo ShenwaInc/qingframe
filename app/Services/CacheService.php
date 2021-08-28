@@ -2,7 +2,9 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\View;
 
 class CacheService
 {
@@ -503,6 +505,28 @@ class CacheService
     static function build_module($module_name,$uniacid){
         $cachekey = self::system_key('module_setting', array('module_name' => $module_name, 'uniacid' => $uniacid));
         Cache::forget($cachekey);
+    }
+
+    static function flush(){
+        global $_W;
+        //清空系统缓存
+        Cache::flush();
+        //更新模板缓存
+        FileService::rmdirs(storage_path('framework/tpls/'), true);
+        //更新路由缓存
+        Artisan::call('route:clear');
+        //更新视图缓存
+        Artisan::call('view:clear');
+        //更新配置缓存
+        Artisan::call('config:clear');
+        //更新最新版本号
+        CloudService::CloudEnv("APP_RELEASE={$_W['config']['release']}", "APP_RELEASE=".TIMESTAMP);
+        //重建系统配置
+        SettingService::Load();
+        if ($_W['uniacid']){
+            SettingService::uni_load('',$_W['uniacid']);
+        }
+        return true;
     }
 
 }

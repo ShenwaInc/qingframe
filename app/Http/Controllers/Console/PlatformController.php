@@ -5,8 +5,11 @@ namespace App\Http\Controllers\Console;
 use App\Http\Controllers\Controller;
 use App\Models\Account;
 use App\Services\AccountService;
+use App\Services\CacheService;
+use App\Services\UserService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class PlatformController extends Controller
@@ -14,6 +17,7 @@ class PlatformController extends Controller
     //
     public function index(){
         global $_W,$_GPC;
+        session()->forget('uniacid');
         if (empty($_W['isfounder']) && !empty($_W['user']) && ($_W['user']['status'] == 1 || $_W['user']['status'] == 3)) {
             Auth::logout();
             return $this->message('您的账号正在审核或是已经被系统禁止，请联系网站管理员解决！');
@@ -89,11 +93,11 @@ class PlatformController extends Controller
         return $this->globalview('console.platform',array('list'=>$list,'total'=>$total));
     }
 
-    public function checkout(Request $request,$uniacid){
+    public function checkout($uniacid){
         global $_W;
         $_W['uniacid'] = intval($uniacid);
-        $request->session()->put('uniacid',$_W['uniacid']);
-        $lastuse = DB::table('users_lastuse')->where(array('uid'=>$_W['uid'],'uniacid'=>$_W['uniacid']))->value('modulename');
+        session()->put('uniacid',$_W['uniacid']);
+        $lastuse = DB::table('users_operate_history')->where(array('uid'=>$_W['uid'],'uniacid'=>$_W['uniacid']))->orderBy('createtime','desc')->value('module_name');
         if (empty($lastuse)){
             $lastuse = $_W['config']['defaultmodule'];
         }
@@ -101,7 +105,73 @@ class PlatformController extends Controller
     }
 
     public function account(Request $request,$action='profile'){
+        $method = "account".ucfirst($action);
+        if (method_exists($this, $method)){
+            return $this->$method($request);
+        }
         return $this->message('敬请期待');
+    }
+
+    public function accountRemove(Request $request){
+        //查询权限
+        $uniacid = (int)$request->input('uniacid',0);
+        if ($uniacid==0) return $this->message('请选择要删除的平台');
+        global $_W;
+        $role = UserService::AccountRole($_W['uid'],$uniacid);
+        if (!in_array($role,array('founder','owner')) && !$_W['isfounder']){
+            return $this->message('暂无权限，请勿乱操作');
+        }
+        //删除平台
+        DB::table('account')->where('uniacid',$uniacid)->update(array('isdeleted'=>1));
+        DB::table('uni_modules')->where('uniacid',$uniacid)->delete();
+        DB::table('users_operate_star')->where('uniacid',$uniacid)->delete();
+        DB::table('users_lastuse')->where('uniacid',$uniacid)->delete();
+        DB::table('core_menu_shortcut')->where('uniacid',$uniacid)->delete();
+        DB::table('uni_link_uniacid')->where('uniacid',$uniacid)->delete();
+        $cachekey = CacheService::system_key('user_accounts', array('type' => 'account', 'uid' => $_W['uid']));
+        Cache::forget($cachekey);
+        $cachekey = CacheService::system_key('uniaccount', array('uniacid' => $uniacid));
+        Cache::forget($cachekey);
+        return $this->message('删除成功！',url('console'),'success');
+    }
+
+    public function accountCreate(Request $request){
+        if ($request->isMethod('post')){
+            global $_W;
+            $post = $request->input('data');
+            if (empty($post['name'])) return $this->message('平台名称不能为空');
+            if (empty($post['logo'])) return $this->message('请上传平台LOGO');
+            $uni_account = DB::table('uni_account');
+            $uniacid = $uni_account->insertGetId(array(
+                'groupid' => 0,
+                'default_acid' => 0,
+                'name' => $post['name'],
+                'description' => $post['description'],
+                'logo'=>$post['logo'],
+                'title_initial' => 'W',
+                'createtime' => TIMESTAMP,
+                'create_uid' => $_W['uid']
+            ));
+            if (!empty($uniacid)){
+                $acid = Account::account_create($uniacid,array('name'=>$post['name']));
+                $uni_account->where('uniacid',$uniacid)->update(array('default_acid' => $acid));
+                UserService::AccountRoleUpdate($uniacid,$_W['uid']);
+
+                DB::table('mc_groups')->insert(array('uniacid' => $uniacid, 'title' => '默认会员组', 'isdefault' => 1));
+                DB::table('uni_settings')->insert(array(
+                    'creditnames' => serialize(array('credit1' => array('title' => '积分', 'enabled' => 1), 'credit2' => array('title' => '余额', 'enabled' => 1))),
+                    'creditbehaviors' => serialize(array('activity' => 'credit1', 'currency' => 'credit2')),
+                    'uniacid' => $uniacid,
+                    'default_site' => 0,
+                    'sync' => serialize(array('switch' => 0, 'acid' => '')),
+                ));
+
+                return $this->message('恭喜您，创建成功！',url('console/account',array('uniacid'=>$uniacid)),'success');
+            }
+            return $this->message('创建失败，请重试');
+        }
+        $return = array('title'=>'创建平台');
+        return $this->globalview('console.account.create', $return);
     }
 
 }

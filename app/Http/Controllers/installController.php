@@ -132,20 +132,22 @@ class installController extends Controller
             ));
             //create account
             $post = array('name'=>'Whotalk','description'=>'做社交从未如此简单');
-            $uniacid = DB::table('uni_account')->insertGetId(array(
+            $uni_account = DB::table('uni_account');
+            $uniacid = $uni_account->insertGetId(array(
                 'groupid' => 0,
                 'default_acid' => 0,
                 'name' => $post['name'],
                 'description' => $post['description'],
+                'logo'=>'/static/icon200.jpg',
                 'title_initial' => 'W',
                 'createtime' => TIMESTAMP,
-                'create_uid' => $uid,
+                'create_uid' => $uid
             ));
             if (empty($uniacid)) return $this->message('系统初始化失败');
             $account_data = array('name' => $post['name']);
 
             $acid = Account::account_create($uniacid,$account_data);
-            DB::table('uni_account')->where('uniacid',$uniacid)->update(array('default_acid' => $acid,'logo'=>'/static/icon200.jpg'));
+            $uni_account->where('uniacid',$uniacid)->update(array('default_acid' => $acid));
             UserService::AccountRoleUpdate($uniacid,$uid);
 
             //initialize mc group

@@ -42,7 +42,7 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 .js-dropdown:hover .layui-icon{border-color: #eee;}
 .js-dropdown:hover .layui-icon:before{content: "\e619"}
 
-.fui-header{width: 100%; max-width: 1340px; margin: 0 auto; position: relative;}
+.fui-header{width: 90%; max-width: 1340px; margin: 0 auto; position: relative;}
 .fui-header .layui-logo{width: auto;}
 .fui-header .layui-nav.layui-layout-right{padding-right: 0}
 

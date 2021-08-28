@@ -26,7 +26,7 @@
                                     <dd><a href="{{url('console/setting')}}">站点设置</a></dd>
                                 @endif
                             @endif
-                            <dd><a layadmin-event="updatecache" href="javascript:;">更新缓存</a></dd>
+                            <dd><a href="javascript:Core.cacheclear();">更新缓存</a></dd>
                             <hr />
                             <dd><a href="javascript:Core.logout();">退出账户</a></dd>
                         </dl>

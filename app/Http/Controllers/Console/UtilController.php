@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Console;
 
 use App\Http\Controllers\Controller;
+use App\Services\CacheService;
 use App\Services\FileService;
 use App\Services\SettingService;
 use Illuminate\Http\Request;
@@ -15,6 +16,20 @@ class UtilController extends Controller
         $method = "do" . ucfirst($op);
         if (method_exists($this,$method)){
             return $this->$method($request);
+        }
+        return $this->message();
+    }
+
+    public function doCache(Request $request){
+        $do = (string)$request->input('do','');
+        if($do=='clear'){
+            //清理系统缓存
+            try {
+                CacheService::flush();
+            }catch (\Exception $exception){
+                return $this->message($exception->getMessage());
+            }
+            return $this->message('清理完成！','','success');
         }
         return $this->message();
     }

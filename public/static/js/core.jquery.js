@@ -19,6 +19,11 @@ if(typeof Basetoken == 'undefined'){
                 });
             })
         },
+        cacheclear:function (){
+            this.get('console/util/cache',function (res){
+                Core.report(res);
+            },{do:"clear"},'json',true)
+        },
         get: function (u, c, d, t, l) {
             return this.request(u, 'GET', d, t, c, l);
         },

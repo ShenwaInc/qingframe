@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\AttachmentService;
 use App\Services\MemberService;
 use Closure;
 
@@ -32,6 +33,7 @@ class AppRuntime
         if (!$_W['member']['uid'] && !empty($_W['openid'])){
             MemberService::AuthFetch($_W['openid']);
         }
+        $_W['attachurl'] = AttachmentService::SetAttachUrl();
         include_once base_path("bootstrap/functions/app.func.php");
         return $next($request);
     }
