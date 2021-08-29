@@ -4,12 +4,14 @@ namespace App\Http\Controllers\Console;
 
 use App\Http\Controllers\Controller;
 use App\Models\Account;
+use App\Models\Setting;
 use App\Services\CacheService;
 use App\Services\SettingService;
 use App\Services\UserService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use function GuzzleHttp\Psr7\str;
 
 class AccountController extends Controller
 {
@@ -38,6 +40,11 @@ class AccountController extends Controller
     }
 
     public function doSetting(Request $request){
+        global $_W;
+        if ($this->uniacid==0 || $this->account['isdeleted']==1) return $this->message('找不到该平台，可能已被删除');
+        if ($this->account['endtime']>0 && $this->account['endtime']<TIMESTAMP && !$_W['isfounder']){
+            return $this->message('该平台服务已到期，请联系管理员处理');
+        }
         $setting = SettingService::uni_load('', $this->uniacid);
         if (empty($setting['payment'])){
             $setting['payment'] = array(
@@ -47,7 +54,43 @@ class AccountController extends Controller
             );
         }
         if ($request->isMethod('post')){
-
+            $op = (string)$request->input('op','');
+            switch ($op){
+                case 'js-switch' :
+                    $name = $request->input('name','');
+                    $config = explode('.',$name);
+                    if (empty($config)) return $this->message('未指定配置项');
+                    if ($name=='payment.alipay.pay_switch'){
+                        $alipay = $setting['payment']['alipay'];
+                        if (empty($alipay['account']) || empty($alipay['partner'] || $alipay['secret'])){
+                            return $this->message('请先配置支付宝接口',wurl('account/setting',array('uniacid'=>$this->uniacid)));
+                        }
+                    }
+                    if ($name=='payment.wechat.pay_switch'){
+                        $wechat = $setting['payment']['wechat'];
+                        if (empty($wechat['mchid']) || empty($wechat['apikey'])){
+                            return $this->message('请先配置微信支付接口',wurl('account/setting',array('uniacid'=>$this->uniacid)));
+                        }
+                    }
+                    $value = (int)$request->input('value',0);
+                    $key = $config[0];
+                    if (isset($config[2])){
+                        $setting[$key][$config[1]][$config[2]] = $value;
+                    }elseif(isset($config[1])){
+                        $setting[$key][$config[1]] = $value;
+                    }else{
+                        $setting[$key] = $value;
+                    }
+                    $update = is_array($setting[$key]) ? serialize($setting[$key]) : $setting[$key];
+                    $complete = Setting::uni_save($this->uniacid,$key,$update);
+                    if ($complete){
+                        return $this->message('保存成功！',wurl('account/setting',array('uniacid'=>$this->uniacid)), 'success');
+                    }
+                    break;
+                default :
+                    break;
+            }
+            return $this->message();
         }
         return $this->globalview('console.account.setting', array(
             'uniacid'=>$this->uniacid,

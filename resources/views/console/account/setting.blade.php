@@ -40,26 +40,26 @@
                         <tr>
                             <td><span class="fui-table-lable">余额支付</span></td>
                             <td class="soild-after">
-                                <input type="checkbox" name="payment.credit.pay_switch" lay-skin="switch" lay-text="开启|关闭"{{ $setting['payment']['credit']['pay_switch']==1 ? ' checked' : '' }} />
+                                <input type="checkbox" lay-filter="js-switch" name="payment.credit.pay_switch" lay-skin="switch" lay-text="开启|关闭"{{ $setting['payment']['credit']['pay_switch']==1 ? ' checked' : '' }} />
                             </td>
                             <td class="text-right soild-after"></td>
                         </tr>
                         <tr>
                             <td><span class="fui-table-lable">支付宝</span></td>
                             <td class="soild-after">
-                                <input type="checkbox" name="payment.alipay.pay_switch" lay-skin="switch" lay-text="开启|关闭"{{ $setting['payment']['alipay']['pay_switch']==1 ? ' checked' : '' }} />
+                                <input type="checkbox" lay-filter="js-switch" name="payment.alipay.pay_switch" lay-skin="switch" lay-text="开启|关闭"{{ $setting['payment']['alipay']['pay_switch']==1 ? ' checked' : '' }} />
                             </td>
                             <td class="text-right soild-after">
-                                <a href="javascript:;" class="text-blue">修改配置</a>
+                                <a href="javascript:;" class="text-blue">接口配置</a>
                             </td>
                         </tr>
                         <tr>
                             <td><span class="fui-table-lable">微信支付</span></td>
                             <td class="soild-after">
-                                <input type="checkbox" name="payment.wechat.pay_switch" lay-skin="switch" lay-text="开启|关闭"{{ $setting['payment']['wechat']['pay_switch']==1 ? ' checked' : '' }} />
+                                <input type="checkbox" lay-filter="js-switch" name="payment.wechat.pay_switch" lay-skin="switch" lay-text="开启|关闭"{{ $setting['payment']['wechat']['pay_switch']==1 ? ' checked' : '' }} />
                             </td>
                             <td class="text-right soild-after">
-                                <a href="javascript:;" class="text-blue">修改配置</a>
+                                <a href="javascript:;" class="text-blue">接口配置</a>
                             </td>
                         </tr>
                     </tbody>
@@ -71,3 +71,21 @@
 </div>
 
 @include('common.footer')
+
+<script type="text/javascript">
+    layer.ready(function (){
+        var form = layui.form;
+        form.on('switch(js-switch)', function (data){
+            let cfg = data.elem.name;
+            let value = data.elem.checked ? 1 : 0;
+            Core.post('console.account.setting',function (res){
+                Core.report(res);
+            },{
+                op:'js-switch',
+                name:cfg,
+                value:value,
+                uniacid:{{ $uniacid }}
+            })
+        });
+    });
+</script>
