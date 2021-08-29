@@ -36,9 +36,11 @@
                         <tr>
                             <td><span class="fui-table-lable">头像</span></td>
                             <td class="soild-after">
-                                <img class="radius" src="{{ tomedia($profile['avatar']) }}" width="72" />
+                                <img class="radius" id="user-avatar" src="{{ tomedia($profile['avatar']) }}" width="72" />
                             </td>
-                            <td class="text-right soild-after"></td>
+                            <td class="text-right soild-after">
+                                <a href="javascript:" class="text-blue js-avatar" data-prev="#user-avatar" title="修改头像">修改</a>
+                            </td>
                         </tr>
                         <tr>
                             <td><span class="fui-table-lable">密码</span></td>
@@ -56,3 +58,26 @@
 </div>
 
 @include('common.footer')
+
+<script type="text/javascript">
+    layer.ready(function (){
+        $('.js-avatar').each(function (index,element){
+            let preview = $(this).data('prev');
+            layui.upload.render({
+                elem: element
+                ,url: '{{ url("console/user/avatar") }}' //必填项
+                ,accept:'images'
+                ,acceptMime:'images'
+                ,exts:"{{ implode('|',$_W['setting']['upload']['image']['extentions']) }}"
+                ,data:{_token:"{{ csrf_token() }}"}
+                ,done:function (res, index, upload){
+                    if(res.type!=='success') return Core.report(res);
+                    layer.msg('修改成功！',{icon:1});
+                    if (typeof(preview)!='undefined'){
+                        $(preview).attr('src',res.message.url);
+                    }
+                }
+            });
+        });
+    });
+</script>

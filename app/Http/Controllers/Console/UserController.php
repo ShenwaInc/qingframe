@@ -3,9 +3,10 @@
 namespace App\Http\Controllers\Console;
 
 use App\Http\Controllers\Controller;
+use App\Services\FileService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
@@ -16,6 +17,46 @@ class UserController extends Controller
         if (method_exists($this,$method)){
             return $this->$method($request);
         }
+    }
+
+    public function doCreate(Request $request){
+        $uid = (int)$request->input('uid',0);
+        if ($uid>0){
+            $user = '';
+        }
+    }
+
+    public function doSubuser(Request $request){
+        global $_W;
+        $data = array('title'=>'子账户管理','users'=>array());
+        $users = DB::table('users')->where('owner_uid',$_W['user'])->get()->toArray();
+        if (!empty($users)){
+            foreach ($users as &$value){
+                $value['expiredate'] = '永久';
+                if ($value['endtime']>0){
+                    $value['expiredate'] = date('Y-m-d',$value['endtime']);
+                }
+                $value['createdate'] = date('Y-m-d',$value['joindate']);
+            }
+        }
+        return $this->globalview('console.user.sub',$data);
+    }
+
+    public function doAvatar(Request $request){
+        if ($request->isMethod('post')){
+            global $_W;
+            $path = FileService::Upload($request);
+            if (is_error($path)){
+                return $this->message($path['message']);
+            }
+            DB::table('users_profile')->where('uid',$_W['uid'])->update(['avatar'=>$path,'edittime'=>TIMESTAMP]);
+            $info = array(
+                'attachment' => $path,
+                'url' => tomedia($path)
+            );
+            return $this->message($info,wurl('user/profile'),'success');
+        }
+        return $this->message();
     }
 
     public function doProfile(Request $request){

@@ -66,3 +66,7 @@
 .fui-list.card .fui-item{position: relative;}
 .fui-list.card .card-icon{position: absolute; font-size: 50px; top: 10px; left: 18px; height: 50px; width: 50px; text-align: center; line-height: 50px; transform: scale(0.6);}
 .fui-list.card .card-name{font-weight: 400; font-style: normal; display: block; width: auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; word-wrap: normal; line-height: 50px; font-size: 18px;}
+
+.fui-layer{box-shadow: 0 0 12px 0 rgba(0,0,0,0.2) !important; border-radius: 4px !important;}
+.fui-layer .layui-layer-title{background:none; border-bottom: 0;}
+.fui-layer .layui-layer-content{padding: 15px;}

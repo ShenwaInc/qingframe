@@ -19,7 +19,7 @@
             @endif
             @if($_W['isfounder'])
             <li>
-                <a href="{{ wurl('account/component',array('uniacid'=>$uniacid)) }}">应用权限</a>
+                <a href="{{ wurl('account/component',array('uniacid'=>$uniacid)) }}">应用管理</a>
             </li>
             @endif
         </ul>
@@ -55,6 +55,13 @@
                             <td><span class="fui-table-lable">平台简介</span></td>
                             <td class="soild-after">{{ $account['description'] }}</td>
                             <td class="text-right soild-after"></td>
+                        </tr>
+                        <tr>
+                            <td><span class="fui-table-lable">接口文件</span></td>
+                            <td class="soild-after"><span class="text-gray">设置安全域名、授权域名等，需要上传验证文件</span></td>
+                            <td class="text-right soild-after">
+                                <a href="javascript:layer.msg('敬请期待',{icon:7);" class="text-blue">上传</a>
+                            </td>
                         </tr>
                         @if($_W['isfounder'])
                         <tr>

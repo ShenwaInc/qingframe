@@ -53,6 +53,12 @@ class AccountController extends Controller
                 'wechat'=>array('pay_switch'=>0,'mchid'=>'','apikey'=>'','')
             );
         }
+        if (empty($setting['notify'])){
+            $setting['notify'] = array(
+                'sms'=>array('switch'=>0,'type'=>''),
+                'email'=>array('switch'=>0,'smtp'=>'','port'=>'','username'=>'','password'=>'','sender'=>'')
+            );
+        }
         if ($request->isMethod('post')){
             $op = (string)$request->input('op','');
             switch ($op){
@@ -83,6 +89,30 @@ class AccountController extends Controller
                     }
                     $update = is_array($setting[$key]) ? serialize($setting[$key]) : $setting[$key];
                     $complete = Setting::uni_save($this->uniacid,$key,$update);
+                    if ($complete){
+                        return $this->message('保存成功！',wurl('account/setting',array('uniacid'=>$this->uniacid)), 'success');
+                    }
+                    break;
+                case 'save-wechat' :
+                    $wechat = $request->input('wechat',array());
+                    if (empty($wechat['mchid']) || empty($wechat['apikey'])){
+                        return $this->message('微信支付接口配置不正确');
+                    }
+                    $wechat['pay_switch'] = $setting['payment']['wechat']['pay_switch'];
+                    $setting['payment']['wechat'] = $wechat;
+                    $complete = Setting::uni_save($this->uniacid,'payment',serialize($setting['payment']));
+                    if ($complete){
+                        return $this->message('保存成功！',wurl('account/setting',array('uniacid'=>$this->uniacid)), 'success');
+                    }
+                    break;
+                case 'save-alipay' :
+                    $alipay = $request->input('alipay',array());
+                    if (empty($alipay['account']) || empty($alipay['partner'] || $alipay['secret'])){
+                        return $this->message('支付宝接口配置未完善');
+                    }
+                    $alipay['pay_switch'] = $setting['payment']['alipay']['pay_switch'];
+                    $setting['payment']['alipay'] = $alipay;
+                    $complete = Setting::uni_save($this->uniacid,'payment',serialize($setting['payment']));
                     if ($complete){
                         return $this->message('保存成功！',wurl('account/setting',array('uniacid'=>$this->uniacid)), 'success');
                     }

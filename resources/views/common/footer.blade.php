@@ -176,12 +176,15 @@
             });
         });
     }
-    function Wrandom(len=8){
+    function Wrandom(len=8, id){
         let codes = 'ABCDEFGHIJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
         let maxPos = codes.length;
         let code = '';
         for (let i = 0; i < len; i++) {
             code += codes.charAt(Math.floor(Math.random() * maxPos));
+        }
+        if(typeof(id) !='undefined'){
+            $(id).val(code);
         }
         return code;
     }

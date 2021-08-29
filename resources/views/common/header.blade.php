@@ -4,7 +4,7 @@
 <body layadmin-themealias="ocean-header" class="layui-layout-body" style="position:inherit !important;">
 <div class="layui-layout layui-layout-admin">
     <div class="layui-header">
-        <div class="fui-header">
+        <div class="fui-header-sm">
             <div class="layui-logo">
                 <a href="{{ url('console') }}">{{ $_W['config']['name'] }}</a>
             </div>
@@ -13,6 +13,7 @@
                 @if($_W['uid']>0)
                     <li class="layui-nav-item">
                         <a href="javascript:;">
+                            <img src="{{ tomedia($_W['user']['avatar']) }}" class="layui-nav-img">
                             {{$_W['user']['username']}}
                         </a>
                         <dl id="layui-admin-usermenu" class="layui-nav-child layui-anim layui-anim-upbit">
