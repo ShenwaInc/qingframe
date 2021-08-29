@@ -421,7 +421,7 @@ class CacheService
                 $cache_key = str_replace($matches[0][$i], $args[$i + 1], $cache_key);
             }
 
-            return 'we7:' . $cache_key;
+            return ':' . $cache_key;
         } else {
             $params = $args[1];
         }
@@ -460,10 +460,10 @@ class CacheService
                     if (strexists($cache_info_key, '%')) {
                         return error(1, '缺少缓存参数或参数不正确!');
                     } else {
-                        return 'we7:' . $cache_info_key;
+                        return ':' . $cache_info_key;
                     }
                 } else {
-                    return 'we7:' . $cache_key;
+                    return ':' . $cache_key;
                 }
             }
         }
@@ -494,7 +494,7 @@ class CacheService
             }
         }
 
-        $cache_key = 'we7:' . $cache_key;
+        $cache_key = ':' . $cache_key;
         if (strlen($cache_key) > 100) {
             trigger_error('Cache name is over the maximum length');
         }

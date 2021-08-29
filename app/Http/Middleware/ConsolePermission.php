@@ -29,7 +29,7 @@ class ConsolePermission
         $_W['highest_role'] = UserService::AccountRole($_W['uid']);
         $_W['role'] = '';
         $uniacid = (int)session('uniacid',0);
-        if ($uniacid){
+        if ($uniacid>0){
             $_W['uniacid'] = $uniacid;
             $_W['role'] = UserService::AccountRole($_W['uid'],$uniacid);
             $_W['account'] = uni_fetch($uniacid);

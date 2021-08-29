@@ -20,6 +20,9 @@ class Account extends Model
         'users'=>'uni_account_users'
     );
 
+    const UPDATED_AT = null;
+    const CREATED_AT = null;
+
     public static function account_create($uniacid, $account, $uid=0){
         global $_W;
         $type_sign = 'account';

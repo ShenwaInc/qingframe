@@ -2,7 +2,7 @@
 
 <div class="main-content">
 
-    <h2 class="weui-desktop-page__title">站点设置</h2>
+    <h2>站点设置</h2>
 
     <div class="layui-tab fui-tab margin-bottom-xl">
         <ul class="layui-tab-title title_tab">

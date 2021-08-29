@@ -52,8 +52,8 @@ class SettingService{
                     'creditnames', 'default_message', 'creditbehaviors', 'payment',
                     'recharge', 'tplnotice', 'mcplugin', 'statistics', 'bind_domain', 'remote');
                 foreach ($unisetting as $key => &$row) {
-                    if (in_array($key, $serialize) && !empty($row)) {
-                        $row = (array)unserialize($row);
+                    if (in_array($key, $serialize)) {
+                        $row = !empty($row) ? (array)unserialize($row) : array();
                     }
                 }
             } else {

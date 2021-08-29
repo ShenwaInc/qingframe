@@ -22,7 +22,7 @@
             </div>
             @endforeach
             <div class="layui-col-md3 layui-col-xs6 fui-item">
-                <a href="{{ wurl("account/create") }}" title="创建新平台" class="fui-content dashed">
+                <a href="{{ url("console/account/create") }}" title="创建新平台" class="fui-content dashed ajaxshow">
                     <div class="fui-info">
                         <span class="card-icon layui-icon layui-icon-add-1 text-gray"></span>
                         <strong class="card-name text-gray">新建平台</strong>

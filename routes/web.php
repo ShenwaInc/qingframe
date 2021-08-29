@@ -34,7 +34,7 @@ Route::group(['prefix' => 'console', 'namespace' => 'Console', 'middleware'=>['a
     Route::get('/setting/{op?}', 'SettingController@index');
     Route::post('/setting', 'SettingController@save');
     Route::get('/account/{uniacid}', 'PlatformController@checkout')->where('uniacid','[0-9]+');
-    Route::match(['get', 'post'],'/account/{action}', 'PlatformController@account')->where('action','[a-z]+');
+    Route::match(['get', 'post'],'/account/{action}', 'AccountController@index')->where('action','[a-z]+');
     Route::match(['get', 'post'],'/user/{op?}', 'UserController@index');
     Route::match(['get', 'post'],'/m/{modulename}/{do?}', 'ModuleController@entry')->middleware(\App\Http\Middleware\ModulePermission::class);
 });

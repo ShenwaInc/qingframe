@@ -135,7 +135,7 @@ if(typeof Basetoken == 'undefined'){
         url: function (route) {
             if (route.indexOf('http') === 0 || route.indexOf('index.php') > -1) return route;
             if (route === '' || !route) return BaseUrl;
-            return BaseUrl + route.replace('.', '/');
+            return BaseUrl + route.replaceAll('.', '/');
         },
         loading: 0,
         debug: false

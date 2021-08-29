@@ -1,16 +1,20 @@
 @include('common.header')
 
+@if(!$_W['isajax'])
 <div class="main-content">
     <h2 class="weui-desktop-page__title">创建新平台</h2>
     <div class="fui-card layui-card">
         <div class="layui-card-body">
             <div class="un-padding">
+                @else
+                <div class="padding">
+                @endif
                 <form action="{{ wurl('account/create') }}" method="post" class="layui-form">
                     @csrf
                     <div class="layui-form-item must">
                         <label class="layui-form-label">平台名称</label>
                         <div class="layui-input-block">
-                            <input type="text" required lay-verify="required" name="data[name]" value="" placeholder="请输入平台名称" class="layui-input" />
+                            <input type="text" required lay-verify="required" name="data[name]" value="" placeholder="请输入平台名称" autocomplete="off" class="layui-input" />
                         </div>
                     </div>
                     <div class="layui-form-item">
@@ -39,8 +43,10 @@
                     </div>
                 </form>
             </div>
+            @if(!$_W['isajax'])
         </div>
     </div>
 </div>
+@endif
 
 @include('common.footer')
