@@ -91,7 +91,7 @@
                                 <input type="checkbox" lay-filter="js-switch" disabled name="notice.sms.switch" lay-skin="switch" lay-text="开启|关闭"{{ $setting['notice']['sms']['switch']==1 ? ' checked' : '' }} />
                             </td>
                             <td class="text-right soild-after">
-                                <a href="javascript:;" title="短息通知配置" onclick="layer.msg('敬请期待',{icon:7})" class="text-blue">短信配置</a>
+                                <a href="javascript:;" title="短息通知配置" onclick="layer.msg('敬请期待',{icon:7})" class="text-blue layui-hide">短信配置</a>
                             </td>
                         </tr>
                         <tr>
@@ -100,7 +100,7 @@
                                 <input type="checkbox" lay-filter="js-switch" disabled name="notice.email.switch" lay-skin="switch" lay-text="开启|关闭"{{ $setting['notice']['email']['switch']==1 ? ' checked' : '' }} />
                             </td>
                             <td class="text-right soild-after">
-                                <a href="javascript:;" title="邮件通知配置" onclick="layer.msg('敬请期待',{icon:7})" class="text-blue">邮件配置</a>
+                                <a href="javascript:;" title="邮件通知配置" onclick="layer.msg('敬请期待',{icon:7})" class="text-blue layui-hide">邮件配置</a>
                             </td>
                         </tr>
                     </tbody>
@@ -128,7 +128,7 @@
                             跟随系统
                         </td>
                         <td class="text-right soild-after">
-                            <a href="javascript:;" onclick="layer.msg('敬请期待',{icon:7})" class="text-blue">上传设置</a>
+                            <a href="javascript:;" onclick="layer.msg('敬请期待',{icon:7})" class="text-blue layui-hide">上传设置</a>
                         </td>
                     </tr>
                     <tr>
@@ -137,7 +137,7 @@
                             跟随系统
                         </td>
                         <td class="text-right soild-after">
-                            <a href="javascript:;" onclick="layer.msg('敬请期待',{icon:7})" class="text-blue">远程附件</a>
+                            <a href="javascript:;" onclick="layer.msg('敬请期待',{icon:7})" class="text-blue layui-hide">远程附件</a>
                         </td>
                     </tr>
                     </tbody>

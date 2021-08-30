@@ -304,7 +304,6 @@
             @if($op=='socket')
                 <div class="layui-card-header nobd">
                     <a href="{{ url('console/setting/socketset') }}" class="fr text-blue ajaxshow" title="修改SOCKET配置"><i class="glyphicon glyphicon-edit"></i></a>
-                    <a href="{{ url('console/setting/sockethelp') }}" class="fr text-blue ajaxshow margin-right" title="本地SOCKET安装步骤">本地安装步骤</a>
                     <span class="title">SOCKET配置</span>
                 </div>
                 <div class="layui-card-body">
@@ -319,7 +318,9 @@
                                 <tr>
                                     <td><span class="fui-table-lable">链接方式</span></td>
                                     <td class="soild-after">{{ $_W['setting']['swasocket']['type']=='local' ? '本地SOCKET' : '远程SOCKET' }}</td>
-                                    <td class="text-right soild-after"></td>
+                                    <td class="text-right soild-after">
+                                        <a href="{{ url('console/setting/sockethelp') }}" class="fr text-blue ajaxshow" title="本地SOCKET安装步骤">本地安装步骤</a>
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td><span class="fui-table-lable">SOCKET服务器</span></td>

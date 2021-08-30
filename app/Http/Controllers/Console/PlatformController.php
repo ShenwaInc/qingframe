@@ -101,15 +101,18 @@ class PlatformController extends Controller
         return $this->globalview('console.platform',array('list'=>$list,'total'=>$total,'cancreate'=>$cancreate));
     }
 
-    public function checkout($uniacid){
+    public function checkout(Request $request,$uniacid){
         global $_W;
         $_W['uniacid'] = intval($uniacid);
         session()->put('uniacid',$_W['uniacid']);
-        $lastuse = DB::table('users_operate_history')->where(array('uid'=>$_W['uid'],'uniacid'=>$_W['uniacid']))->orderBy('createtime','desc')->value('module_name');
-        if (empty($lastuse)){
-            $lastuse = $_W['config']['defaultmodule'];
+        $module = $request->input('module');
+        if (empty($module)){
+            $module = DB::table('users_operate_history')->where(array('uid'=>$_W['uid'],'uniacid'=>$_W['uniacid']))->orderBy('createtime','desc')->value('module_name');
+            if (empty($module)){
+                $module = $_W['config']['defaultmodule'];
+            }
         }
-        return redirect("console/m/{$lastuse}");
+        return redirect("console/m/{$module}");
     }
 
 }

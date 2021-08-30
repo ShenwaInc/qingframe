@@ -16,7 +16,8 @@
                                     <select name="uid" lay-search required lay-verify="required">
                                         <option value="">输入用户名搜索</option>
                                         @foreach($subusers as $sub)
-                                            <option value="{{ $sub['uid'] }}">{{ $sub['username'] }}</option>
+
+                                            <option value="{{ $sub['uid'] }}"{{ $owner==$sub['uid']?' disabled':'' }}>{{ $sub['username'] }}{{ $owner==$sub['uid']?'(所有者)':'' }}</option>
                                         @endforeach
                                     </select>
                                 </div>

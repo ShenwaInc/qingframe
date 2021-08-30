@@ -29,6 +29,12 @@ class AccountController extends Controller
             $this->uniacid = $uniacid;
             $this->role = UserService::AccountRole($_W['uid'],$uniacid);
         }
+        if (empty($this->role)){
+            //暂无权限
+            echo response()->view('message',array('message'=>'暂无权限','redirect'=>'/console','type'=>'error','_W'=>$_W))->content();
+            session()->save();
+            exit();
+        }
     }
 
     //平台管理控制器
@@ -39,6 +45,32 @@ class AccountController extends Controller
             return $this->$method($request);
         }
         return $this->message('敬请期待');
+    }
+
+    public function doComponent(Request $request){
+        global $_W;
+        if (!$_W['isfounder']){
+            return $this->message('暂无权限，请勿乱操作');
+        }
+        $return = array('title'=>'应用权限','uniacid'=>$this->uniacid,'components'=>array());
+        if ($this->uniacid==0 || $this->account['isdeleted']==1) return $this->message('找不到该平台，可能已被删除');
+        if ($this->account['endtime']>0 && $this->account['endtime']<TIMESTAMP && !$_W['isfounder']){
+            return $this->message('该平台服务已到期，请联系管理员处理');
+        }
+
+        $components = DB::table('uni_account_extra_modules')->where('uniacid',$this->uniacid)->first();
+        if (empty($components)){
+            $defaultmodule = DB::table('gxswa_cloud')->where('modulename',$_W['config']['defaultmodule'])->select(['name','modulename','logo'])->first();
+            $components = [['name'=>$defaultmodule['name'],'identity'=>$defaultmodule['modulename'],'logo'=>$defaultmodule['logo']]];
+            DB::table('uni_account_extra_modules')->insert(array(
+                'uniacid'=>$this->uniacid,
+                'modules'=>serialize($components)
+            ));
+            $return['components'] = $components;
+        }else{
+            $return['components'] = unserialize($components['modules']);
+        }
+        return $this->globalview('console.account.com',$return);
     }
 
     public function doRole(Request $request){
@@ -78,6 +110,7 @@ class AccountController extends Controller
         }
         if ($op=='add'){
             $return['subusers'] = $subs;
+            $return['owner'] = (int)DB::table('uni_account_users')->where(array('uniacid'=>$this->uniacid,'role'=>'owner'))->value('uid');
             return $this->globalview('console.account.roleadd',$return);
         }elseif ($op=='remove'){
             $uid = (int)$request->input('uid',0);

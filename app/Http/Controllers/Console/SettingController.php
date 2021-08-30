@@ -100,7 +100,7 @@ class SettingController extends Controller
             $return['usersign'] = md5("{$_W['uid']}-{$_W['config']['setting']['authkey']}-{$_W['config']['site']['id']}");
         }
         if ($op=='component'){
-            $return['types'] = array('框架','模块','组件','资源');
+            $return['types'] = array('框架','应用','组件','资源');
             $return['colors'] = array('red','blue','green','orange');
             $components = DB::table('gxswa_cloud')->orderByRaw("`type` asc,`id` asc")->get()->toArray();
             if (!empty($components)){

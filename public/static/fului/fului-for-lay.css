@@ -2,6 +2,7 @@
 
 .shadows{box-shadow: 0px 6px 14px 0px rgba(35, 35, 35, 0.3), inset 0px 3px 0px 0px #FFFFFF;}
 .radius{border-radius: 5px;}
+.round{border-radius: 50%;}
 
 .fui-agreement{overflow: hidden; overflow-y: auto; height: 480px; max-height: 60vh; padding-right: 20px}
 
@@ -62,14 +63,15 @@
 
 .fui-upload .layui-input-inline{width: 50%}
 
+.fui-list .fui-item{box-sizing: border-box;}
 .fui-list .fui-content{border-radius: 4px; -moz-border-radius: 4px; -webkit-border-radius: 4px; margin: 0 10px 20px 0; padding: 15px 20px; border: 1px solid #e7e7eb; position: relative; cursor: pointer; display: block}
 .fui-list .fui-info{padding: 10px 0; padding-left: 66px; min-height: 50px; position: relative;}
-.fui-list .fui-info img{width: 50px; height: 50px; border-radius: 50%; -moz-border-radius: 50%; -webkit-border-radius: 50%;  position: absolute; top: 10px; left: 0;}
-.fui-list.card .fui-item{position: relative; box-sizing: border-box;}
+.fui-list .fui-info img{width: 50px; height: 50px;  position: absolute; top: 10px; left: 0;}
+.fui-list.card .fui-item{position: relative;}
 .fui-list.card .card-icon{position: absolute; font-size: 50px; top: 10px; left: 18px; height: 50px; width: 50px; text-align: center; line-height: 50px; transform: scale(0.6);}
 .fui-list.card .card-name{font-weight: 400; font-style: normal; display: block; width: auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; word-wrap: normal; line-height: 50px; font-size: 18px;}
 
-.fui-layer{box-shadow: 0 0 12px 0 rgba(0,0,0,0.2) !important; border-radius: 4px !important;}
+.fui-layer{box-shadow: 0 0 12px 0 rgba(0,0,0,0.2) !important; border-radius: 4px !important; max-width: 1340px !important;}
 .fui-layer .layui-layer-title{background:none; border-bottom: 0;}
 .fui-layer .layui-layer-content{padding: 15px;}
 .fui-layer .layui-layer-content > .padding{padding: 0}

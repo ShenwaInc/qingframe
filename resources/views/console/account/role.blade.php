@@ -2,7 +2,7 @@
 
 <div class="main-content">
 
-    <h2>平台管理</h2>
+    <h2>平台权限</h2>
 
     <div class="layui-tab fui-tab margin-bottom-xl">
         <ul class="layui-tab-title title_tab">
@@ -59,7 +59,7 @@
                                         <a href="javascript:;" onclick="showWindow(this)" data-id="#role-setowner" title="更换所有者" class="text-blue">修改</a>
                                     @endif
                                 @else
-                                    <a href="javascript:layer.msg('敬请期待',{icon:7});" class="text-blue margin-right-sm">设置权限</a>
+                                    <a href="javascript:layer.msg('敬请期待',{icon:7});" class="text-blue margin-right-sm layui-hide">设置权限</a>
                                     <a href="{{ wurl('account/role',array('uniacid'=>$uniacid,'uid'=>$value['uid'],'op'=>'remove'),true) }}" class="text-red confirm" data-text="确定要删除该用户的操作权限吗？">删除</a>
                                 @endif
                             </td>
@@ -75,7 +75,7 @@
 
 <div class="layer-content">
     <div class="layui-hide" id="role-setowner">
-        <form class="layui-form" method="POST" action="{{ wurl('account/role',array('uniacid'=>$uniacid,'op'=>'setowner')) }}">
+        <form class="layui-form" style="min-height: 360px" method="POST" action="{{ wurl('account/role',array('uniacid'=>$uniacid,'op'=>'setowner')) }}">
             @csrf
             <div class="layui-form-item">
                 <label class="layui-form-label">选择用户</label>
@@ -83,6 +83,7 @@
                     <div class="layui-input-inline" style="width: 70%">
                         <select name="uid" lay-search required lay-verify="required">
                             <option value="">输入用户名搜索</option>
+                            <option value="{{ $_W['uid'] }}">{{ $_W['user']['username'] }}</option>
                             @foreach($subusers as $sub)
                                 <option value="{{ $sub['uid'] }}">{{ $sub['username'] }}</option>
                             @endforeach

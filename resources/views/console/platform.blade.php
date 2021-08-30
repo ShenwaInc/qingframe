@@ -13,7 +13,7 @@
             <div class="layui-col-md3 layui-col-xs6 fui-item">
                 <a href="{{ url("console/account",array('uniacid'=>$item['uniacid'])) }}" class="fui-content">
                     <div class="fui-info">
-                        <img src="{{ tomedia($item['logo']) }}" />
+                        <img alt="{{ $item['name'] }}" class="round" src="{{ tomedia($item['logo']) }}" />
                         <strong class="card-name">{{ $item['name'] }}</strong>
                     </div>
                 </a>
