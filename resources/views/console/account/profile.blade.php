@@ -90,41 +90,44 @@
 
 @include('common.footer')
 
-@if($_W['isfounder'])
-    <script type="text/javascript">
-        layer.ready(function (){
-            var laydate = layui.laydate, upload = layui.upload;
-            laydate.render({
-                elem:"#expirdate",
-                format:"yyyy-MM-dd",
-                value:"{{ $account['endtime']>0 ? date('Y-m-d',$account['endtime']) : date('Y-m-d') }}",
-                done:function (value, date, endDate){
-                    $('#expiretext').text(value);
-                    setExpire(value);
-                }
-            });
-            upload.render({
-                elem: '.js-api-verify'
-                ,url: '{{ url("console/account/apiverify") }}' //必填项
-                ,accept:'file'
-                ,acceptMime:'text/plain'
-                ,exts:"txt"
-                ,data:{_token:"{{ csrf_token() }}"}
-                ,done:function (res, index, upload){
-                    Core.report(res);
-                }
-            });
+
+<script type="text/javascript">
+    layer.ready(function (){
+        var laydate = layui.laydate, upload = layui.upload;
+        @if($_W['isfounder'])
+        laydate.render({
+            elem:"#expirdate",
+            format:"yyyy-MM-dd",
+            value:"{{ $account['endtime']>0 ? date('Y-m-d',$account['endtime']) : date('Y-m-d') }}",
+            done:function (value, date, endDate){
+                $('#expiretext').text(value);
+                setExpire(value);
+            }
         });
-        function setExpire(expiredata=''){
-            Core.post('console.account.profile',function (res){
+        @endif
+        upload.render({
+            elem: '.js-api-verify'
+            ,url: '{{ url("console/account/apiverify") }}' //必填项
+            ,accept:'file'
+            ,acceptMime:'text/plain'
+            ,exts:"txt"
+            ,data:{_token:"{{ csrf_token() }}"}
+            ,done:function (res, index, upload){
                 Core.report(res);
-            },{expire:expiredata,op:"setexpire",uniacid:{{ $uniacid }}},'json',true)
-        }
-        function setForever(){
-            Core.confirm('确定要将平台到期时间设置为永久吗？',function (){
-                $('#expiretext').text('永久');
-                setExpire('');
-            },false,{title:'设置到期时间'})
-        }
-    </script>
-@endif
+            }
+        });
+    });
+    @if($_W['isfounder'])
+    function setExpire(expiredata=''){
+        Core.post('console.account.profile',function (res){
+            Core.report(res);
+        },{expire:expiredata,op:"setexpire",uniacid:{{ $uniacid }}},'json',true)
+    }
+    function setForever(){
+        Core.confirm('确定要将平台到期时间设置为永久吗？',function (){
+            $('#expiretext').text('永久');
+            setExpire('');
+        },false,{title:'设置到期时间'})
+    }
+    @endif
+</script>
