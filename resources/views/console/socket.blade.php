@@ -5,11 +5,9 @@
         <h2 class="weui-desktop-page__title">本地SOCKET安装步骤</h2>
         <div class="fui-card layui-card">
             <div class="layui-card-body">
-@else
-    <div class="padding">
 @endif
 
-        <div class="layui-tab fui-tab">
+        <div class="layui-tab fui-tab" style="margin-top: 0">
             <ul class="layui-tab-title">
                 <li class="layui-this">1.创建站点</li>
                 <li>2.安装Golang</li>
@@ -72,9 +70,9 @@ sh {{ str_replace("\\",'/',base_path('socket')) }}/install_socket.sh</pre>
         </div>
 
 @if(!$_W['isajax'])
-    </div>
             </div>
-@endif
+        </div>
     </div>
+@endif
 
 @include('common.footer')

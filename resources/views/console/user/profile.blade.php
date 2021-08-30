@@ -36,10 +36,10 @@
                         <tr>
                             <td><span class="fui-table-lable">头像</span></td>
                             <td class="soild-after">
-                                <img class="radius" id="user-avatar" src="{{ tomedia($profile['avatar']) }}" width="72" />
+                                <img class="radius user-avatar" src="{{ tomedia($profile['avatar']) }}" width="72" />
                             </td>
                             <td class="text-right soild-after">
-                                <a href="javascript:" class="text-blue js-avatar" data-prev="#user-avatar" title="修改头像">修改</a>
+                                <a href="javascript:" class="text-blue js-avatar" data-prev=".user-avatar" title="修改头像">修改</a>
                             </td>
                         </tr>
                         <tr>
@@ -67,7 +67,7 @@
                 elem: element
                 ,url: '{{ url("console/user/avatar") }}' //必填项
                 ,accept:'images'
-                ,acceptMime:'images'
+                ,acceptMime:'images/*'
                 ,exts:"{{ implode('|',$_W['setting']['upload']['image']['extentions']) }}"
                 ,data:{_token:"{{ csrf_token() }}"}
                 ,done:function (res, index, upload){

@@ -3,6 +3,11 @@
 <div class="main-content">
 
     <div class="fui-card layui-card" style="min-height: 480px;">
+        @if(empty($list) && !$cancreate)
+            <div class="fui-empty text-center" style="line-height: 480px;">
+                <span class="text-gray" style="font-size: 22px;">暂无可用平台</span>
+            </div>
+        @else
         <div class="layui-row layui-col-space15 fui-list card">
             @foreach($list as $key=>$item)
             <div class="layui-col-md3 layui-col-xs6 fui-item">
@@ -21,6 +26,7 @@
                 </div>
             </div>
             @endforeach
+            @if($cancreate)
             <div class="layui-col-md3 layui-col-xs6 fui-item">
                 <a href="{{ url("console/account/create") }}" title="创建新平台" class="fui-content dashed ajaxshow">
                     <div class="fui-info">
@@ -29,7 +35,9 @@
                     </div>
                 </a>
             </div>
+            @endif
         </div>
+        @endif
     </div>
 
 </div>

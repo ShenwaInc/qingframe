@@ -54,6 +54,14 @@ class PlatformController extends Controller
         $total = $query->count();
         $list = $query->offset($offset)->limit(24)->orderBy('uni_account.createtime','desc')->groupBy('uni_account.uniacid')->get()->keyBy('uniacid')->toArray();
 
+        $cancreate = true;
+        if (!$_W['isfounder']){
+            $maxcreate = (int)DB::table('users_extra_limit')->where('uid',$_W['uid'])->value('maxaccount');
+            if ($maxcreate<=$total){
+                $cancreate = false;
+            }
+        }
+
         if (!empty($list)) {
             if (!$_W['isfounder']) {
                 $account_user_roles = DB::table('uni_account_users')->where('uid', $_W['uid'])->get()->keyBy('uniacid')->toArray();
@@ -90,7 +98,7 @@ class PlatformController extends Controller
             }
         }
 
-        return $this->globalview('console.platform',array('list'=>$list,'total'=>$total));
+        return $this->globalview('console.platform',array('list'=>$list,'total'=>$total,'cancreate'=>$cancreate));
     }
 
     public function checkout($uniacid){

@@ -33,34 +33,6 @@
         EventInit($('body'));
         UploadInit();
     });
-    $('.ajaxshow').on('click',this,function(){
-        let geturl = $(this).attr('href');
-        let title = typeof($(this).attr('title'))!='undefined' ? $(this).attr('title') : $(this).text();
-        let width = typeof($(this).attr('data-width'))!='undefined' ? $(this).attr('data-width') + 'px' : '990px';
-        Core.get(geturl,function(Html){
-            if(Core.isJsonString(Html)){
-                var obj = jQuery.parseJSON(Html);
-                return Core.report(obj);
-            }else{
-                let WindowId = 'ajaxwindow' + Wrandom(6);
-                layer.open({type:1,content:Html,id:WindowId,title:title,shade:0.3,area:width,shadeClose:true});
-                let Ajaxwindow = $('#'+WindowId);
-                if(Ajaxwindow.find('form.layui-form').length>0){
-                    var filter = Ajaxwindow.find('form.layui-form').attr('lay-filter');
-                    let initdate = Ajaxwindow.find('.layui-input-laydate').length>0 ? Ajaxwindow : false;
-                    FormInit(filter,initdate);
-                }
-                if(Ajaxwindow.find('.layui-code').length>0){
-                    layui.code();
-                }
-                if(Ajaxwindow.find('.js-uploadimg').length>0){
-                    UploadInit(Ajaxwindow);
-                }
-                EventInit(Ajaxwindow);
-            }
-        },{inajax:1},'html',true);
-        return false;
-    });
     $('.showmenu').on('click',this,function(){
         $(this).dropdown();
     });
@@ -73,6 +45,16 @@
         });
         return false;
     });
+    function DateInit(Obj){
+        if (Obj.find('.layui-input-laydate').length>0){
+            Obj.find('.layui-input-laydate').each(function(index, element) {
+                layui.laydate.render({
+                    elem: element //指定元素
+                    ,format:'yyyy-MM-dd'
+                });
+            });
+        }
+    }
     function EventInit(Obj){
         Obj.find('[layadmin-event]').click(function () {
             let layevent = $(this).attr('layadmin-event');
@@ -153,6 +135,34 @@
             }
             return false;
         });
+        Obj.find('.ajaxshow').click(function(){
+            let geturl = $(this).attr('href');
+            let title = typeof($(this).attr('title'))!='undefined' ? $(this).attr('title') : $(this).text();
+            let width = typeof($(this).attr('data-width'))!='undefined' ? $(this).attr('data-width') + 'px' : '990px';
+            Core.get(geturl,function(Html){
+                if(Core.isJsonString(Html)){
+                    var obj = jQuery.parseJSON(Html);
+                    return Core.report(obj);
+                }else{
+                    let WindowId = 'ajaxwindow' + Wrandom(6);
+                    layer.open({type:1,content:Html,id:WindowId,title:title,shade:0.3,area:width,shadeClose:true,skin:'fui-layer'});
+                    let Ajaxwindow = $('#'+WindowId);
+                    if(Ajaxwindow.find('form.layui-form').length>0){
+                        var filter = Ajaxwindow.find('form.layui-form').attr('lay-filter');
+                        FormInit(filter);
+                    }
+                    if(Ajaxwindow.find('.layui-code').length>0){
+                        layui.code();
+                    }
+                    if(Ajaxwindow.find('.js-uploadimg').length>0){
+                        UploadInit(Ajaxwindow);
+                    }
+                    EventInit(Ajaxwindow);
+                }
+            },{inajax:1},'html',true);
+            return false;
+        });
+        DateInit(Obj);
     }
     function UploadInit(Obj){
         if (typeof(Obj)!='object'){
@@ -188,16 +198,8 @@
         }
         return code;
     }
-    function FormInit(filter,Initdate=false){
+    function FormInit(filter){
         layui.form.render(null, filter);
-        if(typeof(Initdate)=='object'){
-            Initdate.find('.layui-input-laydate').each(function(index, element) {
-                layui.laydate.render({
-                    elem: element //指定元素
-                    ,format:'yyyy-MM-dd'
-                });
-            });
-        }
     }
 </script>
 @include('common.footerbase')

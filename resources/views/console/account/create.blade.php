@@ -6,9 +6,7 @@
     <div class="fui-card layui-card">
         <div class="layui-card-body">
             <div class="un-padding">
-                @else
-                <div class="padding">
-                @endif
+@endif
                 <form action="{{ wurl('account/create') }}" method="post" class="layui-form">
                     @csrf
                     <div class="layui-form-item must">
@@ -42,8 +40,8 @@
                         </div>
                     </div>
                 </form>
+@if(!$_W['isajax'])
             </div>
-            @if(!$_W['isajax'])
         </div>
     </div>
 </div>

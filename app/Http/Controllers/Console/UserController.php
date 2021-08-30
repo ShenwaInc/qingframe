@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Console;
 
 use App\Http\Controllers\Controller;
 use App\Services\FileService;
+use App\Services\UserService;
+use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -11,7 +13,7 @@ use Illuminate\Support\Facades\DB;
 class UserController extends Controller
 {
     //
-    public function index(Request $request,$op='index'){
+    public function index(Request $request,$op='profile'){
         global $_W;
         $method = "do".ucfirst($op);
         if (method_exists($this,$method)){
@@ -20,24 +22,131 @@ class UserController extends Controller
     }
 
     public function doCreate(Request $request){
+        global $_W;
         $uid = (int)$request->input('uid',0);
+        $return = array('title'=>'创建子账户','uid'=>$uid,'user'=>array('uid'=>0,'username'=>'','remark'=>'','endtime'=>0,'maxaccount'=>0));
         if ($uid>0){
-            $user = '';
+            $user = DB::table('users')->where('uid',$uid)->first();
+            if (empty($user)) return $this->message('找不到该用户，可能已被删除');
+            if ($user['owner_uid']!=$_W['uid'] && !$_W['isfounder']){
+                return $this->message('您暂时无权操作该用户');
+            }
+            $user['maxaccount'] = (int)DB::table('users_extra_limit')->where('uid',$user['uid'])->value('maxaccount');
+            $return['user'] = $user;
         }
+        if ($request->isMethod('post')){
+            $username = (string)$request->input('username','');
+            $password = (string)$request->input('password','');
+            $repassword = (string)$request->input('repassword','');
+            $endtime = (string)$request->input('endtime','');
+            $remark = (string)$request->input('remark','');
+            $maxaccount = (int)$request->input('maxaccount',0);
+            $data = array('remark'=>$remark,'username'=>$username,'starttime'=>TIMESTAMP);
+            if (empty($data['username'])){
+                if ($uid==0) return $this->message('用户名不能为空');
+                $data['username'] = $user['username'];
+            }else{
+                $namelen = mb_strlen($data['username'],'utf-8');
+                if ($namelen<3 || $namelen>15) return $this->message('用户名长度不正确(3~15)');
+            }
+            if (empty($endtime)){
+                $data['endtime'] = 0;
+            }else{
+                $data['endtime'] = strtotime($endtime);
+            }
+            if (!empty($password)){
+                $pwdlen = strlen($password);
+                if ($pwdlen<6) return $this->message('密码长度不能小于6');
+                if ($uid==0){
+                    if (empty($repassword)) return $this->message('请确认您输入的密码');
+                    if ($password!=$repassword) return $this->message('两次输入的密码不一致');
+                }
+                $data['salt'] = \Str::random(8);
+                $data['password'] = sha1("{$password}-{$data['salt']}-{$_W['config']['setting']['authkey']}");
+            }elseif ($uid==0){
+                return $this->message('请设置一个登录密码');
+            }
+            if ($uid>0){
+                $complete = DB::table('users')->where('uid',$user['uid'])->update($data);
+                if ($maxaccount!=$user['maxaccount']){
+                    DB::table('users_extra_limit')->updateOrInsert(array('uid'=>$user['uid']),array('maxaccount'=>$maxaccount,'timelimit'=>$data['endtime']));
+                }
+            }else{
+                $data['type'] = 1;
+                $data['status'] = 2;
+                $data['joindate'] = TIMESTAMP;
+                $data['joinip'] = $_W['clientip'];
+                $data['owner_uid'] = $_W['uid'];
+                $complete = DB::table('users')->insertGetId($data);
+                if ($complete){
+                    DB::table('users_profile')->insert(array(
+                        'avatar'=>'/static/icon200.jpg',
+                        'edittime'=>TIMESTAMP,
+                        'uid'=>$complete,
+                        'createtime'=>TIMESTAMP,
+                        'nickname'=>$data['username']
+                    ));
+                    DB::table('users_extra_limit')->insert(array('uid'=>$complete,'maxaccount'=>$maxaccount,'timelimit'=>$data['endtime']));
+                }
+            }
+            if ($complete) return $this->message('保存成功！',wurl('user/subuser'), 'success');
+            return $this->message();
+        }
+        return $this->globalview('console.user.create',$return);
+    }
+
+    public function doRemove(Request $request){
+        global $_W;
+        $uid = (int)$request->input('uid',0);
+        $query = DB::table('users')->where('uid',$uid);
+        $user = $query->first();
+        if (empty($user)) return $this->message('找不到该用户，可能已被删除');
+        if ($user['owner_uid']!=$_W['uid'] && !$_W['isfounder']){
+            return $this->message('您暂时无权操作该用户');
+        }
+        $complete = $query->update(array('status'=>3));
+        if ($complete){
+            return $this->message('删除成功！',wurl('user/subuser'),'success');
+        }
+        return $this->message();
+    }
+
+    public function doCheckout(Request $request){
+        global $_W;
+        $uid = (int)$request->input('uid',0);
+        $user = User::where('uid',intval($uid))->first();
+        if (empty($user) || $user->status!=2) return $this->message('找不到该用户，可能已被删除');
+        if ($user->owner_uid!=$_W['uid'] && !$_W['isfounder']){
+            return $this->message('您暂时无权操作该用户');
+        }
+        //清除会话
+        $request->session()->flush();
+        //退出登录
+        Auth::logout();
+        $_W['uid'] = 0;
+        $_W['user'] = array('uid'=>0,'username'=>'未登录');
+        //自动登录
+        Auth::login($user, true);
+        return $this->message("即将切换到".$user->username."登录",url('console'),'success');
     }
 
     public function doSubuser(Request $request){
         global $_W;
         $data = array('title'=>'子账户管理','users'=>array());
-        $users = DB::table('users')->where('owner_uid',$_W['user'])->get()->toArray();
+        $users = UserService::GetSubs($_W['uid']);
         if (!empty($users)){
             foreach ($users as &$value){
                 $value['expiredate'] = '永久';
+                $value['expire'] = false;
                 if ($value['endtime']>0){
                     $value['expiredate'] = date('Y-m-d',$value['endtime']);
+                    if ($value['endtime']<=TIMESTAMP){
+                        $value['expire'] = true;
+                    }
                 }
                 $value['createdate'] = date('Y-m-d',$value['joindate']);
             }
+            $data['users'] = $users;
         }
         return $this->globalview('console.user.sub',$data);
     }

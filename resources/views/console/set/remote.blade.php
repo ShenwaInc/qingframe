@@ -6,7 +6,7 @@
         <div class="fui-card layui-card">
             <div class="layui-card-body">
                 @else
-                    <div class="padding" style="min-height: 460px">
+                    <div style="min-height: 460px">
                         @endif
 
                         <div class="fui-form">

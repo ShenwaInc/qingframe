@@ -5,8 +5,6 @@
         <h2 class="weui-desktop-page__title">站点上传设置</h2>
         <div class="fui-card layui-card">
             <div class="layui-card-body">
-                @else
-                    <div class="padding">
                         @endif
 
                         <div class="fui-form">
@@ -65,8 +63,7 @@
 
                         @if(!$_W['isajax'])
                     </div>
-            </div>
+            </div>        </div>
             @endif
-        </div>
 
     @include('common.footer')

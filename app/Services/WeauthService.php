@@ -36,6 +36,8 @@ class WeauthService extends EloquentUserProvider
      */
     public function validateCredentials(Authenticatable $user, array $credentials)
     {
+        //账户已删除
+        if ($user->status!=2) return false;
         $config = config('system');
         $plain = $credentials['password'];
         $authPassword = $user->getAuthPassword();

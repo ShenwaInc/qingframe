@@ -6,10 +6,8 @@
         <div class="fui-card layui-card">
             <div class="layui-card-body">
                 <div class="un-padding">
-                    @else
-                        <div class="padding">
-                            @endif
-                            <form action="{{ wurl('account/edit') }}" method="post" class="layui-form">
+@endif
+                    <form action="{{ wurl('account/edit') }}" method="post" class="layui-form">
                                 @csrf
                                 <input type="hidden" name="uniacid" value="{{ $account['uniacid'] }}">
                                 <div class="layui-form-item must">
@@ -43,11 +41,11 @@
                                     </div>
                                 </div>
                             </form>
-                        </div>
-                        @if(!$_W['isajax'])
+@if(!$_W['isajax'])
                 </div>
             </div>
         </div>
+    </div>
 @endif
 
 @include('common.footer')

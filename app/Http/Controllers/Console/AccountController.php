@@ -8,6 +8,7 @@ use App\Models\Setting;
 use App\Services\CacheService;
 use App\Services\SettingService;
 use App\Services\UserService;
+use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -20,9 +21,9 @@ class AccountController extends Controller
     public $role = 'operator';
     public $account = null;
 
-    function __construct(Request $request){
-        global $_W;
-        $uniacid = (int)$request->input('uniacid');
+    function accInit(){
+        global $_W,$_GPC;
+        $uniacid = intval($_GPC['uniacid']);
         $this->account = Account::getByUniacid($uniacid);
         if (!empty($this->account)){
             $this->uniacid = $uniacid;
@@ -32,11 +33,107 @@ class AccountController extends Controller
 
     //平台管理控制器
     public function index(Request $request,$action='profile'){
+        $this->accInit();
         $method = "do".ucfirst($action);
         if (method_exists($this, $method)){
             return $this->$method($request);
         }
         return $this->message('敬请期待');
+    }
+
+    public function doRole(Request $request){
+        global $_W;
+        if ($this->uniacid==0 || $this->account['isdeleted']==1) return $this->message('找不到该平台，可能已被删除');
+        if ($this->account['endtime']>0 && $this->account['endtime']<TIMESTAMP && !$_W['isfounder']){
+            return $this->message('该平台服务已到期，请联系管理员处理');
+        }
+        if ($this->role!='owner' && !$_W['isfounder'])return $this->message('您暂无权限操作');
+        $return = array('title'=>'管理权限','users'=>array(),'uniacid'=>$this->uniacid,'role'=>$this->role);
+        $subs = UserService::GetSubs($_W['uid']);
+        $op = $request->input('op','');
+        if ($request->isMethod('post')){
+            if ($op=='add') {
+                $uid = (int)$request->input('uid', 0);
+                if ($uid == 0) return $this->message('找不到该用户，可能已被删除');
+                if (!isset($subs[$uid]) && !$_W['isfounder']) {
+                    return $this->message('您暂时无权操作该用户');
+                }
+                $role = (string)$request->input('role', '');
+                if (!in_array($role, array('manager', 'operator'))) {
+                    return $this->message('权限角色不正确');
+                }
+                $complete = UserService::AccountRoleUpdate($this->uniacid, $uid, $role);
+                if ($complete) return $this->message('保存成功！', wurl('account/role', array('uniacid' => $this->uniacid)), 'success');
+            }elseif ($op=='setowner'){
+                if (!$_W['isfounder']){
+                    return $this->message('您暂无权限操作');
+                }
+                $uid = (int)$request->input('uid',0);
+                if ($uid==0) return $this->message('找不到该用户，可能已被删除');
+                DB::table('uni_account_users')->where(array('role'=>'owner','uniacid'=>$this->uniacid))->delete();
+                $complete = UserService::AccountRoleUpdate($this->uniacid, $uid);
+                if ($complete) return $this->message('保存成功！', wurl('account/role', array('uniacid' => $this->uniacid)), 'success');
+            }
+            return $this->message();
+        }
+        if ($op=='add'){
+            $return['subusers'] = $subs;
+            return $this->globalview('console.account.roleadd',$return);
+        }elseif ($op=='remove'){
+            $uid = (int)$request->input('uid',0);
+            if ($uid==0) return $this->message('找不到该用户，可能已被删除');
+            $complete = DB::table('uni_account_users')->where(array('uid'=>$uid,'uniacid'=>$this->uniacid))->delete();
+            if ($complete){
+                //删除操作痕迹，待完善
+                return $this->message('操作成功！',wurl('account/role',array('uniacid'=>$this->uniacid)),'success');
+            }
+            return $this->message();
+        }
+        $users = DB::table('users')->leftJoin('uni_account_users','uni_account_users.uid','=','users.uid')
+            ->where('uni_account_users.uniacid',$this->uniacid)
+            ->whereIn('uni_account_users.role',array('owner','manager','operator'))->get()->toArray();
+        if (!empty($users)){
+            $roles = array('owner'=>'所有者','manager'=>'管理员','operator'=>'操作员');
+            foreach ($users as &$user){
+                $user['roler'] = $roles[$user['role']];
+                $user['permission'] = array();
+                $user['expired'] = false;
+                if ($user['endtime']>0 && $user['endtime']<=TIMESTAMP){
+                    $user['expired'] = true;
+                }
+                $user['subuser'] = false;
+                if (isset($subs[$user['uid']]) || $_W['isfounder']){
+                    $user['subuser'] = true;
+                }
+                if ($user['role']!='owner'){
+                    $permission = DB::table('users_permission')->where(array('uid'=>$user['uid'],'uniacid'=>$this->uniacid))->value('permission');
+                    if (!empty($permission)){
+                        $user['permission'] = unserialize($permission);
+                    }
+                }
+            }
+            $return['users'] = $users;
+        }
+        $return['subusers'] = $subs;
+        $return['colors'] = array('owner'=>'orange','manager'=>'green','operator'=>'blue');
+        return $this->globalview('console.account.role',$return);
+    }
+
+    public function doApiverify(Request $request){
+        $field = 'file';
+        if ($request->hasFile($field)){
+            $Upload = $request->file($field);
+            $ext = $Upload->getClientOriginalExtension();
+            if ($ext!='txt') return $this->message('仅限上传TXT格式文件');
+            $filename = htmlspecialchars_decode($Upload->getClientOriginalName(), ENT_QUOTES);
+            $content = file_get_contents($Upload);
+            $filepath = public_path($filename);
+            $writer = fopen($filepath,'w');
+            $complete = fwrite($writer, $content);
+            fclose($writer);
+            if ($complete) return $this->message('上传成功！','' ,'success');
+        }
+        return $this->message();
     }
 
     public function doSetting(Request $request){
@@ -125,7 +222,8 @@ class AccountController extends Controller
         return $this->globalview('console.account.setting', array(
             'uniacid'=>$this->uniacid,
             'account'=>$this->account,
-            'setting'=>$setting
+            'setting'=>$setting,
+            'role'=>$this->role
         ));
     }
 

@@ -12,6 +12,7 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 .layui-form-label{width: 105px;}
 .layui-form-item.must .layui-form-label:after{content: '*'; top: 0; right: 5px; line-height: 38px; color: #e54d42; position: absolute;}
 .layui-input-block{margin-left: 135px;}
+.layui-input-block .layui-input ~ .input-group-addon{border-color: #EEEEEE;}
 
 .layui-layer-title{background-color: #F5F5F5;}
 
@@ -36,7 +37,7 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 .fui-footer-copyright{color: #9a9a9a; font-size: 12px;}
 
 .card .js-dropdown{position: absolute; top: 15px; right: 15px;}
-.card.layui-col-space15 .js-dropdown{right: 35px;}
+.card.layui-col-space15 .js-dropdown{right: 25px;}
 .js-dropdown .layui-icon{height: 20px; line-height: 20px; background-color: #FFFFFF; position: absolute; right: 0; padding: 0 5px; border-radius: 2px 2px 0 0; z-index: 101; border: 1px solid #FFFFFF; border-bottom: 0;}
 .js-dropdown .js-dropdown-menu{top: 20px; left: auto; right: 0; border-radius: 2px 0 2px 2px; box-shadow: none;}
 .js-dropdown .js-dropdown-menu a{line-height: 28px; padding: 0 10px;}
@@ -57,7 +58,6 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
     .layui-layout-admin .layui-body{padding-top: 16px}
     .fui-card{padding: 15px;}
     .fui-list .fui-content{margin:0; padding: 15px;}
-    .fui-list.card .fui-item{box-sizing: border-box;}
     .card.layui-col-space15 .js-dropdown{right: 15px;}
     .fui-tab .layui-tab-title{max-width: 100%;}
     .fui-tab .layui-tab-title > *{margin-right: 0}

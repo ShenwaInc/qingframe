@@ -13,7 +13,7 @@
                 @if($_W['uid']>0)
                     <li class="layui-nav-item">
                         <a href="javascript:;">
-                            <img src="{{ tomedia($_W['user']['avatar']) }}" class="layui-nav-img">
+                            <img src="{{ tomedia($_W['user']['avatar']) }}" class="layui-nav-img user-avatar" />
                             {{$_W['user']['username']}}
                         </a>
                         <dl id="layui-admin-usermenu" class="layui-nav-child layui-anim layui-anim-upbit">

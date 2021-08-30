@@ -3,23 +3,23 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 
-class selfmigrate extends Command
+class userrestore extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'self:migrate';
+    protected $signature = 'user:restore {uid}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Whotalk framework migrate';
+    protected $description = 'Framework User restore';
 
     /**
      * Create a new command instance.
@@ -38,10 +38,10 @@ class selfmigrate extends Command
      */
     public function handle()
     {
-        //操作数据库迁移
-        $this->info('Whotalk framework migrate successfully.');
-        //系统无用文件清理
-        Artisan::call('self:clear');
-        return true;
+        //
+        $uid = $this->argument('uid');
+        if (empty($uid)) return $this->error("Pleace enter your User_id") || false;
+        DB::table('users')->where('uid',intval($uid))->update(array('status'=>2,'starttime'=>time()));
+        $this->info('User restore successfully.');
     }
 }

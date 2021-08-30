@@ -5,9 +5,7 @@
         <h2 class="weui-desktop-page__title">SOCKET配置</h2>
         <div class="fui-card layui-card">
             <div class="layui-card-body">
-                @else
-                    <div class="padding">
-                        @endif
+@endif
 
                         <div class="fui-form">
                             <form action="{{ url('console/setting') }}" method="post" class="layui-form">
@@ -48,9 +46,10 @@
                         </div>
 
                         @if(!$_W['isajax'])
+            </div>
                     </div>
             </div>
             @endif
-        </div>
+
 
     @include('common.footer')

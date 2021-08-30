@@ -6,14 +6,14 @@ use App\Services\UserService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
-class repwd extends Command
+class userrepwd extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'repwd {user} {pwd}';
+    protected $signature = 'user:repwd {user} {pwd}';
 
     /**
      * The console command description.
@@ -54,6 +54,6 @@ class repwd extends Command
             'password'=>$hash
         ));
         if (!$complete) return $this->error("Password reset failed.") || false;
-        $this->info('Password reset successfully.');
+        $this->info('User password reset successfully.');
     }
 }

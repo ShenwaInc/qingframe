@@ -56,9 +56,11 @@ class Account extends Model
         $condition = array(
             ['account.isdeleted','!=',$isdeleted],
             ['uni_account.default_acid','!=',0],
-            ['account.type','<',9],
-            ['uni_account_users.uid','=',$uid]
+            ['account.type','<',9]
         );
+        if (!$_W['isfounder']){
+            $condition[] = ['uni_account_users.uid','=',$uid];
+        }
         if ($expire=='expire'){
             $condition[] = ['account.endtime','<',TIMESTAMP];
             $condition[] = ['account.endtime','>',2];

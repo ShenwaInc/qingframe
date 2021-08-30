@@ -145,6 +145,15 @@ class UserService
         return $record;
     }
 
+    static function GetSubs($uid=0){
+        if (empty($uid)){
+            global $_W;
+            $uid = $_W['uid'];
+        }
+        if (!$uid) return array();
+        return DB::table('users')->where(array('owner_uid'=>$uid,'status'=>2))->get()->keyBy('uid')->toArray();
+    }
+
     static function isFounder($uid, $only_main_founder = false){
         global $_W;
         $founders = array($_W['config']['setting']['founder']);

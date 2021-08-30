@@ -60,7 +60,7 @@
                             <td><span class="fui-table-lable">接口文件</span></td>
                             <td class="soild-after"><span class="text-gray">设置安全域名、授权域名等，需要上传验证文件</span></td>
                             <td class="text-right soild-after">
-                                <a href="javascript:layer.msg('敬请期待',{icon:7);" class="text-blue">上传</a>
+                                <a href="javascript:" class="text-blue js-api-verify">上传</a>
                             </td>
                         </tr>
                         @if($_W['isfounder'])
@@ -75,7 +75,7 @@
                                     <input type="text" id="expirdate" style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;" name="expire" value="" />
                                 </span>
                                 @if($account['endtime']>0)
-                                <a href="javascript:setForever();" class="text-blue">永久</a>
+                                <a href="javascript:setForever();" class="text-red margin-left-sm">永久</a>
                                 @endif
                             </td>
                         </tr>
@@ -93,7 +93,7 @@
 @if($_W['isfounder'])
     <script type="text/javascript">
         layer.ready(function (){
-            var laydate = layui.laydate;
+            var laydate = layui.laydate, upload = layui.upload;
             laydate.render({
                 elem:"#expirdate",
                 format:"yyyy-MM-dd",
@@ -101,6 +101,17 @@
                 done:function (value, date, endDate){
                     $('#expiretext').text(value);
                     setExpire(value);
+                }
+            });
+            upload.render({
+                elem: '.js-api-verify'
+                ,url: '{{ url("console/account/apiverify") }}' //必填项
+                ,accept:'file'
+                ,acceptMime:'text/plain'
+                ,exts:"txt"
+                ,data:{_token:"{{ csrf_token() }}"}
+                ,done:function (res, index, upload){
+                    Core.report(res);
                 }
             });
         });
