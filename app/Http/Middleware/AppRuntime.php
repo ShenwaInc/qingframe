@@ -23,6 +23,7 @@ class AppRuntime
         $uniacid = $request->input('i',0);
         if (empty($uniacid)) abort(404,'找不到该平台');
         $_W['uniacid'] = intval($uniacid);
+        $_W['account'] = uni_fetch($uniacid);
         $_W['openid'] = session()->get('openid','');
         $_W['member'] = array('uid'=>0);
         //自动登录
