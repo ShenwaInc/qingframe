@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\View;
 
-function message($msg, $redirect = '', $type = '') {
+function message($msg, $redirect = '', $type = 'error') {
     global $_W, $_GPC;
     $data = array('message'=>$msg,'redirect'=>$redirect,'type'=>$type);
     ob_clean();

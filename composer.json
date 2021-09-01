@@ -22,7 +22,8 @@
         "johnlui/aliyun-oss": "^2.2",
         "laravel/framework": "^6.0",
         "laravel/tinker": "^1.0",
-        "qcloud/cos-sdk-v5": "^2.2"
+        "qcloud/cos-sdk-v5": "^2.2",
+        "ext-pdo": "*"
     },
     "require-dev": {
         "facade/ignition": "^1.4",

@@ -6,6 +6,7 @@
     .message-card .layui-card{border: none !important; padding-top: 150px; box-shadow: none;}
     .message-icon{line-height: 1.5; color: #47b449;}
     .message-icon.message-error{color: #FF5722;}
+    .message-icon.message-info{color: #FFB800;}
     .message-icon .layui-icon{font-size: 72px;}
     .message-text{color: #353535; font-size: 16px; font-weight: 400; padding-bottom: 6px}
     .message-light{color: #01AAED;}

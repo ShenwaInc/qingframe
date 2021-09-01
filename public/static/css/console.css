@@ -3,7 +3,7 @@ body{background-color: #f6f8f9; min-width: 768px; font-family: "mp-quote",-apple
 a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 .layui-layout-admin .layui-header{background-color: #FFFFFF; box-sizing: border-box}
 .layui-nav, .layui-nav .layui-nav-item a{color: #333 !important;}
-.layui-nav, .layui-nav .layui-nav-item .layui-nav-child a{line-height: 36px;}
+.layui-nav, .layui-nav .layui-nav-item .layui-nav-child a{line-height: 36px; text-align: center;}
 .layui-layout-admin .layui-logo{box-shadow: none; color: #606060 !important;}
 
 .layui-layer-content{max-height: calc(90vh - 50px);}

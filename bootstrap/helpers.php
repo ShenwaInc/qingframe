@@ -17,6 +17,8 @@ function checksubmit($var='_token'){
     if ($_W['inconsole']){
         $headers = request()->header('X-CSRF-TOKEN');
         return !empty($_GPC[$var]) || !empty($headers);
+    }elseif (defined('IN_API') && $var=='_token'){
+        return true;
     }
     return isset($_GPC[$var]);
 }
@@ -108,8 +110,8 @@ function tomedia($src, $local_path = false, $is_cahce = false) {
         return url('console/util/wxcode') . ltrim($url, '.');
     }
 
-    if (\Str::startsWith($src,'https://')) {
-        return ($_W['ishttps']?'https:':'http:') . $src;
+    if (\Str::startsWith($src,'//')) {
+        return 'http:' . $src;
     }
     if (\Str::startsWith($src,'http://') || \Str::startsWith($src,'https://')) {
         return $src;
@@ -165,7 +167,7 @@ function error($errno, $message = '') {
 function uni_fetch($uniacid = 0) {
     global $_W;
     $uniacid = empty($uniacid) ? $_W['uniacid'] : intval($uniacid);
-    $account_api = \App\Services\AccountService::createByUniacid($uniacid);
+    $account_api = \App\Utils\WeAccount::createByUniacid($uniacid);
     if (is_error($account_api)) {
         return $account_api;
     }
