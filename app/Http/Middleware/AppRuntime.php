@@ -37,6 +37,12 @@ class AppRuntime
         if (!$_W['member']['uid'] && !empty($_W['openid'])){
             MemberService::AuthFetch($_W['openid']);
         }
+        if (!$_W['member']['uid']){
+            $uid = (int)session('uid',0);
+            if ($uid>0){
+                MemberService::AuthLogin(array('uid'=>$uid));
+            }
+        }
         $_W['attachurl'] = AttachmentService::SetAttachUrl();
         include_once base_path("bootstrap/functions/app.func.php");
         return $next($request);

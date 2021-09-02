@@ -178,21 +178,12 @@ function uni_fetch($uniacid = 0) {
     return $account_api;
 }
 
-if (!function_exists('post_var')){
-    function post_var($keys,$datas=array()){
-        global $_GPC;
-        if(empty($keys)) return array();
-        $data = array();
-        if (empty($datas)){
-            $datas = $_GPC;
-        }
-        foreach ($keys as $key){
-            if (isset($datas[$key])){
-                $data[$key] = $datas[$key];
-            }
-        }
-        return $data;
+function session_exit($print=''){
+    if (!empty($print)){
+        echo $print;
     }
+    session()->save();
+    exit();
 }
 
 function tablename($table) {

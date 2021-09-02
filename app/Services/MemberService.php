@@ -13,6 +13,77 @@ class MemberService
 
     }
 
+    public static function AuthLogin($member){
+        global $_W;
+        if (!empty($member) && !empty($member['uid'])) {
+            $member = pdo_get('mc_members', array('uid' => $member['uid'], 'uniacid' => $_W['uniacid']), array('uid', 'realname', 'mobile', 'email', 'groupid', 'credit1', 'credit2', 'credit6'));
+            if (!empty($member) && (!empty($member['mobile']) || !empty($member['email']))) {
+                $_W['member'] = $member;
+                $_W['member']['groupname'] = $_W['uniaccount']['groups'][$member['groupid']]['title'];
+                session()->put('uid',$member['uid']);
+                self::GroupUpdate();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static function GroupUpdate($uid = 0){
+        global $_W;
+        if(!$_W['uniaccount']['grouplevel']) {
+            $_W['uniaccount']['grouplevel'] = (int)pdo_getcolumn('uni_settings', array('uniacid' => $_W['uniacid']), 'grouplevel');
+            if (empty($_W['uniaccount']['grouplevel'])) {
+                return true;
+            }
+        }
+        $uid = intval($uid);
+        if($uid <= 0) {
+            $uid = $_W['member']['uid'];
+            $user = $_W['member'];
+            $user['openid'] = $_W['openid'];
+        } else {
+            $user = pdo_get('mc_members', array('uniacid' => $_W['uniacid'], 'uid' => $uid), array('uid', 'realname', 'credit1', 'credit6', 'groupid'));
+            $user['openid'] = pdo_getcolumn('mc_mapping_fans', array('uniacid' => $_W['uniacid'], 'uid' => $uid), 'openid');
+        }
+        if(empty($user)) {
+            return false;
+        }
+        $groupid = $user['groupid'];
+        $credit = $user['credit1'] + $user['credit6'];
+        $groups = pdo_getall('mc_groups', array('uniacid' => $_W['uniacid']), array(), 'groupid', 'credit');
+        if(empty($groups)) {
+            return false;
+        }
+        $data = array();
+        foreach($groups as $group) {
+            $data[$group['groupid']] = $group['credit'];
+        }
+        asort($data);
+        if($_W['uniaccount']['grouplevel'] == 1) {
+            foreach($data as $k => $da) {
+                if($credit >= $da) {
+                    $groupid = $k;
+                }
+            }
+        } else {
+            $now_group_credit = $data[$user['groupid']];
+            if($now_group_credit < $credit) {
+                foreach($data as $k => $da) {
+                    if($credit >= $da) {
+                        $groupid = $k;
+                    }
+                }
+            }
+        }
+        if($groupid > 0 && $groupid != $user['groupid']) {
+            pdo_update('mc_members', array('groupid' => $groupid), array('uniacid' => $_W['uniacid'], 'uid' => $uid));
+        }
+        $user['groupid'] = $groupid;
+        $_W['member']['groupid'] = $groupid;
+        $_W['member']['groupname'] = $_W['uniaccount']['groups'][$groupid]['title'];
+        return $user['groupid'];
+    }
+
     public static function UniAuth($authtoken,$expir=false){
         global $_W;
         $session = json_decode(base64_decode($authtoken), true);
