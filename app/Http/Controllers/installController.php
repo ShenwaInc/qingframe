@@ -52,7 +52,6 @@ class installController extends Controller
     }
 
     public function install(Request $request){
-        global $_W;
         if (!$request->isMethod('post')){
             return $this->message('安装失败，请重试');
         }
@@ -121,8 +120,6 @@ class installController extends Controller
             $uid =  (int)DB::table('users')->insertGetId($founder);
             if(!$uid) return $this->message('数据写入失败');
             $founder['uid'] = $uid;
-            $_W['user'] = $founder;
-            $_W['uid'] = $uid;
             DB::table('users_profile')->insert(array(
                 'avatar'=>'/static/icon200.jpg',
                 'edittime'=>TIMESTAMP,
@@ -163,6 +160,7 @@ class installController extends Controller
             ));
 
             //initializer laravel framework
+            $config = \config('system');
             DB::table('gxswa_cloud')->insert(array(
                 'identity'=>'swa_framework_laravel',
                 'name'=>'独立版主框架V1',
@@ -171,8 +169,8 @@ class installController extends Controller
                 'logo'=>'https://shenwahuanan.oss-cn-shenzhen.aliyuncs.com/images/4/2021/08/pK8iHw0eQg5hHgg4Kqe5E1E1hSBpZS.png',
                 'website'=>'https://www.gxswa.com/laravel/',
                 'rootpath'=>'',
-                'version'=>$_W['config']['version'],
-                'releasedate'=>$_W['config']['release'],
+                'version'=>$config['version'],
+                'releasedate'=>$config['release'],
                 'addtime'=>TIMESTAMP,
                 'dateline'=>TIMESTAMP
             ));
