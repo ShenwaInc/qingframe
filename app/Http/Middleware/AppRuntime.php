@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Services\AttachmentService;
 use App\Services\MemberService;
+use App\Services\SettingService;
 use Closure;
 
 define('IN_MOBILE', true);
@@ -20,6 +21,8 @@ class AppRuntime
     public function handle($request, Closure $next)
     {
         global $_W;
+        SettingService::Load();
+        $_W['page'] = $_W['setting']['page'];
         $uniacid = $request->input('i',0);
         if (empty($uniacid)) abort(404,'找不到该平台');
         $_W['uniacid'] = intval($uniacid);

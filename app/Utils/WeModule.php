@@ -91,7 +91,7 @@ class WeModule
     }
 
 
-    protected function template($filename) {
+    protected function template($filename, $extra='') {
         global $_W;
         $name = strtolower($this->modulename);
         $defineDir = dirname($this->__define);
@@ -99,12 +99,15 @@ class WeModule
             require_once base_path("bootstrap/functions/template.func.php");
         }
         if (defined('IN_SYS')) {
-            $source = IA_ROOT . "/web/themes/{$_W['template']}/{$name}/{$filename}.html";
-            $compile = storage_path("framework/tpls/web/{$name}/{$filename}.tpl.php");
+            $source = IA_ROOT . "/web/themes/{$_W['template']}/{$name}/{$extra}{$filename}.html";
+            $compile = storage_path("framework/tpls/web/{$name}/{$extra}{$filename}.tpl.php");
             if (!is_file($source)) {
                 $source = IA_ROOT . "/web/themes/default/{$name}/{$filename}.html";
             }
             if (!is_file($source)) {
+                $source = $defineDir . "/{$extra}template/{$filename}.html";
+            }
+            if (!is_file($source) && !empty($extra)) {
                 $source = $defineDir . "/template/{$filename}.html";
             }
             if (!is_file($source)) {

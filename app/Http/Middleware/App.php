@@ -2,7 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use App\Services\SettingService;
 use Closure;
 
 error_reporting(0);
@@ -44,8 +43,6 @@ class App
         $_W['account'] = array('uniacid'=>0);
         $_W['inconsole'] = $_W['inapp'] = false;
         $_W['token'] = csrf_token();
-        SettingService::Load();
-        $_W['page'] = $_W['setting']['page'];
         return $next($request);
     }
 
