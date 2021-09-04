@@ -26,7 +26,12 @@ class installController extends Controller
     );
 
     function __construct(){
-        $reset = (int)\request('reset');
+        $installedfile = base_path('storage/installed.bin');
+        if(file_exists($installedfile)){
+            abort(404);
+            die();
+        }
+        $reset = (int)\request()->input('reset',0);
         if ($reset==1){
             Cache::forget('installer');
             $installer = $this->installer;

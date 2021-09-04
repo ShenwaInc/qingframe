@@ -19,7 +19,7 @@ class Controller extends BaseController
         }
         $data = array('message'=>$msg,'redirect'=>$redirect,'type'=>$type);
         if(!isset($_W['isajax'])){
-            $_W['isajax'] = \request()->ajax();
+            $_W['isajax'] = \request()->ajax() || \request('inajax', 0);
         }
         if ($_W['isajax']){
             return json_encode($data);
