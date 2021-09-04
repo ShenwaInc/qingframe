@@ -18,6 +18,9 @@ class Controller extends BaseController
             $msg = str_replace($extra['light'],'<a href="'.$redirect.'" class="message-light">'.$extra['light'].'</a>',$msg);
         }
         $data = array('message'=>$msg,'redirect'=>$redirect,'type'=>$type);
+        if(!isset($_W['isajax'])){
+            $_W['isajax'] = \request()->ajax();
+        }
         if ($_W['isajax']){
             return json_encode($data);
         }else{
