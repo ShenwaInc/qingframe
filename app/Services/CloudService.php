@@ -33,7 +33,8 @@ class CloudService
                 require_once "{$compath}aop/request/AlipayTradeQueryRequest.php";
                 break;
             case 'aliyun' :
-                require_once "{$compath}aliyun/api_demo/SmsDemo.php";
+                require_once "{$compath}aliyun/src/dysmsapi.php";
+                require_once "{$compath}aliyun/vendor/autoload.php";
                 break;
             case 'tim' :
                 include_once "{$compath}tim/TLSSigAPIv2.php";
@@ -63,8 +64,8 @@ class CloudService
                         'type'=>2,
                         'logo'=>'https://shenwahuanan.oss-cn-shenzhen.aliyuncs.com/images/4/2021/08/Mpar00P5PjJPrxAW1FWCP3CPz87qjc.png',
                         'website'=>'https://www.whotalk.com.cn/',
-                        'version'=>'1.0.3',
-                        'releasedate'=>2021082201,
+                        'version'=>'1.0.4',
+                        'releasedate'=>2021090401,
                         'rootpath'=>'',
                         'online'=>'',
                         'addtime'=>TIMESTAMP,

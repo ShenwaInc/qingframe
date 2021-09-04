@@ -256,7 +256,8 @@ class AccountController extends Controller
             'uniacid'=>$this->uniacid,
             'account'=>$this->account,
             'setting'=>$setting,
-            'role'=>$this->role
+            'role'=>$this->role,
+            'title'=>'平台配置'
         ));
     }
 

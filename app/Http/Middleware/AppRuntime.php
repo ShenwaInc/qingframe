@@ -38,9 +38,9 @@ class AppRuntime
             MemberService::AuthFetch($_W['openid']);
         }
         if (!$_W['member']['uid']){
-            $uid = (int)session('uid',0);
-            if ($uid>0){
-                MemberService::AuthLogin(array('uid'=>$uid));
+            $member = (int)session("_app_member_session_{$uniacid}_",array());
+            if (!empty($member)){
+                MemberService::AuthLogin($member, false);
             }
         }
         $_W['attachurl'] = AttachmentService::SetAttachUrl();

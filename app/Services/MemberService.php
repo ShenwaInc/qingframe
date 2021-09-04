@@ -13,15 +13,18 @@ class MemberService
 
     }
 
-    public static function AuthLogin($member){
+    public static function AuthLogin($member,$remember=true){
         global $_W;
         if (!empty($member) && !empty($member['uid'])) {
             $member = pdo_get('mc_members', array('uid' => $member['uid'], 'uniacid' => $_W['uniacid']), array('uid', 'realname', 'mobile', 'email', 'groupid', 'credit1', 'credit2', 'credit6'));
             if (!empty($member) && (!empty($member['mobile']) || !empty($member['email']))) {
                 $_W['member'] = $member;
                 $_W['member']['groupname'] = $_W['uniaccount']['groups'][$member['groupid']]['title'];
-                session()->put('uid',$member['uid']);
                 self::GroupUpdate();
+                if($remember){
+                    session()->put('openid',$_W['openid']);
+                    session()->put("_app_member_session_{$_W['uniacid']}_",$member);
+                }
                 return true;
             }
         }
@@ -96,7 +99,6 @@ class MemberService
                 $openid = DB::table('mc_mapping_fans')->where('uid',$member['uid'])->value('openid');
                 $_W['openid'] = !empty($openid) ? $openid : $member['uid'];
                 $_W['member']['openid'] = $_W['openid'];
-                session()->put('openid',$_W['openid']);
                 return true;
             }
         }
@@ -112,7 +114,6 @@ class MemberService
             if (empty($member['openid'])) $member['openid'] = $member['uid'];
             $_W['member'] = $member;
             $_W['openid'] = $member['openid'];
-            session()->put('openid',$_W['openid']);
         }
         return $member;
     }
