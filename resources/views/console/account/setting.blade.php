@@ -103,6 +103,15 @@
                                 <a href="javascript:;" title="邮件通知配置" onclick="layer.msg('敬请期待',{icon:7})" class="text-blue layui-hide">邮件配置</a>
                             </td>
                         </tr>
+                        <tr>
+                            <td><span class="fui-table-lable">离线推送</span></td>
+                            <td class="soild-after">
+                                <input type="checkbox" lay-filter="js-switch" disabled name="notice.push.switch" lay-skin="switch" lay-text="开启|关闭"{{ $setting['notice']['push']['switch']==1 ? ' checked' : '' }} />
+                            </td>
+                            <td class="text-right soild-after">
+                                <a href="javascript:;" title="邮件通知配置" onclick="layer.msg('敬请期待',{icon:7})" class="text-blue layui-hide">配置推送</a>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
