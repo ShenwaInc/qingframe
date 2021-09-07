@@ -63,6 +63,9 @@ class AttachmentService
         global $_W;
         if ($_W['setting']['remote']['type']!=4 && !$test) return error(-1,'未开启腾讯云存储');
         $filePath = ATTACHMENT_ROOT . $key;
+        if ($test){
+            $filePath = public_path($key);
+        }
         if (!file_exists($filePath)) return error(-1,'该文件不存在');
         if (empty($setting)) $setting = $_W['setting']['remote']['alioss'];
         if (empty($setting['bucket'])) return error(-1,'Bucket名称不正确');

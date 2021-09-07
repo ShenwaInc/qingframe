@@ -39,7 +39,7 @@ Route::group(['prefix' => 'console', 'namespace' => 'Console', 'middleware'=>['a
     Route::match(['get', 'post'],'/m/{modulename}/{do?}', 'ModuleController@entry')->middleware(\App\Http\Middleware\ModulePermission::class);
 });
 
-Route::group(['prefix'=>'installer'],function (){
+Route::group(['prefix'=>'installer', 'middleware'=>[\App\Http\Middleware\App::class]],function (){
     Route::get('/', 'installController@index');
     Route::post('/agreement', 'installController@agreement');
     Route::get('/database', 'installController@database');

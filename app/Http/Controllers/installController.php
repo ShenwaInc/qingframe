@@ -57,6 +57,7 @@ class installController extends Controller
     }
 
     public function install(Request $request){
+        global $_W;
         if (!$request->isMethod('post')){
             return $this->message('安装失败，请重试');
         }
@@ -124,7 +125,8 @@ class installController extends Controller
             //create founder
             $uid =  (int)DB::table('users')->insertGetId($founder);
             if(!$uid) return $this->message('数据写入失败');
-            $founder['uid'] = $uid;
+            $_W['uid'] = $founder['uid'] = $uid;
+            $_W['user'] = $founder;
             DB::table('users_profile')->insert(array(
                 'avatar'=>'/static/icon200.jpg',
                 'edittime'=>TIMESTAMP,
