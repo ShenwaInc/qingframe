@@ -35,6 +35,11 @@ Route::group(['prefix' => 'm/', 'namespace' => 'App','middleware'=>[\App\Http\Mi
     Route::match(['get', 'post'],'/{modulename}', 'ModuleController@Api');
 });
 
+Route::group(['prefix'=>'payment', 'namespace' => 'App', 'middleware'=>[\App\Http\Middleware\App::class]],function (){
+    //支付接口路由
+    Route::any('/{payment}', 'PaymentController@notify')->where('payment','[a-z]+');
+});
+
 Route::group(['prefix' => 'member/', 'namespace' => 'Auth'], function () {
     //会员相关路由
     Route::get('/{uid?}', 'MainController@Main')->where('uid','[0-9]+');

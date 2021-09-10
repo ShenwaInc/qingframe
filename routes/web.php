@@ -39,6 +39,11 @@ Route::group(['prefix' => 'console', 'namespace' => 'Console', 'middleware'=>['a
     Route::match(['get', 'post'],'/m/{modulename}/{do?}', 'ModuleController@entry')->middleware(\App\Http\Middleware\ModulePermission::class);
 });
 
+Route::group(['prefix'=>'payment', 'namespace' => 'App', 'middleware'=>[\App\Http\Middleware\App::class]],function (){
+    Route::any('/{payment}', 'PaymentController@notify')->where('payment','[a-z]+');
+    Route::match(['get', 'post', 'option'], '/return/{payment}', 'PaymentController@response');
+});
+
 Route::group(['prefix'=>'installer', 'middleware'=>[\App\Http\Middleware\App::class]],function (){
     Route::get('/', 'installController@index');
     Route::post('/agreement', 'installController@agreement');
