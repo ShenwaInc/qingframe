@@ -79,9 +79,21 @@ class WeModule
     }
 
 
-    protected function createMobileUrl($do, $query = array(), $noredirect = true) {
+    protected function createMobileUrl($do, $query = array(), $noredirect = true, $addhost=false) {
+        global $_W;
         $module_name = strtolower($this->modulename);
-        return murl("m/$module_name".($do?'/'.$do:''), $query, $noredirect);
+        $segment = "wem/{$module_name}".($do?'/'.$do:'');
+        $url = (!empty($addhost) ? $_W['siteroot'] : '/') . $segment;
+        if (empty($query)){
+            $query = array();
+        }
+        $query['i'] = $_W['uniacid'];
+        $queryString = http_build_query($query);
+        $url .= '?' . $queryString;
+        if (false === $noredirect) {
+            $url .= '&wxref=mp.weixin.qq.com#wechat_redirect';
+        }
+        return $url;
     }
 
 

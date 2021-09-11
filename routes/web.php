@@ -21,6 +21,10 @@ Route::group(['prefix' => 'app','namespace' => 'App', 'middleware'=>[\App\Http\M
     Route::get('auth', 'AuthController@index');
 });
 
+Route::group(['prefix' => 'wem','namespace' => 'App', 'middleware'=>[\App\Http\Middleware\App::class, \App\Http\Middleware\AppRuntime::class]],function (){
+    Route::match(['get', 'post'],'/{modulename}/{do?}', 'ModuleController@entry');
+});
+
 Route::group(['namespace'=>'Console', 'middleware'=>[\App\Http\Middleware\Installer::class, \App\Http\Middleware\App::class]],function (){
     Route::get('/', 'EntryController@index');
 });
