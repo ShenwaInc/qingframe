@@ -40,7 +40,7 @@ class SettingController extends Controller
                     $redirect = url('console/active',array('op'=>'socket'));
                     return $this->message('模块初始化完成！即将初始化SOCKET...',$redirect,'success');
                 }elseif ($op=='socket'){
-                    $socketdir = base_path("socket/");
+                    $socketdir = base_path("swasocket/");
                     if (!is_dir($socketdir)){
                         $cloudrequire = CloudService::CloudRequire("laravel_whotalk_socket", $socketdir);
                         if (is_error($cloudrequire)) return $this->message($cloudrequire['message']);
