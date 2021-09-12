@@ -17,7 +17,7 @@ class SocketService
             'type'=>3,
             'logo'=>'https://shenwahuanan.oss-cn-shenzhen.aliyuncs.com/images/4/2021/08/gdSI484HDp4pXxHshPxXpShdi3XHP8.png',
             'website'=>'https://www.whotalk.com.cn/',
-            'rootpath'=>'socket/',
+            'rootpath'=>'swasocket/',
             'version'=>'1.0.3',
             'online'=>'',
             'releasedate'=>2021082001,
@@ -31,6 +31,12 @@ class SocketService
         return CloudService::CloudSocket();
     }
 
+    static function Upgrade(){
+        if(is_dir(base_path('socket'))){
+            FileService::rmdirs(base_path('socket'));
+        }
+    }
+
     static function InitShell(){
         if (file_exists(base_path('socket/install_socket.sh'))){
             $installfile = base_path("socket/install_socket.sh");
@@ -38,7 +44,7 @@ class SocketService
             $socketdata = fread($reader,filesize($installfile));
             fclose($reader);
             if (strexists($socketdata,'{{GOPATH}}')){
-                $basepath = str_replace('\\','/',base_path('socket'));
+                $basepath = str_replace('\\','/',base_path('swasocket'));
                 $socketdata = str_replace('{{GOPATH}}',$basepath,$socketdata);
                 $writer = fopen($installfile,'w');
                 $complete = fwrite($writer,$socketdata);
