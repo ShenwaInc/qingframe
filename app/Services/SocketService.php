@@ -18,9 +18,9 @@ class SocketService
             'logo'=>'https://shenwahuanan.oss-cn-shenzhen.aliyuncs.com/images/4/2021/08/gdSI484HDp4pXxHshPxXpShdi3XHP8.png',
             'website'=>'https://www.whotalk.com.cn/',
             'rootpath'=>'swasocket/',
-            'version'=>'1.0.3',
+            'version'=>'1.0.4',
             'online'=>'',
-            'releasedate'=>2021082001,
+            'releasedate'=>2021091201,
             'addtime'=>TIMESTAMP,
             'dateline'=>TIMESTAMP
         ));

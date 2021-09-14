@@ -53,6 +53,7 @@ class selfup extends Command
         $cloudupdate = CloudService::CloudUpdate($component['identity'],base_path().'/');
         if (is_error($cloudupdate)) return $this->error($cloudupdate['message']) || "";
         //数据库升级
+        Artisan::call('self:migrate');
 
         //更新路由
         Artisan::call('route:clear');

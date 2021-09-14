@@ -24,7 +24,8 @@ class CreateUniSettingsTable extends Migration {
 			$table->string('welcome', 60);
 			$table->string('default', 60);
 			$table->string('default_message', 2000);
-			$table->text('payment', 65535);
+			$table->text('payment');
+            $table->text('notice');
 			$table->string('stat', 300);
 			$table->integer('default_site')->unsigned()->nullable();
 			$table->boolean('sync');
@@ -34,7 +35,7 @@ class CreateUniSettingsTable extends Migration {
 			$table->string('mcplugin', 500);
 			$table->boolean('exchange_enable');
 			$table->boolean('coupon_type');
-			$table->text('menuset', 65535);
+			$table->text('menuset');
 			$table->string('statistics', 100);
 			$table->string('bind_domain', 200);
 			$table->boolean('comment_status');
