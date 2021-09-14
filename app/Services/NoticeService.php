@@ -8,6 +8,11 @@ use Illuminate\Support\Facades\DB;
 class NoticeService
 {
 
+    /**
+     * @param string|numeric $mobile 手机号/UID
+     * @param string $templateid 短信模板编号
+     * @param array $param 短信发送参数值
+    */
     static function SendSms($mobile,$templateid,$param=array()){
         $regular = '/^1[3-9]\d{9}$/';
         if (!$templateid) return error(-1,'短信模板ID未配置');
