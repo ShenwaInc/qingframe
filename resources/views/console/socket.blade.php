@@ -22,7 +22,7 @@
                     <div class="layui-text">2&nbsp;到安全组<strong>开放服务器的3000端口</strong></div>
                     <div class="layui-text">3&nbsp;到宝塔创建新站点:</div>
                     <div class="layui-text">3.1&nbsp;<strong>域名</strong>填写上一步骤准备的域名</div>
-                    <div class="layui-text">3.2&nbsp;<strong>根目录</strong>请选择或直接填写&nbsp;<strong class="text-black">{{ str_replace("\\",'/',base_path('socket')) }}</strong></div>
+                    <div class="layui-text">3.2&nbsp;<strong>根目录</strong>请选择或直接填写&nbsp;<strong class="text-black">{{ str_replace("\\",'/',base_path('swasocket')) }}</strong></div>
                     <div class="layui-text">3.3&nbsp;<strong>PHP版本<span class="text-red">必须选择纯静态</span></strong></div>
                     @if($_W['ishttps'])
                         <div class="layui-text">4&nbsp;为该站点配置HTTPS并强制开启</div>
@@ -34,7 +34,7 @@
                         <strong>使用宝塔面板的【终端】功能或ssh远程管理工具登录服务器后运行如下指令</strong>
                     </div>
                     <pre class="layui-code">
-sh {{ str_replace("\\",'/',base_path('socket')) }}/install_socket.sh</pre>
+sh {{ str_replace("\\",'/',base_path('swasocket')) }}/install_socket.sh</pre>
                 </div>
                 <div class="layui-tab-item">
                     <div class="layui-text">

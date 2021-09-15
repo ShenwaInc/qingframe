@@ -39,7 +39,8 @@ class selfclear extends Command
     {
         //清理无用文件
         $unused = array(
-            app_path('Console/Commands/repwd.php')
+            app_path('Console/Commands/repwd.php'),
+            database_path('migrations/2021_08_10_113449_create_uni_settings_table.php')
         );
         foreach ($unused as $file){
             if (file_exists($file)){

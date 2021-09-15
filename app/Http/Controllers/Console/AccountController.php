@@ -218,7 +218,7 @@ class AccountController extends Controller
                         $setting[$key] = $value;
                     }
                     $update = is_array($setting[$key]) ? serialize($setting[$key]) : $setting[$key];
-                    $complete = Setting::uni_save($this->uniacid,$key,$update);
+                    $complete = SettingService::uni_save($this->uniacid,$key,$update);
                     if ($complete){
                         return $this->message('保存成功！',wurl('account/setting',array('uniacid'=>$this->uniacid)), 'success');
                     }
@@ -230,7 +230,7 @@ class AccountController extends Controller
                     }
                     $wechat['pay_switch'] = $setting['payment']['wechat']['pay_switch'];
                     $setting['payment']['wechat'] = $wechat;
-                    $complete = Setting::uni_save($this->uniacid,'payment',serialize($setting['payment']));
+                    $complete = SettingService::uni_save($this->uniacid,'payment',serialize($setting['payment']));
                     if ($complete){
                         return $this->message('保存成功！',wurl('account/setting',array('uniacid'=>$this->uniacid)), 'success');
                     }
@@ -242,7 +242,7 @@ class AccountController extends Controller
                     }
                     $alipay['pay_switch'] = $setting['payment']['alipay']['pay_switch'];
                     $setting['payment']['alipay'] = $alipay;
-                    $complete = Setting::uni_save($this->uniacid,'payment',serialize($setting['payment']));
+                    $complete = SettingService::uni_save($this->uniacid,'payment',serialize($setting['payment']));
                     if ($complete){
                         return $this->message('保存成功！',wurl('account/setting',array('uniacid'=>$this->uniacid)), 'success');
                     }

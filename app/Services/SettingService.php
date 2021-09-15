@@ -73,6 +73,15 @@ class SettingService{
         return array_elements($name, $unisetting);
     }
 
+    static function uni_save($uniacid,$key,$value){
+        $complete = DB::table('uni_settings')->updateOrInsert(['uniacid'=>$uniacid],[$key=>$value]);
+        if ($complete){
+            $cachekey = CacheService::system_key('unisetting', array('uniacid' => $uniacid));
+            Cache::forget($cachekey);
+        }
+        return $complete;
+    }
+
     static function check_php_ext($extension) {
         return extension_loaded($extension) ? true : false;
     }
