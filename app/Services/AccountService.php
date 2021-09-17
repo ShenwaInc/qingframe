@@ -62,6 +62,24 @@ class AccountService {
         return $all_account_type_sign;
     }
 
+    static function GroupModules($uniacid){
+        $packageids = DB::table('uni_account_group')->where('uniacid', $uniacid)->select(['groupid'])->get()->keyBy('groupid')->toArray();
+        $packageids = empty($packageids) ? array() : array_keys($packageids);
+        if (in_array('-1', $packageids)) {
+            $modules = DB::table('modules')->select(['name'])->get()->keyBy('name')->toArray();
+            return array_keys($modules);
+        }
+        $uni_modules = array();
+
+        $uni_groups = DB::table('uni_group')->where('id', $packageids)->get()->toArray();
+        $uni_account_extra_modules = DB::table('uni_account_extra_modules')->where('uniacid', $uniacid)->get()->toArray();
+        $acount_modules = array_merge($uni_groups, $uni_account_extra_modules);
+        if (!empty($acount_modules)) {
+            $uni_modules = array_unique($uni_modules);
+        }
+        return $uni_modules;
+    }
+
     static function OwnerAccountNums($uid, $role){
         $account_all_type = self::GetType();
         $account_all_type_sign = array('account');

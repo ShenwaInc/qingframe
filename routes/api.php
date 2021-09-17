@@ -30,12 +30,12 @@ Route::group(['prefix' => 'auth/{uniacid}', 'namespace' => 'Auth'], function () 
 
 });
 
-Route::group(['prefix' => 'm/', 'namespace' => 'App','middleware'=>[\App\Http\Middleware\App::class,\App\Http\Middleware\AppRuntime::class]], function () {
+Route::group(['prefix' => 'm/', 'namespace' => 'App','middleware'=>['app','runtime']], function () {
     //模块接口路由
     Route::match(['get', 'post'],'/{modulename}', 'ModuleController@Api');
 });
 
-Route::group(['prefix'=>'payment', 'namespace' => 'App', 'middleware'=>[\App\Http\Middleware\App::class]],function (){
+Route::group(['prefix'=>'payment', 'namespace' => 'App', 'middleware'=>['app']],function (){
     //支付接口路由
     Route::any('/{payment}', 'PaymentController@notify')->where('payment','[a-z]+');
 });

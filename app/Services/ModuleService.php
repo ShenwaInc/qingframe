@@ -4,6 +4,7 @@
 namespace App\Services;
 
 
+use App\Models\Account;
 use App\Models\Module;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -234,6 +235,95 @@ class ModuleService
             'baiduapp_support'=>1,
             'toutiaoapp_support'=>1
         );
+    }
+
+    static function SupportType(){
+        $module_support_type = array(
+            'account_support' => array(
+                'type' => 'account',
+                'type_name' => '公众号',
+                'support' => 2,
+                'not_support' => 1,
+                'store_type' => 1,
+            )
+        );
+        return $module_support_type;
+    }
+
+    static function UniModules($uniacid){
+        $account_info = Account::getByUniacid($uniacid);
+        $uni_account_type = AccountService::GetType(1);
+        $owner_uid = DB::table('uni_account_users')->where(array('uniacid' => $uniacid, 'role' => array('owner', 'vice_founder')))->select(array('uid', 'role'))->get()->keyBy('role')->toArray();
+        $owner_uid = !empty($owner_uid['owner']) ? $owner_uid['owner']['uid'] : (!empty($owner_uid['vice_founder']) ? $owner_uid['vice_founder']['uid'] : 0);
+
+        $cachekey = CacheService::system_key('unimodules',array('uniacid'=>$uniacid));
+        $modules = Cache::get($cachekey,array());
+        if (empty($modules)){
+            $enabled_modules = self::NonRecycleModules();
+            if (!empty($owner_uid) && !UserService::isFounder($owner_uid, true)) {
+                $group_modules = AccountService::GroupModules($uniacid);
+
+                $user_modules = UserService::GetModules($owner_uid);
+                if (!empty($user_modules)) {
+                    $group_modules = array_unique(array_merge($group_modules, array_keys($user_modules)));
+                    $group_modules = array_intersect(array_keys($enabled_modules), $group_modules);
+                }
+            } else {
+                $group_modules = array_keys($enabled_modules);
+            }
+            Cache::put($cachekey, $group_modules, 7*86400);
+            $modules = $group_modules;
+        }
+        $modules = array_merge($modules, self::SysModules());
+
+        $module_list = array();
+        if (!empty($modules)) {
+            foreach ($modules as $name) {
+                if (empty($name)) {
+                    continue;
+                }
+                $module_info = self::fetch($name);
+                if ($module_info[$uni_account_type['module_support_name']] != $uni_account_type['module_support_value']) {
+                    continue;
+                }
+                if (!empty($module_info['recycle_info'])) {
+                    if ($module_info['recycle_info']['account'] > 0 && $module_info['account'] == 2) {
+                        $module_info['account'] = 1;
+                    }
+                }
+                if ($module_info['account_support'] != 2 && in_array($account_info['type'], array(1, 3))) {
+                    continue;
+                }
+                if (!empty($module_info)) {
+                    $module_list[$name] = $module_info;
+                }
+            }
+        }
+        $module_list['core'] = array('title' => '系统事件处理模块', 'name' => 'core', 'issystem' => 1, 'enabled' => 1, 'isdisplay' => 0);
+        return $module_list;
+    }
+
+    static function NonRecycleModules(){
+        $modules = Module::where('issystem' , 0)->orderBy('mid', 'DESC')->get()->keyBy('name')->toArray();
+        if (empty($modules)) {
+            return array();
+        }
+        foreach ($modules as &$module) {
+            $module_info = self::fetch($module['name']);
+            if (empty($module_info)) {
+                unset($module);
+            }
+            if (!empty($module_info['recycle_info'])) {
+                if ($module_info['recycle_info']['account_support'] > 0 && $module_info['account_support'] == 2) {
+                    $module['account_support'] = 1;
+                }
+            }
+        }
+        return $modules;
+    }
+
+    static function SysModules(){
+        return array('basic', 'news', 'music', 'service', 'userapi', 'recharge', 'images', 'video', 'voice', 'wxcard', 'custom', 'chats', 'paycenter', 'keyword', 'special', 'welcome', 'default', 'apply', 'reply', 'core', 'store', 'wxapp');
     }
 
 }

@@ -21,8 +21,6 @@ class WeAccount extends \ArrayObject{
     protected $startTime;
     protected $endTime;
     protected $groupLevel;
-    protected $logo;
-    protected $qrcode;
     protected $switchUrl;
     protected $displayUrl;
     protected $setMeal = array();

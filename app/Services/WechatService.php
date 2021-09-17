@@ -24,10 +24,8 @@ class WechatService extends WeAccount
         'pic_weixin', 'location_select', 'media_id', 'view_limited',
     );
 
-    public $HttpService = null;
-
     public static function getAccountInfo($uniacid) {
-        $account = AccountWechat::where('uniacid',$uniacid)->first()->toArray();
+        $account = AccountWechat::where('uniacid',$uniacid)->first();
         $account['encrypt_key'] = $account['key'];
         return $account;
     }

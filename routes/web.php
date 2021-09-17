@@ -11,25 +11,30 @@
 |
 */
 
-Route::group(['prefix' => 'auth','namespace'=>'Auth', 'middleware'=>[\App\Http\Middleware\App::class]],function (){
+Route::group(['prefix' => 'auth','namespace'=>'Auth', 'middleware'=>['app']],function (){
     Route::post('/login', 'AuthController@Login');
     Route::post('/logout', 'AuthController@Logout');
 });
 
-Route::group(['prefix' => 'app','namespace' => 'App', 'middleware'=>[\App\Http\Middleware\App::class, \App\Http\Middleware\AppRuntime::class]],function (){
+Route::group(['prefix' => 'app','namespace' => 'App', 'middleware'=>['app', 'runtime']],function (){
     Route::match(['get', 'post'],'/m/{modulename}/{do?}', 'ModuleController@entry');
     Route::get('auth', 'AuthController@index');
 });
 
-Route::group(['prefix' => 'wem','namespace' => 'App', 'middleware'=>[\App\Http\Middleware\App::class, \App\Http\Middleware\AppRuntime::class]],function (){
+Route::group(['prefix' => 'wem','namespace' => 'App', 'middleware'=>['app','runtime']],function (){
     Route::match(['get', 'post'],'/{modulename}/{do?}', 'ModuleController@entry');
+    Route::post('/subscribe/{action}', 'ModuleController@subscribe');
 });
 
-Route::group(['namespace'=>'Console', 'middleware'=>[\App\Http\Middleware\Installer::class, \App\Http\Middleware\App::class]],function (){
+Route::group(['namespace'=>'Console', 'middleware'=>[\App\Http\Middleware\Installer::class, 'app']],function (){
     Route::get('/', 'EntryController@index');
 });
 
-Route::group(['prefix' => 'console', 'namespace' => 'Console', 'middleware'=>['auth', \App\Http\Middleware\App::class,\App\Http\Middleware\ConsolePermission::class]], function () {
+Route::group(['prefix' => 'api', 'namespace'=>'Api','middleware'=>['app']],function (){
+    Route::get('/wechat/{uniacid}', 'WechatController@recived');
+});
+
+Route::group(['prefix' => 'console', 'namespace' => 'Console', 'middleware'=>['auth', 'app',\App\Http\Middleware\ConsolePermission::class]], function () {
 
     Route::get('/', 'PlatformController@index');
     Route::get('/util/{op?}', 'UtilController@index');
@@ -43,12 +48,12 @@ Route::group(['prefix' => 'console', 'namespace' => 'Console', 'middleware'=>['a
     Route::match(['get', 'post'],'/m/{modulename}/{do?}', 'ModuleController@entry')->middleware(\App\Http\Middleware\ModulePermission::class);
 });
 
-Route::group(['prefix'=>'payment', 'namespace' => 'App', 'middleware'=>[\App\Http\Middleware\App::class]],function (){
+Route::group(['prefix'=>'payment', 'namespace' => 'App', 'middleware'=>['app']],function (){
     Route::any('/{payment}', 'PaymentController@notify')->where('payment','[a-z]+');
     Route::match(['get', 'post', 'option'], '/return/{payment}', 'PaymentController@response');
 });
 
-Route::group(['prefix'=>'installer', 'middleware'=>[\App\Http\Middleware\App::class]],function (){
+Route::group(['prefix'=>'installer', 'middleware'=>['app']],function (){
     Route::get('/', 'installController@index');
     Route::post('/agreement', 'installController@agreement');
     Route::get('/database', 'installController@database');
@@ -63,8 +68,6 @@ Route::group(['prefix'=>'installer', 'middleware'=>[\App\Http\Middleware\App::cl
 Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
-
-Route::get('/debug', 'Controller@message')->middleware(\App\Http\Middleware\App::class);
 
 Route::get('/admin/{modulename}', function (\Illuminate\Http\Request $request,$modulename){
     $user = $request->user();

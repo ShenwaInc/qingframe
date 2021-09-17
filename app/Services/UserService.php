@@ -154,6 +154,10 @@ class UserService
         return DB::table('users')->where(array('owner_uid'=>$uid,'status'=>2))->get()->keyBy('uid')->toArray();
     }
 
+    static function GetModules($uid){
+        return array();
+    }
+
     static function isFounder($uid, $only_main_founder = false){
         global $_W;
         $founders = array($_W['config']['setting']['founder']);
