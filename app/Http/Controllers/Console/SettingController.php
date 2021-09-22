@@ -95,7 +95,7 @@ class SettingController extends Controller
         }
         if ($op=='socket'){
             if (!isset($_W['setting']['swasocket']['whitelist'])){
-                $_W['setting']['swasocket']['whitelist'] = CloudService::CloudSocket('',1);
+                $_W['setting']['swasocket']['whitelist'] = SocketService::SocketAuthorize('',1);
             }
             $return['usersign'] = md5("{$_W['uid']}-{$_W['config']['setting']['authkey']}-{$_W['config']['site']['id']}");
         }
@@ -217,7 +217,7 @@ class SettingController extends Controller
             foreach ($difference as $key=>$value){
                 if(!is_array($value)){
                     $fileinfo = explode('|', $value);
-                    if ($fileinfo[0]=='install_socket.sh' && file_exists(base_path('socket/install_socket.sh'))){
+                    if ($fileinfo[0]=='install_socket.sh' && file_exists(base_path('swasocket/install_socket.sh'))){
                         unset($difference[$key]);
                         break;
                     }
@@ -239,7 +239,7 @@ class SettingController extends Controller
             if ($active['status']!=1){
                 return $this->message('该功能已暂停使用');
             }
-            $complete = CloudService::CloudSocket(trim($_GPC['domain']));
+            $complete = SocketService::SocketAuthorize(trim($_GPC['domain']));
             if ($complete){
                 return $this->message('新域名添加成功',url('console/setting/socket'),'success');
             }
@@ -248,7 +248,7 @@ class SettingController extends Controller
             if ($active['status']!=1){
                 return $this->message('该功能已暂停使用');
             }
-            $complete = CloudService::CloudSocket('',2);
+            $complete = SocketService::SocketAuthorize('',2);
             if ($complete){
                 return $this->message('重置成功',url('console/setting/socket'),'success');
             }

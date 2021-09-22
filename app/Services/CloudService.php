@@ -352,34 +352,6 @@ class CloudService
         return $authorize;
     }
 
-    static function CloudSocket($domain='',$require=0){
-        $domains = array("host"=>array());
-        $domainfile = base_path("socket/composer.json");
-        if (file_exists($domainfile)){
-            $reader = fopen($domainfile,'r');
-            $domaintext = fread($reader,filesize($domainfile));
-            fclose($reader);
-            if (!empty($domaintext)){
-                $domains = @json_decode($domaintext, true);
-            }
-        }
-        if (empty($domain)){
-            if ($require==1) return $domains['host'];
-            $domain = $_SERVER['HTTP_HOST'];
-        }
-        if ($require==2){
-            $domains['host'] = array();
-        }
-        if (!in_array($domain,$domains['host'])){
-            $domains['host'][] = $domain;
-            $writer = fopen($domainfile,'w');
-            $complete = fwrite($writer,json_encode($domains));
-            fclose($writer);
-            return $complete;
-        }
-        return true;
-    }
-
     static function CloudEnv($search, $replace){
         if (empty($search) || empty($replace)) return false;
         $envfile = base_path(".env");

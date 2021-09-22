@@ -28,7 +28,7 @@ class SocketService
         $initshell = self::InitShell();
         if (is_error($initshell)) return $initshell;
         //初始化域名白名单
-        return CloudService::CloudSocket();
+        return self::SocketAuthorize();
     }
 
     static function Upgrade(){
@@ -38,8 +38,8 @@ class SocketService
     }
 
     static function InitShell(){
-        if (file_exists(base_path('socket/install_socket.sh'))){
-            $installfile = base_path("socket/install_socket.sh");
+        if (file_exists(base_path('swasocket/install_socket.sh'))){
+            $installfile = base_path("swasocket/install_socket.sh");
             $reader = fopen($installfile,'r');
             $socketdata = fread($reader,filesize($installfile));
             fclose($reader);
@@ -51,6 +51,34 @@ class SocketService
                 fclose($writer);
                 if (!$complete) return error(-1,'SOCKET安装脚本写入失败');
             }
+        }
+        return true;
+    }
+
+    static function SocketAuthorize($domain='',$require=0){
+        $domains = array("host"=>array());
+        $domainfile = base_path("swasocket/composer.json");
+        if (file_exists($domainfile)){
+            $reader = fopen($domainfile,'r');
+            $domaintext = fread($reader,filesize($domainfile));
+            fclose($reader);
+            if (!empty($domaintext)){
+                $domains = @json_decode($domaintext, true);
+            }
+        }
+        if (empty($domain)){
+            if ($require==1) return $domains['host'];
+            $domain = $_SERVER['HTTP_HOST'];
+        }
+        if ($require==2){
+            $domains['host'] = array();
+        }
+        if (!in_array($domain,$domains['host'])){
+            $domains['host'][] = $domain;
+            $writer = fopen($domainfile,'w');
+            $complete = fwrite($writer,json_encode($domains));
+            fclose($writer);
+            return $complete;
         }
         return true;
     }
