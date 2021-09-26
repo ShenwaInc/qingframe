@@ -319,7 +319,7 @@ class SettingController extends Controller
                 if (is_error($ossClient)) return false;
                 $remote['city'] = AttachmentService::alioss_city($remote['bucket']);
                 if (!isset($_W['setting']['remote']['alioss']) || $_W['setting']['remote']['alioss']['key']!=$remote['key'] || $_W['setting']['remote']['alioss']['bucket']!=$remote['bucket'] || $_W['setting']['remote']['alioss']['secret']!=$remote['secret']){
-                    $aliossupload = AttachmentService::alioss_upload('favicon.ico',storage_path('app/public/favicon.ico'), $remote, true);
+                    $aliossupload = AttachmentService::alioss_upload('favicon.ico',public_path('favicon.ico'), $remote, true);
                     if (is_error($aliossupload)){
                         return $this->message($aliossupload['message']);
                     }
