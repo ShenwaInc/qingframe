@@ -10,7 +10,13 @@ class PaymentController extends Controller
 {
     //支付回调：异步
     public function notify(Request $request, $payment){
-        Log::info("Payment_{$payment}_Notify",$request->all());
+        $query = $request->all();
+        $input = file_get_contents('php://input');
+        if(!empty($input)){
+            $data = json_decode($input, true);
+            if (is_array($data)) $query = array_merge($query,$data);
+        }
+        Log::info("Payment_{$payment}_Notify",$query);
         return $this->message($payment,'','success');
     }
 
