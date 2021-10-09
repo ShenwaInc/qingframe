@@ -312,7 +312,7 @@
                             <colgroup>
                                 <col width="150" />
                                 <col />
-                                <col width="150" />
+                                <col width="300" />
                             </colgroup>
                             <tbody>
                                 <tr>
@@ -327,6 +327,7 @@
                                     <td class="soild-after">{{ $_W['setting']['swasocket']['server'] }}</td>
                                     <td class="text-right soild-after">
                                         <button class="layui-btn layui-btn-sm layui-btn-normal" type="button" onclick="WsDetect()">测试连接</button>
+                                        <button class="layui-btn layui-btn-sm layui-hide" type="button" onclick="WsSend()">发送数据</button>
                                     </td>
                                 </tr>
                                 <tr>
@@ -382,11 +383,29 @@
                         Swaws.init(UserSign, '{{ $_W['setting']['swasocket']['server'] }}',function (res){
                             if(res.type==='User/Connect'){
                                 layer.msg("SOCKET服务器连接成功",{icon:1});
-                                Swaws.io.close();
+                                //Swaws.io.close();
+                                //console.log(Swaws.io);
                             }
+                            console.log(res);
                         },function (){
                             Core.report({type:'error',redirect:'',message:'服务器连接失败,请重试'});
                         })
+                    }
+                    function WsSend(){
+                        let data = {
+                            "Method":"Message/SendToUsers",
+                            "Type":0,
+                            "fromId":UserSign,
+                            "Message":JSON.stringify({
+                                type:"door_opening",
+                                orderid:47002
+                            }),
+                            "Data":{
+                                "userIds":['ee21013ab4a5e69fdfc3044aa8255732'],
+                                "SiteRoot":"https://www.yingxiaogx.com/"
+                            }
+                        };
+                        Swaws.io.send(JSON.stringify(data));
                     }
                 </script>
             @elseif($op=='component')

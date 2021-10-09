@@ -20,4 +20,4 @@ yarn-error.log
 /storage/patch/*
 /bootstrap/com*
 /public/data/
-/swasocket/
+/swasocket
