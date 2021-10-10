@@ -67,8 +67,55 @@ class SettingController extends Controller
         return $this->message('您的站点已激活','','success');
     }
 
+    public function detection(){
+        $component = DB::table('gxswa_cloud')->where('type',0)->first(['id','identity','type','online','releasedate','rootpath']);
+        if (empty($component)) return $this->message('系统出现致命错误');
+        $cloudinfo = $this->checkcloud($component);
+        if (is_error($cloudinfo)){
+            return $this->message($cloudinfo['message']);
+        }
+        return $this->message('检测完成！',url('console/setting'),'success');
+    }
+
+    public function selfupgrade(){
+        $component = DB::table('gxswa_cloud')->where('type',0)->first(['id','identity','modulename','type','releasedate','rootpath']);
+        if (empty($component)) return $this->message('系统出现致命错误');
+        $cloudinfo = $this->checkcloud($component,2);
+        if ($cloudinfo['isnew']){
+            $basepath = $component['type']==2 ? CloudService::com_path() : base_path($component['rootpath']);
+            if ($component['type']==0) $basepath = base_path() . "/";
+            $cloudupdate = CloudService::CloudUpdate($component['identity'],$basepath);
+            if (is_error($cloudupdate)){
+                return $this->message($cloudupdate['message']);
+            }
+        }
+        //框架升级
+        try {
+            Artisan::call('self:migrate');
+        }catch (\Exception $exception){
+            //Todo something
+        }
+        //更新路由
+        Artisan::call('route:clear');
+        unset($cloudinfo['structure']);
+        $cloudinfo['isnew'] = false;
+        DB::table('gxswa_cloud')->where('id',$component['id'])->update(array(
+            'version'=>$cloudinfo['version'],
+            'updatetime'=>TIMESTAMP,
+            'dateline'=>TIMESTAMP,
+            'releasedate'=>$cloudinfo['releasedate'],
+            'online'=>serialize($cloudinfo)
+        ));
+        return $this->message('恭喜您，升级成功！', url('console/setting'),'success');
+    }
+
     public function index($op='main'){
         global $_W,$_GPC;
+        if($op=='detection'){
+            return $this->detection();
+        }elseif ($op=='selfupgrade'){
+            return $this->selfupgrade();
+        }
         $ajaxviews = array('socketset'=>'set.socket','pageset'=>'set.page','sockethelp'=>'socket','attachset'=>'set.upload','remoteset'=>'set.remote');
         $return = array('title'=>'站点设置','op'=>$op,'components'=>array());
         if (!isset($_W['setting']['page'])){
@@ -99,10 +146,15 @@ class SettingController extends Controller
             }
             $return['usersign'] = md5("{$_W['uid']}-{$_W['config']['setting']['authkey']}-{$_W['config']['site']['id']}");
         }
-        if ($op=='component'){
+        if ($op=='component' || $op=='plugin'){
             $return['types'] = array('框架','应用','组件','资源');
             $return['colors'] = array('red','blue','green','orange');
-            $components = DB::table('gxswa_cloud')->orderByRaw("`type` asc,`id` asc")->get()->toArray();
+            if ($op=='plugin'){
+                $condition = array('type'=>1);
+            }else{
+                $condition = array(['type','>',1]);
+            }
+            $components = DB::table('gxswa_cloud')->where($condition)->orderByRaw("`id` desc")->get()->toArray();
             if (!empty($components)){
                 foreach ($components as &$com){
                     $com['logo'] = asset($com['logo']);
@@ -119,7 +171,8 @@ class SettingController extends Controller
             if (is_error($cloudinfo)){
                 return $this->message($cloudinfo['message']);
             }
-            return $this->message('检测完成！',url('console/setting/component'),'success');
+            $redirect = $component['type']==1 ? url('console/setting/plugin') : url('console/setting/component');
+            return $this->message('检测完成！',$redirect,'success');
         }elseif ($op=='comupdate'){
             $component = DB::table('gxswa_cloud')->where('id',intval($_GPC['cid']))->first(['id','identity','modulename','type','releasedate','rootpath']);
             if (empty($component)) return $this->message('找不到该组件信息');
@@ -138,16 +191,6 @@ class SettingController extends Controller
                 $moduleupdate = ModuleService::upgrade($identity);
                 if (is_error($moduleupdate)) return $this->message($moduleupdate['message']);
             }else{
-                if ($component['type']==0){
-                    //框架升级
-                    try {
-                        Artisan::call('self:migrate');
-                    }catch (\Exception $exception){
-                        //Todo something
-                    }
-                    //更新路由
-                    Artisan::call('route:clear');
-                }
                 if ($component['identity']=='laravel_whotalk_socket'){
                     //更新SOCKET初始化
                     SocketService::InitShell();
@@ -162,7 +205,11 @@ class SettingController extends Controller
                     'online'=>serialize($cloudinfo)
                 ));
             }
-            return $this->message('恭喜您，升级成功！',url('console/setting/component'),'success');
+            $redirect = $component['type']==1 ? url('console/setting/plugin') : url('console/setting/component');
+            return $this->message('恭喜您，升级成功！', $redirect,'success');
+        }else{
+            $framework = DB::table('gxswa_cloud')->where('type',0)->first(['id','identity','type','online','releasedate','rootpath']);
+            $return['cloudinfo'] = !empty($framework['online']) ? unserialize($framework['online']) : array('isnew'=>false);
         }
         return $this->globalview('console.setting', $return);
     }

@@ -9,14 +9,14 @@
             <li @if($op=='main')  class="layui-this" @endif>
                 <a href="{{ url('console/setting') }}">站点信息</a>
             </li>
-            <li @if($op=='socket')  class="layui-this" @endif>
-                <a href="{{ url('console/setting/socket') }}">SOCKET</a>
-            </li>
             <li @if($op=='attach')  class="layui-this" @endif>
                 <a href="{{ url('console/setting/attach') }}">附件设置</a>
             </li>
             <li @if($op=='component')  class="layui-this" @endif>
-                <a href="{{ url('console/setting/component') }}">服务组件</a>
+                <a href="{{ url('console/setting/component') }}">服务管理</a>
+            </li>
+            <li @if($op=='plugin')  class="layui-this" @endif>
+                <a href="{{ url('console/setting/plugin') }}">应用管理</a>
             </li>
         </ul>
     </div>
@@ -87,7 +87,7 @@
                     <colgroup>
                         <col width="120" />
                         <col />
-                        <col width="100" />
+                        <col width="230" />
                     </colgroup>
                     <tbody>
                         <tr>
@@ -113,6 +113,21 @@
                                 @endif
                             </td>
                         </tr>
+                        <tr>
+                            <td><span class="fui-table-lable">系统版本</span></td>
+                            <td class="soild-after">
+                                V{{ $_W['config']['version'] }} Release{{$_W['config']['release']}}
+                                @if($cloudinfo['isnew'])
+                                &nbsp;&nbsp;<span class="layui-badge layui-bg-red" title="V{{ $cloudinfo['version'] }} Release{{ $cloudinfo['releasedate'] }}">发现新版本</span>
+                                @endif
+                            </td>
+                            <td class="text-right soild-after">
+                                @if($cloudinfo['isnew'])
+                                    <a href="{{ url('console/setting/selfupgrade') }}" class="text-red confirm" data-text="升级前请做好源码和数据备份，避免升级故障导致系统无法正常运行">一键升级</a>&nbsp;&nbsp;
+                                @endif
+                                <a href="{{ url('console/setting/detection') }}" class="text-blue ajaxshow">检测更新</a>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -133,10 +148,6 @@
                     <tr>
                         <td><span class="fui-table-lable">系统名称</span></td>
                         <td class="soild-after">{{ $_W['config']['name'] }}</td>
-                    </tr>
-                    <tr>
-                        <td><span class="fui-table-lable">系统版本</span></td>
-                        <td class="soild-after">V{{ $_W['config']['version'] }} Release{{$_W['config']['release']}}</td>
                     </tr>
                     <tr>
                         <td><span class="fui-table-lable">容器信息</span></td>
@@ -408,19 +419,24 @@
                         Swaws.io.send(JSON.stringify(data));
                     }
                 </script>
-            @elseif($op=='component')
+            @elseif($op=='component' || $op=='plugin')
                 <div class="layui-card-header nobd">
-                    <a href="https://www.whotalk.com.cn/" target="_blank" class="fr layui-btn layui-btn-sm layui-btn-normal">获取更多组件</a>
+                    @if($op=='component')
+                    <a href="https://www.whotalk.com.cn/" target="_blank" class="fr layui-btn layui-btn-sm layui-btn-normal">服务市场</a>
                     <span class="title">服务组件</span>
+                    @else
+                        <a href="https://www.whotalk.com.cn/" target="_blank" class="fr layui-btn layui-btn-sm layui-btn-normal">应用市场</a>
+                        <span class="title">应用插件</span>
+                    @endif
                 </div>
                 <div class="layui-card-body">
                     <div class="un-padding">
                         <table class="layui-table fui-table lines" lay-even lay-skin="nob">
                             <colgroup>
-                                <col width="280" />
+                                <col width="260" />
                                 <col width="200" />
-                                <col width="130" />
-                                <col width="130" />
+                                <col width="150" />
+                                <col width="150" />
                                 <col />
                                 <col width="120" />
                             </colgroup>
@@ -441,7 +457,7 @@
                                         <img src="{{ $com['logo'] }}" class="fl bg-gray radius margin-right-sm" height="48" />
                                         <div class="fui-table-name">
                                             <a href="{{$com['website']}}" class="text-blue" target="_blank">{{$com['name']}}</a><br/>
-                                            V{{$com['version']}}&nbsp;<span class="layui-badge layui-bg-{{ $colors[$com['type']] }}">{{ $types[$com['type']] }}</span>
+                                            V{{$com['version']}}
                                         </div>
                                     </td>
                                     <td>{{ !empty($com['rootpath']) ? '/'.$com['rootpath'] : '根目录' }}</td>

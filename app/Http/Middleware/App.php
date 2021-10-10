@@ -43,6 +43,9 @@ class App
         $_W['account'] = array('uniacid'=>0);
         $_W['inconsole'] = $_W['inapp'] = false;
         $_W['token'] = csrf_token();
+        if (function_exists('date_default_timezone_set')) {
+            date_default_timezone_set($_W['config']['setting']['timezone']);
+        }
         return $next($request);
     }
 

@@ -12,15 +12,15 @@ class SocketService
         DB::table('gxswa_cloud')->updateOrInsert(array(
             'identity'=>'laravel_whotalk_socket'
         ),array(
-            'name'=>'自建SOCKET源码包',
+            'name'=>'独立SOCKET服务',
             'modulename'=>'',
             'type'=>3,
             'logo'=>'https://shenwahuanan.oss-cn-shenzhen.aliyuncs.com/images/4/2021/08/gdSI484HDp4pXxHshPxXpShdi3XHP8.png',
-            'website'=>'https://www.whotalk.com.cn/',
+            'website'=>url('console/setting/socket'),
             'rootpath'=>'swasocket/',
-            'version'=>'1.0.4',
+            'version'=>'1.0.5',
             'online'=>'',
-            'releasedate'=>2021091201,
+            'releasedate'=>2021101028,
             'addtime'=>TIMESTAMP,
             'dateline'=>TIMESTAMP
         ));
@@ -35,6 +35,7 @@ class SocketService
         if(is_dir(base_path('socket'))){
             FileService::rmdirs(base_path('socket'));
         }
+        DB::table('gxswa_cloud')->where('identity','=','laravel_whotalk_socket')->update(array('name'=>'独立SOCKET服务','website'=>url('console/setting/socket')));
     }
 
     static function InitShell(){
@@ -52,6 +53,7 @@ class SocketService
                 if (!$complete) return error(-1,'SOCKET安装脚本写入失败');
             }
         }
+        self::Upgrade();
         return true;
     }
 

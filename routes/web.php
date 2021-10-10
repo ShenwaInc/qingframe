@@ -54,15 +54,15 @@ Route::group(['prefix'=>'payment', 'namespace' => 'App', 'middleware'=>['app']],
 });
 
 Route::group(['prefix'=>'installer', 'middleware'=>['app']],function (){
-    Route::get('/', 'installController@index');
-    Route::post('/agreement', 'installController@agreement');
-    Route::get('/database', 'installController@database');
-    Route::post('/database', 'installController@dbDetect');
-    Route::get('/socket', 'installController@socket');
-    Route::post('/socket', 'installController@wsDetect');
-    Route::get('/render', 'installController@render');
-    Route::post('/render', 'installController@install');
-    Route::get('/complete', 'installController@complete');
+    Route::get('/', 'InstallController@index');
+    Route::post('/agreement', 'InstallController@agreement');
+    Route::get('/database', 'InstallController@database');
+    Route::post('/database', 'InstallController@dbDetect');
+    Route::get('/socket', 'InstallController@socket');
+    Route::post('/socket', 'InstallController@wsDetect');
+    Route::get('/render', 'InstallController@render');
+    Route::post('/render', 'InstallController@install');
+    Route::get('/complete', 'InstallController@complete');
 });
 
 Auth::routes();

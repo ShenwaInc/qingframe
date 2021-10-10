@@ -10,7 +10,7 @@
         <div class="layui-tab fui-tab" style="margin-top: 0">
             <ul class="layui-tab-title">
                 <li class="layui-this">1.创建站点</li>
-                <li>2.安装Golang</li>
+                <li>2.安装SOCKET</li>
                 <li>3.配置站点</li>
                 <li class="fr">
                     <a href="https://www.whotalk.com.cn/" target="_blank"><span class="text-blue">安装遇到困难？</span></a>
@@ -19,7 +19,7 @@
             <div class="layui-tab-content">
                 <div class="layui-tab-item layui-show">
                     <div class="layui-text">1&nbsp;准备一个SOCKET通讯专用的域名并解析到当前服务器</div>
-                    <div class="layui-text">2&nbsp;到安全组<strong>开放服务器的3000端口</strong></div>
+                    <div class="layui-text">2&nbsp;到安全组<strong>开放服务器的3000和3001端口</strong></div>
                     <div class="layui-text">3&nbsp;到宝塔创建新站点:</div>
                     <div class="layui-text">3.1&nbsp;<strong>域名</strong>填写上一步骤准备的域名</div>
                     <div class="layui-text">3.2&nbsp;<strong>根目录</strong>请选择或直接填写&nbsp;<strong class="text-black">{{ str_replace("\\",'/',base_path('swasocket')) }}</strong></div>
@@ -31,8 +31,25 @@
                 </div>
                 <div class="layui-tab-item">
                     <div class="layui-text">
-                        <strong>使用宝塔面板的【终端】功能或ssh远程管理工具登录服务器后运行如下指令</strong>
+                        <strong>使用宝塔面板的【终端】功能或ssh远程管理工具登录服务器后依次运行如下指令</strong>
                     </div>
+                    <div class="layui-text">1&nbsp;下载GO安装包</div>
+                    <pre class="layui-code">
+yum install -y wget
+wget https://studygolang.com/dl/golang/go1.14.1.linux-amd64.tar.gz
+tar -C /usr/local -xzf go1.14.1.linux-amd64.tar.gz
+rm -f go1.14.1.linux-amd64.tar.gz</pre>
+                    <div class="layui-text">2&nbsp;添加环境变量</div>
+                    <pre class="layui-code">
+vim /etc/profile</pre>
+                    <div class="layui-text">这时候会进入文件编辑器，输入i编辑状态，在文件的适当位置添加如下代码</div>
+                    <pre class="layui-code">
+export GOROOT=/usr/local/go
+export GOPATH=/home/gocode
+export PATH=$PATH:$GOROOT/bin:$GOPATH/bin</pre>
+                    <div class="layui-text">编辑完成后按一次键盘的<strong>ESC</strong>键，再按<strong>Shift + :;</strong>键，在响应的输入框中输入<strong>wq</strong>保存退出</div>
+                    <div></div>
+                    <div class="layui-text">3&nbsp;运行SOCKET项目</div>
                     <pre class="layui-code">
 sh {{ str_replace("\\",'/',base_path('swasocket')) }}/install_socket.sh</pre>
                 </div>

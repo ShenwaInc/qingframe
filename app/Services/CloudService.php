@@ -59,7 +59,7 @@ class CloudService
                 DB::table('gxswa_cloud')->updateOrInsert(array(
                         'identity'=>'swa_whotalk_componet'
                     ),array(
-                        'name'=>'Whotalk独立版组件包',
+                        'name'=>'Whotalk国际版依赖包',
                         'modulename'=>'',
                         'type'=>2,
                         'logo'=>'https://shenwahuanan.oss-cn-shenzhen.aliyuncs.com/images/4/2021/08/Mpar00P5PjJPrxAW1FWCP3CPz87qjc.png',
