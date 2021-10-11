@@ -22,11 +22,6 @@ class Installer
             $installroute = url('installer');
             header('Location: ' . $installroute);
             exit();
-        }elseif(env('APP_DEVELOPMENT',0)==0){
-            $installer = app_path('Http/Controllers/InstallController.php');
-            if (file_exists($installer)){
-                @unlink($installer);
-            }
         }
         return $next($request);
     }

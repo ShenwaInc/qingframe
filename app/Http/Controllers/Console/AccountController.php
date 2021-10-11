@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Console;
 
 use App\Http\Controllers\Controller;
 use App\Models\Account;
+use App\Models\CorePaylog;
 use App\Models\Setting;
 use App\Services\CacheService;
+use App\Services\PayService;
 use App\Services\SettingService;
 use App\Services\UserService;
 use App\User;
@@ -189,8 +191,8 @@ class AccountController extends Controller
                 'email'=>array('switch'=>0,'smtp'=>'','port'=>'','username'=>'','password'=>'','sender'=>'')
             );
         }
+        $op = (string)$request->input('op','');
         if ($request->isMethod('post')){
-            $op = (string)$request->input('op','');
             switch ($op){
                 case 'js-switch' :
                     $name = $request->input('name','');
@@ -251,6 +253,32 @@ class AccountController extends Controller
                     break;
             }
             return $this->message();
+        }
+        if ($op=='demo-alipay'){
+            $orderinfo = [
+                'uniacid'=>$this->uniacid,
+                'acid'=>$this->uniacid,
+                'openid'=>$_W['uid'],
+                'tid'=>random(10),
+                'fee'=>0.2,
+                'tag'=>'充值会员',
+                'is_usecard'=>0,
+                'card_type'=>0,
+                'card_id'=>0,
+                'card_fee'=>0,
+                'encrypt_code'=>random(6,true),
+                'is_wish'=>0
+            ];
+            $paylog = CorePaylog::create($orderinfo);
+
+            $orderinfo = [
+                'uniontid'=>$paylog['uniontid'],
+                'tag'=>$orderinfo['tag'],
+                'fee'=>$orderinfo['fee']
+            ];
+            $info = PayService::create('alipay',1,$orderinfo);
+
+            dd($info);
         }
         return $this->globalview('console.account.setting', array(
             'uniacid'=>$this->uniacid,

@@ -190,8 +190,8 @@ function tomedia($src, $local_path = false, $is_cahce = false) {
 
 function random($len,$is_number=false){
     if($is_number){
-        $start = pow(10,$len);
-        $stop = pow(10,$len+1) - 1;
+        $start = pow(10,$len-1);
+        $stop = pow(10,$len) - 1;
         return random_int($start, $stop);
     }
     return \Str::random($len);

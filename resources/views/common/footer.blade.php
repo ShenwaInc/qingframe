@@ -12,6 +12,7 @@
     </div>
 </div>
 <script type="text/javascript">
+    var layform;
     layui.use(['element','form','laydate','upload','code'],function (){
         var form = layui.form,element = layui.element;
         form.on('radio(ctrls)', function(data){
@@ -32,6 +33,7 @@
         });
         EventInit($('body'));
         UploadInit();
+        layform = form;
     });
     $('.showmenu').on('click',this,function(){
         $(this).dropdown();

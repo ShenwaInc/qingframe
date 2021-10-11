@@ -28,6 +28,10 @@ class CloudService
                 require_once "{$compath}wxpayv3/WxPay.Api.php";
                 require_once "{$compath}wxpayv3/WxPay.Data.php";
                 break;
+            case 'alipay' :
+                require("{$compath}alipay/wappay/service/AlipayTradeService.php");
+                require_once("{$compath}alipay/wappay/buildermodel/AlipayTradeWapPayContentBuilder.php");
+                break;
             case 'aop' :
                 require_once "{$compath}aop/AopClient.php";
                 require_once "{$compath}aop/request/AlipayTradeQueryRequest.php";
