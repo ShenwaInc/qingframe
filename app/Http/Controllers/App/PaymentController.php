@@ -14,7 +14,11 @@ class PaymentController extends Controller
     public function notify(Request $request, $payment){
         $params = $request->all();
         $result = PayService::notify($payment,$params);
+        $params['result'] = $result;
         Log::info('PaymentNotify'.ucfirst($payment),$params);
+        if (is_error($result)){
+            return $this->message($result['message']);
+        }
         if($result){
             return $this->message('支付成功','','success');
         }else{
