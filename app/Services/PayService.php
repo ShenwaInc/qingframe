@@ -206,6 +206,9 @@ class PayService
                 $ret['card_fee'] = $info['card_fee'];
                 $ret['card_id'] = $info['card_id'];
                 define('IN_API', true);
+                if($info['module']=='core'){
+                    return self::payResult($ret);
+                }
                 $WeModule = new WeModule();
                 try {
                     $site = $WeModule->create($info['module']);
@@ -220,7 +223,9 @@ class PayService
         }
     }
 
-
+    public static function payResult($params){
+        return true;
+    }
 
 }
 ?>

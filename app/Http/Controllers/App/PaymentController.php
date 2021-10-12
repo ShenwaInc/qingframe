@@ -17,12 +17,12 @@ class PaymentController extends Controller
             $data = json_decode($input, true);
             if (is_array($data)) $params = array_merge($params,$data);
         }
-        Log::info('PaymentNotify'.ucfirst($payment),$data);
         $orderinfo = [
             'out_trade_no'=>$params['out_trade_no'],
             'total_amount'=>$params['total_amount']
         ];
         $result = PayService::notify($payment,$orderinfo);
+        Log::info('PaymentNotify'.ucfirst($payment),$params);
         if($result){
             return $this->message('支付成功！','','success');
         }else{

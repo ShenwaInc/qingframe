@@ -257,11 +257,12 @@ class AccountController extends Controller
         if ($op=='demo-alipay'){
             $_W['uniacid'] = $this->uniacid;
             $_W['account'] = uni_fetch($this->uniacid);
+            $testfee = floatval(0.1 + (random(1,true) / 100));
             $orderinfo = [
                 'openid'=>$_W['uid'],
                 'tid'=>random(10),
-                'fee'=>0.12,
-                'tag'=>'测试充值0.12元',
+                'fee'=>$testfee,
+                'tag'=>"测试充值{$testfee}元",
                 'is_usecard'=>0,
                 'card_type'=>0,
                 'card_id'=>0,
