@@ -19,8 +19,9 @@ class CorePaylog extends Model
      */
     public static function create(array $orderinfo,$identify='core')
     {
+        global $_W;
         //允许插入的字段
-        $allowFields = ['uniacid','acid','openid','tid','fee','module','uniontid','tag','is_usecard','card_type','card_id','card_fee','encrypt_code','is_wish','coupon'];
+        $allowFields = ['openid','tid','fee','module','uniontid','tag','is_usecard','card_type','card_id','card_fee','encrypt_code','is_wish','coupon'];
         $data = [];
         foreach ($orderinfo as $key=>$value){
             if (in_array($key, $allowFields)){
@@ -30,6 +31,8 @@ class CorePaylog extends Model
         if (!isset($data['module'])){
             $data['module'] = $identify;
         }
+        $data['uniacid'] = $_W['uniacid'];
+        $data['acid'] = $_W['account']['acid'];
         $data['status'] = 0;  //生成订单时是未支付
         if (empty($data['uniontid'])){
             //$data['uniontid'] = Random::orderNumber();  //生成订单号

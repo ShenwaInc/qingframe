@@ -32,10 +32,6 @@ class CloudService
                 require("{$compath}alipay/wappay/service/AlipayTradeService.php");
                 require_once("{$compath}alipay/wappay/buildermodel/AlipayTradeWapPayContentBuilder.php");
                 break;
-            case 'aop' :
-                require_once "{$compath}aop/AopClient.php";
-                require_once "{$compath}aop/request/AlipayTradeQueryRequest.php";
-                break;
             case 'aliyun' :
                 require_once "{$compath}aliyun/src/dysmsapi.php";
                 require_once "{$compath}aliyun/vendor/autoload.php";

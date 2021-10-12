@@ -198,13 +198,14 @@
                     <input type="radio" lay-filter="ctrls" data-target=".alipaysign" value="MD5" name="alipay[sign_type]" title="MD5"{{ $setting['payment']['alipay']['sign_type']!='RSA2' ? 'checked' : '' }} />
                 </div>
             </div>
-            <div class="layui-form-item must">
-                <label class="layui-form-label">合作者ID</label>
-                <div class="layui-input-block">
-                    <input type="text" required lay-verify="required" name="alipay[partner]" value="{{ $setting['payment']['alipay']['partner'] }}" placeholder="请输入您的支付宝合作者ID或应用的APPID，一般是2088开头的数字" autocomplete="off" class="layui-input" />
-                </div>
-            </div>
             <div class="alipaysign form-itemRSA2{{ $setting['payment']['alipay']['sign_type']=='RSA2' ? '' : ' layui-hide' }}">
+                <div class="layui-form-item must">
+                    <label class="layui-form-label">应用APPID</label>
+                    <div class="layui-input-block">
+                        <input type="text" required lay-verify="required" name="alipay[appid]" value="{{ $setting['payment']['alipay']['appid'] }}" placeholder="请输入您的支付宝开放平台应用APPID" autocomplete="off" class="layui-input" />
+                        <div class="layui-word-aux"><a href="https://opensupport.alipay.com/support/helpcenter/207/201602469554?ant_source=antsupport" class="text-blue" target="_blank">点此查看配置说明</a></div>
+                    </div>
+                </div>
                 <div class="layui-form-item must">
                     <label class="layui-form-label">支付宝公钥</label>
                     <div class="layui-input-block">
@@ -219,6 +220,12 @@
                 </div>
             </div>
             <div class="alipaysign form-itemMD5{{ $setting['payment']['alipay']['sign_type']=='RSA2' ? ' layui-hide' : '' }}">
+                <div class="layui-form-item must">
+                    <label class="layui-form-label">合作者ID</label>
+                    <div class="layui-input-block">
+                        <input type="text" required lay-verify="required" name="alipay[partner]" value="{{ $setting['payment']['alipay']['partner'] }}" placeholder="请输入您的支付宝合作者ID，一般是2088开头的数字" autocomplete="off" class="layui-input" />
+                    </div>
+                </div>
                 <div class="layui-form-item must">
                     <label class="layui-form-label">支付宝账号</label>
                     <div class="layui-input-block">

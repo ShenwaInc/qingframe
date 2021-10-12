@@ -255,13 +255,13 @@ class AccountController extends Controller
             return $this->message();
         }
         if ($op=='demo-alipay'){
+            $_W['uniacid'] = $this->uniacid;
+            $_W['account'] = uni_fetch($this->uniacid);
             $orderinfo = [
-                'uniacid'=>$this->uniacid,
-                'acid'=>$this->uniacid,
                 'openid'=>$_W['uid'],
                 'tid'=>random(10),
-                'fee'=>0.2,
-                'tag'=>'充值会员',
+                'fee'=>0.12,
+                'tag'=>'测试充值0.12元',
                 'is_usecard'=>0,
                 'card_type'=>0,
                 'card_id'=>0,
@@ -273,10 +273,10 @@ class AccountController extends Controller
 
             $orderinfo = [
                 'uniontid'=>$paylog['uniontid'],
-                'tag'=>$orderinfo['tag'],
-                'fee'=>$orderinfo['fee']
+                'tag'=>$paylog['tag'],
+                'fee'=>$paylog['fee']
             ];
-            $info = PayService::create('alipay',1,$orderinfo);
+            $info = PayService::create('alipay',$orderinfo);
 
             dd($info);
         }

@@ -18,24 +18,23 @@ class PayService
      * $uniacid 平台id
      * $ordeInfo 订单信息
     */
-    public static function create(string $type,int $uniacid,array $orderInfo)
+    public static function create(string $type,array $orderInfo)
     {
-        $setting = DB::table('uni_settings')->select(['uniacid','payment'])->where('uniacid',$uniacid)->first();
-        if(!$setting){
-            throw new \Exception('没有设置平台支付信息',Code::ERROR);
-        }
-        $config = unserialize($setting['payment']);
+        global $_W;
+        $setting = SettingService::uni_load('payment',$_W['uniacid']);
+        if (empty($setting)) return error(-1,'支付配置异常');
+        $config = $setting['payment'];
         $result = false;
         switch($type){
             case 'alipay':
                 if(empty($config['alipay'])){
-                    throw new \Exception('没有设置支付宝支付信息！',Code::ERROR);
+                    return error(-1,'未配置支付宝支付');
                 }
                 if($config['alipay']['pay_switch'] != 1){
-                    throw new \Exception('没有开启支付宝支付！',Code::ERROR);
+                    return error(-1,'未开启支付宝支付');
                 }
                 $new_config = [];
-                $new_config['app_id'] = $config['alipay']['partner'];
+                $new_config['app_id'] = $config['alipay']['appid'];
                 $new_config['alipay_public_key'] = $config['alipay']['publickey'];
                 $new_config['merchant_private_key'] = $config['alipay']['privatekey'];
                 $result = self::CreateAliPay($new_config,$orderInfo);
