@@ -26,6 +26,7 @@ class WechatService extends WeAccount
 
     public static function getAccountInfo($uniacid) {
         $account = AccountWechat::where('uniacid',$uniacid)->first();
+        if (empty($account)) return array();
         $account['encrypt_key'] = $account['key'];
         return $account;
     }
