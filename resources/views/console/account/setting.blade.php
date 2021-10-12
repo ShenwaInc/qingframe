@@ -194,8 +194,8 @@
             <div class="layui-form-item must">
                 <label class="layui-form-label">加密方式</label>
                 <div class="layui-input-block">
-                    <input type="radio" lay-filter="ctrls" data-target=".alipaysign" value="RSA2" name="alipay[sign_type]" title="RSA2"{{ $setting['payment']['alipay']['sign_type']=='RSA2' ? 'checked' : '' }} />
                     <input type="radio" lay-filter="ctrls" data-target=".alipaysign" value="MD5" name="alipay[sign_type]" title="MD5"{{ $setting['payment']['alipay']['sign_type']!='RSA2' ? 'checked' : '' }} />
+                    <input type="radio" lay-filter="ctrls" data-target=".alipaysign" value="RSA2" name="alipay[sign_type]" title="RSA2"{{ $setting['payment']['alipay']['sign_type']=='RSA2' ? 'checked' : '' }} />
                 </div>
             </div>
             <div class="alipaysign form-itemRSA2{{ $setting['payment']['alipay']['sign_type']=='RSA2' ? '' : ' layui-hide' }}">

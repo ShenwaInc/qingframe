@@ -209,39 +209,41 @@ class PayService {
         $data['type'] = $type;
         $data['status'] = 1;
         if(CorePaylog::modify($paylog['plid'],$data)){
-            if(!empty($info['module'])){
+            if(!empty($paylog['module'])){
                 global $_W;
-                if ($_W['uniacid']!=$info['uniacid']){
-                    $_W['uniacid'] = $info['uniacid'];
+                if ($_W['uniacid']!=$paylog['uniacid']){
+                    $_W['uniacid'] = $paylog['uniacid'];
                     $_W['account'] = uni_fetch($_W['uniacid']);
-                    $_W['openid'] = $info['openid'];
+                    $_W['openid'] = $paylog['openid'];
                 }
                 if ($from=='return' && $_W['member']['openid']!=$_W['openid']){
                     $_W['member'] = array('uid'=>0);
                     MemberService::AuthFetch($_W['openid']);
                 }
                 $ret = array();
-                $ret['weid'] = $info['weid'];
-                $ret['uniacid'] = $info['uniacid'];
+                $ret['weid'] = $paylog['weid'];
+                $ret['uniacid'] = $paylog['uniacid'];
                 $ret['result'] = 'success';
-                $ret['type'] = $info['type'];
+                $ret['type'] = $paylog['type'];
                 $ret['from'] = $from;
-                $ret['tid'] = $info['tid'];
-                $ret['uniontid'] = $info['uniontid'];
-                $ret['transaction_id'] = $info['transaction_id'];
-                $ret['user'] = $info['openid'];
-                $ret['fee'] = $info['fee'];
-                $ret['is_usecard'] = $info['is_usecard'];
-                $ret['card_type'] = $info['card_type'];
-                $ret['card_fee'] = $info['card_fee'];
-                $ret['card_id'] = $info['card_id'];
-                define('IN_API', true);
-                if($info['module']=='core'){
+                $ret['tid'] = $paylog['tid'];
+                $ret['uniontid'] = $paylog['uniontid'];
+                $ret['transaction_id'] = $paylog['transaction_id'];
+                $ret['user'] = $paylog['openid'];
+                $ret['fee'] = $paylog['fee'];
+                $ret['is_usecard'] = $paylog['is_usecard'];
+                $ret['card_type'] = $paylog['card_type'];
+                $ret['card_fee'] = $paylog['card_fee'];
+                $ret['card_id'] = $paylog['card_id'];
+                if ($from=='notify'){
+                    define('IN_API', true);
+                }
+                if($paylog['module']=='core'){
                     return self::payResult($ret);
                 }
                 $WeModule = new WeModule();
                 try {
-                    $site = $WeModule->create($info['module']);
+                    $site = $WeModule->create($paylog['module']);
                     $site->payResult($ret);
                 }catch (\Exception $exception){
                     Log::error('PaymentNotifyResult',error(-1,$exception->getMessage()));

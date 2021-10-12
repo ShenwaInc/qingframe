@@ -1,5 +1,6 @@
 <?php
 
+use App\Utils\WeAccount;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -215,7 +216,7 @@ function error($errno, $message = '') {
 function uni_fetch($uniacid = 0) {
     global $_W;
     $uniacid = empty($uniacid) ? $_W['uniacid'] : intval($uniacid);
-    $account_api = \App\Utils\WeAccount::createByUniacid($uniacid);
+    $account_api = WeAccount::createByUniacid($uniacid);
     if (is_error($account_api)) {
         return $account_api;
     }
