@@ -40,6 +40,10 @@ Route::group(['prefix'=>'payment', 'namespace' => 'App', 'middleware'=>['app']],
     Route::any('/{payment}', 'PaymentController@notify')->where('payment','[a-z]+');
 });
 
+Route::group(['prefix' => 'api', 'namespace'=>'Api','middleware'=>['app']],function (){
+    Route::any('/wechat/{uniacid}', 'WechatController@recived');
+});
+
 Route::group(['prefix' => 'member/', 'namespace' => 'Auth'], function () {
     //会员相关路由
     Route::get('/{uid?}', 'MainController@Main')->where('uid','[0-9]+');

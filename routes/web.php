@@ -31,7 +31,7 @@ Route::group(['namespace'=>'Console', 'middleware'=>[\App\Http\Middleware\Instal
 });
 
 Route::group(['prefix' => 'api', 'namespace'=>'Api','middleware'=>['app']],function (){
-    Route::get('/wechat/{uniacid}', 'WechatController@recived');
+    Route::any('/wechat/{uniacid}', 'WechatController@recived');
 });
 
 Route::group(['prefix' => 'console', 'namespace' => 'Console', 'middleware'=>['auth', 'app',\App\Http\Middleware\ConsolePermission::class]], function () {
