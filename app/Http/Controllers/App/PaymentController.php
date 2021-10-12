@@ -24,9 +24,9 @@ class PaymentController extends Controller
         $result = PayService::notify($payment,$orderinfo);
         Log::info('PaymentNotify'.ucfirst($payment),$params);
         if($result){
-            return $this->message('支付成功！','','success');
+            return $this->message('支付成功','','success');
         }else{
-            return $this->message('支付失败，请重试！','','success');
+            return $this->message('支付失败，请重试','','success');
         }
     }
 
@@ -44,9 +44,9 @@ class PaymentController extends Controller
         ];
         $result =  PayService::notify($payment,$orderinfo, 'return');
         if($result){
-            return $this->message('支付成功。','','success');
+            return $this->message('支付成功','','success');
         }else{
-            return $this->message('支付失败，请重试。','','success');
+            return $this->message('支付失败，请重试','','success');
         }
     }
 
