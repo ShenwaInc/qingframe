@@ -24,9 +24,6 @@ class SocketService
             'addtime'=>TIMESTAMP,
             'dateline'=>TIMESTAMP
         ));
-        //更新安装包文件
-        $initshell = self::InitShell();
-        if (is_error($initshell)) return $initshell;
         //初始化域名白名单
         return self::SocketAuthorize();
     }

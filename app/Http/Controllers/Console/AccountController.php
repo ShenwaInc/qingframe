@@ -275,7 +275,8 @@ class AccountController extends Controller
             $orderinfo = [
                 'uniontid'=>$paylog['uniontid'],
                 'tag'=>$paylog['tag'],
-                'fee'=>$paylog['fee']
+                'fee'=>$paylog['fee'],
+                'uniacid'=>$paylog['uniacid']
             ];
             $info = PayService::create('alipay',$orderinfo);
 

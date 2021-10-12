@@ -8,7 +8,7 @@ return [
     'setting'=>array(
         'charset'=>'utf-8',
         'cache'=>'mysql',
-        'timezone'=>'Asia/Shanghai',
+        'timezone'=>env('APP_TIMEZONE','Asia/Shanghai'),
         'memory_limit'=>env('INI_MEMORY','256M'),
         'filemode'=>'0644',
         'authkey'=>env('APP_AUTHKEY',''),

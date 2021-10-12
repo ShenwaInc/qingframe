@@ -191,10 +191,6 @@ class SettingController extends Controller
                 $moduleupdate = ModuleService::upgrade($identity);
                 if (is_error($moduleupdate)) return $this->message($moduleupdate['message']);
             }else{
-                if ($component['identity']=='laravel_whotalk_socket'){
-                    //更新SOCKET初始化
-                    SocketService::InitShell();
-                }
                 unset($cloudinfo['structure']);
                 $cloudinfo['isnew'] = false;
                 DB::table('gxswa_cloud')->where('id',$component['id'])->update(array(
@@ -259,18 +255,6 @@ class SettingController extends Controller
     }
 
     public function hasdifference($difference,$type=0){
-        if (empty($difference)) return false;
-        if ($type==3){
-            foreach ($difference as $key=>$value){
-                if(!is_array($value)){
-                    $fileinfo = explode('|', $value);
-                    if ($fileinfo[0]=='install_socket.sh' && file_exists(base_path('swasocket/install_socket.sh'))){
-                        unset($difference[$key]);
-                        break;
-                    }
-                }
-            }
-        }
         if (empty($difference)) return false;
         return true;
     }

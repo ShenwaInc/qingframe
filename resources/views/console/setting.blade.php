@@ -157,6 +157,10 @@
                         <td><span class="fui-table-lable">运行环境</span></td>
                         <td class="soild-after">{{ $_SERVER['SERVER_SOFTWARE'] ? $_SERVER['SERVER_SOFTWARE'] : php_sapi_name() }}&nbsp;&nbsp;&nbsp;&nbsp;</td>
                     </tr>
+                    <tr>
+                        <td><span class="fui-table-lable">基准时区</span></td>
+                        <td class="soild-after">{{ $_W['config']['setting']['timezone'] }}</td>
+                    </tr>
                     @if($_W['isfounder'])
                         <tr>
                             <td><span class="fui-table-lable">系统内核</span></td>
