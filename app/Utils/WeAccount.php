@@ -114,7 +114,7 @@ class WeAccount extends \ArrayObject{
     }
 
     protected function fetchGroups() {
-        $groups = DB::table('mc_groups')->where('uniacid',$this->uniacid)->get();
+        $groups = DB::table('mc_groups')->where('uniacid',$this->uniacid)->get()->keyBy('groupid');
         if (!empty($groups)){
             $this->groups = $groups->toArray();
         }

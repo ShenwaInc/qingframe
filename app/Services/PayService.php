@@ -244,7 +244,9 @@ class PayService {
                 $WeModule = new WeModule();
                 try {
                     $site = $WeModule->create($paylog['module']);
-                    $site->payResult($ret);
+                    if (!is_error($site)){
+                        $site->payResult($ret);
+                    }
                 }catch (\Exception $exception){
                     Log::error('PaymentNotifyResult',error(-1,$exception->getMessage()));
                 }

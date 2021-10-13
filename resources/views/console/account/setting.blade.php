@@ -202,7 +202,7 @@
                 <div class="layui-form-item must">
                     <label class="layui-form-label">应用APPID</label>
                     <div class="layui-input-block">
-                        <input type="text" required lay-verify="required" name="alipay[appid]" value="{{ $setting['payment']['alipay']['appid'] }}" placeholder="请输入您的支付宝开放平台应用APPID" autocomplete="off" class="layui-input" />
+                        <input type="text" name="alipay[appid]" value="{{ $setting['payment']['alipay']['appid'] }}" placeholder="请输入您的支付宝开放平台应用APPID" autocomplete="off" class="layui-input" />
                         <div class="layui-word-aux"><a href="https://opensupport.alipay.com/support/helpcenter/207/201602469554?ant_source=antsupport" class="text-blue" target="_blank">点此查看配置说明</a></div>
                     </div>
                 </div>
@@ -223,19 +223,19 @@
                 <div class="layui-form-item must">
                     <label class="layui-form-label">合作者ID</label>
                     <div class="layui-input-block">
-                        <input type="text" required lay-verify="required" name="alipay[partner]" value="{{ $setting['payment']['alipay']['partner'] }}" placeholder="请输入您的支付宝合作者ID，一般是2088开头的数字" autocomplete="off" class="layui-input" />
+                        <input type="text" name="alipay[partner]" value="{{ $setting['payment']['alipay']['partner'] }}" placeholder="请输入您的支付宝合作者ID，一般是2088开头的数字" autocomplete="off" class="layui-input" />
                     </div>
                 </div>
                 <div class="layui-form-item must">
                     <label class="layui-form-label">支付宝账号</label>
                     <div class="layui-input-block">
-                        <input type="text" required lay-verify="required" name="alipay[account]" value="{{ $setting['payment']['alipay']['account'] }}" placeholder="请输入您的支付宝收款账号" autocomplete="off" class="layui-input" />
+                        <input type="text" name="alipay[account]" value="{{ $setting['payment']['alipay']['account'] }}" placeholder="请输入您的支付宝收款账号" autocomplete="off" class="layui-input" />
                     </div>
                 </div>
                 <div class="layui-form-item must">
                     <label class="layui-form-label">接口密匙</label>
                     <div class="layui-input-block">
-                        <input type="password" required lay-verify="required" name="alipay[secret]" value="{{ $setting['payment']['alipay']['secret'] }}" placeholder="请输入您的支付宝接口密匙，MD5格式的密匙串" autocomplete="off" class="layui-input" />
+                        <input type="password" name="alipay[secret]" value="{{ $setting['payment']['alipay']['secret'] }}" placeholder="请输入您的支付宝接口密匙，MD5格式的密匙串" autocomplete="off" class="layui-input" />
                     </div>
                 </div>
             </div>

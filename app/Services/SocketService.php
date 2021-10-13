@@ -36,21 +36,6 @@ class SocketService
     }
 
     static function InitShell(){
-        if (file_exists(base_path('swasocket/install_socket.sh'))){
-            $installfile = base_path("swasocket/install_socket.sh");
-            $reader = fopen($installfile,'r');
-            $socketdata = fread($reader,filesize($installfile));
-            fclose($reader);
-            if (strexists($socketdata,'{{GOPATH}}')){
-                $basepath = str_replace('\\','/',base_path('swasocket'));
-                $socketdata = str_replace('{{GOPATH}}',$basepath,$socketdata);
-                $writer = fopen($installfile,'w');
-                $complete = fwrite($writer,$socketdata);
-                fclose($writer);
-                if (!$complete) return error(-1,'SOCKET安装脚本写入失败');
-            }
-        }
-        self::Upgrade();
         return true;
     }
 

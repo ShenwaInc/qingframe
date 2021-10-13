@@ -82,8 +82,7 @@ class SettingController extends Controller
         if (empty($component)) return $this->message('系统出现致命错误');
         $cloudinfo = $this->checkcloud($component,2);
         if ($cloudinfo['isnew']){
-            $basepath = $component['type']==2 ? CloudService::com_path() : base_path($component['rootpath']);
-            if ($component['type']==0) $basepath = base_path() . "/";
+            $basepath = base_path() . "/";
             $cloudupdate = CloudService::CloudUpdate($component['identity'],$basepath);
             if (is_error($cloudupdate)){
                 return $this->message($cloudupdate['message']);
@@ -255,6 +254,18 @@ class SettingController extends Controller
     }
 
     public function hasdifference($difference,$type=0){
+        if (empty($difference)) return false;
+        if ($type==3){
+            foreach ($difference as $key=>$value){
+                if (!is_array($value)){
+                    $fileinfo = explode('|',$value);
+                    if ($fileinfo[0]=='composer.json'){
+                        unset($difference[$key]);
+                        break;
+                    }
+                }
+            }
+        }
         if (empty($difference)) return false;
         return true;
     }

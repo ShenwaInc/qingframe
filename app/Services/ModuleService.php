@@ -116,6 +116,8 @@ class ModuleService
         DB::table('modules')->where('name',$module['name'])->update($moduledata);
         //更新模块数据表
         if (!empty($component)){
+            $cloudinfo = empty($component['online']) ? array() : unserialize($component['online']);
+            $cloudinfo['isnew'] = false;
             DB::table('gxswa_cloud')->where('id',$component['id'])->update(array(
                 'name'=>$module['title'],
                 'logo'=>$module['logo'],

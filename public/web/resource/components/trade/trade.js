@@ -1,3 +1,10 @@
+if(typeof Basetoken == 'undefined'){
+    var Basetoken = '';
+    let CsrfElem = $('meta[name="csrf-token"]');
+    if(CsrfElem.length>0){
+        Basetoken = CsrfElem.attr('content');
+    }
+}
 define([], function(){
 	var trade = {};
 	var reg_credit = /^[+-]?(([1-9]{1}\d*)|([0]{1}))(\.(\d){1,2})?$/i;
@@ -263,7 +270,7 @@ define([], function(){
 						var username = $.trim($('#username').val());
 						var type = $('#type').val();
 						if(username) {
-							$.post('./index.php?c=mc&a=trade&do=user&', {'type':type, 'username':username}, function(data){
+							$.post('/server/ucenter/admin/trade?op=user', {'type':type, 'username':username,_token:Basetoken}, function(data){
 								var data = $.parseJSON(data);
 								if(data.error != 'none') {
 									_this.user = {};
@@ -553,8 +560,9 @@ define([], function(){
 								'return_cash': _this.return_cash,
 								'password': _this.password,
 								'remark': _this.remark
+                                ,_token:Basetoken
 							}
-							$.post('./index.php?c=mc&a=trade&do=consume', param, function(data){
+							$.post('/server/ucenter/admin/trade?op=consume', param, function(data){
 								if(data != 'success') {
 									util.message(data, '', 'error');
 									return false;
@@ -682,7 +690,7 @@ define([], function(){
 						var username = $.trim($('#username').val());
 						var type = $('#type').val();
 						if(username) {
-							$.post('./index.php?c=mc&a=trade&do=user&', {'type':type, 'username':username}, function(data){
+							$.post('/server/ucenter/admin/trade?op=user', {'type':type, 'username':username,_token:Basetoken}, function(data){
 								var data = $.parseJSON(data);
 								if(data.error != 'none') {
 									_this.user = {};
@@ -731,8 +739,9 @@ define([], function(){
 								'password': _this.password,
 								'remark': _this.remark,
 								'type': _this.type
+                                ,_token:Basetoken
 							}
-							$.post('./index.php?c=mc&a=trade&do=credit', param, function(data){
+							$.post('/server/ucenter/admin/trade?op=credit', param, function(data){
 								if(data != 'success') {
 									util.message(data, '', 'error');
 									return false;
@@ -835,7 +844,7 @@ define([], function(){
 						var username = $.trim($('#username').val());
 						var type = $('#type').val();
 						if(username) {
-							$.post('./index.php?c=mc&a=trade&do=user&', {'type':type, 'username':username}, function(data){
+							$.post('/server/ucenter/admin/trade?op=user', {'type':type, 'username':username,_token:Basetoken}, function(data){
 								var data = $.parseJSON(data);
 								if(data.error != 'none') {
 									_this.user = {};
@@ -884,8 +893,9 @@ define([], function(){
 								'uid': _this.user.uid,
 								'password': _this.password,
 								'username': _this.username
+                                ,_token:Basetoken
 							}
-							$.post('./index.php?c=mc&a=trade&do=card', param, function(data){
+							$.post('/server/ucenter/admin/trade?op=card', param, function(data){
 								if(data != 'success') {
 									util.message(data, '', 'error');
 									return false;
@@ -902,7 +912,7 @@ define([], function(){
 			card.init(uid);
 		});
 	}
-	
+
 	trade.cardconsume = function() {
 		var html = '<div class="modal fade" id="card-Modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">'+
 			'	<div class="modal-dialog modal-lg" role="document">'+
@@ -979,8 +989,9 @@ define([], function(){
 							_this.code = $.trim($(':input[name="code"]').val());
 							var param = {
 								'code': _this.code,
+                                _token:Basetoken
 							}
-							$.post('./index.php?c=mc&a=trade&do=cardconsume', param, function(data){
+							$.post('/server/ucenter/admin/trade?op=cardconsume', param, function(data){
 								if(data != 'success') {
 									util.message(data, '', 'error');
 									return false;
@@ -997,7 +1008,7 @@ define([], function(){
 			card.init();
 		});
 	}
-	
+
 	trade.card_edit = function(uid) {
 		var html = '<div class="modal fade" id="card-edit-Modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">'+
 			'	<div class="modal-dialog modal-lg" role="document">'+
@@ -1079,10 +1090,11 @@ define([], function(){
 								message: '新卡号不能为空'
 							},
 							remote: {
-								url: "./index.php?c=mc&a=trade&do=cardsn&type=check",
+								url: "/server/ucenter/admin/trade?op=cardsn&type=check",
 								data: function(validator) {
 									return {
 										data: validator.getFieldElements('cardsn').val()
+                                        ,_token:Basetoken
 									};
 								},
 								message: '卡号已经被其他用户使用'
@@ -1115,7 +1127,7 @@ define([], function(){
 						var username = $.trim($('#username').val());
 						var type = $('#type').val();
 						if(username) {
-							$.post('./index.php?c=mc&a=trade&do=user&', {'type':type, 'username':username}, function(data){
+							$.post('/server/ucenter/admin/trade?op=user', {'type':type, 'username':username,_token:Basetoken}, function(data){
 								var data = $.parseJSON(data);
 								if(data.error != 'none') {
 									_this.user = {};
@@ -1158,8 +1170,9 @@ define([], function(){
 								'uid': _this.user.uid,
 								'cardsn': $.trim($('#cardsn').val()),
 								'password': $.trim($(':input[name="password"]').val())
+                                ,_token:Basetoken
 							}
-							$.post('./index.php?c=mc&a=trade&do=cardsn', param, function(data){
+							$.post('/server/ucenter/admin/trade?op=cardsn', param, function(data){
 								if(data != 'success') {
 									util.message(data, '', 'error');
 									return false;

@@ -35,7 +35,6 @@ Route::group(['prefix' => 'api', 'namespace'=>'Api','middleware'=>['app']],funct
 });
 
 Route::group(['prefix' => 'console', 'namespace' => 'Console', 'middleware'=>['auth', 'app',\App\Http\Middleware\ConsolePermission::class]], function () {
-
     Route::get('/', 'PlatformController@index');
     Route::get('/util/{op?}', 'UtilController@index');
     Route::post('/util/{op?}', 'UtilController@save');
@@ -46,6 +45,11 @@ Route::group(['prefix' => 'console', 'namespace' => 'Console', 'middleware'=>['a
     Route::match(['get', 'post'],'/account/{action}', 'AccountController@index')->where('action','[a-z]+');
     Route::match(['get', 'post'],'/user/{op?}', 'UserController@index');
     Route::match(['get', 'post'],'/m/{modulename}/{do?}', 'ModuleController@entry')->middleware(\App\Http\Middleware\ModulePermission::class);
+});
+
+Route::group(['prefix'=>'server', 'middleware'=>['app']],function (){
+    Route::any('/{server}/{method}', 'ServerController@app');
+    Route::any('/{server}/admin/{method}', 'ServerController@admin')->middleware(\App\Http\Middleware\ConsolePermission::class);
 });
 
 Route::group(['prefix'=>'payment', 'namespace' => 'App', 'middleware'=>['app']],function (){

@@ -28,6 +28,7 @@ class PaymentController extends Controller
 
     //支付回调：同步
     public function response(Request $request, $payment){
+        include_once base_path("bootstrap/functions/app.func.php");
         $params = $request->all();
         $result =  PayService::notify($payment,$params, 'return');
         if (is_error($result)){

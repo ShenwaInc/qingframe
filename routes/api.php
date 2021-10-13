@@ -30,6 +30,10 @@ Route::group(['prefix' => 'auth/{uniacid}', 'namespace' => 'Auth'], function () 
 
 });
 
+Route::group(['prefix'=>'server', 'middleware'=>['app']],function (){
+    Route::any('/{server}/{method}', 'ServerController@app')->where('server','[a-z]+');
+});
+
 Route::group(['prefix' => 'm/', 'namespace' => 'App','middleware'=>['app','runtime']], function () {
     //模块接口路由
     Route::match(['get', 'post'],'/{modulename}', 'ModuleController@Api');
