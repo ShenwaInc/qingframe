@@ -60,10 +60,16 @@ class selfup extends Command
 
         //更新版本信息
         $arguments = $this->argument();
+        $system = config('system');
         if (empty($arguments['version'])){
-            $system = config('system');
-            $arguments['version'] = $system['version'];
-            $arguments['release'] = intval($system['release']) + 1;
+            $ugradeinfo = CloudService::CloudApi('structure',array('identity'=>$component['identity']));
+            if (is_error($ugradeinfo)){
+                $arguments['version'] = $system['version'];
+                $arguments['release'] = intval($system['release']) + 1;
+            }else{
+                $arguments['version'] = $ugradeinfo['version'];
+                $arguments['release'] = $ugradeinfo['releasedate'];
+            }
         }
         DB::table('gxswa_cloud')->where('id',$component['id'])->update(array(
             'version'=>$arguments['version'],
@@ -76,6 +82,7 @@ class selfup extends Command
                 'releasedate'=>intval($arguments['release'])
             ))
         ));
+        CloudService::CloudEnv(array("APP_VERSION={$system['version']}","APP_RELEASE={$system['release']}"), array("APP_VERSION={$arguments['version']}","APP_RELEASE={$arguments['release']}"));
 
         $this->info('Whotalk framework upgrade successfully.');
         return true;

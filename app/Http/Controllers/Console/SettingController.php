@@ -70,7 +70,7 @@ class SettingController extends Controller
     public function detection(){
         $component = DB::table('gxswa_cloud')->where('type',0)->first(['id','identity','type','online','releasedate','rootpath']);
         if (empty($component)) return $this->message('系统出现致命错误');
-        $cloudinfo = $this->checkcloud($component);
+        $cloudinfo = $this->checkcloud($component,1,true);
         if (is_error($cloudinfo)){
             return $this->message($cloudinfo['message']);
         }
@@ -80,23 +80,23 @@ class SettingController extends Controller
     public function selfupgrade(){
         $component = DB::table('gxswa_cloud')->where('type',0)->first(['id','identity','modulename','type','releasedate','rootpath']);
         if (empty($component)) return $this->message('系统出现致命错误');
-        $cloudinfo = $this->checkcloud($component,2);
+        $cloudinfo = $this->checkcloud($component,2, true);
         if ($cloudinfo['isnew']){
             $basepath = base_path() . "/";
-            $cloudupdate = CloudService::CloudUpdate($component['identity'],$basepath);
+            $cloudupdate = true;//CloudService::CloudUpdate($component['identity'],$basepath);
             if (is_error($cloudupdate)){
                 return $this->message($cloudupdate['message']);
             }
         }
-        //框架升级
         try {
+            //更新数据结构
             Artisan::call('self:migrate');
+            //更新路由
+            Artisan::call('route:clear');
         }catch (\Exception $exception){
             //Todo something
         }
-        //更新路由
-        Artisan::call('route:clear');
-        unset($cloudinfo['structure']);
+        unset($cloudinfo['structure'],$cloudinfo['difference']);
         $cloudinfo['isnew'] = false;
         DB::table('gxswa_cloud')->where('id',$component['id'])->update(array(
             'version'=>$cloudinfo['version'],
@@ -105,6 +105,8 @@ class SettingController extends Controller
             'releasedate'=>$cloudinfo['releasedate'],
             'online'=>serialize($cloudinfo)
         ));
+        $system = config('system');
+        CloudService::CloudEnv(array("APP_VERSION={$system['version']}","APP_RELEASE={$system['release']}"), array("APP_VERSION={$cloudinfo['version']}","APP_RELEASE={$cloudinfo['releasedate']}"));
         return $this->message('恭喜您，升级成功！', url('console/setting'),'success');
     }
 
@@ -146,7 +148,7 @@ class SettingController extends Controller
             $return['usersign'] = md5("{$_W['uid']}-{$_W['config']['setting']['authkey']}-{$_W['config']['site']['id']}");
         }
         if ($op=='component' || $op=='plugin'){
-            $return['types'] = array('框架','应用','组件','资源');
+            $return['types'] = array('框架','应用','服务','资源');
             $return['colors'] = array('red','blue','green','orange');
             if ($op=='plugin'){
                 $condition = array('type'=>1);
@@ -203,7 +205,8 @@ class SettingController extends Controller
             $redirect = $component['type']==1 ? url('console/setting/plugin') : url('console/setting/component');
             return $this->message('恭喜您，升级成功！', $redirect,'success');
         }else{
-            $framework = DB::table('gxswa_cloud')->where('type',0)->first(['id','identity','type','online','releasedate','rootpath']);
+            $framework = DB::table('gxswa_cloud')->where('type',0)->first(['id','version','identity','type','online','releasedate','rootpath']);
+            $return['framework'] = $framework;
             $return['cloudinfo'] = !empty($framework['online']) ? unserialize($framework['online']) : array('isnew'=>false);
         }
         return $this->globalview('console.setting', $return);
@@ -211,7 +214,11 @@ class SettingController extends Controller
 
     public function checkcloud($component,$compare=1,$nocache=false){
         $cachekey = "cloud:structure:{$component['identity']}";
+        $ugradeinfo = array();
         $fromcache = true;
+        if (!$nocache){
+            $ugradeinfo = Cache::get($cachekey);
+        }
         if (empty($ugradeinfo)){
             $fromcache = false;
             $data = array(

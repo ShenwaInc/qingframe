@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Services\FileService;
 use Illuminate\Console\Command;
 
 class selfclear extends Command
@@ -18,7 +19,7 @@ class selfclear extends Command
      *
      * @var string
      */
-    protected $description = 'Whotalk framework migrate';
+    protected $description = 'Whotalk framework clean';
 
     /**
      * Create a new command instance.
@@ -45,6 +46,15 @@ class selfclear extends Command
         foreach ($unused as $file){
             if (file_exists($file)){
                 @unlink($file);
+            }
+        }
+        //清理无用文件夹
+        $undirs = array(
+            base_path('socket')
+        );
+        foreach ($undirs as $dir){
+            if (is_dir($dir)){
+                FileService::rmdirs($dir);
             }
         }
         $this->info('FrameWork Clean successfully.');
