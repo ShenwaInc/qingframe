@@ -35,10 +35,6 @@ class SocketService
         DB::table('gxswa_cloud')->where('identity','=','laravel_whotalk_socket')->update(array('name'=>'独立SOCKET服务','website'=>url('console/setting/socket')));
     }
 
-    static function InitShell(){
-        return true;
-    }
-
     static function SocketAuthorize($domain='',$require=0){
         $domains = array("host"=>array());
         $domainfile = base_path("swasocket/composer.json");

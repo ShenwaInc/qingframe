@@ -118,7 +118,7 @@
                             <td class="soild-after">
                                 V{{ $_W['config']['version'] }} Release{{$_W['config']['release']}}
                                 @if($cloudinfo['isnew'])
-                                &nbsp;&nbsp;<span class="layui-badge layui-bg-red" title="V{{ $cloudinfo['version'] }} Release{{ $cloudinfo['releasedate'] }}">发现新版本</span>
+                                &nbsp;&nbsp;<span class="layui-badge layui-bg-red" title="V{{ $cloudinfo['version'] }} Release{{ $cloudinfo['releasedate'] }}">{{ $cloudinfo['releasedate']==$_W['config']['release'] ? '文件有改动' : '发现新版本' }}</span>
                                 @endif
                             </td>
                             <td class="text-right soild-after">
@@ -437,17 +437,15 @@
                     <div class="un-padding">
                         <table class="layui-table fui-table lines" lay-even lay-skin="nob">
                             <colgroup>
-                                <col width="260" />
-                                <col width="200" />
+                                <col width="320" />
                                 <col width="150" />
                                 <col width="150" />
                                 <col />
-                                <col width="120" />
+                                <col width="200" />
                             </colgroup>
                             <thead>
                                 <tr>
                                     <th>组件</th>
-                                    <th>路径</th>
                                     <th>安装时间</th>
                                     <th>上次更新</th>
                                     <th>线上版本</th>
@@ -455,6 +453,11 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                @if(empty($components))
+                                    <tr>
+                                        <td colspan="5" class="text-center">暂无数据</td>
+                                    </tr>
+                                @else
                                 @foreach ($components as $com)
                                 <tr>
                                     <td>
@@ -464,7 +467,6 @@
                                             V{{$com['version']}}
                                         </div>
                                     </td>
-                                    <td>{{ !empty($com['rootpath']) ? '/'.$com['rootpath'] : '根目录' }}</td>
                                     <td>{{ $com['installtime'] }}</td>
                                     <td>{{ $com['lastupdate'] }}</td>
                                     <td>
@@ -481,12 +483,16 @@
                                     </td>
                                     <td class="text-right">
                                         @if(!empty($com['cloudinfo']) && $com['cloudinfo']['isnew'])
-                                            <a href="{{ url('console/setting/comupdate') }}?cid={{ $com['id'] }}" class="text-red confirm" data-text="升级前请做好源码和数据备份，避免升级故障导致系统无法正常运行">升级</a>
+                                            <a href="{{ url('console/setting/comupdate') }}?cid={{ $com['id'] }}" class="text-red confirm" data-text="升级前请做好源码和数据备份，避免升级故障导致系统无法正常运行">升级</a>&nbsp;&nbsp;
                                         @endif
                                         <a href="{{ url('console/setting/comcheck') }}?cid={{ $com['id'] }}" class="text-blue ajaxshow">{{ empty($com['cloudinfo']) ? '检测更新' : '重新检测' }}</a>
+                                        @if($com['type']==1)
+                                                &nbsp;&nbsp;<a href="{{ url('console/setting/comremove') }}?cid={{ $com['id'] }}" class="text-muted confirm" data-text="即将卸载该应用并删除应用产生的所有数据，是否确定要卸载？">卸载</a>
+                                        @endif
                                     </td>
                                 </tr>
                                 @endforeach
+                                @endif
                             </tbody>
                         </table>
                     </div>

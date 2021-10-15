@@ -83,7 +83,7 @@ class SettingController extends Controller
         $cloudinfo = $this->checkcloud($component,2, true);
         if ($cloudinfo['isnew']){
             $basepath = base_path() . "/";
-            $cloudupdate = true;//CloudService::CloudUpdate($component['identity'],$basepath);
+            $cloudupdate = CloudService::CloudUpdate($component['identity'],$basepath);
             if (is_error($cloudupdate)){
                 return $this->message($cloudupdate['message']);
             }
@@ -192,7 +192,10 @@ class SettingController extends Controller
                 $moduleupdate = ModuleService::upgrade($identity);
                 if (is_error($moduleupdate)) return $this->message($moduleupdate['message']);
             }else{
-                unset($cloudinfo['structure']);
+                if ($component['identity']=='laravel_whotalk_socket'){
+                    SocketService::Upgrade();
+                }
+                unset($cloudinfo['structure'],$cloudinfo['difference']);
                 $cloudinfo['isnew'] = false;
                 DB::table('gxswa_cloud')->where('id',$component['id'])->update(array(
                     'version'=>$cloudinfo['version'],

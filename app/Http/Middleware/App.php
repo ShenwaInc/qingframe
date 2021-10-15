@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Utils\Agent;
 use Closure;
 
 error_reporting(0);
@@ -43,6 +44,7 @@ class App
         $_W['account'] = array('uniacid'=>0);
         $_W['inconsole'] = $_W['inapp'] = false;
         $_W['token'] = csrf_token();
+        $_W['os'] = Agent::getOs();
         if (function_exists('date_default_timezone_set')) {
             date_default_timezone_set($_W['config']['setting']['timezone']);
         }
