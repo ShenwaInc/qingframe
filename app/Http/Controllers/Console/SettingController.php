@@ -78,35 +78,11 @@ class SettingController extends Controller
     }
 
     public function selfupgrade(){
-        $component = DB::table('gxswa_cloud')->where('type',0)->first(['id','identity','modulename','type','releasedate','rootpath']);
-        if (empty($component)) return $this->message('系统出现致命错误');
-        $cloudinfo = $this->checkcloud($component,2, true);
-        if ($cloudinfo['isnew']){
-            $basepath = base_path() . "/";
-            $cloudupdate = CloudService::CloudUpdate($component['identity'],$basepath);
-            if (is_error($cloudupdate)){
-                return $this->message($cloudupdate['message']);
-            }
-        }
         try {
-            //更新数据结构
-            Artisan::call('self:migrate');
-            //更新路由
-            Artisan::call('route:clear');
+            Artisan::call('self:update');
         }catch (\Exception $exception){
-            //Todo something
+            return $this->message($exception->getMessage());
         }
-        unset($cloudinfo['structure'],$cloudinfo['difference']);
-        $cloudinfo['isnew'] = false;
-        DB::table('gxswa_cloud')->where('id',$component['id'])->update(array(
-            'version'=>$cloudinfo['version'],
-            'updatetime'=>TIMESTAMP,
-            'dateline'=>TIMESTAMP,
-            'releasedate'=>$cloudinfo['releasedate'],
-            'online'=>serialize($cloudinfo)
-        ));
-        $system = config('system');
-        CloudService::CloudEnv(array("APP_VERSION={$system['version']}","APP_RELEASE={$system['release']}"), array("APP_VERSION={$cloudinfo['version']}","APP_RELEASE={$cloudinfo['releasedate']}"));
         return $this->message('恭喜您，升级成功！', url('console/setting'),'success');
     }
 
