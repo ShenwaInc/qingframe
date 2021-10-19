@@ -200,7 +200,7 @@ class PayService {
             return error(-1,'交易不存在');
         }
         $setting = SettingService::uni_load('payment',$paylog['uniacid']);
-        $payresult = self::verify($params, $type, $setting['payment']);
+        $payresult = self::verify($params, $type, $setting['payment'],$from);
         if (is_error($payresult)){
             return $payresult;
         }
@@ -251,14 +251,15 @@ class PayService {
                     Log::error('PaymentNotifyResult',error(-1,$exception->getMessage()));
                 }
             }
-            return true;
+            return $payresult;
         }else{
             return error(-1,'订单更新失败('.Code::ERROR.')');
         }
     }
 
-    public static function verify($params, $paytype, $config){
-        $payresult = array('trade_status'=>'TRADE_SUCCESS','total_amount'=>0);
+    public static function verify($params, $paytype, $config,$from='notify'){
+        $payresult = array('trade_status'=>'TRADE_SUCCESS','total_amount'=>0,'isxml'=>false);
+        $isxml = false;
         if ($paytype=='alipay'){
             $payresult['out_trade_no'] = $params['out_trade_no'];
             $alipay = $config['alipay'];
@@ -326,21 +327,30 @@ class PayService {
             if (!empty($input) && empty($params['out_trade_no'])){
                 $obj = isimplexml_load_string($input, 'SimpleXMLElement', LIBXML_NOCDATA);
                 $data = json_decode(json_encode($obj), true);
+                $isxml = true;
                 if (empty($data)) {
-                    $result = array(
-                        'return_code' => 'FAIL',
-                        'return_msg' => ''
-                    );
-                    echo array2xml($result);
-                    exit;
+                    if ($from=='notify'){
+                        $result = array(
+                            'return_code' => 'FAIL',
+                            'return_msg' => ''
+                        );
+                        echo array2xml($result);
+                        exit;
+                    }else{
+                        return error(-1,'无效的支付回传数据');
+                    }
                 }
                 if ($data['result_code'] != 'SUCCESS' || $data['return_code'] != 'SUCCESS') {
-                    $result = array(
-                        'return_code' => 'FAIL',
-                        'return_msg' => empty($data['return_msg']) ? $data['err_code_des'] : $data['return_msg']
-                    );
-                    echo array2xml($result);
-                    exit;
+                    if ($from=='notify') {
+                        $result = array(
+                            'return_code' => 'FAIL',
+                            'return_msg' => empty($data['return_msg']) ? $data['err_code_des'] : $data['return_msg']
+                        );
+                        echo array2xml($result);
+                        exit;
+                    }else{
+                        return error(-1,empty($data['return_msg']) ? $data['err_code_des'] : $data['return_msg']);
+                    }
                 }
                 $params = $data;
             }
@@ -359,6 +369,7 @@ class PayService {
             }
             $payresult['out_trade_no'] = $params['out_trade_no'];
             $payresult['total_amount'] = $params['total_fee'] / 100;
+            $payresult['isxml'] = $isxml;
             return $payresult;
         }
         return error(-1,'未知的支付方式');

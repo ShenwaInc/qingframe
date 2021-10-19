@@ -4,7 +4,6 @@ namespace App\Http\Controllers\App;
 
 use App\Http\Controllers\Controller;
 use App\Services\PayService;
-use App\Services\SettingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -17,13 +16,19 @@ class PaymentController extends Controller
         $params['result'] = $result;
         Log::info('PaymentNotify'.ucfirst($payment),$params);
         if (is_error($result)){
-            return $this->message($result['message']);
+            session_exit('fail');
         }
         if($result){
-            return $this->message('支付成功','','success');
-        }else{
-            return $this->message('支付失败，请重试','','success');
+            if ($result['isxml']){
+                $return = array(
+                    'return_code' => 'SUCCESS',
+                    'return_msg' => 'OK'
+                );
+                session_exit(array2xml($return));
+            }
+            session_exit('success');
         }
+        session_exit('fail');
     }
 
     //支付回调：同步

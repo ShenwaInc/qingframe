@@ -16,14 +16,19 @@ class MemberService
     public static function AuthLogin($member,$remember=true){
         global $_W;
         if (!empty($member) && !empty($member['uid'])) {
-            $member = pdo_get('mc_members', array('uid' => $member['uid'], 'uniacid' => $_W['uniacid']), array('uid', 'realname', 'mobile', 'email', 'groupid', 'credit1', 'credit2', 'credit6'));
+            $member = pdo_get('mc_members', array('uid' => $member['uid'], 'uniacid' => $_W['uniacid']), array('uid', 'nickname', 'realname', 'mobile', 'email', 'groupid', 'credit1', 'credit2', 'credit6'));
             if (!empty($member) && (!empty($member['mobile']) || !empty($member['email']))) {
+                if($_W['openid']!=$member['uid']){
+                    $openid = pdo_getcolumn('mc_mapping_fans', array('uid' => $member['uid'], 'uniacid' => $_W['uniacid']), 'openid');
+                    $_W['openid'] = empty($openid) ? $member['uid'] : $openid;
+                }
                 $_W['member'] = $member;
                 $_W['member']['groupname'] = $_W['uniaccount']['groups'][$member['groupid']]['title'];
                 self::GroupUpdate();
                 if($remember){
                     session()->put('openid',$_W['openid']);
                     session()->put("_app_member_session_{$_W['uniacid']}_",$member);
+                    session()->save();
                 }
                 return true;
             }
