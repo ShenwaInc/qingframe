@@ -1,7 +1,10 @@
 <?php
 
 use App\Services\CacheService;
+use App\Services\WechatService;
+use App\Utils\WeAccount;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
@@ -653,8 +656,8 @@ function mc_groups($uniacid = 0) {
 
 function mc_fans_groups($force_update = false) {
 	global $_W;
-	$results = table('mc_fans_groups')->getByUniacid($_W['uniacid']);
-	$results = empty($results['groups']) ? array() : $results['groups'];
+	$results = DB::table('mc_fans_groups')->where(['uniacid'=>$_W['uniacid']])->get()->toArray();
+	$results = empty($results) ? array() : $results;
 
 	if(!empty($results) && !$force_update) {
 		return $results;
@@ -668,7 +671,7 @@ function mc_fans_groups($force_update = false) {
 		$extend_buttons = array();
 		if (61003 == $tags['errno']) {
 			if (!empty($_W['setting']['platform']['authstate'])) {
-				$account_platform = new WeixinPlatform();
+				$account_platform = new WechatService();
 				$authurl = $account_platform->getAuthLoginUrl();
 			}
 			$extend_buttons['cancel'] = array(
@@ -677,7 +680,7 @@ function mc_fans_groups($force_update = false) {
 				'title' => '授权接入',
 			);
 		}
-		itoast($tags['message'], '', 'error', $extend_buttons);
+		message($tags['message'], '', 'error', $extend_buttons);
 	}
 	if (!empty($tags['tags'])) {
 		$tags_tmp = array();
@@ -689,10 +692,10 @@ function mc_fans_groups($force_update = false) {
 		}
 	}
 	if (empty($results)) {
-		$data = array('acid' => $_W['acid'], 'uniacid' => $_W['uniacid'], 'groups' => iserializer($tags_tmp));
+		$data = array('acid' => $_W['acid'], 'uniacid' => $_W['uniacid'], 'groups' => serialize($tags_tmp));
 		pdo_insert('mc_fans_groups', $data);
 	} else {
-		$data = array('groups' => iserializer($tags_tmp));
+		$data = array('groups' => serialize($tags_tmp));
 		pdo_update('mc_fans_groups', $data, array('uniacid' => $_W['uniacid']));
 	}
 	return $tags_tmp;

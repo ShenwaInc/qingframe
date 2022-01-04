@@ -89,6 +89,19 @@ function referer() {
     return strip_tags($_W['referer']);
 }
 
+function range_limit($num, $downline, $upline, $returnNear = true) {
+    $num = intval($num);
+    $downline = intval($downline);
+    $upline = intval($upline);
+    if ($num < $downline) {
+        return empty($returnNear) ? false : $downline;
+    } elseif ($num > $upline) {
+        return empty($returnNear) ? false : $upline;
+    } else {
+        return empty($returnNear) ? true : $num;
+    }
+}
+
 function wurl($segment, $params = array(), $contain_domain = false){
     global $_W;
     $url = 'console';
@@ -321,11 +334,13 @@ function pdo_tableexists($tablename) {
 }
 
 function pdo_run($sql) {
-    dd(error(-1,'Function pdo_run() was deprecated. Try Schema::'));
+    return DB::statement($sql);
+    //dd(error(-1,'Function pdo_run() was deprecated. Try Schema::'));
 }
 
 function pdo_query($sql, $params = array()) {
-    dd(error(-1,'Function pdo_query() was deprecated. Try Schema::'));
+    return DB::statement($sql);
+    //dd(error(-1,'Function pdo_query() was deprecated. Try Schema::'));
 }
 
 function array_elements($keys, $src, $default = false) {
