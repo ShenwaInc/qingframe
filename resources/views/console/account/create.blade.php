@@ -23,15 +23,7 @@
                     </div>
                     <div class="layui-form-item must">
                         <label class="layui-form-label">平台LOGO</label>
-                        <div class="layui-input-block fui-upload">
-                            <div class="layui-input-inline">
-                                <input type="text" name="data[logo]" readonly required lay-verify="required" value="" placeholder="请选择图片上传" autocomplete="off" class="layui-input">
-                            </div>
-                            <div class="layui-btn-group">
-                                <a title="站点LOGO" href="javascript:;" layadmin-event="previewimg" data-src="{{ asset('static/images/nopic.jpg') }}" class="layui-btn layui-btn-normal"><span class="layui-icon layui-icon-picture"></span></a>
-                                <button type="button" class="layui-btn js-uploadimg">上传图片</button>
-                            </div>
-                        </div>
+                        {!! serv('storage')->tpl_form_image('data[logo]', "",array('required'=>true,'placeholder'=>'请选择图片上传（正方形200x200）')); !!}
                     </div>
                     <div class="layui-form-item">
                         <div class="layui-input-block">

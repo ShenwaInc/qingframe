@@ -2,7 +2,7 @@
 
 @if(!$_W['isajax'])
     <div class="main-content">
-        <h2 class="weui-desktop-page__title">编辑站点信息</h2>
+        <h2>编辑站点信息</h2>
         <div class="fui-card layui-card">
             <div class="layui-card-body">
 @else
@@ -21,27 +21,11 @@
                             </div>
                             <div class="layui-form-item must">
                                 <label class="layui-form-label">站点LOGO</label>
-                                <div class="layui-input-block fui-upload">
-                                    <div class="layui-input-inline">
-                                        <input type="text" name="data[logo]" readonly required lay-verify="required" value="{{ $_W['setting']['page']['logo'] }}" placeholder="请选择图片上传" autocomplete="off" class="layui-input">
-                                    </div>
-                                    <div class="layui-btn-group">
-                                        <a title="站点LOGO" href="javascript:;" layadmin-event="previewimg" data-src="{{ tomedia($_W['setting']['page']['logo']) }}" class="layui-btn layui-btn-normal"><span class="layui-icon layui-icon-picture"></span></a>
-                                        <button type="button" class="layui-btn js-uploadimg">上传图片</button>
-                                    </div>
-                                </div>
+                                {!! serv('storage')->tpl_form_image('data[logo]', $_W['setting']['page']['logo'],array('required'=>true,'placeholder'=>'请选择图片上传')); !!}
                             </div>
                             <div class="layui-form-item must">
                                 <label class="layui-form-label">站点标志</label>
-                                <div class="layui-input-block fui-upload">
-                                    <div class="layui-input-inline">
-                                        <input type="text" name="data[icon]" readonly required lay-verify="required" value="{{ $_W['setting']['page']['icon'] }}" placeholder="请选择图片上传" autocomplete="off" class="layui-input">
-                                    </div>
-                                    <div class="layui-btn-group">
-                                        <a title="站点标志" href="javascript:;" layadmin-event="previewimg" data-src="{{ tomedia($_W['setting']['page']['icon']) }}" class="layui-btn layui-btn-normal"><span class="layui-icon layui-icon-picture"></span></a>
-                                        <button type="button" class="layui-btn js-uploadimg">上传图片</button>
-                                    </div>
-                                </div>
+                                {!! serv('storage')->tpl_form_image('data[icon]', $_W['setting']['page']['icon'],array('required'=>true,'placeholder'=>'请选择图片上传')); !!}
                             </div>
                             <div class="layui-form-item">
                                 <label class="layui-form-label">SEO关键字</label>

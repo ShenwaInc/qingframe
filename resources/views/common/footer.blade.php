@@ -12,9 +12,9 @@
     </div>
 </div>
 <script type="text/javascript">
-    var layform;
-    layui.use(['element','form','laydate','upload','code'],function (){
-        var form = layui.form,element = layui.element;
+    var layform, layupload, laydropdown;
+    layui.use(['element','form','laydate','upload','code','dropdown'],function (){
+        var form = layui.form,element = layui.element, upload = layui.upload, dropdown = layui.dropdown;
         form.on('radio(ctrls)', function(data){
             var target = $(data.elem).data('target');
             $(target).addClass('layui-hide');;
@@ -32,8 +32,18 @@
             });
         });
         EventInit($('body'));
-        UploadInit();
+        if(typeof (FormRender)=='function'){
+            FormRender(form);
+        }
+        if(typeof (UploadRender)=='function'){
+            UploadRender(upload);
+        }
+        if(typeof (DropRender)=='function'){
+            DropRender(dropdown);
+        }
         layform = form;
+        layupload = upload;
+        laydropdown = dropdown;
     });
     $('.showmenu').on('click',this,function(){
         $(this).dropdown();
@@ -156,37 +166,12 @@
                     if(Ajaxwindow.find('.layui-code').length>0){
                         layui.code();
                     }
-                    if(Ajaxwindow.find('.js-uploadimg').length>0){
-                        UploadInit(Ajaxwindow);
-                    }
                     EventInit(Ajaxwindow);
                 }
             },{inajax:1},'html',true);
             return false;
         });
         DateInit(Obj);
-    }
-    function UploadInit(Obj){
-        if (typeof(Obj)!='object'){
-            Obj = $('body');
-        }
-        Obj.find('.js-uploadimg').each(function (index,element){
-            layui.upload.render({
-                elem: element
-                ,url: '{{ url("console/util/upload") }}' //必填项
-                ,accept:'images'
-                ,acceptMime:'images'
-                ,exts:"{{ implode('|',$_W['setting']['upload']['image']['extentions']) }}"
-                ,data:{_token:"{{ csrf_token() }}"}
-                ,done:function (res, index, upload){
-                    if(typeof(res.type)!='undefined' && typeof(res.message)!='undefined') return Core.report(res);
-                    if(res.state!=='SUCCESS') return layer.msg('上传失败，请重试',{icon:2});
-                    let Elem = $(element);
-                    Elem.prev().attr('data-src',res.url);
-                    Elem.parent().parent().find('input.layui-input').val(res.attachment);
-                }
-            });
-        });
     }
     function Wrandom(len=8, id){
         let codes = 'ABCDEFGHIJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';

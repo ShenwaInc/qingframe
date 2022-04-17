@@ -143,10 +143,10 @@
                     <tr>
                         <td><span class="fui-table-lable">远程附件</span></td>
                         <td class="soild-after">
-                            跟随系统
+                            {{ $remote }}
                         </td>
                         <td class="text-right soild-after">
-                            <a href="javascript:;" onclick="layer.msg('敬请期待',{icon:7})" class="text-blue layui-hide">远程附件</a>
+                            <a href="{{ serv('storage')->url('remote', array('uniacid'=>$uniacid)) }}" data-height="560" class="text-blue ajaxshow">配置云存储</a>
                         </td>
                     </tr>
                     </tbody>

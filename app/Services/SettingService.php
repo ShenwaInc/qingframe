@@ -83,7 +83,7 @@ class SettingService{
     }
 
     static function check_php_ext($extension) {
-        return extension_loaded($extension) ? true : false;
+        return extension_loaded($extension);
     }
 
     static function Save($data = '', $key = ''){

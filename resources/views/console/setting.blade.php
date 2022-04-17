@@ -9,11 +9,8 @@
             <li @if($op=='main')  class="layui-this" @endif>
                 <a href="{{ url('console/setting') }}">站点信息</a>
             </li>
-            <li @if($op=='attach')  class="layui-this" @endif>
-                <a href="{{ url('console/setting/attach') }}">附件设置</a>
-            </li>
-            <li @if($op=='component')  class="layui-this" @endif>
-                <a href="{{ url('console/setting/component') }}">服务管理</a>
+            <li>
+                <a href="{{ url('console/server') }}">服务管理</a>
             </li>
             <li @if($op=='plugin')  class="layui-this" @endif>
                 <a href="{{ url('console/setting/plugin') }}">应用管理</a>
@@ -176,144 +173,6 @@
             </div>
         </div>
     </div>
-    @elseif($op=='attach')
-        <div class="fui-card layui-card">
-            <div class="layui-card-header nobd">
-                <a href="{{ url('console/setting/attachset') }}" class="fr text-blue ajaxshow" title="修改上传设置"><i class="glyphicon glyphicon-edit"></i></a>
-                <span class="title">上传设置</span>
-            </div>
-            <div class="layui-card-body">
-                <div class="un-padding">
-                    <table class="layui-table fui-table lines" lay-skin="nob">
-                        <colgroup>
-                            <col width="120" />
-                            <col />
-                            <col width="100" />
-                        </colgroup>
-                        <tbody>
-                            <tr>
-                                <td><span class="fui-table-lable">图片格式</span></td>
-                                <td class="soild-after">{{ implode(' ',$_W['setting']['upload']['image']['extentions']) }}</td>
-                                <td class="text-right soild-after"></td>
-                            </tr>
-                            <tr>
-                                <td><span class="fui-table-lable">图片上传限制</span></td>
-                                <td class="soild-after">单次上传最大{{ $_W['setting']['upload']['image']['limit'] }}Kb</td>
-                                <td class="text-right soild-after"></td>
-                            </tr>
-                            <tr>
-                                <td><span class="fui-table-lable">图片压缩率</span></td>
-                                <td class="soild-after">{{ $_W['setting']['upload']['image']['zip_percentage'] ? $_W['setting']['upload']['image']['zip_percentage'] : 100 }}%</td>
-                                <td class="text-right soild-after"></td>
-                            </tr>
-                            <tr>
-                                <td><span class="fui-table-lable">多媒体格式</span></td>
-                                <td class="soild-after">{{ implode(' ',$_W['setting']['upload']['media']['extentions']) }}</td>
-                                <td class="text-right soild-after"></td>
-                            </tr>
-                            <tr>
-                                <td><span class="fui-table-lable">媒体上传限制</span></td>
-                                <td class="soild-after">单次上传最大{{ $_W['setting']['upload']['media']['limit'] }}Kb</td>
-                                <td class="text-right soild-after"></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-        <div class="fui-card layui-card">
-            <div class="layui-card-header nobd">
-                <a href="{{ url('console/setting/remoteset') }}" class="fr text-blue ajaxshow" title="修改远程附件配置"><i class="glyphicon glyphicon-edit"></i></a>
-                <span class="title">远程附件</span>
-            </div>
-            <div class="layui-card-body">
-                <div class="un-padding">
-                    <table class="layui-table fui-table lines" lay-skin="nob">
-                        <colgroup>
-                            <col width="120" />
-                            <col />
-                            <col width="100" />
-                        </colgroup>
-                        <tbody>
-                            <tr>
-                                <td><span class="fui-table-lable">远程附件设置</span></td>
-                                <td class="soild-after">{{ $attachs[$_W['setting']['remote']['type']] }}</td>
-                                <td class="text-right soild-after"></td>
-                            </tr>
-                        @if($_W['setting']['remote']['type']==2)
-                            <tr>
-                                <td><span class="fui-table-lable">Account Key</span></td>
-                                <td class="soild-after">已配置</td>
-                                <td class="text-right soild-after"></td>
-                            </tr>
-                            <tr>
-                                <td><span class="fui-table-lable">Bucket名称</span></td>
-                                <td class="soild-after">{{ $_W['setting']['remote']['alioss']['bucket'] }}</td>
-                                <td class="text-right soild-after"></td>
-                            </tr>
-                            <tr>
-                                <td><span class="fui-table-lable">所在地区</span></td>
-                                <td class="soild-after">{{ $_W['setting']['remote']['alioss']['city'] }}</td>
-                                <td class="text-right soild-after"></td>
-                            </tr>
-                            <tr>
-                                <td><span class="fui-table-lable">外网访问地址</span></td>
-                                <td class="soild-after">{{ $_W['setting']['remote']['alioss']['url'] }}</td>
-                                <td class="text-right soild-after"></td>
-                            </tr>
-                        @elseif($_W['setting']['remote']['type']==4)
-                            <tr>
-                                <td><span class="fui-table-lable">APPID</span></td>
-                                <td class="soild-after">{{ $_W['setting']['remote']['cos']['appid'] }}</td>
-                                <td class="text-right soild-after"></td>
-                            </tr>
-                            <tr>
-                                <td><span class="fui-table-lable">API密钥</span></td>
-                                <td class="soild-after"> 已配置 </td>
-                                <td class="text-right soild-after"></td>
-                            </tr>
-                            <tr>
-                                <td><span class="fui-table-lable">Bucket名称</span></td>
-                                <td class="soild-after"> {{ $_W['setting']['remote']['cos']['bucket'] }} ({{ $_W['setting']['remote']['cos']['local'] }}) </td>
-                                <td class="text-right soild-after"></td>
-                            </tr>
-                            <tr>
-                                <td><span class="fui-table-lable">外网访问地址</span></td>
-                                <td class="soild-after">{{ $_W['setting']['remote']['cos']['url'] }}</td>
-                                <td class="text-right soild-after"></td>
-                            </tr>
-                        @elseif($_W['setting']['remote']['type']==5)
-                            <tr>
-                                <td><span class="fui-table-lable">AWS_KEY_ID</span></td>
-                                <td class="soild-after">{{ env('AWS_ACCESS_KEY_ID', '未配置') }}</td>
-                                <td class="text-right soild-after"></td>
-                            </tr>
-                            <tr>
-                                <td><span class="fui-table-lable">AWS_SECRET</span></td>
-                                <td class="soild-after">{{ env('AWS_SECRET_ACCESS_KEY', '未配置') }}</td>
-                                <td class="text-right soild-after"></td>
-                            </tr>
-                            <tr>
-                                <td><span class="fui-table-lable">AWS_REGION</span></td>
-                                <td class="soild-after">{{ env('AWS_DEFAULT_REGION', '未配置') }}</td>
-                                <td class="text-right soild-after"></td>
-                            </tr>
-                            <tr>
-                                <td><span class="fui-table-lable">AWS_BUCKET</span></td>
-                                <td class="soild-after">{{ env('AWS_BUCKET', '未配置') }}</td>
-                                <td class="text-right soild-after"></td>
-                            </tr>
-                            <tr>
-                                <td><span class="fui-table-lable">AWS_URL</span></td>
-                                <td class="soild-after">{{ env('AWS_URL', '未配置') }}</td>
-                                <td class="text-right soild-after"></td>
-                            </tr>
-                        @endif
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
     @else
         <div class="fui-card layui-card">
             @if($op=='socket')
@@ -425,13 +284,8 @@
                 </script>
             @elseif($op=='component' || $op=='plugin')
                 <div class="layui-card-header nobd">
-                    @if($op=='component')
-                    <a href="https://www.whotalk.com.cn/" target="_blank" class="fr layui-btn layui-btn-sm layui-btn-normal">服务市场</a>
-                    <span class="title">服务组件</span>
-                    @else
-                        <a href="https://www.whotalk.com.cn/" target="_blank" class="fr layui-btn layui-btn-sm layui-btn-normal">应用市场</a>
-                        <span class="title">应用插件</span>
-                    @endif
+                    <a href="https://www.whotalk.com.cn/" target="_blank" class="fr layui-btn layui-btn-sm layui-btn-normal">应用市场</a>
+                    <span class="title">应用插件</span>
                 </div>
                 <div class="layui-card-body">
                     <div class="un-padding">

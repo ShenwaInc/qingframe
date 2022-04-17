@@ -1,15 +1,108 @@
 <?php
 
+use App\Services\SettingService;
 use App\Utils\WeAccount;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+
+class CatchCall {
+
+    public $error = '';
+    public $errno = -1;
+    public function __construct($error, $errno=-1){
+        $this->error = $error;
+        $this->errno = $errno;
+    }
+
+    public function __call($name, $arguments){
+        // TODO: Implement __call() method.
+        return error($this->errno, $this->error);
+    }
+
+}
+
+/**
+ * 调用服务方法
+ * @param string $name 服务名称
+ * @param array|null $params 构造参数
+ * @return object 服务实例
+ */
+function serv($name,$params=null){
+    static $_servers;
+    if (empty($_servers)) $_servers = array();
+    if (isset($_servers[$name])){
+        return $_servers[$name];
+    }
+    $service = MICRO_SERVER.strtolower($name).'/'.ucfirst($name)."Service.php";
+    if (!file_exists($service)){
+        return new CatchCall("Service {$name} Not Found.");
+    }
+    require_once $service;
+    $class_name = ucfirst($name) . 'Service';
+    $instance = new $class_name($params);
+    if ($instance->service['status']!=1){
+        return new CatchCall("Service $name has stopped.");
+    }
+    $_servers[$name] = $instance;
+    return $instance;
+}
+
+if (!function_exists('post_var')){
+    function post_var($keys=array(),$datas=array()){
+        global $_GPC;
+        $data = array();
+        $datas = $datas ?: $_GPC;
+        foreach ($keys as $key){
+            if (isset($datas[$key])){
+                $data[$key] = $datas[$key];
+            }
+        }
+        return $data;
+    }
+}
+
+function script_run($params, $basedir = MICRO_SERVER){
+    if (empty($params['content'])) return true;
+    $basedir = preg_replace('/\/$/',"", $basedir);
+    switch ($params['drive']){
+        case 'php':{
+            //运行PHP文件
+            $php = $basedir."/{$params['content']}";
+            if (file_exists($php)){
+                include_once $php;
+            }
+            break;
+        }
+        case 'phpscript':{
+            //有风险
+            eval($params['content']);
+            break;
+        }
+        case 'sql':{
+            pdo_query($params['content']);
+            break;
+        }
+        case 'shell':{
+            $sh = $basedir."/{$params['content']}";
+            shell_exec($sh);
+            break;
+        }
+        case 'shellscript':{
+            shell_exec($params['content']);
+            break;
+        }
+        default : break;
+    }
+    return true;
+
+}
 
 function strexists($string, $find) {
     return \Str::contains($string,$find);
 }
 
 function uni_setting_load($name = '', $uniacid = 0){
-    return \App\Services\SettingService::uni_load($name, $uniacid);
+    return SettingService::uni_load($name, $uniacid);
 }
 
 function checksubmit($var='_token'){
@@ -179,7 +272,7 @@ function tomedia($src, $local_path = false, $is_cahce = false) {
         return $src;
     }
 
-    $uni_remote_setting = \App\Services\SettingService::uni_load('remote');
+    $uni_remote_setting = SettingService::uni_load('remote');
     if ($local_path || empty($_W['setting']['remote']['type']) && (empty($_W['uniacid']) || !empty($_W['uniacid']) && empty($uni_remote_setting['remote']['type'])) || file_exists(storage_path("app/public/{$src}") )) {
         $src = $_W['siteroot'] . 'storage/' . $src;
     } else {
@@ -311,6 +404,10 @@ function pdo_insert($tablename,$data,$insertgetid=false){
         return $query->insertGetId($data);
     }
     return $query->insert($data);
+}
+
+function pdo_insertgetid($tablename,$data){
+    return DB::table($tablename)->insertGetId($data);
 }
 
 function pdo_update($table, $data = array(), $params = array()) {

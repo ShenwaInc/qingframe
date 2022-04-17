@@ -191,6 +191,12 @@ class AccountController extends Controller
                 'email'=>array('switch'=>0,'smtp'=>'','port'=>'','username'=>'','password'=>'','sender'=>'')
             );
         }
+        $remote = "跟随系统";
+        $storage = serv('storage', $this->uniacid);
+        if (!$storage->settings['remote']['isglobal']){
+            $remotes = array('跟随系统','FTP','阿里云存储','七牛云存储','腾讯云存储','亚马逊S3');
+            $remote = $remotes[$storage->settings['remote']['type']];
+        }
         $op = (string)$request->input('op','');
         if ($request->isMethod('post')){
             switch ($op){
@@ -287,7 +293,8 @@ class AccountController extends Controller
             'account'=>$this->account,
             'setting'=>$setting,
             'role'=>$this->role,
-            'title'=>'平台配置'
+            'title'=>'平台配置',
+            'remote'=>$remote
         ));
     }
 

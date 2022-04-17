@@ -11,6 +11,10 @@
 |
 */
 
+use App\Http\Middleware\ConsolePermission;
+use App\Http\Middleware\ModulePermission;
+use Illuminate\Http\Request;
+
 Route::group(['prefix' => 'auth','namespace'=>'Auth', 'middleware'=>['app']],function (){
     Route::post('/login', 'AuthController@Login');
     Route::post('/logout', 'AuthController@Logout');
@@ -34,7 +38,7 @@ Route::group(['prefix' => 'api', 'namespace'=>'Api','middleware'=>['app']],funct
     Route::any('/wechat/{uniacid}', 'WechatController@recived');
 });
 
-Route::group(['prefix' => 'console', 'namespace' => 'Console', 'middleware'=>['auth', 'app',\App\Http\Middleware\ConsolePermission::class]], function () {
+Route::group(['prefix' => 'console', 'namespace' => 'Console', 'middleware'=>['auth', 'app', ConsolePermission::class]], function () {
     Route::get('/', 'PlatformController@index');
     Route::get('/util/{op?}', 'UtilController@index');
     Route::post('/util/{op?}', 'UtilController@save');
@@ -44,12 +48,15 @@ Route::group(['prefix' => 'console', 'namespace' => 'Console', 'middleware'=>['a
     Route::get('/account/{uniacid}', 'PlatformController@checkout')->where('uniacid','[0-9]+');
     Route::match(['get', 'post'],'/account/{action}', 'AccountController@index')->where('action','[a-z]+');
     Route::match(['get', 'post'],'/user/{op?}', 'UserController@index');
-    Route::match(['get', 'post'],'/m/{modulename}/{do?}', 'ModuleController@entry')->middleware(\App\Http\Middleware\ModulePermission::class);
+    Route::match(['get', 'post'],'/m/{modulename}/{do?}', 'ModuleController@entry')->middleware(ModulePermission::class);
+    Route::get('/server', 'ServerController@index');
+    Route::get('/server/apis/{server}', 'ServerController@Apis');
+    Route::get('/server/methods/{server}', 'ServerController@Methods');
 });
 
-Route::group(['prefix'=>'server', 'middleware'=>['app']],function (){
-    Route::any('/{server}/{method}', 'ServerController@app');
-    Route::any('/{server}/admin/{method}', 'ServerController@admin')->middleware(\App\Http\Middleware\ConsolePermission::class);
+Route::group(['prefix'=>'server', 'namespace' =>'Console', 'middleware'=>['auth', 'app', ConsolePermission::class]],function (){
+    Route::any('/{server}/{param1}', 'ServerController@HttpRequest');
+    Route::any('/{server}/{param1}/{param2}', 'ServerController@HttpRequest');
 });
 
 Route::group(['prefix'=>'payment', 'namespace' => 'App', 'middleware'=>['app']],function (){
@@ -73,7 +80,7 @@ Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
 
-Route::get('/admin/{modulename}', function (\Illuminate\Http\Request $request,$modulename){
+Route::get('/admin/{modulename}', function (Request $request, $modulename){
     $user = $request->user();
     if (empty($user)){
         $referer = url('login') ."?referer=console/m/{$modulename}";

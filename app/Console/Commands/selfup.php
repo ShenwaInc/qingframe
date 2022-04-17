@@ -7,6 +7,7 @@ use Illuminate\Console\Command;
 use App\Services\CloudService;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class selfup extends Command
 {
@@ -53,7 +54,33 @@ class selfup extends Command
         $cloudupdate = CloudService::CloudUpdate($component['identity'],base_path().'/');
         if (is_error($cloudupdate)) return $this->error($cloudupdate['message']) || "";
         //数据库升级
-        Artisan::call('self:migrate');
+        //Artisan::call('self:migrate');
+        $setupsql = "";
+        if (!Schema::hasTable("microserver")){
+            $tablename = tablename("microserver");
+            $setupsql .= <<<EOF
+CREATE TABLE IF NOT EXISTS $tablename (
+  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `identity` varchar(20) NOT NULL,
+  `name` varchar(20) NOT NULL,
+  `cover` varchar(255) NOT NULL DEFAULT '',
+  `summary` text,
+  `version` varchar(10) NOT NULL DEFAULT '',
+  `releases` varchar(20) NOT NULL DEFAULT '',
+  `drive` varchar(10) NOT NULL DEFAULT '',
+  `entrance` varchar(255) NOT NULL,
+  `datas` mediumtext,
+  `configs` mediumtext,
+  `status` tinyint(1) NOT NULL DEFAULT '1',
+  `addtime` int(10) NOT NULL DEFAULT '0',
+  `dateline` int(10) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='服务表';
+EOF;
+        }
+        if (!empty($setupsql)){
+            DB::statement($setupsql);
+        }
 
         //更新路由
         Artisan::call('route:clear');

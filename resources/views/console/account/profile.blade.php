@@ -1,6 +1,6 @@
 @include('common.header')
 
-<div class="main-content">
+<div class="main-content fui-content">
 
     <h2>平台管理</h2>
 

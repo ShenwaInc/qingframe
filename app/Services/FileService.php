@@ -8,7 +8,6 @@ use App\Utils\Image;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
-use Qcloud\Cos\Client;
 
 class FileService
 {
@@ -226,13 +225,10 @@ class FileService
                 self::file_image_quality($savepath, $savepath, $ext);
             }
         }
-        //远程附件
-        $remotesave = self::file_remote_upload($path);
-        if (is_error($remotesave)){
-            Log::error("remote{$_W['uniacid']}_error",$remotesave);
-            //return error(-1,"远程附件上传失败：{$remotesave['message']}");
-        }
-        return $path;
+        return array(
+            "path"=>$path,
+            "success"=>true
+        );
     }
 
     static function file_upload($file, $type = 'image', $name = '', $compress = false) {

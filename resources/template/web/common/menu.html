@@ -1,0 +1,69 @@
+<div class="layui-header">
+    <div class="layui-header">
+        <div class="fui-header-sm">
+            <div class="layui-logo">
+                {if $_W['inserver']}
+                {php $service = serv($_W['server']);}
+                {php $entrance = $service->getEntry();}
+                <a href="{if !empty($entrance)}{$entrance}{else}javascript:;{/if}">{php echo $service->service['name']}</a>
+                {else}
+                <a href="{php echo wurl('server')}">微服务管理</a>
+                {/if}
+            </div>
+
+            <ul class="layui-nav layui-layout-right">
+                <li class="layui-nav-item">
+                    <a href="javascript:;">
+                        <i class="layui-icon-username layui-icon"></i>
+                        {$_W['username']}
+                    </a>
+                    <dl class="layui-nav-child layui-anim layui-anim-upbit" style="padding: 0;">
+                        {if $_W['isfounder'] || !$_S['basic']['hidecopyright']}<dd><a href="{php echo url('user/profile')}" target="_blank"><span class="layui-icon layui-icon-username"></span>&nbsp;账户信息</a></dd>{/if}
+                        <hr style="margin: 5px 0;">
+                        <dd><a href="javascript:;" layadmin-event="updateCache"><span class="layui-icon layui-icon-refresh"></span>&nbsp;更新缓存</a></dd>
+                        {if $_W['isfounder'] || !$_S['basic']['hidecopyright']}<dd><a href="{php echo wurl('home/welcome')}" target="_blank"><span class="layui-icon layui-icon-website"></span>&nbsp;平台管理</a></dd>{/if}
+                    </dl>
+                </li>
+                <li class="layui-nav-item layui-hide-xs js-fullscreen" lay-unselect>
+                    <a href="javascript:;" layadmin-event="fullscreen">
+                        <i class="layui-icon layui-icon-screen-full"></i>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+{php $systemmenu = array();}
+{if !empty($systemmenu)}
+<!-- 侧边菜单 -->
+<div class="layui-side layui-side-menu fui-side-menu">
+    <div class="layui-side-scroll">
+        <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
+        <ul class="layui-nav layui-nav-tree" lay-shrink="all" id="LAY-system-side-menu" lay-filter="layadmin-system-side-menu">
+            {loop $systemmenu $key $value}
+            <li class="layui-nav-item{if $value['name']==$_W['controller'] || $value['name']==$_W['basescript'] || ($_W['isplugin'] && $value['name']=='plugin')} layui-nav-itemed{/if}">
+                <a data-name="{$value['name']}" href="{if count($value['list'])>0}javascript:;{else}{$value['jump']}{/if}" lay-tips="{$value['title']}" lay-direction="2">
+                    <i class="{$value['icon']}"></i>
+                    <cite>{$value['title']}</cite>
+                </a>
+                {if count($value['list'])>0}
+                <dl class="layui-nav-child">
+                    {loop $value['list'] $k $val}
+                    <dd data-name="{$value['name']}"{if ($val['name']==$_W['action'] && $value['name']==$_W['controller']) || ($value['name']==$_W['basescript'] && $val['name']==$_W['server']) || $_W['siteurl']==$val['jump'] || (!$value['list'][$_W['action']] && $k=='index' && $value['name']==$_W['controller']) || ($_W['isplugin'] && $val['name']==$_W['plugin'])} class="{$_W['action']} layui-this"{/if}>
+                    <a layer-href="{$value['name']}.{$val['name']}" href="{$val['jump']}"{if $val['target']} target="{$val['target']}"{/if}>{$val['title']}</a>
+                    </dd>
+                    {/loop}
+                </dl>
+                {/if}
+            </li>
+            {/loop}
+            <li class="layui-nav-item layui-hide">
+                <a href="{php echo url('home/welcome')}" lay-tips="返回系统" lay-direction="2">
+                    <i class="layui-icon layui-icon-return"></i>
+                    <cite>返回系统</cite>
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+{/if}
