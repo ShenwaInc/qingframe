@@ -58,40 +58,129 @@ class MSService
         return $service;
     }
 
+    public function cloudUpdate($identity){
+        $service = $this->cloudInfo($identity);
+        if (is_error($service)) return $service;
+        //获取线上文件结构
+        $cloudIdentity = "microserver_".$identity;
+        $cachekey = "cloud:structure:$cloudIdentity{$service['release']['releasedate']}";
+        $cloudInfo = Cache::get($cachekey, array());
+        if (empty($cloudInfo)){
+            $cloudInfo = CloudService::CloudApi('structure',array(
+                'identity'=>$cloudIdentity
+            ));
+            if (is_error($cloudInfo)) return $cloudInfo;
+            Cache::put($cachekey, $cloudInfo, 7*86400);
+        }
+        //对比文件结构
+        $serverpath = MICRO_SERVER.$identity."/";
+        $structures = json_decode(base64_decode($cloudInfo['structure']), true);
+        $difference = CloudService::CloudCompare($structures, $serverpath);
+        if (!empty($difference)){
+            //文件存在差异，获取补丁包
+            $cloudUpdate = CloudService::CloudUpdate($cloudIdentity, $serverpath);
+            if (is_error($cloudUpdate)) return $cloudUpdate;
+        }
+        return $this->upgrade($identity);
+    }
+
+    public function cloudInfo($identity){
+        //获取应用信息
+        $service = self::cloudserver($identity);
+        if (is_error($service)){
+            return $service;
+        }
+        //验证是否收费
+        if ($service['product']['price']>0){
+            //验证授权是否生效
+            if (is_error($service['authorize'])){
+                if (!empty($service['product']['buyurl'])){
+                    header("location:{$service['product']['buyurl']}");
+                    session_exit();
+                }else{
+                    return $service['authorize'];
+                }
+            }
+        }
+        return $service;
+    }
+
+    public function cloudInstall($identity){
+        $service = $this->cloudInfo($identity);
+        if (is_error($service)) return $service;
+        $cloudIdentity = "microserver_".$identity;
+        $require = CloudService::CloudRequire($cloudIdentity, MICRO_SERVER.$identity."/");
+        if (is_error($require)) return $require;
+        return $this->install($identity, true);
+    }
+
     public static function cloudserver($identity, $nocache=false){
         //获取云端服务
         $cloudInfo = $nocache ? array() : Cache::get("microserver".$identity, array());
         if (!empty($cloudInfo)) return $cloudInfo;
         $data = array(
             'r'=>'cloud.package',
-            'identity'=>"microserver_".$identity
+            'identity'=>"microserver_".$identity,
+            'frompage'=>'list'
         );
+        if (self::isexist($identity)){
+            $data['frompage'] = 'local';
+        }
         $res = CloudService::CloudApi("", $data);
         if (is_error($res)) return $res;
         if (!isset($res['application'])) return error(-1, "应用解析失败");
-        cache_write("microserver".$identity, $res);
+        Cache::put("microserver".$identity, $res, 86400);
         return $res;
     }
 
-    public static function cloudservers(){
-        $data = array(
-            'r'=>'cloud.packages',
-            'compate'=>'laravel'
-        );
-        $res = CloudService::CloudApi("", $data);
-        if (is_error($res)) return $res;
+    public static function cloudservers($page=1, $keyword=""){
+        $cachekey = "cloud:microserver_list";
+        $res = Cache::get($cachekey, array());
+        if (empty($res)){
+            $data = array(
+                'r'=>'cloud.packages',
+                'compate'=>'laravel',
+                'page'=>$page,
+                'keyword'=>$keyword
+            );
+            $res = CloudService::CloudApi("", $data);
+            Cache::put($cachekey, $res, 3600);
+        }
+        if (is_error($res)) return [];
+        $servers = array();
+        if (!empty($res['servers'])){
+            foreach ($res['servers'] as $value){
+                $identity = str_replace("microserver_","",$value['identity']);
+                if (self::isexist($identity)) continue;
+                if (self::localexist($identity)) continue;
+                $service = array(
+                    'cover'=>$value['icon'],
+                    'identity'=>$identity,
+                    'name'=>$value['name'],
+                    'isdelete'=>false,
+                    'summary'=>$value['summary'],
+                    'upgrade'=>[],
+                    'entry'=>'',
+                    'version'=>$value['release']['version'],
+                    'releases'=>$value['release']['releasedate']
+                );
+                $service['actions'] = '<a class="layui-btn layui-btn-sm layui-btn-normal confirm" data-text="确定要安装该服务？" href="'.wurl('server', array("op"=>"cloudinst", "nid"=>$identity)).'">安装</a>';
+                $servers[] = $service;
+            }
+        }
+        return $servers;
     }
 
     public static function isexist($identity){
         return (int)pdo_getcolumn(self::$tablename, array('identity'=>trim($identity)),'id') > 0;
     }
 
-    public function localexist($identity){
-        $path = dirname(MICRO_SERVER.$identity."/");
-        if (!is_dir($path)){
+    public static function localexist($identity){
+        $manifest = MICRO_SERVER.$identity."/manifest.json";
+        if (!file_exists($manifest)){
             if(!defined('MSERVER_EXTRA')) return false;
-            $extrapath = dirname(MSERVER_EXTRA.$identity."/");
-            if (!is_dir($extrapath)) return false;
+            $extrapath = dirname(MSERVER_EXTRA.$identity."/manifest.json");
+            if (!file_exists($extrapath)) return false;
         }
         return true;
     }
@@ -117,6 +206,10 @@ class MSService
                 }
             }
             $server['upgrade'] = array();
+            $server['isdelete'] = false;
+            if (!is_dir(MICRO_SERVER.$server['identity'])){
+                $server['isdelete'] = true;
+            }
             $manifest = self::getmanifest($server['identity'], true);
             if (!is_error($manifest)){
                 if(version_compare($manifest['version'], $server['version'], '>')){
@@ -137,7 +230,6 @@ class MSService
 
     public function checkrequire($requires){
         if (empty($requires)) return true;
-        $unpaids = array();
         foreach ($requires as $value){
             if ($this->isexist($value['id'])){
                 //已安装
@@ -145,24 +237,13 @@ class MSService
             }
             if ($this->localexist($value['id'])){
                 //未安装，但是本地存在则直接安装
-                $complete = $this->install($value['id']);
-                if (is_error($complete)) return $complete;
-            }
-            //本地不存在则从云端获取
-            $cloudserver = $this->getcloud($value['id']);
-            if (is_error($cloudserver)) return $cloudserver;
-            if ($cloudserver['price']<=0 || !empty($cloudserver['authorized'])){
-                //已授权或免费服务直接安装
-                $complete = $this->installcloud($cloudserver);
-                if (is_error($complete)) return $complete;
+                $install = $this->install($value['id']);
+                if (is_error($install)) return error(-1, "安装依赖的服务({$value['id']})时发生异常：{$install['message']}");
             }else{
-                $unpaids[] = $cloudserver;
+                //本地不存在则从云端安装
+                $installCloud = $this->cloudInstall($value['id']);
+                if (is_error($installCloud)) return error(-1, "安装依赖的服务({$value['id']})时发生异常：{$installCloud['message']}");
             }
-        }
-        if (!empty($unpaids)){
-            //存在付费服务，进入购买引导
-            //Todo something
-            return false;
         }
         return true;
     }
@@ -204,7 +285,7 @@ class MSService
         return $return;
     }
 
-    public function install($identity){
+    public function install($identity, $fromcloud=false){
         if ($this->isexist($identity)) return true;
         $service = $this->getmanifest($identity);
         if (is_error($service)) return $service;
@@ -217,6 +298,9 @@ class MSService
         $keys = array('identity','name','version','cover','summary','releases');
         $application = $this->getApplication($keys, $service);
         $configs = post_var(array('uninstall'), $service);
+        if ($fromcloud){
+            $configs['packagefrom'] = 'cloud';
+        }
         if (!empty($configs)){
             $application['configs'] = serialize($configs);
         }
@@ -294,7 +378,7 @@ class MSService
     public function uninstall($identity){
         $service = self::getone($identity, false);
         if (empty($service)) return error(-1,'该服务尚未安装');
-        if (!empty($service['configs']['uninstall'])){
+        if (!empty($service['configs']['packagefrom']=='cloud')){
             try {
                 script_run($service['configs']['uninstall'], MICRO_SERVER.$identity);
             }catch (\Exception $exception){
@@ -307,7 +391,9 @@ class MSService
         $this->getEvents(true);
         if (!self::$devmode){
             //删除服务安装包
-            FileService::mkdirs(MICRO_SERVER.$identity."/");
+            if($service['configs']['uninstall']){
+                FileService::mkdirs(MICRO_SERVER.$identity."/");
+            }
         }
         return true;
     }
@@ -318,10 +404,6 @@ class MSService
 
     public static function restore($identity){
         return pdo_update(self::$tablename, array('status'=>1,'dateline'=>TIMESTAMP), array('identity'=>trim($identity)));
-    }
-
-    public function installcloud($server){
-        return $server;
     }
 
     public static function showparams($params=array(),$inuse=false){
@@ -366,7 +448,11 @@ class MSService
                 $service = json_decode(@file_get_contents($manifest), true);
                 if (!empty($service) && isset($service['application'])){
                     if (self::isexist($service['application']['identity'])) continue;
-                    $servers[] = $service['application'];
+                    $serv = $service['application'];
+                    $serv['actions'] = '<a class="layui-btn layui-btn-sm layui-btn-normal confirm" data-text="确定要安装该服务？" href="'.wurl('server', array("op"=>"install", "nid"=>$serv['identity'])).'">安装</a>';
+                    $serv['status'] = -1;
+                    $serv['isdelete'] = false;
+                    $servers[$serv['identity']] = $serv;
                 }
             }
         }

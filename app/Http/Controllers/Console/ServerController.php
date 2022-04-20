@@ -45,6 +45,10 @@ class ServerController extends Controller
             case "local" : {
                 $return['title'] .= " - 未安装";
                 $return['servers'] = MSService::getlocal();
+                $cloudservers = MSService::cloudservers();
+                if (!empty($cloudservers)){
+                    $return['servers'] = array_merge($return['servers'], $cloudservers);
+                }
                 break;
             }
             case "install" : {
@@ -80,6 +84,13 @@ class ServerController extends Controller
                     return $this->message($res['message']);
                 }
                 return $this->message("升级成功", wurl("server"), "success");
+            }
+            case "cloudinst" : {
+                $res = $MSS->cloudInstall($identity);
+                if (is_error($res)){
+                    return $this->message($res['message']);
+                }
+                return $this->message("安装成功", wurl("server"), "success");
             }
             case "restore" : {
                 if (MSService::restore($identity)){

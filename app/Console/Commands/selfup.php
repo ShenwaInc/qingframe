@@ -17,6 +17,7 @@ class selfup extends Command
      * @var string
      */
     protected $signature = 'self:update {version?} {release?}';
+    public $Application;
 
     /**
      * The console command description.
@@ -33,7 +34,7 @@ class selfup extends Command
     public function __construct()
     {
         parent::__construct();
-        $bulidapp = new App();
+        $this->Application = new App();
     }
 
     /**
@@ -54,11 +55,7 @@ class selfup extends Command
         $cloudupdate = CloudService::CloudUpdate($component['identity'],base_path().'/');
         if (is_error($cloudupdate)) return $this->error($cloudupdate['message']) || "";
         //数据库升级
-        //Artisan::call('self:migrate');
-        $setupsql = "";
-        if (!empty($setupsql)){
-            DB::statement($setupsql);
-        }
+        Artisan::call('self:migrate');
 
         //更新路由
         Artisan::call('route:clear');

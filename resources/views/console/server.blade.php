@@ -53,9 +53,6 @@
                         @else
                         <span class="color-default">{{ $service['name'] }}</span>
                         @endif
-                        @if($service['isupgrade'])
-                        &nbsp;<span class="layui-badge layui-bg-red" lay-tips="{$service['updatelog']}">发现新版本</span>
-                        @endif
                         @if($servers['isdelete'])
                         &nbsp;<span class="layui-badge layui-bg-gray">已删除</span>
                         @endif
@@ -70,11 +67,9 @@
                     <td class="text-right">
                         @if(empty($service['binded']))
                         <div class="layui-btn-group text-center">
-                            @if($op=="local")
-                            <a class="layui-btn layui-btn-sm layui-btn-normal confirm" data-text="确定要安装该服务？" href="{{ wurl('server', array("op"=>"install", "nid"=>$service['identity'])) }}">安装</a>
-                            @else
+                            {!! $service['actions'] !!}
+                            @if($op!="local")
                                 @if($service['status']==1)
-                                    {!! $service['actions'] !!}
                                     <a class="layui-btn layui-btn-sm layui-btn-warm confirm" data-text="确定要停止使用该服务？" href="{{ wurl('server', array("op"=>"disable", "nid"=>$service['identity'])) }}">停用</a>
                                 @else
                                     <a class="layui-btn layui-btn-sm layui-btn-normal confirm" data-text="确定要恢复该服务？" href="{{ wurl('server', array("op"=>"restore", "nid"=>$service['identity'])) }}">恢复</a>

@@ -178,6 +178,7 @@ class SettingController extends Controller
                 ));
             }
             $redirect = url('console/setting/plugin');
+            Cache::forget("cloud:structure:{$component['identity']}");
             return $this->message('恭喜您，升级成功！', $redirect,'success');
         }else{
             $framework = DB::table('gxswa_cloud')->where('type',0)->first(['id','version','identity','type','online','releasedate','rootpath']);
@@ -204,7 +205,6 @@ class SettingController extends Controller
         }
         if ($compare==0) return $ugradeinfo;
         $structure = $ugradeinfo['structure'];
-        $ugradeinfo['isnew'] = false;
         $ugradeinfo['difference'] = $this->compare($component,$ugradeinfo['structure']);
         if ($component['releasedate']<$ugradeinfo['releasedate'] && $compare<2){
             $ugradeinfo['isnew'] = true;
