@@ -23,7 +23,7 @@ class AccountController extends Controller
     public $role = 'operator';
     public $account = null;
 
-    function accInit(){
+    function accInit($check=false){
         global $_W,$_GPC;
         $uniacid = intval($_GPC['uniacid']);
         $this->account = Account::getByUniacid($uniacid);
@@ -33,15 +33,24 @@ class AccountController extends Controller
         }
         if (empty($this->role)){
             //暂无权限
-            echo response()->view('message',array('message'=>'暂无权限','redirect'=>'/console','type'=>'error','_W'=>$_W))->content();
-            session()->save();
-            exit();
+            return error(-1, "暂无权限");
         }
+        if ($check){
+            if ($this->uniacid==0 || $this->account['isdeleted']==1) return error(-1, "找不到该平台，可能已被删除");
+            if ($this->account['endtime']>0 && $this->account['endtime']<TIMESTAMP && !$_W['isfounder']){
+                return error(-1, "该平台服务已到期，请联系管理员处理");
+            }
+        }
+        return $this->account;
     }
 
     //平台管理控制器
     public function index(Request $request,$action='profile'){
-        $this->accInit();
+        $check = in_array($action, array('component','setting'));
+        $account = $this->accInit($check);
+        if (is_error($account)){
+            return $this->message($account['message'], '/console');
+        }
         $method = "do".ucfirst($action);
         if (method_exists($this, $method)){
             return $this->$method($request);
@@ -54,12 +63,7 @@ class AccountController extends Controller
         if (!$_W['isfounder']){
             return $this->message('暂无权限，请勿乱操作');
         }
-        $return = array('title'=>'应用权限','uniacid'=>$this->uniacid,'components'=>array());
-        if ($this->uniacid==0 || $this->account['isdeleted']==1) return $this->message('找不到该平台，可能已被删除');
-        if ($this->account['endtime']>0 && $this->account['endtime']<TIMESTAMP && !$_W['isfounder']){
-            return $this->message('该平台服务已到期，请联系管理员处理');
-        }
-
+        $return = array('title'=>'应用权限','uniacid'=>$this->uniacid);
         $components = DB::table('uni_account_extra_modules')->where('uniacid',$this->uniacid)->first();
         if (empty($components)){
             $defaultmodule = DB::table('gxswa_cloud')->where('modulename',$_W['config']['defaultmodule'])->select(['name','modulename','logo'])->first();
@@ -77,10 +81,6 @@ class AccountController extends Controller
 
     public function doRole(Request $request){
         global $_W;
-        if ($this->uniacid==0 || $this->account['isdeleted']==1) return $this->message('找不到该平台，可能已被删除');
-        if ($this->account['endtime']>0 && $this->account['endtime']<TIMESTAMP && !$_W['isfounder']){
-            return $this->message('该平台服务已到期，请联系管理员处理');
-        }
         if ($this->role!='owner' && !$_W['isfounder'])return $this->message('您暂无权限操作');
         $return = array('title'=>'管理权限','users'=>array(),'uniacid'=>$this->uniacid,'role'=>$this->role);
         $subs = UserService::GetSubs($_W['uid']);
@@ -173,10 +173,6 @@ class AccountController extends Controller
 
     public function doSetting(Request $request){
         global $_W;
-        if ($this->uniacid==0 || $this->account['isdeleted']==1) return $this->message('找不到该平台，可能已被删除');
-        if ($this->account['endtime']>0 && $this->account['endtime']<TIMESTAMP && !$_W['isfounder']){
-            return $this->message('该平台服务已到期，请联系管理员处理');
-        }
         $setting = SettingService::uni_load('', $this->uniacid);
         if (empty($setting['payment'])){
             $setting['payment'] = array(
@@ -353,9 +349,7 @@ class AccountController extends Controller
         DB::table('account')->where('uniacid',$uniacid)->update(array('isdeleted'=>1));
         DB::table('uni_modules')->where('uniacid',$uniacid)->delete();
         DB::table('users_operate_star')->where('uniacid',$uniacid)->delete();
-        DB::table('users_lastuse')->where('uniacid',$uniacid)->delete();
-        DB::table('core_menu_shortcut')->where('uniacid',$uniacid)->delete();
-        DB::table('uni_link_uniacid')->where('uniacid',$uniacid)->delete();
+        DB::table('users_operate_history')->where('uniacid', $uniacid)->delete();
         $cachekey = CacheService::system_key('user_accounts', array('type' => 'account', 'uid' => $_W['uid']));
         Cache::forget($cachekey);
         $cachekey = CacheService::system_key('uniaccount', array('uniacid' => $uniacid));

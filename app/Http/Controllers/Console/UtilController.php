@@ -129,9 +129,7 @@ class UtilController extends Controller
                 }
             }
 
-            if (!function_exists('pagination')){
-                include_once base_path('bootstrap/functions/web.func.php');
-            }
+            serv("weengine")->func("web");
 
             $pager = pagination($total, $page, $page_size, '', $context = array('before' => 5, 'after' => 4, 'isajax' => $_W['isajax']));
             $result = array(

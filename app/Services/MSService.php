@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Cache;
 class MSService
 {
     public static $tablename = 'microserver';
-    public $devmode = true;
+    public static $devmode = DEVELOPMENT;
 
     public static function getmanifest($identity, $app=false){
         $manifest = MICRO_SERVER.$identity."/manifest.json";
@@ -16,7 +16,7 @@ class MSService
             $manifest = MSERVER_EXTRA."/manifest.json";
             $inextra = true;
         }
-        if (!file_exists($manifest)) return error(-1,'找不到安装文件：'.$manifest);
+        if (!file_exists($manifest)) return error(-1,'找不到安装文件');
         $service = json_decode(@file_get_contents($manifest), true);
         if (!isset($service['application']) || !isset($service['drive'])) return error(-1,'安装包解析失败');
         if ($app) return $service['application'];
@@ -58,13 +58,31 @@ class MSService
         return $service;
     }
 
-    public function getcloud($identity){
+    public static function cloudserver($identity, $nocache=false){
         //获取云端服务
-        return array('id'=>$identity);
+        $cloudInfo = $nocache ? array() : Cache::get("microserver".$identity, array());
+        if (!empty($cloudInfo)) return $cloudInfo;
+        $data = array(
+            'r'=>'cloud.package',
+            'identity'=>"microserver_".$identity
+        );
+        $res = CloudService::CloudApi("", $data);
+        if (is_error($res)) return $res;
+        if (!isset($res['application'])) return error(-1, "应用解析失败");
+        cache_write("microserver".$identity, $res);
+        return $res;
+    }
+
+    public static function cloudservers(){
+        $data = array(
+            'r'=>'cloud.packages',
+            'compate'=>'laravel'
+        );
+        $res = CloudService::CloudApi("", $data);
+        if (is_error($res)) return $res;
     }
 
     public static function isexist($identity){
-        if ($identity=='weengine') return true;
         return (int)pdo_getcolumn(self::$tablename, array('identity'=>trim($identity)),'id') > 0;
     }
 
@@ -89,7 +107,7 @@ class MSService
             if (!empty($server['entry']) && !is_error($server['entry'])){
                 $server['actions'] .= '<a class="layui-btn layui-btn-sm layui-btn-normal" target="_blank" href="'.$server['entry'].'">管理</a>';
             }
-            if (DEVELOPMENT){
+            if (self::$devmode){
                 if (!empty(serv($server['identity'])->getMethods())){
                     $server['actions'] .= '<a class="layui-btn layui-btn-sm" target="_blank" href="'.wurl("server/methods/{$server['identity']}").'">调用方法</a>';
                 }
@@ -103,6 +121,14 @@ class MSService
             if (!is_error($manifest)){
                 if(version_compare($manifest['version'], $server['version'], '>')){
                     $server['upgrade'] = array('version'=>$manifest['version'],'canup'=>true);
+                }
+            }
+            if (empty($server['upgrade'])){
+                $cloudserver = self::cloudserver($server['identity']);
+                if (is_error($cloudserver)) continue;
+                $release = $cloudserver['release'];
+                if (version_compare($release['version'], $server['version'], '>') || $release['releasedate']>$server['releases']){
+                    $server['actions'] .= '<a class="layui-btn layui-btn-sm layui-btn-danger confirm" data-text="升级前请做好数据备份" lay-tips="该服务可升级至V'.$release['version'].'Release'.$release['releasedate'].'" href="'.wurl('server', array('op'=>'cloudup', 'nid'=>$server['identity'])).'">升级</a>';
                 }
             }
         }
@@ -141,6 +167,43 @@ class MSService
         return true;
     }
 
+    public function autoinstall(){
+        $servers = $this->InitService(1);
+        $return = array("upgrade"=>0, "install"=>0, "faild"=>0, "servers"=>0);
+        if (!empty($servers)){
+            $return['servers'] = count($servers);
+            foreach ($servers as $value){
+                if (!empty($value['upgrade'])){
+                    try {
+                        $res = $this->upgrade($value['identity']);
+                        if (!is_error($res)){
+                            $return['upgrade'] += 1;
+                            continue;
+                        }
+                    }catch (\Exception $exception){
+                    }
+                    $return['faild'] += 1;
+                }
+            }
+        }
+        $locals = $this->getlocal();
+        if (!empty($locals)){
+            $return['servers'] += count($locals);
+            foreach ($locals as $value){
+                try {
+                    $res = $this->install($value['identity']);
+                    if (!is_error($res)){
+                        $return['install'] += 1;
+                        continue;
+                    }
+                }catch (\Exception $exception){
+                }
+                $return['faild'] += 1;
+            }
+        }
+        return $return;
+    }
+
     public function install($identity){
         if ($this->isexist($identity)) return true;
         $service = $this->getmanifest($identity);
@@ -162,7 +225,7 @@ class MSService
         if (!empty($service['install'])){
             try {
                 script_run($service['install'], MICRO_SERVER.$identity);
-            }catch (Exception $exception){
+            }catch (\Exception $exception){
                 return error(-1,"安装失败：".$exception->getMessage());
             }
         }
@@ -173,13 +236,13 @@ class MSService
             return error(-1,'安装失败，请重试');
         }
         $this->getEvents(true);
-        if (!$this->devmode){
+        if (!self::$devmode){
             if ($service['inextra'] && defined('MSERVER_EXTRA')){
-                //移动文件夹
-                file_movedir(MSERVER_EXTRA.$identity, MICRO_SERVER.$identity);
+                CloudService::MoveDir(MSERVER_EXTRA.$identity, MICRO_SERVER.$identity);
             }
-            //删除安装包文件
-            @unlink(MICRO_SERVER.$identity."/manifest.json");
+            if ($service['bindcloud']){
+                @unlink(MICRO_SERVER.$identity."/manifest.json");
+            }
         }
         return true;
     }
@@ -208,7 +271,7 @@ class MSService
             if (!empty($manifest['upgrade'])){
                 try {
                     script_run($manifest['upgrade'], MICRO_SERVER.$identity);
-                }catch (Exception $exception){
+                }catch (\Exception $exception){
                     return error(-1,"安装失败：".$exception->getMessage());
                 }
             }
@@ -219,7 +282,7 @@ class MSService
                 return error(-1,'更新失败，请重试');
             }
             $this->getEvents(true);
-            if (!$this->devmode){
+            if (!self::$devmode){
                 //删除安装包文件
                 @unlink(MICRO_SERVER.$identity."/manifest.json");
             }
@@ -234,7 +297,7 @@ class MSService
         if (!empty($service['configs']['uninstall'])){
             try {
                 script_run($service['configs']['uninstall'], MICRO_SERVER.$identity);
-            }catch (Exception $exception){
+            }catch (\Exception $exception){
                 return error(-1,"卸载失败：".$exception->getMessage());
             }
         }
@@ -242,9 +305,9 @@ class MSService
             return error(-1,'卸载失败，请重试');
         }
         $this->getEvents(true);
-        if (!$this->devmode){
+        if (!self::$devmode){
             //删除服务安装包
-            return false;
+            FileService::mkdirs(MICRO_SERVER.$identity."/");
         }
         return true;
     }

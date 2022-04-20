@@ -36,11 +36,11 @@
 			});
 			return false;
 		});
-		$('.layui-fluid [lay-tips]').each(function (index,element) {
+		$('.layui-body [lay-tips]').each(function (index,element) {
 			$(element).on({
 				mouseenter:function () {
 					var tipstr = jQuery(this).attr('lay-tips');
-					laytips = layer.tips(tipstr,this,{tips:1,time:0});
+					laytips = layer.tips(tipstr,this,{tips:1});
 				},
 				mouseleave:function () {
 					layer.close(laytips);

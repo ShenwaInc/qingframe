@@ -11,10 +11,7 @@ class Account extends Model
     //
     protected $table = 'uni_account';
     public static $tables = array(
-        'aliapp'=>'account_aliapp',
-        'baiduapp'=>'account_baiduapp',
         'wechat'=>'account_wechats',
-        'wxapp'=>'account_wxapp',
         'modules'=>'uni_account_extra_modules',
         'moduleset'=>'uni_account_modules',
         'users'=>'uni_account_users'

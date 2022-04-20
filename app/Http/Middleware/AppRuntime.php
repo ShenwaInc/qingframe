@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\AccountService;
 use App\Services\AttachmentService;
 use App\Services\MemberService;
 use App\Services\SettingService;
@@ -26,8 +27,8 @@ class AppRuntime
         $uniacid = $request->input('i',0);
         if (empty($uniacid)) abort(404,'找不到该平台');
         $_W['uniacid'] = intval($uniacid);
-        $_W['account'] = uni_fetch($uniacid);
-        $_W['openid'] = session()->get('openid','');
+        $_W['account'] = AccountService::FetchUni($uniacid);
+        $_W['openid'] = session()->get("openid$uniacid",'');
         $_W['member'] = array('uid'=>0);
         //自动登录
         $authtoken = $request->header('x-auth-token');
@@ -44,7 +45,7 @@ class AppRuntime
             }
         }
         $_W['attachurl'] = AttachmentService::SetAttachUrl();
-        include_once base_path("bootstrap/functions/app.func.php");
+        serv("weengine")->func("app");
         return $next($request);
     }
 }

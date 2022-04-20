@@ -1,6 +1,6 @@
 @if(!$_W['isajax'])
 @include('common.headerbase')
-<link rel="stylesheet" href="//dl.gxswa.com/res/css/console1.0.72.css?v={{ $_W['config']['release'] }}" />
+<link rel="stylesheet" href="{{ asset('/static/css/console1.0.72.css') }}?v={{ TIMESTAMP }}" />
 <body layadmin-themealias="ocean-header" class="layui-layout-body" style="position:inherit !important;">
 <div class="layui-layout layui-layout-admin">
     <div class="layui-header">
@@ -24,7 +24,7 @@
                                         <a href="{{url('console/active')}}">系统激活<span class="layui-badge-dot"></span></a>
                                     </dd>
                                 @else
-                                    <dd><a href="{{url('console/setting')}}">站点设置</a></dd>
+                                    <dd><a href="{{url('console/setting')}}">系统管理</a></dd>
                                 @endif
                             @endif
                             <dd><a href="javascript:Core.cacheclear();">更新缓存</a></dd>

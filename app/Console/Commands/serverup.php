@@ -43,7 +43,6 @@ class serverup extends Command
      */
     public function handle()
     {
-        //
         if (!Schema::hasTable("microserver")){
             Schema::create('microserver', function (Blueprint $table) {
                 $table->increments('id');
@@ -63,7 +62,8 @@ class serverup extends Command
             });
         }
         $MSS = new MSService();
-        $MSS->autoinstall();
-        $this->info('Whotalk framework migrate successfully.');
+        $res = $MSS->autoinstall();
+        $this->info("Add {$res['install']} service,update {$res['upgrade']}, faild {$res['faild']}, found {$res['servers']} packages.");
+        return true;
     }
 }

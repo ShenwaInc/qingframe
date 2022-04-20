@@ -7,12 +7,13 @@ use Closure;
 
 error_reporting(0);
 define('IA_ROOT', base_path('public'));
-define('QRFRANEWORK', base_path('public'));
+define('BASE_ROOT', base_path('/'));
+define('IN_QINGWORK', true);
 define("MICRO_SERVER", base_path("servers/"));
 define('MAGIC_QUOTES_GPC', (function_exists('get_magic_quotes_gpc') && @get_magic_quotes_gpc()) || @ini_get('magic_quotes_sybase'));
 define('ATTACHMENT_ROOT', storage_path('app/public/'));
 define('TIMESTAMP', time());
-define('DEVELOPMENT', env('APP_DEVELOPMENT',0));
+define('DEVELOPMENT', (bool)env('APP_DEVELOPMENT',0));
 global $_W,$_GPC;
 $_W = $_GPC = array();
 

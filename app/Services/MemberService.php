@@ -26,7 +26,7 @@ class MemberService
                 $_W['member']['groupname'] = $_W['uniaccount']['groups'][$member['groupid']]['title'];
                 self::GroupUpdate();
                 if($remember){
-                    session()->put('openid',$_W['openid']);
+                    session()->put("openid{$_W['uniacid']}",$_W['openid']);
                     session()->put("_app_member_session_{$_W['uniacid']}_",$member);
                     session()->save();
                 }
@@ -34,6 +34,13 @@ class MemberService
             }
         }
         return false;
+    }
+
+    public static function AuthLogout(){
+        global $_W;
+        session()->forget("openid{$_W['uniacid']}");
+        session()->forget("_app_member_session_{$_W['uniacid']}_");
+        session()->save();
     }
 
     public static function GroupUpdate($uid = 0){

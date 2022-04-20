@@ -12,7 +12,7 @@ class MicroService
     public $serverpath = MICRO_SERVER;
     public $tablename = 'microserver';
     public $ComplieDrive = "smarty";
-    public $framework = "qingwork";
+    public $framework = "laravel";
     public $events = [];
 
     function __construct($name){
@@ -47,6 +47,9 @@ class MicroService
 
     public function SettingSave($key, $data, $uniacid=0){
         if (!empty($uniacid)){
+            if (is_array($data)){
+                $data = serialize($data);
+            }
             return SettingService::uni_save($uniacid, $key, $data);
         }
         return SettingService::Save($data, $key);
@@ -310,11 +313,14 @@ class MicroService
         return true;
     }
 
-    public function Composer(){
+    public function Composer($route=""){
         if (!file_exists(MICRO_SERVER.$this->identity."/vendor/autoload.php")){
             global $_W;
             if ($_W['isajax']){
-                session_exit($this->success("请先安装Composer依赖包","","error"));
+                $redirect = empty($route) ? "" :  $this->url($route);
+                if (!$_W['isfounder']) $redirect = "";
+                $result = $this->success("请先安装对应的依赖组件", $redirect,"error");
+                session_exit(json_encode($result));
             }
             $title = "安装依赖组件包";
             $COMPOSERDIR = MICRO_SERVER.$this->identity."/";

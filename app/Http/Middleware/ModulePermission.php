@@ -22,7 +22,6 @@ class ModulePermission
         //查询平台权限
         if (empty($_W['uniacid'])){
             //最后使用
-            //$uniacid = (int)DB::table('users_lastuse')->where(array('uid'=>$_W['uid']))->orderBy('id','desc')->value('uniacid');
             $uniacid = (int)DB::table('users_operate_history')->where('uid',$_W['uid'])->orderBy('createtime','desc')->value('uniacid');
             //默认平台权限
             if ($uniacid==0){

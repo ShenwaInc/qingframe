@@ -7,9 +7,6 @@
                 <li>
                     <a href="{{ url('console/setting') }}">站点信息</a>
                 </li>
-                <li>
-                    <a href="{{ url('console/setting/attach') }}">附件设置</a>
-                </li>
                 <li class="layui-this">
                     <a href="{{ url('console/server') }}">服务管理</a>
                 </li>

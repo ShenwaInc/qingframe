@@ -276,7 +276,16 @@ if(typeof Basetoken == 'undefined'){
                     yes:function (){
                         if (self.storagedata.storage.items.length>0){
                             if (multi){
-
+                                let inputname = $(Elem).next().val();
+                                let items = self.storagedata.storage.items;
+                                for(let i in items){
+                                    let multiItem = '<div class="multi-item">\n' +
+                                        '        <img src="'+items[i].url+'" class="img-responsive img-thumbnail">\n' +
+                                        '        <input type="hidden" name="'+inputname+'[]" value="'+items[i].path+'" >\n' +
+                                        '        <em class="close" title="删除这张图片" onclick="Core.StorageRmImg(this, true)">×</em>\n' +
+                                        '    </div>'
+                                    $(Elem).parent().next().append(multiItem);
+                                }
                             }else {
                                 let item = self.storagedata.storage.items[0];
                                 $(Elem).prev().find('input.layui-input').val(item.path);
@@ -344,7 +353,10 @@ if(typeof Basetoken == 'undefined'){
                 })
             });
         },
-        StorageRmImg(Elem) {
+        StorageRmImg(Elem, multi=false) {
+            if(multi){
+                return $(Elem).parent().remove();
+            }
             let img = $(Elem).prev();
             img.attr("src", img.data("val")).addClass("nopic").parent().prev().find('input.layui-input').val("");
         }

@@ -170,10 +170,10 @@ class InstallController extends Controller
             $config = \config('system');
             DB::table('gxswa_cloud')->insert(array(
                 'identity'=>'swa_framework_laravel',
-                'name'=>'独立版主框架V1',
+                'name'=>'轻如框架V1',
                 'modulename'=>'',
                 'type'=>0,
-                'logo'=>'https://shenwahuanan.oss-cn-shenzhen.aliyuncs.com/images/4/2021/08/pK8iHw0eQg5hHgg4Kqe5E1E1hSBpZS.png',
+                'logo'=>'//shenwahuanan.oss-cn-shenzhen.aliyuncs.com/images/4/2021/08/pK8iHw0eQg5hHgg4Kqe5E1E1hSBpZS.png',
                 'website'=>'https://www.gxswa.com/laravel/',
                 'rootpath'=>'',
                 'version'=>$config['version'],
@@ -203,16 +203,11 @@ class InstallController extends Controller
                         'keywords'=>'Whotalk,IM,即时通讯,客服系统,SaaS即时通讯,开源,社交软件,WEB即时通讯,公众号客服,多开聊天软件,在线聊天,群聊,微擎模块,快速生成APP,聊天APP,群聊APP',
                         'description'=>'Whotalk是一款精巧灵活的SaaS-IM基础服务软件，提供即时通讯软件的基础功能，具备强大的开放能力和极高的自由度，可快速编译为各类平台应用软件。'
                     ))
-                ),
-                array(
-                    'key'=>"upload",
-                    'value'=>serialize(array(
-                        'image'=>array('extentions'=>['gif','jpg','png','webp','jpeg'],'limit'=>5120,'zip_percentage'=>100),
-                        'attachdir'=>'storage',
-                        'media'=>array('extentions'=>['mp3','amr','wav','rm', 'rmvb', 'wmv', 'avi', 'mpg', 'mpeg', 'mp4'],'limit'=>51200)
-                    ))
                 )
             ]);
+
+            //servers update
+            Artisan::call('server:update');
 
         }else{
             if (empty($authkey)) return $this->message('微擎站点安全码不能为空');

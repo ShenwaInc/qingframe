@@ -67,7 +67,7 @@ class PlatformController extends Controller
                 $account_user_roles = DB::table('uni_account_users')->where('uid', $_W['uid'])->get()->keyBy('uniacid')->toArray();
             }
             foreach ($list as $k => &$account) {
-                $account = uni_fetch($account['uniacid']);
+                $account = AccountService::FetchUni($account['uniacid']);
                 $account['manageurl'] .= '&iscontroller=0';
                 if (!in_array($account_user_roles[$account['uniacid']]['role'], array('owner', 'manager')) && !$_W['isfounder']) {
                     unset($account['manageurl']);

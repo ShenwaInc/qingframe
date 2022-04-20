@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Account;
+use App\Utils\WeAccount;
 use Illuminate\Support\Facades\DB;
 
 class AccountService {
@@ -48,6 +49,20 @@ class AccountService {
             ['uniacid',$uniacid],
             ['module_name',$module_name]
         ))->first();
+    }
+
+    static function FetchUni($uniacid = 0) {
+        global $_W;
+        $uniacid = empty($uniacid) ? $_W['uniacid'] : intval($uniacid);
+        $account_api = WeAccount::createByUniacid($uniacid);
+        if (is_error($account_api)) {
+            return $account_api;
+        }
+        $account_api->uniacid = $uniacid;
+        $account_api->__toArray();
+        $account_api['accessurl'] = $account_api['manageurl'] = url("console/account/{$uniacid}/post", array('account_type' => $account_api['type']), true);
+        $account_api['roleurl'] = url("console/account/{$uniacid}/postuser", array('account_type' => $account_api['type']), true);
+        return $account_api;
     }
 
     static function Create_info() {

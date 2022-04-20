@@ -19,7 +19,7 @@ class ServerController extends Controller
             $ctrl = implode("/", array($ctrl, trim($param2)));
         }
         if (!function_exists('tpl_compile')){
-            include_once base_path("bootstrap/helper_tpl.php");
+            include_once app_path("Helpers/smarty.php");
         }
         $data = serv($_W['server'])->HttpRequest('web', $ctrl);
         if (is_error($data)){
@@ -66,6 +66,20 @@ class ServerController extends Controller
                     return $this->message('操作成功',wurl("server"),'success');
                 }
                 return $this->message();
+            }
+            case "upgrade" : {
+                $res = $MSS->upgrade($identity);
+                if (is_error($res)){
+                    return $this->message($res['message']);
+                }
+                return $this->message("升级成功", wurl("server"), "success");
+            }
+            case "cloudup" : {
+                $res = $MSS->cloudUpdate($identity);
+                if (is_error($res)){
+                    return $this->message($res['message']);
+                }
+                return $this->message("升级成功", wurl("server"), "success");
             }
             case "restore" : {
                 if (MSService::restore($identity)){

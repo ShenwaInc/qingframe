@@ -98,7 +98,7 @@
                 layer.close(index); //如果设定了yes回调，需进行手工关闭
             },
             btn2:function (){
-                window.location.href = '{{ url('console/setting/component') }}';
+                window.location.href = '{{ url('console/setting/plugin') }}';
             }
         });
     }

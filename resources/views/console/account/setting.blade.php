@@ -72,7 +72,7 @@
         </div>
     </div>
 
-    <div class="fui-card layui-card">
+    <div class="fui-card layui-card layui-hide">
         <div class="layui-card-header nobd">
             <span class="title">消息通知</span>
         </div>

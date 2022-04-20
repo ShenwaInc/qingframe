@@ -191,9 +191,10 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 .fui-side-menu .layui-nav-tree .layui-nav-more{top: 7px; font-size: 110%; font-weight: bold; color: #b1b2b3;}
 .fui-side-menu .layui-nav-itemed>.layui-nav-child{background-color: unset !important;}
 .fui-side-menu .layui-nav-tree .layui-nav-child dd:hover{background: rgba(0,0,0,0.03);}
-.fui-side-menu .layui-nav-tree .layui-nav-child dd.layui-this, .fui-side-menu .layui-nav-tree .layui-nav-child dd.layui-this a{background-color: unset; color: #009688 !important;}
+.fui-side-menu .layui-nav-tree .layui-nav-child dd.layui-this, .fui-side-menu .layui-nav-tree .layui-nav-child dd.layui-this a{background-color: unset; color: #07c160 !important;}
 .fui-side-menu .layui-nav-tree .layui-this, .fui-side-menu .layui-nav-tree .layui-this a{background-color: unset;}
 .fui-side-menu .layui-nav-tree .layui-nav-itemed > a{font-weight: bold;}
+.fui-side-menu .list{border: none;}
 
 
 @media screen and (max-width: 768px){
