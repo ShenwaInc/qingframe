@@ -130,6 +130,36 @@ class ModuleService
         return true;
     }
 
+    static function uninstall($identity){
+        $module = DB::table('modules')->where('name',$identity)->first();
+        if (empty($module)) return error(-1,'该模块尚未安装');
+        $installpath = base_path("public/addons/{$identity}/");
+        if (isset(self::$coremodules[$identity])){
+            $component = DB::table('gxswa_cloud')->where('identity',"laravel_module_{$identity}")->first();
+            if (!empty($component)){
+                $installpath = base_path($component['rootpath']);
+            }
+        }
+        $manifestfile = $installpath . "Manifest.php";
+        if(!file_exists($manifestfile)) return error(-1,'无法解析模块安装包');
+        $ManiFest = require_once $manifestfile;
+        if (!$ManiFest->installed) return error(-1,'该模块尚未安装');
+        //执行升级脚本
+        if (method_exists($ManiFest,'uninstaller')){
+            try {
+                $ManiFest->uninstaller();
+            } catch (\Exception $exception){
+                return error(-1,'卸载失败：运行脚本出现错误:'.$exception->getMessage());
+            }
+        }
+        //更新模块数据表
+        DB::table('modules')->where('name',$module['name'])->delete();
+        if (!empty($component)){
+            DB::table('gxswa_cloud')->where('id',$component['id'])->delete();
+        }
+        return true;
+    }
+
     static function fetch($name, $enabled = true) {
         global $_W;
         $cachekey = CacheService::system_key('module_info', array('module_name' => $name));

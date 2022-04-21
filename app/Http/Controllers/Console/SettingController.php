@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Console;
 use App\Http\Controllers\Controller;
 use App\Services\AttachmentService;
 use App\Services\CloudService;
+use App\Services\FileService;
 use App\Services\ModuleService;
 use App\Services\SettingService;
 use App\Services\SocketService;
@@ -180,6 +181,19 @@ class SettingController extends Controller
             $redirect = url('console/setting/plugin');
             Cache::forget("cloud:structure:{$component['identity']}");
             return $this->message('恭喜您，升级成功！', $redirect,'success');
+        }elseif($op=='comremove'){
+            $component = DB::table('gxswa_cloud')->where('id',intval($_GPC['cid']))->first(['id','identity','modulename','type','releasedate','rootpath']);
+            if ($component['type']==1){
+                $identity = !empty($component['modulename']) ? $component['modulename'] : $component['identity'];
+                $uninstall = ModuleService::uninstall($identity);
+                if (is_error($uninstall)) return $this->message($uninstall['message']);
+            }else{
+                return $this->message("暂不支持此类应用卸载");
+            }
+            if (!DEVELOPMENT){
+                FileService::rmdirs(base_path($component['rootpath']));
+            }
+            return $this->message('卸载完成', url('console/setting/plugin'),'success');
         }else{
             $framework = DB::table('gxswa_cloud')->where('type',0)->first(['id','version','identity','type','online','releasedate','rootpath']);
             $return['framework'] = $framework;

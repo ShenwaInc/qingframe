@@ -53,8 +53,8 @@
                         @else
                         <span class="color-default">{{ $service['name'] }}</span>
                         @endif
-                        @if($servers['isdelete'])
-                        &nbsp;<span class="layui-badge layui-bg-gray">已删除</span>
+                        @if($service['isdelete'])
+                        &nbsp;<span class="layui-badge layui-bg-cyan">已删除</span>
                         @endif
                     </td>
                     <td>

@@ -86,7 +86,7 @@ class MSService
 
     public function cloudInfo($identity){
         //获取应用信息
-        $service = self::cloudserver($identity);
+        $service = self::cloudserver($identity, true);
         if (is_error($service)){
             return $service;
         }
@@ -127,9 +127,10 @@ class MSService
             $data['frompage'] = 'local';
         }
         $res = CloudService::CloudApi("", $data);
+        //dd($res);
         if (is_error($res)) return $res;
         if (!isset($res['application'])) return error(-1, "应用解析失败");
-        Cache::put("microserver".$identity, $res, 86400);
+        Cache::put("microserver".$identity, $res, 3600);
         return $res;
     }
 
@@ -144,14 +145,14 @@ class MSService
                 'keyword'=>$keyword
             );
             $res = CloudService::CloudApi("", $data);
-            Cache::put($cachekey, $res, 3600);
+            Cache::put($cachekey, $res, 1800);
         }
         if (is_error($res)) return [];
         $servers = array();
         if (!empty($res['servers'])){
             foreach ($res['servers'] as $value){
                 $identity = str_replace("microserver_","",$value['identity']);
-                if (self::isexist($identity)) continue;
+                if (self::localexist($identity)) continue;
                 if (self::localexist($identity)) continue;
                 $service = array(
                     'cover'=>$value['icon'],
@@ -207,7 +208,7 @@ class MSService
             }
             $server['upgrade'] = array();
             $server['isdelete'] = false;
-            if (!is_dir(MICRO_SERVER.$server['identity'])){
+            if (!self::localexist($server['identity'])){
                 $server['isdelete'] = true;
             }
             $manifest = self::getmanifest($server['identity'], true);
