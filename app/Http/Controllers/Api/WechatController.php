@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\AccountWechat;
-use App\Services\AttachmentService;
+use App\Services\FileService;
 use App\Utils\WeEngine;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -42,7 +42,7 @@ class WechatController extends Controller
         $_W['account']['groupid'] = $_W['uniaccount']['groupid'];
         $_W['account']['qrcode'] = $_W['attachurl'].'qrcode_'.$_W['acid'].'.jpg?time='.$_W['timestamp'];
         $_W['account']['avatar'] = $_W['attachurl'].'headimg_'.$_W['acid'].'.jpg?time='.$_W['timestamp'];
-        $_W['attachurl'] = AttachmentService::SetAttachUrl();
+        $_W['attachurl'] = FileService::SetAttachUrl();
 
         $engine = new WeEngine();
         if($_W['isajax'] && $_W['ispost'] && $_GPC['flag'] == 1) {

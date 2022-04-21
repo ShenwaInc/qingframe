@@ -192,42 +192,6 @@ class UtilController extends Controller
             $info['state'] = 'SUCCESS';
             session()->save();
             die(json_encode($info));
-        }elseif ($op=='file'){
-            if (!empty($uniacid) && empty($_W['isfounder']) && 'manager' != $_W['role'] && 'owner' != $_W['role']) {
-                return $this->message(error(-1,'您没有权限删除图片'));
-            }
-            $id = $request->input('id');
-            if (!is_array($id)) {
-                $id = array(intval($id));
-            }
-            if(empty($id)) return $this->message(error(-1,'删除失败，请重试'));
-            $query = DB::table('core_attachment')->whereIn('id',$id);
-            $condition = array();
-            if (empty($uniacid)) {
-                $condition['uid'] = $_W['uid'];
-            } elseif($uniacid!=-1) {
-                $condition['uniacid'] = $uniacid;
-                $uni_remote_setting = SettingService::uni_load('remote',$uniacid);
-                if (!empty($uni_remote_setting['remote']['type'])) {
-                    $_W['setting']['remote'] = $uni_remote_setting['remote'];
-                }
-            }
-            if(!empty($condition)){
-                $query = $query->where($condition);
-            }
-            $attachs = $query->select(['id','uniacid','uid','type','attachment','group_id'])->get()->toArray();
-            if (!empty($attachs)){
-                foreach ($attachs as $key=>$value){
-                    if ($_W['setting']['remote']['type']>0){
-                        FileService::file_remote_delete($value['attachment']);
-                    }else{
-                        @unlink(ATTACHMENT_ROOT . $value['attachment']);
-                    }
-                }
-                $complete = $query->delete();
-                if ($complete) return $this->message(error(0,'删除成功！'),'','success');
-            }
-            return $this->message(error(-1,'删除失败，请重试'));
         }
         return $this->message();
     }

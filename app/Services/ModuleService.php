@@ -82,12 +82,12 @@ class ModuleService
         return true;
     }
 
-    static function upgrade($identity){
+    static function installCheck($identity){
         $module = DB::table('modules')->where('name',$identity)->first();
         if (empty($module)) return error(-1,'该模块尚未安装');
-        $installpath = base_path("public/addons/{$identity}/");
+        $installpath = base_path("public/addons/$identity/");
         if (isset(self::$coremodules[$identity])){
-            $component = DB::table('gxswa_cloud')->where('identity',"laravel_module_{$identity}")->first();
+            $component = DB::table('gxswa_cloud')->where('identity',"laravel_module_$identity")->first();
             if (!empty($component)){
                 $installpath = base_path($component['rootpath']);
             }
@@ -95,6 +95,13 @@ class ModuleService
         $manifestfile = $installpath . "Manifest.php";
         if(!file_exists($manifestfile)) return error(-1,'无法解析模块安装包');
         $ManiFest = require_once $manifestfile;
+        if (!$ManiFest->installed) return error(-1,'该模块尚未安装');
+        return $ManiFest;
+    }
+
+    static function upgrade($identity){
+        $ManiFest = self::installCheck($identity);
+        if (is_error($ManiFest)) return $ManiFest;
         if (!$ManiFest->installed) return error(-1,'该模块尚未安装');
         $application = $ManiFest->application;
         if (!empty($component) && $component['releasedate']>=$application['releasedate']){
@@ -113,15 +120,15 @@ class ModuleService
         $subscribes = method_exists($ManiFest,'subscribes') ? $ManiFest->subscribes : array();
         $handles = method_exists($ManiFest,'handles') ? $ManiFest->handles : array();
         $moduledata = self::ModuleData($application,$subscribes,$handles);
-        DB::table('modules')->where('name',$module['name'])->update($moduledata);
+        DB::table('modules')->where('name',$application['identifie'])->update($moduledata);
         //更新模块数据表
         if (!empty($component)){
             $cloudinfo = empty($component['online']) ? array() : unserialize($component['online']);
             $cloudinfo['isnew'] = false;
             DB::table('gxswa_cloud')->where('id',$component['id'])->update(array(
-                'name'=>$module['title'],
-                'logo'=>$module['logo'],
-                'website'=>$module['url'],
+                'name'=>$application['name'],
+                'logo'=>$application['logo'],
+                'website'=>$application['url'],
                 'version'=>$application['version'],
                 'updatetime'=>TIMESTAMP,
                 'releasedate'=>$application['releasedate']
@@ -131,19 +138,8 @@ class ModuleService
     }
 
     static function uninstall($identity){
-        $module = DB::table('modules')->where('name',$identity)->first();
-        if (empty($module)) return error(-1,'该模块尚未安装');
-        $installpath = base_path("public/addons/{$identity}/");
-        if (isset(self::$coremodules[$identity])){
-            $component = DB::table('gxswa_cloud')->where('identity',"laravel_module_{$identity}")->first();
-            if (!empty($component)){
-                $installpath = base_path($component['rootpath']);
-            }
-        }
-        $manifestfile = $installpath . "Manifest.php";
-        if(!file_exists($manifestfile)) return error(-1,'无法解析模块安装包');
-        $ManiFest = require_once $manifestfile;
-        if (!$ManiFest->installed) return error(-1,'该模块尚未安装');
+        $ManiFest = self::installCheck($identity);
+        if (is_error($ManiFest)) return $ManiFest;
         //执行升级脚本
         if (method_exists($ManiFest,'uninstaller')){
             try {
@@ -153,10 +149,11 @@ class ModuleService
             }
         }
         //更新模块数据表
-        DB::table('modules')->where('name',$module['name'])->delete();
+        DB::table('modules')->where('name',$ManiFest->application['identifie'])->delete();
         if (!empty($component)){
             DB::table('gxswa_cloud')->where('id',$component['id'])->delete();
         }
+        CacheService::flush();
         return true;
     }
 

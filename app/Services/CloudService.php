@@ -8,11 +8,11 @@ use Illuminate\Support\Facades\DB;
 class CloudService
 {
 
+    static $identity = 'swa_framework_laravel';
     static $cloudapi = 'https://chat.gxit.org/app/index.php?i=4&c=entry&m=swa_supersale&do=api';
     static $cloudactive = 'https://chat.gxit.org/app/index.php?i=4&c=entry&m=swa_supersale&do=app&r=whotalkcloud.active&siteroot=';
     static $apilist = array('getcom'=>'cloud.vendor','rmcom'=>'cloud.vendor.remove','require'=>'cloud.install','structure'=>'cloud.structure','upgrade'=>'cloud.makepatch');
     static $vendors = array('aliyun'=>'阿里短信SDK','aop'=>'支付宝支付SDK','wxpayv3'=>'微信支付SDK','tim'=>'接口签名验证工具','getui'=>'APP推送SDK');
-    static $identity = 'swa_framework_laravel';
 
     static function ComExists($component){
         return is_dir(self::com_path("{$component}/"));
@@ -103,6 +103,26 @@ class CloudService
             $_W['com_path'] = base_path("bootstrap/com{$compath}/");
         }
         return $_W['com_path'] . $path;
+    }
+
+    static function getPlugins(){
+        $plugins = [];
+        $condition = array('type'=>1);
+        //获取已安装组件
+        $components = DB::table('gxswa_cloud')->where($condition)->orderByRaw("`id` desc")->get()->toArray();
+        if (!empty($components)){
+            foreach ($components as $com){
+                $com['logo'] = asset($com['logo']);
+                $com['lastupdate'] = $com['updatetime'] ? date('Y/m/d H:i',$com['updatetime']) : '初始安装';
+                $com['cloudinfo'] = !empty($com['online']) ? unserialize($com['online']) : array();
+                $com['installtime'] = date('Y/m/d H:i',$com['addtime']);
+                $plugins[$com['identity']] = $com;
+            }
+        }
+        //获取本地未安装组件
+
+        //获取云端未安装组件
+        return $plugins;
     }
 
     static function MoveDir($oldDir, $aimDir, $overWrite = false){

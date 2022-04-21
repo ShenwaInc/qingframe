@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Console;
 
 use App\Http\Controllers\Controller;
-use App\Services\AttachmentService;
 use App\Services\CloudService;
 use App\Services\FileService;
 use App\Services\ModuleService;
@@ -26,46 +25,17 @@ class SettingController extends Controller
             $activestate = CloudService::CloudActive();
             if ($activestate['status']==1){
                 $_W['config']['site']['id'] = $activestate['siteid'];
-                $steps = array('com','module','socket','initsite');
-                $op = in_array($op, $steps) ? trim($op) : 'index';
-                if ($op=='com'){
-                    //获取组件安装
-                    $loadcomponent = CloudService::RequireCom();
-                    if (is_error($loadcomponent)) return $this->message($loadcomponent['message']);
-                    $redirect = url('console/active',array('op'=>'module'));
-                    return $this->message('组件加载完成！即将初始化模块...',$redirect,'success');
-                }elseif ($op=='module'){
-                    //获取模块安装
-                    $cloudrequire = CloudService::RequireModule($_W['config']['defaultmodule'],'addons');
-                    if (is_error($cloudrequire)) return $this->message($cloudrequire['message']);
-                    $redirect = url('console/active',array('op'=>'socket'));
-                    return $this->message('模块初始化完成！即将初始化SOCKET...',$redirect,'success');
-                }elseif ($op=='socket'){
-                    $socketdir = base_path("swasocket/");
-                    if (!is_dir($socketdir)){
-                        $cloudrequire = CloudService::CloudRequire("laravel_whotalk_socket", $socketdir);
-                        if (is_error($cloudrequire)) return $this->message($cloudrequire['message']);
-                        $socketinit = SocketService::Initializer();
-                        if (!$socketinit){
-                            return $this->message('SOCKET初始化失败');
-                        }
-                    }
-                    $redirect = url('console/active',array('op'=>'initsite'));
-                    return $this->message('SOCKET初始化完成！即将激活站点...',$redirect,'success');
-                }elseif ($op=='initsite'){
-                    $complete = CloudService::CloudEnv('APP_SITEID=0', "APP_SITEID={$activestate['siteid']}");
-                    if (!$complete){
-                        return $this->message('文件写入失败，请检查根目录权限');
-                    }
-                    return $this->message('恭喜您，激活成功！',url('console'),'success');
+                $complete = CloudService::CloudEnv('APP_SITEID=0', "APP_SITEID={$activestate['siteid']}");
+                if (!$complete){
+                    return $this->message('文件写入失败，请检查根目录权限');
                 }
-                return $this->message('站点激活成功！即将加载程序所需的源码库',url('console/active',array('op'=>'com')),'success');
+                return $this->message('恭喜您，激活成功！',url('console'),'success');
             }else{
                 $redirect = CloudService::$cloudactive . $_W['siteroot'];
                 return $this->message('您的站点尚未激活，即将进入激活流程...',$redirect,'error');
             }
         }
-        return $this->message('您的站点已激活','','success');
+        return $this->message('您的站点已激活',url('console'),'success');
     }
 
     public function detection(){
@@ -127,17 +97,7 @@ class SettingController extends Controller
         if ($op=='plugin'){
             $return['types'] = array('框架','应用','服务','资源');
             $return['colors'] = array('red','blue','green','orange');
-            $condition = array('type'=>1);
-            $components = DB::table('gxswa_cloud')->where($condition)->orderByRaw("`id` desc")->get()->toArray();
-            if (!empty($components)){
-                foreach ($components as &$com){
-                    $com['logo'] = asset($com['logo']);
-                    $com['lastupdate'] = $com['updatetime'] ? date('Y/m/d H:i',$com['updatetime']) : '初始安装';
-                    $com['cloudinfo'] = !empty($com['online']) ? unserialize($com['online']) : array();
-                    $com['installtime'] = date('Y/m/d H:i',$com['addtime']);
-                }
-                $return['components'] = $components;
-            }
+            $return['components'] = CloudService::getPlugins();
         }elseif ($op=='comcheck'){
             $component = DB::table('gxswa_cloud')->where('id',intval($_GPC['cid']))->first(['id','identity','type','online','releasedate','rootpath']);
             if (empty($component)) return $this->message('找不到该服务组件');

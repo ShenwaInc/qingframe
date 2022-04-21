@@ -43,7 +43,8 @@ class selfclear extends Command
         $unused = array(
             app_path('Console/Commands/repwd.php'),
             database_path('migrations/2021_08_10_113449_create_uni_settings_table.php'),
-            base_path('bootstrap/helpers.php')
+            base_path('bootstrap/helpers.php'),
+            app_path('Services/AttachmentService.php')
         );
         foreach ($unused as $file){
             if (file_exists($file)){

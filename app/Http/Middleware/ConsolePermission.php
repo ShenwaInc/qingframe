@@ -3,7 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Services\AccountService;
-use App\Services\AttachmentService;
+use App\Services\FileService;
 use App\Services\SettingService;
 use App\Services\UserService;
 use Closure;
@@ -52,7 +52,7 @@ class ConsolePermission
             $_W['role'] = UserService::AccountRole($_W['uid'],$uniacid);
             $_W['account'] = AccountService::FetchUni($uniacid);
         }
-        $_W['attachurl'] = AttachmentService::SetAttachUrl();
+        $_W['attachurl'] = FileService::SetAttachUrl();
         return $next($request);
     }
 

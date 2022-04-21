@@ -3,7 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Services\AccountService;
-use App\Services\AttachmentService;
+use App\Services\FileService;
 use App\Services\MemberService;
 use App\Services\SettingService;
 use Closure;
@@ -44,7 +44,7 @@ class AppRuntime
                 MemberService::AuthLogin($member, false);
             }
         }
-        $_W['attachurl'] = AttachmentService::SetAttachUrl();
+        $_W['attachurl'] = FileService::SetAttachUrl();
         serv("weengine")->func("app");
         return $next($request);
     }

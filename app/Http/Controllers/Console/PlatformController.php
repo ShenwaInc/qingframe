@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Account;
 use App\Services\AccountService;
 use App\Services\CacheService;
+use App\Services\ModuleService;
 use App\Services\UserService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -112,7 +113,11 @@ class PlatformController extends Controller
                 $module = $_W['config']['defaultmodule'];
             }
         }
-        return redirect("console/m/{$module}");
+        $moduleObj = ModuleService::fetch($module);
+        if (empty($moduleObj)){
+            return redirect("console/account/profile?uniacid={$_W['uniacid']}");
+        }
+        return redirect("console/m/$module");
     }
 
 }
