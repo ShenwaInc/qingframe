@@ -61,6 +61,9 @@ class selfup extends Command
         //更新路由
         Artisan::call('route:clear');
 
+        //微服务升级
+        Artisan::call('server:update');
+
         //更新版本信息
         $arguments = $this->argument();
         $system = config('system');

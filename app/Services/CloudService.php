@@ -97,7 +97,10 @@ class CloudService
         global $_W;
         if (!isset($_W['com_path'])){
             $compath = substr(sha1($_W['config']['setting']['authkey']."-".$_W['config']['site']['id']),5,6);
-            $_W['com_path'] = base_path("bootstrap/com{$compath}/");
+            $_W['com_path'] = app_path("com$compath/");
+            if (is_dir(base_path("bootstrap/com$compath/"))){
+                FileService::rmdirs(base_path("bootstrap/com$compath/"));
+            }
         }
         return $_W['com_path'] . $path;
     }
