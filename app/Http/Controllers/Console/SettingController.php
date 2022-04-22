@@ -8,7 +8,6 @@ use App\Services\CloudService;
 use App\Services\FileService;
 use App\Services\ModuleService;
 use App\Services\SettingService;
-use App\Services\SocketService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
@@ -52,8 +51,11 @@ class SettingController extends Controller
     public function selfupgrade(){
         try {
             Artisan::call('self:update');
+            Artisan::call('self:migrate');
             Artisan::call('route:clear');
+            Artisan::call('server:update');
             Artisan::call('self:clear');
+            CacheService::flush();
             $ComPath = str_replace("app/", "bootstrap/", CloudService::com_path());
             if (is_dir($ComPath)){
                 FileService::rmdirs($ComPath);

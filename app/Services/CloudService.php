@@ -135,6 +135,7 @@ class CloudService
                     $com['logo'] = asset($com['logo']);
                     $com['website'] = $com['url'];
                     $com['cloudinfo'] = array();
+                    $com['addtime'] = 0;
                     if ($ManiFest->installed){
                         $com['installtime'] = '本地安装';
                         $com['lastupdate'] = '-';
@@ -164,23 +165,38 @@ class CloudService
         if (!is_error($res) && !empty($res['servers'])){
             foreach ($res['servers'] as $value){
                 $identifie = str_replace("laravel_module_", "", $value['identity']);
-                if (empty($identifie) || isset($plugins[$identifie])) continue;
-                $com = array(
-                    'name'=>$value['name'],
-                    'identifie'=>$identifie,
-                    'version'=>$value['release']['version'],
-                    'releasedate'=>$value['release']['releasedate'],
-                    'ability'=>$value['name'],
-                    'description'=>$value['summary'],
-                    'author'=>$value['author'],
-                    'website'=>$value['website'],
-                    'logo'=>$value['icon']
-                );
-                $com['lastupdate'] = '<span class="layui-badge">未安装</span>';
-                $com['cloudinfo'] = array();
-                $com['installtime'] = '-';
-                $com['action'] = '<a href="'.url('console/setting/cloudinst').'?nid='.$value['identity'].'" class="layui-btn layui-btn-sm layui-btn-normal confirm" data-text="确定要安装该应用？">安装</a>';
-                $plugins[$identifie] = $com;
+                if (empty($identifie)) continue;
+                $releaseDate = intval($value['release']['releasedate']);
+                if (isset($plugins[$identifie])){
+                    $local = $plugins[$identifie];
+                    if ($local['addtime']==0) continue;
+                    if (version_compare($local['version'], $value['release']['version'], '>=') && $local['releasedate']>=$releaseDate){
+                        continue;
+                    }
+                    if (empty($local['cloudinfo']) || !$local['cloudinfo']['isnew']){
+                        $local['action'] = '<a href="'.url('console/setting/comupdate').'?cid='.$local['id'].'" class="layui-btn layui-btn-sm layui-btn-danger confirm" data-text="升级前请做好源码和数据备份，避免升级故障导致系统无法正常运行">升级</a>'.$local['action'];
+                    }
+                    $local['cloudinfo'] = array('isnew'=>true,'version'=>$value['release']['version'],'releasedate'=>$releaseDate);
+                    $plugins[$identifie] = $local;
+                }else{
+                    $com = array(
+                        'id'=>0,
+                        'name'=>$value['name'],
+                        'identifie'=>$identifie,
+                        'version'=>$value['release']['version'],
+                        'releasedate'=>$releaseDate,
+                        'ability'=>$value['name'],
+                        'description'=>$value['summary'],
+                        'author'=>$value['author'],
+                        'website'=>$value['website'],
+                        'logo'=>$value['icon']
+                    );
+                    $com['lastupdate'] = '<span class="layui-badge">未安装</span>';
+                    $com['cloudinfo'] = array();
+                    $com['installtime'] = '-';
+                    $com['action'] = '<a href="'.url('console/setting/cloudinst').'?nid='.$value['identity'].'" class="layui-btn layui-btn-sm layui-btn-normal confirm" data-text="确定要安装该应用？">安装</a>';
+                    $plugins[$identifie] = $com;
+                }
             }
         }
         return $plugins;

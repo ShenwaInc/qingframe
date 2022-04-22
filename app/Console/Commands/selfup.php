@@ -55,11 +55,6 @@ class selfup extends Command
         $component = DB::table('gxswa_cloud')->where('type',0)->first(['id','identity','modulename','type','releasedate','rootpath']);
         $cloudupdate = CloudService::CloudUpdate($component['identity'],base_path().'/');
         if (is_error($cloudupdate)) return $this->error($cloudupdate['message']) || "";
-        //数据库升级
-        Artisan::call('self:migrate');
-
-        //微服务升级
-        Artisan::call('server:update');
 
         //更新版本信息
         $arguments = $this->argument();
@@ -86,7 +81,6 @@ class selfup extends Command
             ))
         ));
         CloudService::CloudEnv(array("APP_VERSION={$system['version']}","APP_RELEASE={$system['release']}"), array("APP_VERSION={$arguments['version']}","APP_RELEASE={$arguments['release']}"));
-        CacheService::flush();
 
         $this->info('Whotalk framework upgrade successfully.');
         return true;
