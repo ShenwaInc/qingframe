@@ -64,7 +64,6 @@ class SettingController extends Controller
         }elseif ($op=='selfupgrade'){
             return $this->selfupgrade();
         }
-        $ajaxviews = array('socketset'=>'set.socket','pageset'=>'set.page','sockethelp'=>'socket');
         $return = array('title'=>'站点设置','op'=>$op,'components'=>array());
         if (!isset($_W['setting']['page'])){
             $_W['setting']['page'] = $_W['page'];
@@ -73,8 +72,8 @@ class SettingController extends Controller
             $_W['setting']['remote'] = array('type'=>0);
         }
         $return['attachs'] = array('关闭','FTP','阿里云存储','七牛云存储','腾讯云存储','亚马逊S3');
-        if (isset($ajaxviews[$op])){
-            return $this->globalview("console.{$ajaxviews[$op]}",$return);
+        if ($op=='pageset'){
+            return $this->globalview("console.pageset",$return);
         }
         if ($op=='envdebug'){
             $debug = env('APP_DEBUG',false);
@@ -87,12 +86,6 @@ class SettingController extends Controller
                 return $this->message('文件写入失败，请检查根目录权限');
             }
             return $this->message('操作成功！',url('console/setting'),'success');
-        }
-        if ($op=='socket'){
-            if (!isset($_W['setting']['swasocket']['whitelist'])){
-                $_W['setting']['swasocket']['whitelist'] = SocketService::SocketAuthorize('',1);
-            }
-            $return['usersign'] = md5("{$_W['uid']}-{$_W['config']['setting']['authkey']}-{$_W['config']['site']['id']}");
         }
         if ($op=='plugin'){
             $return['types'] = array('框架','应用','服务','资源');
@@ -154,6 +147,18 @@ class SettingController extends Controller
                 FileService::rmdirs(base_path($component['rootpath']));
             }
             return $this->message('卸载完成', url('console/setting/plugin'),'success');
+        }elseif($op=='plugininst'){
+            $install = ModuleService::install(trim($_GPC['nid']), 'addons', 'local');
+            if (is_error($install)) return $this->message($install['message']);
+            return $this->message('恭喜您，安装完成！', url('console/setting/plugin'),'success');
+        }elseif ($op=='pluginrm'){
+            $uninstall = ModuleService::uninstall(trim($_GPC['nid']));
+            if (is_error($uninstall)) return $this->message($uninstall['message']);
+            return $this->message('卸载完成', url('console/setting/plugin'),'success');
+        }elseif ($op=='cloudinst'){
+            $cloudrequire = CloudService::RequireModule(trim($_GPC['nid']));
+            if (is_error($cloudrequire)) return $this->message($cloudrequire['message']);
+            return $this->message('恭喜您，安装完成！', url('console/setting/plugin'),'success');
         }else{
             $framework = DB::table('gxswa_cloud')->where('type',0)->first(['id','version','identity','type','online','releasedate','rootpath']);
             $return['framework'] = $framework;
@@ -249,24 +254,6 @@ class SettingController extends Controller
             $complete = SocketService::SocketAuthorize('',2);
             if ($complete){
                 return $this->message('重置成功',url('console/setting/socket'),'success');
-            }
-        }elseif ($op=='socketset'){
-            $active = CloudService::CloudActive();
-            if ($active['status']!=1){
-                return $this->message('该功能已暂停使用');
-            }
-            $data = $_GPC['data'];
-            $data['type'] = in_array($data['type'],array('local','remote')) ? $data['type'] : 'remote';
-            if (empty($data['server'])) return $this->message('SOCKET服务器不能为空');
-            if (empty($data['api'])) return $this->message('WEB推送接口不能为空');
-            if (!\Str::endsWith($data['api'],'/api/message/sendMessageToUser')) return $this->message('推送接口格式不正确');
-            $config = $_W['setting']['swasocket'];
-            $config['type'] = $data['type'];
-            $config['server'] = $data['server'];
-            $config['api'] = $data['api'];
-            $complete = SettingService::Save($config,'swasocket');
-            if ($complete){
-                return $this->message('保存成功',url('console/setting/socket'),'success');
             }
         }elseif ($op=='pageset'){
             $data = $request->input('data');

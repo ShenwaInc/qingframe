@@ -12,8 +12,6 @@ use Illuminate\Support\Facades\DB;
 class ModuleService
 {
 
-    static $coremodules = array('whotalk'=>'Whotalk即时通讯');
-
     static function Initializer(){
         $query = DB::table('modules');
         $initialized = $query->where('mid','>',0)->first();
@@ -38,7 +36,7 @@ class ModuleService
     }
 
     static function install($identity,$path='addons',$from='cloud'){
-        $installpath = base_path("public/$path/{$identity}/");
+        $installpath = base_path("public/$path/$identity/");
         $manifestfile = $installpath . "Manifest.php";
         if(!file_exists($manifestfile)) return error(-1,'无法解析模块安装包');
         $ManiFest = require_once $manifestfile;
@@ -57,9 +55,19 @@ class ModuleService
         $handles = method_exists($ManiFest,'handles') ? $ManiFest->handles : array();
         $module = self::ModuleData($application,$subscribes,$handles);
         $module['from'] = $from;
-        DB::table('modules')->insert($module);
-        //写入服务组件表
-        if (isset(self::$coremodules[$identity])){
+        if (!DB::table('modules')->insert($module)){
+            return error(-1,'无法解析模块安装包');
+        }
+        if (!empty($ManiFest->servers)){
+            try {
+                $MSS = new MSService();
+                $MSS->checkrequire($ManiFest->servers);
+            }catch (\Exception $exception){
+                return error(-1,'安装依赖服务时发生错误：'.$exception->getMessage());
+            }
+        }
+        //写入组件表
+        if ($from=='cloud'){
             $comdata = array(
                 'name'=>$module['title'],
                 'modulename'=>$identity,
@@ -67,16 +75,14 @@ class ModuleService
                 'logo'=>$module['logo'],
                 'website'=>$module['url'],
                 'version'=>$application['version'],
+                'releasedate'=>$application['releasedate'],
+                'updatetime'=>TIMESTAMP,
                 'addtime'=>TIMESTAMP,
                 'dateline'=>TIMESTAMP
             );
-            if ($from=='cloud'){
-                $comdata['updatetime'] = TIMESTAMP;
-                $comdata['releasedate'] = $application['releasedate'];
-            }
             DB::table('gxswa_cloud')->updateOrInsert(array(
-                'identity'=>"laravel_module_{$identity}",
-                'rootpath'=>"public/$path/{$identity}/"
+                'identity'=>"laravel_module_$identity",
+                'rootpath'=>"public/$path/$identity/"
             ),$comdata);
         }
         return true;
@@ -86,12 +92,6 @@ class ModuleService
         $module = DB::table('modules')->where('name',$identity)->first();
         if (empty($module)) return error(-1,'该模块尚未安装');
         $installpath = base_path("public/addons/$identity/");
-        if (isset(self::$coremodules[$identity])){
-            $component = DB::table('gxswa_cloud')->where('identity',"laravel_module_$identity")->first();
-            if (!empty($component)){
-                $installpath = base_path($component['rootpath']);
-            }
-        }
         $manifestfile = $installpath . "Manifest.php";
         if(!file_exists($manifestfile)) return error(-1,'无法解析模块安装包');
         $ManiFest = require_once $manifestfile;
@@ -104,9 +104,12 @@ class ModuleService
         if (is_error($ManiFest)) return $ManiFest;
         if (!$ManiFest->installed) return error(-1,'该模块尚未安装');
         $application = $ManiFest->application;
-        if (!empty($component) && $component['releasedate']>=$application['releasedate']){
+        $component = self::SysComponent($application['identifie']);
+        if (!empty($component)){
             //已经是最新版本
-            return true;
+            if ($component['releasedate']>=$application['releasedate']){
+                return true;
+            }
         }
         //执行升级脚本
         if (method_exists($ManiFest,'upgrader')){
@@ -140,7 +143,8 @@ class ModuleService
     static function uninstall($identity){
         $ManiFest = self::installCheck($identity);
         if (is_error($ManiFest)) return $ManiFest;
-        //执行升级脚本
+        $component = self::SysComponent($ManiFest->application['identifie']);
+        //执行卸载脚本
         if (method_exists($ManiFest,'uninstaller')){
             try {
                 $ManiFest->uninstaller();
@@ -152,6 +156,10 @@ class ModuleService
         DB::table('modules')->where('name',$ManiFest->application['identifie'])->delete();
         if (!empty($component)){
             DB::table('gxswa_cloud')->where('id',$component['id'])->delete();
+            if (!DEVELOPMENT){
+                //删除安装包
+                FileService::rmdirs(base_path($component['rootpath']));
+            }
         }
         CacheService::flush();
         return true;
@@ -279,7 +287,7 @@ class ModuleService
         return $module_support_type;
     }
 
-    static function UniModules($uniacid){
+    static function UniModules($uniacid, $apptype=null){
         $account_info = Account::getByUniacid($uniacid);
         $uni_account_type = AccountService::GetType(1);
         $owner_uid = DB::table('uni_account_users')->where(array('uniacid' => $uniacid, 'role' => array('owner', 'vice_founder')))->select(array('uid', 'role'))->get()->keyBy('role')->toArray();
@@ -303,7 +311,9 @@ class ModuleService
             Cache::put($cachekey, $group_modules, 7*86400);
             $modules = $group_modules;
         }
-        $modules = array_merge($modules, self::SysModules());
+        if (empty($apptype)){
+            $modules = array_merge($modules, self::SysModules());
+        }
 
         $module_list = array();
         if (!empty($modules)) {
@@ -328,7 +338,9 @@ class ModuleService
                 }
             }
         }
-        $module_list['core'] = array('title' => '系统事件处理模块', 'name' => 'core', 'issystem' => 1, 'enabled' => 1, 'isdisplay' => 0);
+        if (empty($apptype)){
+            $module_list['core'] = array('title' => '系统事件处理模块', 'name' => 'core', 'issystem' => 1, 'enabled' => 1, 'isdisplay' => 0);
+        }
         return $module_list;
     }
 
@@ -353,6 +365,10 @@ class ModuleService
 
     static function SysModules(){
         return array('basic', 'news', 'music', 'service', 'userapi', 'recharge', 'images', 'video', 'voice', 'wxcard', 'custom', 'chats', 'paycenter', 'keyword', 'special', 'welcome', 'default', 'apply', 'reply', 'core', 'store', 'wxapp');
+    }
+
+    static function SysComponent($identity){
+        return DB::table('gxswa_cloud')->where('identity',"laravel_module_$identity")->first();
     }
 
 }

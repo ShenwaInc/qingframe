@@ -19,6 +19,10 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 .layui-layout-admin .layui-side ~ .layui-body{left: 225px !important;}
 .layui-layout-admin .layui-side ~ .layui-body .layui-fluid{width: 90%; margin: 0 auto;}
 .layui-layout-admin .layui-side ~ .layui-body .fui-footer{max-width: unset;}
+.layui-input-inline ~ .layui-form-mid{padding: 0 !important; line-height: 38px;}
+.layui-side-menu .layui-nav .layui-nav-item .fa {position: absolute;top: 50%;left: 20px;margin-top: -19px;line-height: 40px;}
+.layui-nav .layui-nav-child a{line-height: 36px;}
+.layui-layout-admin .layui-body > .layui-fluid{min-height: calc(100vh - 150px);}
 
 /* bootstrap */
 .input-group {position: relative; display: table; border-collapse: separate; border-radius: 0;}
@@ -44,6 +48,7 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 
 /* text */
 .text-center{text-align: center}
+.text-right{text-align: right}
 .text-lg{font-size: 20px;}
 .text-bold{font-weight: bold;}
 .text-black, .layui-word-aux .text-black{color: #333333}

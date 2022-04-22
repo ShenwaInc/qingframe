@@ -232,18 +232,19 @@ class MSService
     public function checkrequire($requires){
         if (empty($requires)) return true;
         foreach ($requires as $value){
-            if ($this->isexist($value['id'])){
+            $identity = is_array($value) ? $value['id'] : $value;
+            if ($this->isexist($identity)){
                 //已安装
                 continue;
             }
-            if ($this->localexist($value['id'])){
+            if ($this->localexist($identity)){
                 //未安装，但是本地存在则直接安装
-                $install = $this->install($value['id']);
-                if (is_error($install)) return error(-1, "安装依赖的服务({$value['id']})时发生异常：{$install['message']}");
+                $install = $this->install($identity);
+                if (is_error($install)) return error(-1, "安装依赖的服务({$identity})时发生异常：{$install['message']}");
             }else{
                 //本地不存在则从云端安装
-                $installCloud = $this->cloudInstall($value['id']);
-                if (is_error($installCloud)) return error(-1, "安装依赖的服务({$value['id']})时发生异常：{$installCloud['message']}");
+                $installCloud = $this->cloudInstall($identity);
+                if (is_error($installCloud)) return error(-1, "安装依赖的服务({$identity})时发生异常：{$installCloud['message']}");
             }
         }
         return true;

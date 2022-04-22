@@ -44,7 +44,8 @@ class selfclear extends Command
             app_path('Console/Commands/repwd.php'),
             database_path('migrations/2021_08_10_113449_create_uni_settings_table.php'),
             base_path('bootstrap/helpers.php'),
-            app_path('Services/AttachmentService.php')
+            app_path('Services/AttachmentService.php'),
+            resource_path('views/console/socket.blade.php')
         );
         foreach ($unused as $file){
             if (file_exists($file)){
@@ -155,7 +156,8 @@ class selfclear extends Command
             base_path('socket/'),
             base_path('bootstrap/functions/'),
             base_path('bootstrap/wemod/'),
-            resource_path('views/console/extra/')
+            resource_path('views/console/extra/'),
+            resource_path('views/console/set/')
         );
         foreach ($undirs as $dir){
             if (is_dir($dir)){

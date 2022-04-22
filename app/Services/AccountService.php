@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Account;
 use App\Utils\WeAccount;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class AccountService {
@@ -93,6 +94,23 @@ class AccountService {
             $uni_modules = array_unique($uni_modules);
         }
         return $uni_modules;
+    }
+
+    static function ExtraModules($uniacid){
+        $cachekey = CacheService::system_key("unimodules", array('uniacid'=>$uniacid));
+        $modules = Cache::get($cachekey, array());
+        if (!empty($modules)) return $modules;
+        $module = DB::table('uni_account_extra_modules')->where('uniacid', $uniacid)->value('modules');
+        if (!empty($module)){
+            $modules = [];
+            $module = unserialize($module);
+            foreach ($module as $value){
+                $value['logo'] = asset($value['logo']);
+                $modules[$value['identity']] = $value;
+            }
+            Cache::put($cachekey, $modules, 7*86400);
+        }
+        return $modules;
     }
 
     static function OwnerAccountNums($uid, $role){
