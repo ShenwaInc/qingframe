@@ -42,7 +42,7 @@ Route::group(['prefix' => 'console', 'namespace' => 'Console', 'middleware'=>['a
     Route::get('/', 'PlatformController@index');
     Route::get('/util/{op?}', 'UtilController@index');
     Route::post('/util/{op?}', 'UtilController@save');
-    Route::get('/active/{op?}', 'SettingController@active');
+    Route::get('/active', 'SettingController@active');
     Route::get('/setting/{op?}', 'SettingController@index');
     Route::post('/setting', 'SettingController@save');
     Route::get('/account/{uniacid}', 'PlatformController@checkout')->where('uniacid','[0-9]+');

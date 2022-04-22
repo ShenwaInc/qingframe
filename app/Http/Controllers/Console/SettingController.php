@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\DB;
 class SettingController extends Controller
 {
     //
-    public function active($op=''){
+    public function active(){
         global $_W;
         if(!$_W['isfounder']){
             return $this->message('暂无权限');
@@ -52,6 +52,12 @@ class SettingController extends Controller
     public function selfupgrade(){
         try {
             Artisan::call('self:update');
+            Artisan::call('route:clear');
+            Artisan::call('self:clear');
+            $ComPath = str_replace("app/", "bootstrap/", CloudService::com_path());
+            if (is_dir($ComPath)){
+                FileService::rmdirs($ComPath);
+            }
         }catch (\Exception $exception){
             return $this->message($exception->getMessage());
         }

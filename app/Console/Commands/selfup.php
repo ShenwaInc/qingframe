@@ -58,9 +58,6 @@ class selfup extends Command
         //数据库升级
         Artisan::call('self:migrate');
 
-        //更新路由
-        Artisan::call('route:clear');
-
         //微服务升级
         Artisan::call('server:update');
 
