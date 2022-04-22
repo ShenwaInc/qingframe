@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Http\Middleware\App;
+use App\Services\CacheService;
 use Illuminate\Console\Command;
 use App\Services\CloudService;
 use Illuminate\Support\Facades\Artisan;
@@ -85,6 +86,7 @@ class selfup extends Command
             ))
         ));
         CloudService::CloudEnv(array("APP_VERSION={$system['version']}","APP_RELEASE={$system['release']}"), array("APP_VERSION={$arguments['version']}","APP_RELEASE={$arguments['release']}"));
+        CacheService::flush();
 
         $this->info('Whotalk framework upgrade successfully.');
         return true;

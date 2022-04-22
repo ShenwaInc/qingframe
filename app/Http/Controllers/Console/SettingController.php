@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Console;
 
 use App\Http\Controllers\Controller;
+use App\Services\CacheService;
 use App\Services\CloudService;
 use App\Services\FileService;
 use App\Services\ModuleService;
@@ -118,9 +119,7 @@ class SettingController extends Controller
                 $moduleupdate = ModuleService::upgrade($identity);
                 if (is_error($moduleupdate)) return $this->message($moduleupdate['message']);
             }else{
-                if ($component['identity']=='laravel_whotalk_socket'){
-                    SocketService::Upgrade();
-                }
+
                 unset($cloudinfo['structure'],$cloudinfo['difference']);
                 $cloudinfo['isnew'] = false;
                 DB::table('gxswa_cloud')->where('id',$component['id'])->update(array(
@@ -132,7 +131,7 @@ class SettingController extends Controller
                 ));
             }
             $redirect = url('console/setting/plugin');
-            Cache::forget("cloud:structure:{$component['identity']}");
+            CacheService::flush();
             return $this->message('恭喜您，升级成功！', $redirect,'success');
         }elseif($op=='comremove'){
             $component = DB::table('gxswa_cloud')->where('id',intval($_GPC['cid']))->first(['id','identity','modulename','type','releasedate','rootpath']);
@@ -237,25 +236,7 @@ class SettingController extends Controller
         if (!$request->isMethod('post')){
             return $this->message();
         }
-        if ($op=='savewhitelist'){
-            $active = CloudService::CloudActive();
-            if ($active['status']!=1){
-                return $this->message('该功能已暂停使用');
-            }
-            $complete = SocketService::SocketAuthorize(trim($_GPC['domain']));
-            if ($complete){
-                return $this->message('新域名添加成功',url('console/setting/socket'),'success');
-            }
-        }elseif ($op=='resetwhitelist'){
-            $active = CloudService::CloudActive();
-            if ($active['status']!=1){
-                return $this->message('该功能已暂停使用');
-            }
-            $complete = SocketService::SocketAuthorize('',2);
-            if ($complete){
-                return $this->message('重置成功',url('console/setting/socket'),'success');
-            }
-        }elseif ($op=='pageset'){
+        if ($op=='pageset'){
             $data = $request->input('data');
             $config = $_W['setting']['page'];
             if (!empty($data)){

@@ -156,8 +156,6 @@ class selfmigrate extends Command
             $this->error("Migrate fail:".$exception->getMessage());;
         }
 
-        //系统无用文件清理
-        Artisan::call('self:clear');
         return true;
     }
 }

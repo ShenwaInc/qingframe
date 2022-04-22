@@ -45,6 +45,7 @@ class selfclear extends Command
             database_path('migrations/2021_08_10_113449_create_uni_settings_table.php'),
             base_path('bootstrap/helpers.php'),
             app_path('Services/AttachmentService.php'),
+            app_path('Services/SocketService.php'),
             resource_path('views/console/socket.blade.php')
         );
         foreach ($unused as $file){
