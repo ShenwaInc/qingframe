@@ -7,6 +7,7 @@ use App\Services\FileService;
 use App\Services\MemberService;
 use App\Services\SettingService;
 use Closure;
+use Illuminate\Http\Request;
 
 define('IN_MOBILE', true);
 
@@ -15,11 +16,11 @@ class AppRuntime
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param Request $request
      * @param  \Closure  $next
      * @return mixed
      */
-    public function handle($request, Closure $next)
+    public function handle(Request $request, Closure $next)
     {
         global $_W;
         SettingService::Load();

@@ -46,7 +46,8 @@ class selfclear extends Command
             base_path('bootstrap/helpers.php'),
             app_path('Services/AttachmentService.php'),
             app_path('Services/SocketService.php'),
-            resource_path('views/console/socket.blade.php')
+            resource_path('views/console/socket.blade.php'),
+            resource_path('views/install/socket.blade.php')
         );
         foreach ($unused as $file){
             if (file_exists($file)){

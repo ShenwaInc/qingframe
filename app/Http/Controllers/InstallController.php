@@ -18,12 +18,7 @@ use Illuminate\Support\Facades\Log;
 class InstallController extends Controller
 {
 
-    public $installer = ['isagree'=>0,'database'=>array(),'dbconnect'=>0,'authkey'=>'','socket'=>[]];
-    public $defaultsocket = array(
-        'type'=>'remote',
-        'server'=>'wss://socket.whotalk.com.cn/wss',
-        'webapi'=>'https://socket.whotalk.com.cn/api/message/sendMessageToUser'
-    );
+    public $installer = ['isagree'=>0,'database'=>array(),'dbconnect'=>0,'authkey'=>''];
 
     function __construct(){
         $installedfile = base_path('storage/installed.bin');
@@ -41,9 +36,6 @@ class InstallController extends Controller
         if (empty($installer['database'])){
             $dbconfig = config('database');
             $installer['database'] = $dbconfig['connections'][$dbconfig['default']];
-        }
-        if (empty($installer['socket'])){
-            $installer['socket'] = $this->defaultsocket;
         }
         $this->installer = $installer;
     }
@@ -184,14 +176,6 @@ class InstallController extends Controller
 
             //initializer default setting
             DB::table("core_settings")->insert([
-                array(
-                    'key'=>"swasocket",
-                    'value'=>serialize(array(
-                        'type'=>'remote',
-                        'server'=>$installer['socket']['server'],
-                        'api'=>$installer['socket']['webapi']
-                    ))
-                ),
                 array(
                     'key'=>"page",
                     'value'=>serialize(array(
@@ -351,39 +335,6 @@ class InstallController extends Controller
             return redirect()->action('installController@database');
         }
         return view('install.render',$this->installer);
-    }
-
-    public function socket(){
-        if (!$this->installer['isagree']){
-            return redirect()->action('installController@index');
-        }
-        if (isset($this->installer['database']['unix_socket'])){
-            return redirect()->action('installController@database');
-        }
-        $data = $this->installer;
-        $data['usersign'] = sha1("{$data['database']['prefix']}-{$data['database']['username']}-{$data['authkey']}");
-        return view('install.socket',$data);
-    }
-
-    public function wsDetect(Request $request){
-        if ($request->isMethod('post')) {
-            $wsconfig = $request->input('wsconfig');
-            $socket = array(
-                'type'=>trim($wsconfig['wstype']),
-                'server'=>trim($wsconfig['ws_server']),
-                'webapi'=>trim($wsconfig['ws_webapi'])
-            );
-            $socket['type'] = !in_array($socket['type'],['remote','local']) ? 'remote' : $socket['type'];
-            if (!$socket['server']) return $this->message('SOCKET域名不能为空');
-            if (!$socket['webapi']) return $this->message('WEB推送接口不能为空');
-            $this->installer['socket'] = $socket;
-            Cache::forget('installer');
-            if (!Cache::put('installer',$this->installer)){
-                return $this->message();
-            }
-            return $this->message('操作成功！','','success');
-        }
-        return $this->message();
     }
 
     /**

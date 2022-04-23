@@ -12,6 +12,7 @@ class MicroService
     public $serverpath = MICRO_SERVER;
     public $tablename = 'microserver';
     public $ComplieDrive = "smarty";
+    public $Unique = false;
     public $framework = "laravel";
     public $events = [];
 
@@ -144,18 +145,20 @@ class MicroService
      * @param string|null $platform 接口通道
      * @return string API接口
      */
-    public function api($route, $query=array(), $platform=""){
+    public function api($route='', $query=array(), $platform="api"){
         global $_W;
-        $query['i'] = $_W['uniacid'];
-        $query['server'] = $this->identity;
-        $ctrl = str_replace("/", ".", $route);
+        $basic = $this->identity;
+        $ctrl = str_replace(".", "/", $route);
         if (!empty($ctrl)) {
-            $query['ctrl'] = $ctrl;
+            $basic .= "/".$ctrl;
         }
-        if (!empty($platform)){
-            $query['pf'] = $platform;
+        if (!empty($_W['uniacid']) && $this->Unique){
+            $query['i'] = $_W['uniacid'];
         }
-        return $_W['siteroot'] . "api/server.php?" . http_build_query($query, '', '&');
+        if (!empty($query)){
+            $basic .= "?";
+        }
+        return $_W['siteroot'] . "$platform/server/$basic" . http_build_query($query);
     }
 
     /**
@@ -180,7 +183,7 @@ class MicroService
             $url .= '/' . $route;
         }
         if (!empty($query)) {
-            $queryString = http_build_query($query, '', '&');
+            $queryString = http_build_query($query);
             $url .= '?' . $queryString;
         }
         return $url;
