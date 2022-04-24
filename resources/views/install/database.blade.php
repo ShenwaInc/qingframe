@@ -9,12 +9,8 @@
                         <span class="num"></span>
                     </div>
                     <div class="layui-col-md4 layui-col-lg4 fui-item">
-                        SOCKET
-                        <span class="num">2</span>
-                    </div>
-                    <div class="layui-col-md4 layui-col-lg4 fui-item">
                         安装完成
-                        <span class="num">3</span>
+                        <span class="num">2</span>
                     </div>
                 </div>
             </div>
@@ -106,7 +102,7 @@
             let dbconfig = data.field;
             Core.post('installer.database',function (res){
                 if (res.type!=='success') return Core.report(res);
-                window.location.href = "{{url('installer/socket')}}";
+                window.location.href = "{{url('installer/render')}}";
             },{dbconfig:dbconfig});
             return false;
         });

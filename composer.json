@@ -22,7 +22,6 @@
         "johnlui/aliyun-oss": "^2.2",
         "laravel/framework": "^6.0",
         "laravel/tinker": "^1.0",
-        "qcloud/cos-sdk-v5": "^2.2",
         "ext-pdo": "*"
     },
     "require-dev": {
@@ -52,7 +51,7 @@
             "database/factories"
         ],
         "files": [
-            "bootstrap/helpers.php"
+            "app/Helpers/core.php"
         ]
     },
     "autoload-dev": {

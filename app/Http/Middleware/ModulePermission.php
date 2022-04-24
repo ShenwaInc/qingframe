@@ -2,9 +2,12 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\AccountService;
+use App\Services\ModuleService;
 use App\Services\UserService;
 use Closure;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\View;
 
 class ModulePermission
@@ -22,7 +25,6 @@ class ModulePermission
         //查询平台权限
         if (empty($_W['uniacid'])){
             //最后使用
-            //$uniacid = (int)DB::table('users_lastuse')->where(array('uid'=>$_W['uid']))->orderBy('id','desc')->value('uniacid');
             $uniacid = (int)DB::table('users_operate_history')->where('uid',$_W['uid'])->orderBy('createtime','desc')->value('uniacid');
             //默认平台权限
             if ($uniacid==0){
@@ -30,17 +32,42 @@ class ModulePermission
                 $uniacid = (int)DB::table('uni_account_users')->where(array('uid'=>$_W['uid']))->whereIn('role',array('owner','manager','opreator'))->orderBy('id','desc')->value('uniacid');
             }
             if ($uniacid==0){
-                View::share('_W',$_W);
-                echo response()->view('message',array('message'=>'暂无可用平台','type'=>'error','redirect'=>url('console')))->content();
-                session()->save();
-                exit();
+                $this->message("暂无可用平台");
             }
             $_W['uniacid'] = $uniacid;
             $_W['role'] = UserService::AccountRole($_W['uid'],$uniacid);
-            $_W['account'] = uni_fetch($uniacid);
+            $_W['account'] = AccountService::FetchUni($uniacid);
             session()->put('uniacid',$uniacid);
         }
-        //查询应用权限，待完善
+        //查询应用权限
+        $module = ModuleService::fetch($request->segment(3));
+        if (empty($module)){
+            $this->message("找不到该应用");
+        }
+        if (!$_W['isfounder']){
+            $role = UserService::AccountRole($_W['uid'], $_W['uniacid']);
+            switch ($role){
+                case "owner":
+                case "manager" : {
+                    $ExtraModules = AccountService::ExtraModules($_W['uniacid']);
+                    if (!isset($ExtraModules[$module['name']])){
+                        $this->message("暂无权限");
+                    }
+                    break;
+                }
+                case "operator" :{
+
+                    break;
+                }
+            }
+        }
         return $next($request);
+    }
+
+    public function message($msg){
+        global $_W;
+        View::share('_W',$_W);
+        echo response()->view('message',array('message'=>$msg,'type'=>'error','redirect'=>url('console')))->content();
+        session_exit();
     }
 }

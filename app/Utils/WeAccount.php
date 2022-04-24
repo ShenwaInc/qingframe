@@ -21,8 +21,6 @@ class WeAccount extends \ArrayObject{
     protected $startTime;
     protected $endTime;
     protected $groupLevel;
-    protected $logo;
-    protected $qrcode;
     protected $switchUrl;
     protected $displayUrl;
     protected $setMeal = array();
@@ -49,7 +47,7 @@ class WeAccount extends \ArrayObject{
         'switchurl' => 'switchUrl',
         'setmeal' => 'setMeal',
         'current_user_role' => 'CurrentUserRole',
-        'is_star' => 'isStar',
+        'is_star' => 'isStar'
     );
     private static $accountObj = array();
 
@@ -62,7 +60,7 @@ class WeAccount extends \ArrayObject{
             $cache = $this->getAccountInfo($this->uniacid);
             Cache::put($cachekey, $cache,7*86400);
         }
-        $this->account = array_merge((array) $cache, $uniaccount);
+        $this->account = array_merge($cache->toArray(), $uniaccount);
     }
 
     public static function create($acidOrAccount = array()) {
@@ -116,7 +114,7 @@ class WeAccount extends \ArrayObject{
     }
 
     protected function fetchGroups() {
-        $groups = DB::table('mc_groups')->where('uniacid',$this->uniacid)->get();
+        $groups = DB::table('mc_groups')->where('uniacid',$this->uniacid)->get()->keyBy('groupid');
         if (!empty($groups)){
             $this->groups = $groups->toArray();
         }

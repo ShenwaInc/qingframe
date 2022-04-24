@@ -5,15 +5,11 @@
             <div class="layui-container">
                 <div class="layui-row text-center">
                     <div class="layui-col-md4 layui-col-lg4 fui-item done">
-                        数据库
-                        <span class="num"></span>
-                    </div>
-                    <div class="layui-col-md4 layui-col-lg4 fui-item done">
-                        SOCKET
+                        数据库选项
                         <span class="num"></span>
                     </div>
                     <div class="layui-col-md4 layui-col-lg4 fui-item cur">
-                        安装完成
+                        安装系统
                         <span class="num">3</span>
                     </div>
                 </div>
@@ -25,7 +21,7 @@
                     <form action="{{ url('installer/render') }}" method="post" class="layui-form">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                         <input type="hidden" name="saverdset" value="true">
-                        <div class="layui-col-md6">
+                        <div class="layui-col-md12">
                             <fieldset class="layui-elem-field layui-field-title site-title">
                                 <legend><a href="{{ url('installer/database') }}">数据库配置&nbsp;<i class="layui-icon layui-icon-edit text-blue"></i></a></legend>
                             </fieldset>
@@ -60,39 +56,6 @@
                                         <td class="text-black text-bold">表前缀</td>
                                         <td>{{ $database['prefix'] }}</td>
                                     </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                        <div class="layui-col-md6">
-                            <fieldset class="layui-elem-field layui-field-title site-title">
-                                <legend><a href="{{ url('installer/socket') }}">SOCKET配置&nbsp;<i class="layui-icon layui-icon-edit text-blue"></i></a></legend>
-                            </fieldset>
-                            <div class="padding-lr">
-                                <table class="layui-table" lay-skin="nob" lay-even>
-                                    <colgroup>
-                                        <col width="120">
-                                        <col>
-                                    </colgroup>
-                                    <tbody>
-                                        <tr>
-                                            <td class="text-black text-bold">连接方式</td>
-                                            <td>{{ $socket['type']=='remote' ? '远程SOECKT' : '本地SOECKT' }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="text-black text-bold">SOECKT地址</td>
-                                            <td>{{ $socket['server'] }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="text-black text-bold">WEB推送接口</td>
-                                            <td>
-                                                <div style="width: 100%;" class="layui-form">
-                                                    <textarea name="webapi" style="border: none; resize: none; padding: 0; min-height: 80px;" class="layui-textarea">
-                                                        {{ $socket['webapi'] }}
-                                                    </textarea>
-                                                </div>
-                                            </td>
-                                        </tr>
                                     </tbody>
                                 </table>
                             </div>

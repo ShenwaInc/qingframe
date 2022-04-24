@@ -8,11 +8,11 @@ use Illuminate\Support\Facades\DB;
 class CloudService
 {
 
+    static $identity = 'swa_framework_laravel';
     static $cloudapi = 'https://chat.gxit.org/app/index.php?i=4&c=entry&m=swa_supersale&do=api';
     static $cloudactive = 'https://chat.gxit.org/app/index.php?i=4&c=entry&m=swa_supersale&do=app&r=whotalkcloud.active&siteroot=';
     static $apilist = array('getcom'=>'cloud.vendor','rmcom'=>'cloud.vendor.remove','require'=>'cloud.install','structure'=>'cloud.structure','upgrade'=>'cloud.makepatch');
     static $vendors = array('aliyun'=>'阿里短信SDK','aop'=>'支付宝支付SDK','wxpayv3'=>'微信支付SDK','tim'=>'接口签名验证工具','getui'=>'APP推送SDK');
-    static $identity = 'swa_framework_laravel';
 
     static function ComExists($component){
         return is_dir(self::com_path("{$component}/"));
@@ -27,6 +27,10 @@ class CloudService
             case 'wxpayv3' :
                 require_once "{$compath}wxpayv3/WxPay.Api.php";
                 require_once "{$compath}wxpayv3/WxPay.Data.php";
+                break;
+            case 'alipay' :
+                require("{$compath}alipay/wappay/service/AlipayTradeService.php");
+                require_once("{$compath}alipay/wappay/buildermodel/AlipayTradeWapPayContentBuilder.php");
                 break;
             case 'aop' :
                 require_once "{$compath}aop/AopClient.php";
@@ -59,7 +63,7 @@ class CloudService
                 DB::table('gxswa_cloud')->updateOrInsert(array(
                         'identity'=>'swa_whotalk_componet'
                     ),array(
-                        'name'=>'Whotalk独立版组件包',
+                        'name'=>'Whotalk国际版依赖包',
                         'modulename'=>'',
                         'type'=>2,
                         'logo'=>'https://shenwahuanan.oss-cn-shenzhen.aliyuncs.com/images/4/2021/08/Mpar00P5PjJPrxAW1FWCP3CPz87qjc.png',
@@ -77,28 +81,125 @@ class CloudService
     }
 
     static function RequireModule($identity,$path='addons'){
-        $requirename = $identity;
-        if (!strexists($identity,'_')){
-            $requirename = "laravel_module_{$identity}";
-        }
-        $targetpath = base_path("public/{$path}/{$identity}");
+        $moduleName = str_replace("laravel_module_", "", $identity);
+        $targetpath = base_path("public/$path/$moduleName");
         $from = 'local';
         if (!is_dir($targetpath)){
-            $result = self::CloudRequire($requirename,$targetpath);
+            $result = self::CloudRequire($identity,$targetpath);
             if(is_error($result)) return $result;
             $from = 'cloud';
         }
         //进入模块安装流程
-        return ModuleService::install($identity,$path,$from);
+        return ModuleService::install($moduleName,$path,$from);
     }
 
     static function com_path($path=""){
         global $_W;
         if (!isset($_W['com_path'])){
             $compath = substr(sha1($_W['config']['setting']['authkey']."-".$_W['config']['site']['id']),5,6);
-            $_W['com_path'] = base_path("bootstrap/com{$compath}/");
+            $_W['com_path'] = app_path("com$compath/");
         }
         return $_W['com_path'] . $path;
+    }
+
+    static function getPlugins(){
+        $plugins = [];
+        $condition = array('type'=>1);
+        //获取已安装模块
+        $components = DB::table('gxswa_cloud')->where($condition)->orderByRaw("`id` desc")->get()->toArray();
+        if (!empty($components)){
+            foreach ($components as $com){
+                $com['logo'] = asset($com['logo']);
+                $com['lastupdate'] = $com['updatetime'] ? date('Y/m/d H:i',$com['updatetime']) : '初始安装';
+                $com['cloudinfo'] = !empty($com['online']) ? unserialize($com['online']) : array();
+                $com['installtime'] = date('Y/m/d H:i',$com['addtime']);
+                $com['action'] = '<div class="layui-btn-group">';
+                if (!empty($com['cloudinfo']) && $com['cloudinfo']['isnew']){
+                    $com['action'] .= '<a href="'.url('console/setting/comupdate').'?cid='.$com['id'].'" class="layui-btn layui-btn-sm layui-btn-danger confirm" data-text="升级前请做好源码和数据备份，避免升级故障导致系统无法正常运行">升级</a>';
+                }
+                $com['action'] .= '<a href="'.url('console/setting/comcheck').'?cid='.$com['id'].'" class="layui-btn layui-btn-sm layui-btn-normal ajaxshow">'.(empty($com['cloudinfo']) ? '检测更新' : '重新检测').'</a>';
+                $com['action'] .= '<a href="'.url('console/setting/comremove').'?cid='.$com['id'].'" class="layui-btn layui-btn-sm layui-btn-primary confirm" data-text="即将卸载该应用并删除应用产生的所有数据，是否确定要卸载？">卸载</a></div>';
+                $plugins[$com['modulename']] = $com;
+            }
+        }
+        //获取本地未安装模块
+        if (DEVELOPMENT){
+            $modules = FileService::file_tree(public_path('addons'), array('*/Manifest.php'));
+            if (!empty($modules)){
+                foreach ($modules as $value){
+                    $identity = str_replace(array(public_path('addons/'),"/Manifest.php"),'', $value);
+                    if (empty($identity) || isset($plugins[$identity])) continue;
+                    $className = ucfirst($identity)."_Manifest";
+                    $ManiFest = require_once $value;
+                    $com = $ManiFest->application;
+                    $com['logo'] = asset($com['logo']);
+                    $com['website'] = $com['url'];
+                    $com['cloudinfo'] = array();
+                    $com['addtime'] = 0;
+                    if ($ManiFest->installed){
+                        $com['installtime'] = '本地安装';
+                        $com['lastupdate'] = '-';
+                        $com['action'] = '<a href="'.url('console/setting/pluginrm').'?nid='.$identity.'" class="layui-btn layui-btn-sm layui-btn-primary confirm" data-text="即将卸载该应用并删除应用产生的所有数据，是否确定要卸载？">卸载</a></div>';
+                    }else{
+                        $com['installtime'] = '-';
+                        $com['lastupdate'] = '<span class="layui-badge">未安装</span>';
+                        $com['action'] = '<a href="'.url('console/setting/plugininst').'?nid='.$identity.'" class="layui-btn layui-btn-sm layui-btn-normal confirm" data-text="确定要安装该应用？">安装</a>';
+                    }
+                    $plugins[$identity] = $com;
+                }
+            }
+        }
+        //获取云端未安装组件
+        $cachekey = "cloud:module_list";
+        $res = Cache::get($cachekey, array());
+        if (empty($res)){
+            $data = array(
+                'r'=>'cloud.packages',
+                'pidentity'=>self::$identity,
+                'page'=>1,
+                'category'=>1
+            );
+            $res = CloudService::CloudApi("", $data);
+            Cache::put($cachekey, $res, 1800);
+        }
+        if (!is_error($res) && !empty($res['servers'])){
+            foreach ($res['servers'] as $value){
+                $identifie = str_replace("laravel_module_", "", $value['identity']);
+                if (empty($identifie)) continue;
+                $releaseDate = intval($value['release']['releasedate']);
+                if (isset($plugins[$identifie])){
+                    $local = $plugins[$identifie];
+                    if ($local['addtime']==0) continue;
+                    if (version_compare($local['version'], $value['release']['version'], '>=') && $local['releasedate']>=$releaseDate){
+                        continue;
+                    }
+                    if (empty($local['cloudinfo']) || !$local['cloudinfo']['isnew']){
+                        $local['action'] = '<a href="'.url('console/setting/comupdate').'?cid='.$local['id'].'" class="layui-btn layui-btn-sm layui-btn-danger confirm" data-text="升级前请做好源码和数据备份，避免升级故障导致系统无法正常运行">升级</a>'.$local['action'];
+                    }
+                    $local['cloudinfo'] = array('isnew'=>true,'version'=>$value['release']['version'],'releasedate'=>$releaseDate);
+                    $plugins[$identifie] = $local;
+                }else{
+                    $com = array(
+                        'id'=>0,
+                        'name'=>$value['name'],
+                        'identifie'=>$identifie,
+                        'version'=>$value['release']['version'],
+                        'releasedate'=>$releaseDate,
+                        'ability'=>$value['name'],
+                        'description'=>$value['summary'],
+                        'author'=>$value['author'],
+                        'website'=>$value['website'],
+                        'logo'=>$value['icon']
+                    );
+                    $com['lastupdate'] = '<span class="layui-badge">未安装</span>';
+                    $com['cloudinfo'] = array();
+                    $com['installtime'] = '-';
+                    $com['action'] = '<a href="'.url('console/setting/cloudinst').'?nid='.$value['identity'].'" class="layui-btn layui-btn-sm layui-btn-normal confirm" data-text="确定要安装该应用？">安装</a>';
+                    $plugins[$identifie] = $com;
+                }
+            }
+        }
+        return $plugins;
     }
 
     static function MoveDir($oldDir, $aimDir, $overWrite = false){
@@ -350,34 +451,6 @@ class CloudService
         Cache::put($cachekey, $authorize, 3600);
 
         return $authorize;
-    }
-
-    static function CloudSocket($domain='',$require=0){
-        $domains = array("host"=>array());
-        $domainfile = base_path("socket/composer.json");
-        if (file_exists($domainfile)){
-            $reader = fopen($domainfile,'r');
-            $domaintext = fread($reader,filesize($domainfile));
-            fclose($reader);
-            if (!empty($domaintext)){
-                $domains = @json_decode($domaintext, true);
-            }
-        }
-        if (empty($domain)){
-            if ($require==1) return $domains['host'];
-            $domain = $_SERVER['HTTP_HOST'];
-        }
-        if ($require==2){
-            $domains['host'] = array();
-        }
-        if (!in_array($domain,$domains['host'])){
-            $domains['host'][] = $domain;
-            $writer = fopen($domainfile,'w');
-            $complete = fwrite($writer,json_encode($domains));
-            fclose($writer);
-            return $complete;
-        }
-        return true;
     }
 
     static function CloudEnv($search, $replace){

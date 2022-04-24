@@ -2,10 +2,12 @@
 
 namespace App\Http\Middleware;
 
-use App\Services\AttachmentService;
+use App\Services\AccountService;
+use App\Services\FileService;
 use App\Services\MemberService;
 use App\Services\SettingService;
 use Closure;
+use Illuminate\Http\Request;
 
 define('IN_MOBILE', true);
 
@@ -14,11 +16,11 @@ class AppRuntime
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param Request $request
      * @param  \Closure  $next
      * @return mixed
      */
-    public function handle($request, Closure $next)
+    public function handle(Request $request, Closure $next)
     {
         global $_W;
         SettingService::Load();
@@ -26,8 +28,8 @@ class AppRuntime
         $uniacid = $request->input('i',0);
         if (empty($uniacid)) abort(404,'找不到该平台');
         $_W['uniacid'] = intval($uniacid);
-        $_W['account'] = uni_fetch($uniacid);
-        $_W['openid'] = session()->get('openid','');
+        $_W['account'] = AccountService::FetchUni($uniacid);
+        $_W['openid'] = session()->get("openid$uniacid",'');
         $_W['member'] = array('uid'=>0);
         //自动登录
         $authtoken = $request->header('x-auth-token');
@@ -43,8 +45,8 @@ class AppRuntime
                 MemberService::AuthLogin($member, false);
             }
         }
-        $_W['attachurl'] = AttachmentService::SetAttachUrl();
-        include_once base_path("bootstrap/functions/app.func.php");
+        $_W['attachurl'] = FileService::SetAttachUrl();
+        serv("weengine")->func("app");
         return $next($request);
     }
 }

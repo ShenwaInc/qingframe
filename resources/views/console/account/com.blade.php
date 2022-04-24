@@ -26,7 +26,7 @@
             <div class="un-padding">
                 <div class="layui-row layui-col-space15 fui-list card">
                     @foreach($components as $item)
-                    <div class="layui-col-md3 layui-col-xs6 fui-item">
+                    <div class="layui-col-md3 layui-col-xs12 fui-item">
                         <a href="{{ wurl("account/{$uniacid}",array('module'=>$item['identity'])) }}" class="fui-content">
                             <div class="fui-info">
                                 <img alt="{{ $item['name'] }}" class="radius" src="{{ tomedia($item['logo']) }}" />
@@ -35,7 +35,7 @@
                         </a>
                     </div>
                     @endforeach
-                    <div class="layui-col-md3 layui-col-xs6 fui-item">
+                    <div class="layui-col-md3 layui-col-xs12 fui-item">
                         <a href="javascript:;" data-id="#account-component-selector" onclick="showWindow(this)" title="添加应用权限" class="fui-content dashed">
                             <div class="fui-info">
                                 <span class="card-icon layui-icon layui-icon-add-1 text-gray"></span>
@@ -54,7 +54,7 @@
     <div class="layui-hide" id="account-component-selector">
         <div class="layui-row layui-col-space15 fui-list card">
             @foreach($components as $item)
-                <div class="layui-col-md4 layui-col-xs6 fui-item">
+                <div class="layui-col-md4 layui-col-xs12 fui-item">
                     <a href="javascript:;" onclick="moduleSwitch(this)" data-id="{{ $item['identity'] }}" class="fui-content checked">
                         <div class="fui-info">
                             <img alt="{{ $item['name'] }}" class="radius" src="{{ tomedia($item['logo']) }}" />
@@ -66,12 +66,6 @@
         </div>
     </div>
 </div>
-
-<style>
-    .fui-content.checked{border-color: #2ABA8E;}
-    .fui-content.checked:before{content: ''; width: 0; height: 0; border-bottom: 36px solid #2ABA8E; border-left: 64px solid transparent; position: absolute; display: block; right: -1px; bottom: -1px}
-    .fui-content.checked:after{position: absolute; font-family: layui-icon!important; content: "\e605"; right: 0; bottom: 0; font-size: 17px; padding: 4px 6px; font-weight: bold; color: #fff;}
-</style>
 
 <script type="text/javascript">
     function moduleSwitch(Elem){
@@ -98,7 +92,7 @@
                 layer.close(index); //如果设定了yes回调，需进行手工关闭
             },
             btn2:function (){
-                window.location.href = '{{ url('console/setting/component') }}';
+                window.location.href = '{{ url('console/setting/plugin') }}';
             }
         });
     }

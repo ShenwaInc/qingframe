@@ -1,0 +1,38 @@
+{
+    "application": {
+        "identity": "dummy",
+        "name": "Dummy",
+        "cover": "https://shenwahuanan.oss-cn-shenzhen.aliyuncs.com/images/4/2022/04/HhE3GKnkG1GBxP6SgQzHAPP4EeABqa.png",
+        "summary": "New Dummy MicroServer",
+        "version": "1.0.1",
+        "releases": "TIMESTAMP"
+    },
+    "drive": "php",
+    "entrance": "",
+    "require":[],
+    "apis": {
+        "wiki": "",
+        "schemas": []
+    },
+    "methods": {
+        "wiki": ""
+    },
+    "components": {
+        "wiki": ""
+    },
+    "resources": {
+
+    },
+    "install": {
+        "content": "",
+        "drive": "php"
+    },
+    "upgrade": {
+        "content": "",
+        "drive": "php"
+    },
+    "uninstall": {
+        "content": "",
+        "drive": "sql"
+    }
+}

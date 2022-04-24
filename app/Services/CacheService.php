@@ -2,8 +2,10 @@
 
 namespace App\Services;
 
+use App\Models\Module;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\View;
 
 class CacheService
@@ -507,6 +509,45 @@ class CacheService
         Cache::forget($cachekey);
     }
 
+    static function build_module_subscribe(){
+        global $_W;
+        $modules = Module::where('subscribes','!=','')->select(['name', 'subscribes'])->get()->toArray();
+        if (empty($modules)) {
+            return array();
+        }
+        $subscribe = array();
+        foreach ($modules as $module) {
+            $module['subscribes'] = unserialize($module['subscribes']);
+            if (!empty($module['subscribes'])) {
+                foreach ($module['subscribes'] as $event) {
+                    if ($event == 'text') {
+                        continue;
+                    }
+                    $subscribe[$event][] = $module['name'];
+                }
+            }
+        }
+
+        $module_ban = $_W['setting']['module_receive_ban'];
+        foreach ($subscribe as $event => $module_group) {
+            if (!empty($module_group)) {
+                foreach ($module_group as $index => $module) {
+                    if (!empty($module_ban[$module])) {
+                        unset($subscribe[$event][$index]);
+                    }
+                }
+            }
+        }
+        Cache::put(self::system_key('module_receive_enable'),$subscribe,7*86400);
+        return $subscribe;
+    }
+
+    static function build_member($uid){
+        $uid = intval($uid);
+        Cache::forget(self::system_key('memberinfo', array('uid' => $uid)));
+        return true;
+    }
+
     static function flush(){
         global $_W;
         //清空系统缓存
@@ -519,8 +560,8 @@ class CacheService
         Artisan::call('view:clear');
         //更新配置缓存
         Artisan::call('config:clear');
-        //更新最新版本号
-        CloudService::CloudEnv("APP_RELEASE={$_W['config']['release']}", "APP_RELEASE=".TIMESTAMP);
+        //更新最新版本号，已忽略
+        //CloudService::CloudEnv("APP_RELEASE={$_W['config']['release']}", "APP_RELEASE=".TIMESTAMP);
         //重建系统配置
         SettingService::Load();
         if ($_W['uniacid']){

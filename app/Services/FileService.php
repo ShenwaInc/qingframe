@@ -8,10 +8,35 @@ use App\Utils\Image;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
-use Qcloud\Cos\Client;
 
 class FileService
 {
+
+    public static function SetAttachUrl() {
+        global $_W;
+        if(empty($_W['setting']['remote_complete_info'])){
+            $_W['setting']['remote_complete_info'] = $_W['setting']['remote'];
+        }
+        if (!empty($_W['uniacid'])) {
+            $uni_remote_setting = SettingService::uni_load('remote');
+            if (!empty($uni_remote_setting['remote']['type'])) {
+                $_W['setting']['remote'] = $uni_remote_setting['remote'];
+            }
+        }
+        $attach_url = $_W['attachurl_local'] = $_W['siteroot'] . $_W['config']['upload']['attachdir'] . '/';
+        if (!empty($_W['setting']['remote']['type'])) {
+            if ($_W['setting']['remote']['type'] == 1) {
+                $attach_url = $_W['attachurl_remote'] = $_W['setting']['remote']['ftp']['url'] . '/';
+            } elseif ($_W['setting']['remote']['type'] == 2) {
+                $attach_url = $_W['attachurl_remote'] = $_W['setting']['remote']['alioss']['url'] . '/';
+            } elseif ($_W['setting']['remote']['type'] == 3) {
+                $attach_url = $_W['attachurl_remote'] = $_W['setting']['remote']['qiniu']['url'] . '/';
+            } elseif ($_W['setting']['remote']['type'] == 4) {
+                $attach_url = $_W['attachurl_remote'] = $_W['setting']['remote']['cos']['url'] . '/';
+            }
+        }
+        return $attach_url;
+    }
 
     public static function file_write($filename, $data) {
         global $_W;
@@ -226,13 +251,10 @@ class FileService
                 self::file_image_quality($savepath, $savepath, $ext);
             }
         }
-        //远程附件
-        $remotesave = self::file_remote_upload($path);
-        if (is_error($remotesave)){
-            Log::error("remote{$_W['uniacid']}_error",$remotesave);
-            //return error(-1,"远程附件上传失败：{$remotesave['message']}");
-        }
-        return $path;
+        return array(
+            "path"=>$path,
+            "success"=>true
+        );
     }
 
     static function file_upload($file, $type = 'image', $name = '', $compress = false) {
@@ -391,29 +413,10 @@ class FileService
     }
 
     public static function file_remote_upload($filename, $auto_delete_local = true) {
-        global $_W;
-        if (empty($_W['setting']['remote']['type'])) {
-            return false;
-        }
-        if ($_W['setting']['remote']['type'] == 1) {
-            return error(1, '远程附件上传失败，暂不支持FTP');
-        } elseif ($_W['setting']['remote']['type'] == 2) {
-            try {
-                AttachmentService::alioss_upload($filename, ATTACHMENT_ROOT . $filename);
-                if ($auto_delete_local) {
-                    self::file_delete($filename);
-                }
-            }catch (\Exception $exception){
-                return error(-1,$exception->getMessage());
-            }
-        } elseif ($_W['setting']['remote']['type'] == 3) {
-            return error(1, '远程附件上传失败，暂不支持七牛云存储');
-        } elseif ($_W['setting']['remote']['type'] == 4) {
-            $result = AttachmentService::cos_upload($filename,$_W['setting']['remote']['cos']);
-            if (is_error($result)) return $result;
-            if ($auto_delete_local) {
-                self::file_delete($filename);
-            }
+        $result = serv('storage')->remoteUpload($filename);
+        if (is_error($result)) return $result;
+        if ($auto_delete_local) {
+            self::file_delete($filename);
         }
         return true;
     }
@@ -476,49 +479,6 @@ class FileService
             @unlink(ATTACHMENT_ROOT . '/' . $file);
         }
 
-        return true;
-    }
-
-    public static function file_remote_delete($file) {
-        global $_W;
-        if (empty($file)) {
-            return true;
-        }
-        if ($_W['setting']['remote']['type'] == '1') {
-            return error(1, '删除附件失败，暂不支持FTP');
-        } elseif ($_W['setting']['remote']['type'] == '2') {
-            $loadoss = CloudService::LoadCom('alioss');
-            if (is_error($loadoss)) return $loadoss;
-            $buckets = AttachmentService::alioss_buctkets($_W['setting']['remote']['alioss']['key'], $_W['setting']['remote']['alioss']['secret']);
-            $endpoint = 'http://' . $buckets[$_W['setting']['remote']['alioss']['bucket']]['location'] . '.aliyuncs.com';
-            try {
-                $ossClient = new \OSS\OssClient($_W['setting']['remote']['alioss']['key'], $_W['setting']['remote']['alioss']['secret'], $endpoint);
-                $ossClient->deleteObject($_W['setting']['remote']['alioss']['bucket'], $file);
-            } catch (\OSS\Core\OssException $e) {
-                return error(1, '删除oss远程文件失败');
-            }
-        } elseif ($_W['setting']['remote']['type'] == '3') {
-            return error(1, '删除七牛远程文件失败');
-        } elseif ($_W['setting']['remote']['type'] == '4') {
-            $loadcos = CloudService::LoadCom('cosv5');
-            if (is_error($loadcos)) return $loadcos;
-            try {
-                $key = $file;
-                $bucket = $_W['setting']['remote']['cos']['bucket'] . '-' . $_W['setting']['remote']['cos']['appid'];
-                $cosClient = new Client(
-                    array(
-                        'region' => $_W['setting']['remote']['cos']['local'],
-                        'credentials'=> array(
-                            'secretId'  => $_W['setting']['remote']['cos']['secretid'],
-                            'secretKey' => $_W['setting']['remote']['cos']['secretkey'])));
-                $cosClient->deleteObjects(array(
-                    'Bucket' => $bucket,
-                    'Objects' => array(array('Key' => $key))
-                ));
-            } catch (\Exception $e) {
-                return error(1, '删除cos远程文件失败');
-            }
-        }
         return true;
     }
 

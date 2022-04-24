@@ -72,7 +72,7 @@
         </div>
     </div>
 
-    <div class="fui-card layui-card">
+    <div class="fui-card layui-card layui-hide">
         <div class="layui-card-header nobd">
             <span class="title">消息通知</span>
         </div>
@@ -143,10 +143,10 @@
                     <tr>
                         <td><span class="fui-table-lable">远程附件</span></td>
                         <td class="soild-after">
-                            跟随系统
+                            {{ $remote }}
                         </td>
                         <td class="text-right soild-after">
-                            <a href="javascript:;" onclick="layer.msg('敬请期待',{icon:7})" class="text-blue layui-hide">远程附件</a>
+                            <a href="{{ serv('storage')->url('remote', array('uniacid'=>$uniacid)) }}" data-height="560" class="text-blue ajaxshow">配置云存储</a>
                         </td>
                     </tr>
                     </tbody>
@@ -192,27 +192,58 @@
             @csrf
             <input type="hidden" name="op" value="save-alipay">
             <div class="layui-form-item must">
-                <label class="layui-form-label">支付宝账号</label>
+                <label class="layui-form-label">加密方式</label>
                 <div class="layui-input-block">
-                    <input type="text" required lay-verify="required" name="alipay[account]" value="{{ $setting['payment']['alipay']['account'] }}" placeholder="请输入您的支付宝收款账号" autocomplete="off" class="layui-input" />
+                    <input type="radio" lay-filter="ctrls" data-target=".alipaysign" value="MD5" name="alipay[sign_type]" title="MD5"{{ $setting['payment']['alipay']['sign_type']!='RSA2' ? 'checked' : '' }} />
+                    <input type="radio" lay-filter="ctrls" data-target=".alipaysign" value="RSA2" name="alipay[sign_type]" title="RSA2"{{ $setting['payment']['alipay']['sign_type']=='RSA2' ? 'checked' : '' }} />
                 </div>
             </div>
-            <div class="layui-form-item must">
-                <label class="layui-form-label">合作者ID</label>
-                <div class="layui-input-block">
-                    <input type="text" required lay-verify="required" name="alipay[partner]" value="{{ $setting['payment']['alipay']['partner'] }}" placeholder="请输入您的支付宝合作者ID，一般是2088开头的数字" autocomplete="off" class="layui-input" />
+            <div class="alipaysign form-itemRSA2{{ $setting['payment']['alipay']['sign_type']=='RSA2' ? '' : ' layui-hide' }}">
+                <div class="layui-form-item must">
+                    <label class="layui-form-label">应用APPID</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="alipay[appid]" value="{{ $setting['payment']['alipay']['appid'] }}" placeholder="请输入您的支付宝开放平台应用APPID" autocomplete="off" class="layui-input" />
+                        <div class="layui-word-aux"><a href="https://opensupport.alipay.com/support/helpcenter/207/201602469554?ant_source=antsupport" class="text-blue" target="_blank">点此查看配置说明</a></div>
+                    </div>
+                </div>
+                <div class="layui-form-item must">
+                    <label class="layui-form-label">支付宝公钥</label>
+                    <div class="layui-input-block">
+                        <textarea class="layui-textarea" placeholder="请输入您的支付宝公钥" name="alipay[publickey]">{{ $setting['payment']['alipay']['publickey'] }}</textarea>
+                    </div>
+                </div>
+                <div class="layui-form-item must">
+                    <label class="layui-form-label">应用私钥</label>
+                    <div class="layui-input-block">
+                        <textarea class="layui-textarea" placeholder="请输入您的应用私钥" name="alipay[privatekey]">{{ $setting['payment']['alipay']['privatekey'] }}</textarea>
+                    </div>
                 </div>
             </div>
-            <div class="layui-form-item must">
-                <label class="layui-form-label">接口密匙</label>
-                <div class="layui-input-block">
-                    <input type="password" required lay-verify="required" name="alipay[secret]" value="{{ $setting['payment']['alipay']['secret'] }}" placeholder="请输入您的支付宝接口密匙，MD5格式的密匙串" autocomplete="off" class="layui-input" />
+            <div class="alipaysign form-itemMD5{{ $setting['payment']['alipay']['sign_type']=='RSA2' ? ' layui-hide' : '' }}">
+                <div class="layui-form-item must">
+                    <label class="layui-form-label">合作者ID</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="alipay[partner]" value="{{ $setting['payment']['alipay']['partner'] }}" placeholder="请输入您的支付宝合作者ID，一般是2088开头的数字" autocomplete="off" class="layui-input" />
+                    </div>
+                </div>
+                <div class="layui-form-item must">
+                    <label class="layui-form-label">支付宝账号</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="alipay[account]" value="{{ $setting['payment']['alipay']['account'] }}" placeholder="请输入您的支付宝收款账号" autocomplete="off" class="layui-input" />
+                    </div>
+                </div>
+                <div class="layui-form-item must">
+                    <label class="layui-form-label">接口密匙</label>
+                    <div class="layui-input-block">
+                        <input type="password" name="alipay[secret]" value="{{ $setting['payment']['alipay']['secret'] }}" placeholder="请输入您的支付宝接口密匙，MD5格式的密匙串" autocomplete="off" class="layui-input" />
+                    </div>
                 </div>
             </div>
             <div class="layui-form-item">
                 <div class="layui-input-block">
                     <button class="layui-btn layui-btn-normal" lay-submit type="submit" value="true" name="savedata">保存</button>
                     <button type="reset" class="layui-btn layui-btn-primary">重填</button>
+                    <a class="layui-btn layui-btn-danger" href="{{ wurl('account/setting',array('uniacid'=>$uniacid,'op'=>'demo-alipay')) }}" target="_blank">测试支付</a>
                 </div>
             </div>
         </form>
@@ -251,7 +282,12 @@
             type:1,
             content:$(id).html(),
             area: '720px',
-            skin:'fui-layer'
+            skin:'fui-layer',
+            success:function (){
+                let filter = id.replace('#','');
+                $('.layui-layer-content').find('.layui-form').attr('lay-filter', filter);
+                layform.render(null, filter);
+            }
         });
     }
 </script>

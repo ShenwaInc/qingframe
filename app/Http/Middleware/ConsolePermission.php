@@ -2,7 +2,8 @@
 
 namespace App\Http\Middleware;
 
-use App\Services\AttachmentService;
+use App\Services\AccountService;
+use App\Services\FileService;
 use App\Services\SettingService;
 use App\Services\UserService;
 use Closure;
@@ -49,10 +50,9 @@ class ConsolePermission
         if ($uniacid>0){
             $_W['uniacid'] = $uniacid;
             $_W['role'] = UserService::AccountRole($_W['uid'],$uniacid);
-            $_W['account'] = uni_fetch($uniacid);
+            $_W['account'] = AccountService::FetchUni($uniacid);
         }
-        $_W['attachurl'] = AttachmentService::SetAttachUrl();
-        include_once base_path("bootstrap/functions/console.func.php");
+        $_W['attachurl'] = FileService::SetAttachUrl();
         return $next($request);
     }
 

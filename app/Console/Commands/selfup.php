@@ -3,10 +3,12 @@
 namespace App\Console\Commands;
 
 use App\Http\Middleware\App;
+use App\Services\CacheService;
 use Illuminate\Console\Command;
 use App\Services\CloudService;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class selfup extends Command
 {
@@ -16,6 +18,7 @@ class selfup extends Command
      * @var string
      */
     protected $signature = 'self:update {version?} {release?}';
+    public $Application;
 
     /**
      * The console command description.
@@ -32,7 +35,7 @@ class selfup extends Command
     public function __construct()
     {
         parent::__construct();
-        $bulidapp = new App();
+        $this->Application = new App();
     }
 
     /**
@@ -52,18 +55,19 @@ class selfup extends Command
         $component = DB::table('gxswa_cloud')->where('type',0)->first(['id','identity','modulename','type','releasedate','rootpath']);
         $cloudupdate = CloudService::CloudUpdate($component['identity'],base_path().'/');
         if (is_error($cloudupdate)) return $this->error($cloudupdate['message']) || "";
-        //数据库升级
-        Artisan::call('self:migrate');
-
-        //更新路由
-        Artisan::call('route:clear');
 
         //更新版本信息
         $arguments = $this->argument();
+        $system = config('system');
         if (empty($arguments['version'])){
-            $system = config('system');
-            $arguments['version'] = $system['version'];
-            $arguments['release'] = intval($system['release']) + 1;
+            $ugradeinfo = CloudService::CloudApi('structure',array('identity'=>$component['identity']));
+            if (is_error($ugradeinfo)){
+                $arguments['version'] = $system['version'];
+                $arguments['release'] = intval($system['release']) + 1;
+            }else{
+                $arguments['version'] = $ugradeinfo['version'];
+                $arguments['release'] = $ugradeinfo['releasedate'];
+            }
         }
         DB::table('gxswa_cloud')->where('id',$component['id'])->update(array(
             'version'=>$arguments['version'],
@@ -76,6 +80,7 @@ class selfup extends Command
                 'releasedate'=>intval($arguments['release'])
             ))
         ));
+        CloudService::CloudEnv(array("APP_VERSION={$system['version']}","APP_RELEASE={$system['release']}"), array("APP_VERSION={$arguments['version']}","APP_RELEASE={$arguments['release']}"));
 
         $this->info('Whotalk framework upgrade successfully.');
         return true;

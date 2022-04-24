@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Console;
 
 use App\Http\Controllers\Controller;
 use App\Models\Account;
+use App\Models\CorePaylog;
 use App\Models\Setting;
 use App\Services\CacheService;
+use App\Services\PayService;
 use App\Services\SettingService;
 use App\Services\UserService;
 use App\User;
@@ -21,7 +23,7 @@ class AccountController extends Controller
     public $role = 'operator';
     public $account = null;
 
-    function accInit(){
+    function accInit($check=false){
         global $_W,$_GPC;
         $uniacid = intval($_GPC['uniacid']);
         $this->account = Account::getByUniacid($uniacid);
@@ -31,15 +33,24 @@ class AccountController extends Controller
         }
         if (empty($this->role)){
             //暂无权限
-            echo response()->view('message',array('message'=>'暂无权限','redirect'=>'/console','type'=>'error','_W'=>$_W))->content();
-            session()->save();
-            exit();
+            return error(-1, "暂无权限");
         }
+        if ($check){
+            if ($this->uniacid==0 || $this->account['isdeleted']==1) return error(-1, "找不到该平台，可能已被删除");
+            if ($this->account['endtime']>0 && $this->account['endtime']<TIMESTAMP && !$_W['isfounder']){
+                return error(-1, "该平台服务已到期，请联系管理员处理");
+            }
+        }
+        return $this->account;
     }
 
     //平台管理控制器
     public function index(Request $request,$action='profile'){
-        $this->accInit();
+        $check = in_array($action, array('component','setting'));
+        $account = $this->accInit($check);
+        if (is_error($account)){
+            return $this->message($account['message'], '/console');
+        }
         $method = "do".ucfirst($action);
         if (method_exists($this, $method)){
             return $this->$method($request);
@@ -52,12 +63,7 @@ class AccountController extends Controller
         if (!$_W['isfounder']){
             return $this->message('暂无权限，请勿乱操作');
         }
-        $return = array('title'=>'应用权限','uniacid'=>$this->uniacid,'components'=>array());
-        if ($this->uniacid==0 || $this->account['isdeleted']==1) return $this->message('找不到该平台，可能已被删除');
-        if ($this->account['endtime']>0 && $this->account['endtime']<TIMESTAMP && !$_W['isfounder']){
-            return $this->message('该平台服务已到期，请联系管理员处理');
-        }
-
+        $return = array('title'=>'应用权限','uniacid'=>$this->uniacid);
         $components = DB::table('uni_account_extra_modules')->where('uniacid',$this->uniacid)->first();
         if (empty($components)){
             $defaultmodule = DB::table('gxswa_cloud')->where('modulename',$_W['config']['defaultmodule'])->select(['name','modulename','logo'])->first();
@@ -75,10 +81,6 @@ class AccountController extends Controller
 
     public function doRole(Request $request){
         global $_W;
-        if ($this->uniacid==0 || $this->account['isdeleted']==1) return $this->message('找不到该平台，可能已被删除');
-        if ($this->account['endtime']>0 && $this->account['endtime']<TIMESTAMP && !$_W['isfounder']){
-            return $this->message('该平台服务已到期，请联系管理员处理');
-        }
         if ($this->role!='owner' && !$_W['isfounder'])return $this->message('您暂无权限操作');
         $return = array('title'=>'管理权限','users'=>array(),'uniacid'=>$this->uniacid,'role'=>$this->role);
         $subs = UserService::GetSubs($_W['uid']);
@@ -171,10 +173,6 @@ class AccountController extends Controller
 
     public function doSetting(Request $request){
         global $_W;
-        if ($this->uniacid==0 || $this->account['isdeleted']==1) return $this->message('找不到该平台，可能已被删除');
-        if ($this->account['endtime']>0 && $this->account['endtime']<TIMESTAMP && !$_W['isfounder']){
-            return $this->message('该平台服务已到期，请联系管理员处理');
-        }
         $setting = SettingService::uni_load('', $this->uniacid);
         if (empty($setting['payment'])){
             $setting['payment'] = array(
@@ -189,8 +187,14 @@ class AccountController extends Controller
                 'email'=>array('switch'=>0,'smtp'=>'','port'=>'','username'=>'','password'=>'','sender'=>'')
             );
         }
+        $remote = "跟随系统";
+        $storage = serv('storage', $this->uniacid);
+        if (!$storage->settings['remote']['isglobal']){
+            $remotes = array('跟随系统','FTP','阿里云存储','七牛云存储','腾讯云存储','亚马逊S3');
+            $remote = $remotes[$storage->settings['remote']['type']];
+        }
+        $op = (string)$request->input('op','');
         if ($request->isMethod('post')){
-            $op = (string)$request->input('op','');
             switch ($op){
                 case 'js-switch' :
                     $name = $request->input('name','');
@@ -252,12 +256,41 @@ class AccountController extends Controller
             }
             return $this->message();
         }
+        if ($op=='demo-alipay'){
+            $_W['uniacid'] = $this->uniacid;
+            $_W['account'] = uni_fetch($this->uniacid);
+            $testfee = floatval(0.1 + (random(1,true) / 100));
+            $orderinfo = [
+                'openid'=>$_W['uid'],
+                'tid'=>random(10),
+                'fee'=>$testfee,
+                'tag'=>"测试充值{$testfee}元",
+                'is_usecard'=>0,
+                'card_type'=>0,
+                'card_id'=>0,
+                'card_fee'=>0,
+                'encrypt_code'=>random(6,true),
+                'is_wish'=>0
+            ];
+            $paylog = CorePaylog::create($orderinfo);
+
+            $orderinfo = [
+                'uniontid'=>$paylog['uniontid'],
+                'tag'=>$paylog['tag'],
+                'fee'=>$paylog['fee'],
+                'uniacid'=>$paylog['uniacid']
+            ];
+            $info = PayService::create('alipay',$orderinfo);
+
+            dd($info);
+        }
         return $this->globalview('console.account.setting', array(
             'uniacid'=>$this->uniacid,
             'account'=>$this->account,
             'setting'=>$setting,
             'role'=>$this->role,
-            'title'=>'平台配置'
+            'title'=>'平台配置',
+            'remote'=>$remote
         ));
     }
 
@@ -316,9 +349,7 @@ class AccountController extends Controller
         DB::table('account')->where('uniacid',$uniacid)->update(array('isdeleted'=>1));
         DB::table('uni_modules')->where('uniacid',$uniacid)->delete();
         DB::table('users_operate_star')->where('uniacid',$uniacid)->delete();
-        DB::table('users_lastuse')->where('uniacid',$uniacid)->delete();
-        DB::table('core_menu_shortcut')->where('uniacid',$uniacid)->delete();
-        DB::table('uni_link_uniacid')->where('uniacid',$uniacid)->delete();
+        DB::table('users_operate_history')->where('uniacid', $uniacid)->delete();
         $cachekey = CacheService::system_key('user_accounts', array('type' => 'account', 'uid' => $_W['uid']));
         Cache::forget($cachekey);
         $cachekey = CacheService::system_key('uniaccount', array('uniacid' => $uniacid));

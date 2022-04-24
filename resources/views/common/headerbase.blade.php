@@ -17,10 +17,9 @@
             {{ $title }} -
         @endif{{$_W['page']['title']}}
     </title>
-    <link rel="stylesheet" href="{{ asset('/static/bootstrap/css/bootstrap.min.css') }}?v={{ $_W['config']['release'] }}" />
-    <link rel="stylesheet" href="{{ asset('/static/layui/css/layui.css') }}?v={{ $_W['config']['release'] }}" />
-    <link rel="stylesheet" href="{{ asset('/static/fului/fului-for-lay.css') }}?v={{ $_W['config']['release'] }}" />
-    <script type="text/javascript" src="{{ asset('/static/layui/layui.js') }}?v={{ $_W['config']['release'] }}"></script>
-    <script type="text/javascript" src="{{ asset('/static/js/jquery-1.11.1.min.js') }}?v={{ $_W['config']['release'] }}"></script>
+    <link rel="stylesheet" href="//dl.gxswa.com/res/css/bootstrap-icons.css?v={{ $_W['config']['release'] }}" />
+    <link rel="stylesheet" href="//dl.gxswa.com/res/layui/css/layui.css?v={{ $_W['config']['release'] }}" />
+    <script type="text/javascript" src="//dl.gxswa.com/res/layui/layui.js?v={{ $_W['config']['release'] }}"></script>
+    <script type="text/javascript" src="//dl.gxswa.com/res/js/jquery-1.11.1.min.js?v={{ $_W['config']['release'] }}"></script>
     <script type="text/javascript" src="{{ asset('/static/js/core.jquery.js') }}?v={{ $_W['config']['release'] }}"></script>
 </head>

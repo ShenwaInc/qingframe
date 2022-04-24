@@ -28,7 +28,7 @@ class ModuleController extends Controller
             array('createtime'=>TIMESTAMP,'type'=>2)
         );
         if (!function_exists('message')){
-            require_once base_path('bootstrap/functions/web.func.php');
+            serv("weengine")->func("web");
         }
         return $site->$method($request);
     }

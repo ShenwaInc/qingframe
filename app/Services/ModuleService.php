@@ -4,14 +4,13 @@
 namespace App\Services;
 
 
+use App\Models\Account;
 use App\Models\Module;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class ModuleService
 {
-
-    static $coremodules = array('whotalk'=>'Whotalk即时通讯');
 
     static function Initializer(){
         $query = DB::table('modules');
@@ -37,7 +36,7 @@ class ModuleService
     }
 
     static function install($identity,$path='addons',$from='cloud'){
-        $installpath = base_path("public/$path/{$identity}/");
+        $installpath = base_path("public/$path/$identity/");
         $manifestfile = $installpath . "Manifest.php";
         if(!file_exists($manifestfile)) return error(-1,'无法解析模块安装包');
         $ManiFest = require_once $manifestfile;
@@ -56,9 +55,19 @@ class ModuleService
         $handles = method_exists($ManiFest,'handles') ? $ManiFest->handles : array();
         $module = self::ModuleData($application,$subscribes,$handles);
         $module['from'] = $from;
-        DB::table('modules')->insert($module);
-        //写入服务组件表
-        if (isset(self::$coremodules[$identity])){
+        if (!DB::table('modules')->insert($module)){
+            return error(-1,'无法解析模块安装包');
+        }
+        if (!empty($ManiFest->servers)){
+            try {
+                $MSS = new MSService();
+                $MSS->checkrequire($ManiFest->servers);
+            }catch (\Exception $exception){
+                return error(-1,'安装依赖服务时发生错误：'.$exception->getMessage());
+            }
+        }
+        //写入组件表
+        if ($from=='cloud'){
             $comdata = array(
                 'name'=>$module['title'],
                 'modulename'=>$identity,
@@ -66,39 +75,41 @@ class ModuleService
                 'logo'=>$module['logo'],
                 'website'=>$module['url'],
                 'version'=>$application['version'],
+                'releasedate'=>$application['releasedate'],
+                'updatetime'=>TIMESTAMP,
                 'addtime'=>TIMESTAMP,
                 'dateline'=>TIMESTAMP
             );
-            if ($from=='cloud'){
-                $comdata['updatetime'] = TIMESTAMP;
-                $comdata['releasedate'] = $application['releasedate'];
-            }
             DB::table('gxswa_cloud')->updateOrInsert(array(
-                'identity'=>"laravel_module_{$identity}",
-                'rootpath'=>"public/$path/{$identity}/"
+                'identity'=>"laravel_module_$identity",
+                'rootpath'=>"public/$path/$identity/"
             ),$comdata);
         }
         return true;
     }
 
-    static function upgrade($identity){
+    static function installCheck($identity){
         $module = DB::table('modules')->where('name',$identity)->first();
         if (empty($module)) return error(-1,'该模块尚未安装');
-        $installpath = base_path("public/addons/{$identity}/");
-        if (isset(self::$coremodules[$identity])){
-            $component = DB::table('gxswa_cloud')->where('identity',"laravel_module_{$identity}")->first();
-            if (!empty($component)){
-                $installpath = base_path($component['rootpath']);
-            }
-        }
+        $installpath = base_path("public/addons/$identity/");
         $manifestfile = $installpath . "Manifest.php";
         if(!file_exists($manifestfile)) return error(-1,'无法解析模块安装包');
         $ManiFest = require_once $manifestfile;
         if (!$ManiFest->installed) return error(-1,'该模块尚未安装');
+        return $ManiFest;
+    }
+
+    static function upgrade($identity){
+        $ManiFest = self::installCheck($identity);
+        if (is_error($ManiFest)) return $ManiFest;
+        if (!$ManiFest->installed) return error(-1,'该模块尚未安装');
         $application = $ManiFest->application;
-        if (!empty($component) && $component['releasedate']>=$application['releasedate']){
+        $component = self::SysComponent($application['identifie']);
+        if (!empty($component)){
             //已经是最新版本
-            return true;
+            if ($component['releasedate']>=$application['releasedate']){
+                return true;
+            }
         }
         //执行升级脚本
         if (method_exists($ManiFest,'upgrader')){
@@ -112,18 +123,45 @@ class ModuleService
         $subscribes = method_exists($ManiFest,'subscribes') ? $ManiFest->subscribes : array();
         $handles = method_exists($ManiFest,'handles') ? $ManiFest->handles : array();
         $moduledata = self::ModuleData($application,$subscribes,$handles);
-        DB::table('modules')->where('name',$module['name'])->update($moduledata);
+        DB::table('modules')->where('name',$application['identifie'])->update($moduledata);
         //更新模块数据表
         if (!empty($component)){
+            $cloudinfo = empty($component['online']) ? array() : unserialize($component['online']);
+            $cloudinfo['isnew'] = false;
             DB::table('gxswa_cloud')->where('id',$component['id'])->update(array(
-                'name'=>$module['title'],
-                'logo'=>$module['logo'],
-                'website'=>$module['url'],
+                'name'=>$application['name'],
+                'logo'=>$application['logo'],
+                'website'=>$application['url'],
                 'version'=>$application['version'],
                 'updatetime'=>TIMESTAMP,
                 'releasedate'=>$application['releasedate']
             ));
         }
+        return true;
+    }
+
+    static function uninstall($identity){
+        $ManiFest = self::installCheck($identity);
+        if (is_error($ManiFest)) return $ManiFest;
+        $component = self::SysComponent($ManiFest->application['identifie']);
+        //执行卸载脚本
+        if (method_exists($ManiFest,'uninstaller')){
+            try {
+                $ManiFest->uninstaller();
+            } catch (\Exception $exception){
+                return error(-1,'卸载失败：运行脚本出现错误:'.$exception->getMessage());
+            }
+        }
+        //更新模块数据表
+        DB::table('modules')->where('name',$ManiFest->application['identifie'])->delete();
+        if (!empty($component)){
+            DB::table('gxswa_cloud')->where('id',$component['id'])->delete();
+            if (!DEVELOPMENT){
+                //删除安装包
+                FileService::rmdirs(base_path($component['rootpath']));
+            }
+        }
+        CacheService::flush();
         return true;
     }
 
@@ -234,6 +272,103 @@ class ModuleService
             'baiduapp_support'=>1,
             'toutiaoapp_support'=>1
         );
+    }
+
+    static function SupportType(){
+        $module_support_type = array(
+            'account_support' => array(
+                'type' => 'account',
+                'type_name' => '公众号',
+                'support' => 2,
+                'not_support' => 1,
+                'store_type' => 1,
+            )
+        );
+        return $module_support_type;
+    }
+
+    static function UniModules($uniacid, $apptype=null){
+        $account_info = Account::getByUniacid($uniacid);
+        $uni_account_type = AccountService::GetType(1);
+        $owner_uid = DB::table('uni_account_users')->where(array('uniacid' => $uniacid, 'role' => array('owner', 'vice_founder')))->select(array('uid', 'role'))->get()->keyBy('role')->toArray();
+        $owner_uid = !empty($owner_uid['owner']) ? $owner_uid['owner']['uid'] : (!empty($owner_uid['vice_founder']) ? $owner_uid['vice_founder']['uid'] : 0);
+
+        $cachekey = CacheService::system_key('unimodules',array('uniacid'=>$uniacid));
+        $modules = Cache::get($cachekey,array());
+        if (empty($modules)){
+            $enabled_modules = self::NonRecycleModules();
+            if (!empty($owner_uid) && !UserService::isFounder($owner_uid, true)) {
+                $group_modules = AccountService::GroupModules($uniacid);
+
+                $user_modules = UserService::GetModules($owner_uid);
+                if (!empty($user_modules)) {
+                    $group_modules = array_unique(array_merge($group_modules, array_keys($user_modules)));
+                    $group_modules = array_intersect(array_keys($enabled_modules), $group_modules);
+                }
+            } else {
+                $group_modules = array_keys($enabled_modules);
+            }
+            Cache::put($cachekey, $group_modules, 7*86400);
+            $modules = $group_modules;
+        }
+        if (empty($apptype)){
+            $modules = array_merge($modules, self::SysModules());
+        }
+
+        $module_list = array();
+        if (!empty($modules)) {
+            foreach ($modules as $name) {
+                if (empty($name)) {
+                    continue;
+                }
+                $module_info = self::fetch($name);
+                if ($module_info[$uni_account_type['module_support_name']] != $uni_account_type['module_support_value']) {
+                    continue;
+                }
+                if (!empty($module_info['recycle_info'])) {
+                    if ($module_info['recycle_info']['account'] > 0 && $module_info['account'] == 2) {
+                        $module_info['account'] = 1;
+                    }
+                }
+                if ($module_info['account_support'] != 2 && in_array($account_info['type'], array(1, 3))) {
+                    continue;
+                }
+                if (!empty($module_info)) {
+                    $module_list[$name] = $module_info;
+                }
+            }
+        }
+        if (empty($apptype)){
+            $module_list['core'] = array('title' => '系统事件处理模块', 'name' => 'core', 'issystem' => 1, 'enabled' => 1, 'isdisplay' => 0);
+        }
+        return $module_list;
+    }
+
+    static function NonRecycleModules(){
+        $modules = Module::where('issystem' , 0)->orderBy('mid', 'DESC')->get()->keyBy('name')->toArray();
+        if (empty($modules)) {
+            return array();
+        }
+        foreach ($modules as &$module) {
+            $module_info = self::fetch($module['name']);
+            if (empty($module_info)) {
+                unset($module);
+            }
+            if (!empty($module_info['recycle_info'])) {
+                if ($module_info['recycle_info']['account_support'] > 0 && $module_info['account_support'] == 2) {
+                    $module['account_support'] = 1;
+                }
+            }
+        }
+        return $modules;
+    }
+
+    static function SysModules(){
+        return array('basic', 'news', 'music', 'service', 'userapi', 'recharge', 'images', 'video', 'voice', 'wxcard', 'custom', 'chats', 'paycenter', 'keyword', 'special', 'welcome', 'default', 'apply', 'reply', 'core', 'store', 'wxapp');
+    }
+
+    static function SysComponent($identity){
+        return DB::table('gxswa_cloud')->where('identity',"laravel_module_$identity")->first();
     }
 
 }

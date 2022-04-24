@@ -3,5 +3,9 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/public/addons/whotalk" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/public/addons/whotalk/plugin/tasks" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/servers/storage" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/servers/ucenter" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/servers/weengine" vcs="Git" />
   </component>
 </project>

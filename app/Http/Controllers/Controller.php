@@ -21,7 +21,7 @@ class Controller extends BaseController
         if(!isset($_W['isajax'])){
             $_W['isajax'] = \request()->ajax() || \request('inajax', 0);
         }
-        if ($_W['isajax']){
+        if ($_W['isajax'] || $_W['isapi']){
             return json_encode($data);
         }else{
             return $this->globalview('message', $data);

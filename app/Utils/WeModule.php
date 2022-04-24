@@ -3,6 +3,7 @@
 namespace App\Utils;
 
 use App\Services\CacheService;
+use App\Services\FileService;
 use App\Services\ModuleService;
 use Illuminate\Support\Facades\DB;
 
@@ -107,9 +108,7 @@ class WeModule
         global $_W;
         $name = strtolower($this->modulename);
         $defineDir = dirname($this->__define);
-        if (!function_exists('template_compile')){
-            require_once base_path("bootstrap/functions/template.func.php");
-        }
+        serv("weengine")->func("template");
         if (defined('IN_SYS')) {
             $source = IA_ROOT . "/web/themes/{$_W['template']}/{$name}/{$extra}{$filename}.html";
             $compile = storage_path("framework/tpls/web/{$name}/{$extra}{$filename}.tpl.php");
@@ -193,12 +192,12 @@ class WeModule
         $uniacid = intval($_W['uniacid']);
         if (empty($name) || 'auto' == $name) {
             $path = "{$type_path}/{$uniacid}/{$this->module['name']}/" . date('Y/m/');
-            mkdirs(ATTACHMENT_ROOT . '/' . $path);
+            FileService::mkdirs(ATTACHMENT_ROOT . '/' . $path);
 
-            $filename = file_random_name(ATTACHMENT_ROOT . '/' . $path, $type);
+            $filename = FileService::file_random_name(ATTACHMENT_ROOT . '/' . $path, $type);
         } else {
             $path = "{$type_path}/{$uniacid}/{$this->module['name']}/";
-            mkdirs(dirname(ATTACHMENT_ROOT . '/' . $path));
+            FileService::mkdirs(dirname(ATTACHMENT_ROOT . '/' . $path));
 
             $filename = $name;
             if (!strexists($filename, $type)) {
@@ -206,7 +205,7 @@ class WeModule
             }
         }
         if (file_put_contents(ATTACHMENT_ROOT . $path . $filename, $file_string)) {
-            file_remote_upload($path);
+            FileService::file_remote_upload($path);
 
             return $path . $filename;
         } else {
