@@ -9,9 +9,9 @@ class MicroService
 
     public $service = array();
     public $identity;
-    public $serverpath = MICRO_SERVER;
-    public $tablename = 'microserver';
-    public $ComplieDrive = "smarty";
+    public $serverPath = MICRO_SERVER;
+    public $tableName = 'microserver';
+    public $CompileDrive = "smarty";
     public $Unique = false;
     public $framework = "laravel";
     public $events = [];
@@ -27,7 +27,7 @@ class MicroService
         if (defined('IN_SYS')){
             $fields = array_merge($fields, array("cover","summary","entrance","datas","configs"));
         }
-        $service = pdo_get($this->tablename, array('identity'=>$this->identity), $fields);
+        $service = pdo_get($this->tableName, array('identity'=>$this->identity), $fields);
         if (defined('IN_SYS')){
             $service['datas'] = empty($service['datas']) ? array() : unserialize($service['datas']);
             if (!empty($service['datas'])){
@@ -88,18 +88,18 @@ class MicroService
      * @param string|null $entrance;
      * @return string 后台入口URL
      */
-    public function getEntry($entrance=""){
+    public function getEntry($entrance="", $full=true){
         if(empty($entrance)){
             $entrance = $this->service['entrance'];
         }
         if (strpos($entrance,'http')===0) return $entrance;
         if ($this->service['drive']=='php'){
-            if ($entrance=='' && file_exists($this->serverpath.$this->identity."/web/IndexController.php")){
+            if ($entrance=='' && file_exists($this->serverPath.$this->identity."/web/IndexController.php")){
                 $entrance = 'index';
             }
-            if (!empty($entrance)){
-                return $this->url($entrance);
-            }
+        }
+        if (!empty($entrance) && $full){
+            return $this->url($entrance);
         }
         return $entrance;
     }
@@ -206,7 +206,7 @@ class MicroService
         if (empty($method)) $method = 'main';
 
         //定义运行目录
-        $basepath = $this->serverpath . $this->identity;
+        $basepath = $this->serverPath . $this->identity;
         //定义控制器
         $ctrl = "$basepath/$platform/".ucfirst($controller)."Controller.php";
         if (!file_exists($ctrl)){
@@ -289,7 +289,7 @@ class MicroService
             die();
         }
         $platform = defined('IN_SYS') ? 'web' : 'app';
-        if ($this->ComplieDrive=='smarty'){
+        if ($this->CompileDrive=='smarty'){
             if (!empty($data)){
                 foreach ($data as $key=>$value){
                     $$key = $value;
@@ -310,7 +310,7 @@ class MicroService
             }
             include $compile;
             session_exit();
-        }elseif ($this->ComplieDrive=='blade'){
+        }elseif ($this->CompileDrive=='blade'){
             return false;
         }
         return true;

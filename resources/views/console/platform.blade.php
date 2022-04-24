@@ -10,7 +10,7 @@
         @else
         <div class="layui-row layui-col-space15 fui-list card">
             @foreach($list as $key=>$item)
-            <div class="layui-col-md3 layui-col-xs6 fui-item">
+            <div class="layui-col-md3 layui-col-xs12 fui-item">
                 <a href="{{ url("console/account",array('uniacid'=>$item['uniacid'])) }}" target="_blank" class="fui-content">
                     <div class="fui-info">
                         <img alt="{{ $item['name'] }}" class="round" src="{{ tomedia($item['logo']) }}" />
@@ -27,7 +27,7 @@
             </div>
             @endforeach
             @if($cancreate)
-            <div class="layui-col-md3 layui-col-xs6 fui-item">
+            <div class="layui-col-md3 layui-col-xs12 fui-item">
                 <a href="{{ url("console/account/create") }}" title="创建新平台" class="fui-content dashed ajaxshow">
                     <div class="fui-info">
                         <span class="card-icon layui-icon layui-icon-add-1 text-gray"></span>

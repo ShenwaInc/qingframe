@@ -35,7 +35,7 @@ function serv(string $name, $params=null){
     }
     $service = MICRO_SERVER.strtolower($name).'/'.ucfirst($name)."Service.php";
     if (!file_exists($service)){
-        return new CatchCall("Service $name Not Found.");
+        return new CatchCall("Service ".ucfirst($name)." Not Found.");
     }
     require_once $service;
     $class_name = ucfirst($name) . 'Service';
@@ -128,11 +128,18 @@ function checksubmit($var='_token'){
     return isset($_GPC[$var]);
 }
 
-function cache_load($key, $unserialize = false){
-    return Cache::get($key, $unserialize?array():null);
+function cache_load($key, $unserialize = false, $default=null){
+    $cache = Cache::get($key, $unserialize?array():$default);
+    if (!empty($cache) && $unserialize){
+        return unserialize($cache);
+    }
+    return $cache;
 }
 
 function cache_write($key, $data, $expire = null) {
+    if (empty($expire)){
+        return Cache::put($key, $data);
+    }
     return Cache::put($key, $data, $expire);
 }
 

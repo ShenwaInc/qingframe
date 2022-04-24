@@ -1,6 +1,6 @@
 @if(!$_W['isajax'])
 @include('common.headerbase')
-<link rel="stylesheet" href="{{ asset('/static/css/console.css') }}?v={{ $_W['config']['release'] }}" />
+<link rel="stylesheet" href="{{ asset('/static/css/console.css') }}?v={{ TIMESTAMP }}" />
 <body layadmin-themealias="ocean-header" class="layui-layout-body" style="position:inherit !important;">
 <div class="layui-layout layui-layout-admin">
     <div class="layui-header">

@@ -36,6 +36,7 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 .radius{border-radius: 5px;}
 .round{border-radius: 50%;}
 .nobd{border: none !important;}
+.ajaxshow{cursor: pointer;}
 
 /* border */
 .dashed{border: 1px dashed #e4e8eb !important;}
@@ -73,6 +74,7 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 .margin-right{margin-right: 15px;}
 .margin-right-xs{margin-right: 5px;}
 .margin-right-sm{margin-right: 8px;}
+.margin-left{margin-left: 15px;}
 .margin-left-sm{margin-left: 8px;}
 
 .main-content{width: 90%; margin: 0 auto; max-width: 1340px; min-width: 980px; padding-bottom: 30px;}
@@ -157,7 +159,7 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 .fui-tab .layui-tab-title{text-align: left; line-height: 40px; border-bottom: 1px solid #e0e1e2; font-size: 16px; height: auto;}
 .fui-tab .layui-tab-title > *{position: relative; margin-right: 24px; margin-bottom: -1px;}
 .fui-tab .layui-tab-title a{color: #353535; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 1; max-width: 120px; padding: 0}
-.fui-tab .layui-tab-title .layui-this:after{border: none; border-bottom: 2px solid #07c160;}
+.fui-tab .layui-tab-title .layui-this:after{border: none; border-bottom: 2px solid #07c160; height: 40px;}
 
 .fui-card{padding: 25px; box-shadow: 0 1px 5px 0 rgb(0 0 0 / 5%); margin-bottom: 30px;}
 .fui-card .layui-card-header{height: auto; min-height: 42px;}
@@ -175,6 +177,9 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 
 .fui-list .fui-item{box-sizing: border-box;}
 .fui-list .fui-content{border-radius: 4px; -moz-border-radius: 4px; -webkit-border-radius: 4px; margin: 0 10px 20px 0; padding: 15px 20px; border: 1px solid #e7e7eb; position: relative; cursor: pointer; display: block}
+.fui-list .fui-content.checked{border-color: #2ABA8E;}
+.fui-list .fui-content.checked:before{content: ''; width: 0; height: 0; border-bottom: 36px solid #2ABA8E; border-left: 64px solid transparent; position: absolute; display: block; right: -1px; bottom: -1px}
+.fui-list .fui-content.checked:after{position: absolute; font-family: layui-icon!important; content: "\e605"; right: 0; bottom: 0; font-size: 17px; padding: 4px 6px; font-weight: bold; color: #fff;}
 .fui-list .fui-info{padding: 10px 0; padding-left: 66px; min-height: 50px; position: relative;}
 .fui-list .fui-info img{width: 50px; height: 50px;  position: absolute; top: 10px; left: 0;}
 .fui-list.card .fui-item{position: relative;}
@@ -183,6 +188,7 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 
 .fui-layer{box-shadow: 0 0 12px 0 rgba(0,0,0,0.2) !important; border-radius: 4px !important; max-width: 1340px !important;}
 .fui-layer .layui-layer-title{background:none; border-bottom: 0;}
+.fui-layer .layui-hide-layer{display: none}
 .fui-layer .layui-layer-content{padding: 15px;}
 .fui-layer .layui-layer-content > .padding{padding: 0}
 .fui-layer .layui-layer-content  .unpadding{margin: -15px !important;}
@@ -205,6 +211,7 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 @media screen and (max-width: 768px){
     .layui-header{border-bottom: 1px solid #eee;}
     .fui-header{width: 95%}
+    .fui-header-sm .layui-logo{padding-left: 20px; text-align: left;}
     .fui-footer{min-width: unset;}
     .main-content{min-width: unset; width: 100%;}
     .main-content > h2{padding: 0 15px;}
@@ -214,4 +221,7 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
     .card.layui-col-space15 .js-dropdown{right: 15px;}
     .fui-tab .layui-tab-title{max-width: 100%;}
     .fui-tab .layui-tab-title > *{margin-right: 0}
+    .fui-layer{max-width: 95% !important;}
+    .fui-layer .layui-layer-content{overflow: auto;}
+    .fui-layer .layui-form-item .layui-input-inline{margin-left: 3px;}
 }

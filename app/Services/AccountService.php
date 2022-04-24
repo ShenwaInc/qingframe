@@ -147,4 +147,78 @@ class AccountService {
         return $num;
     }
 
+    static function OwnerAccounts($params, $page=1, $getlist=false){
+        global $_W;
+        if (!empty($params['founder_id'])) {
+            $founder_id = intval($params['founder_id']);
+        }
+
+        $account_all_type_sign = self::GetTypeSign();
+        $pIndex = max(1, intval($page));
+        $pSize = empty($params['pagesize']) ? 24 : min(1, intval($params['pagesize']));
+        $offset = ($pIndex-1)*$pSize;
+        $keyword = trim($params['keyword']);
+
+        $condition = array();
+        if (!empty($keyword)) {
+            if($keyword=='admin' && $_W['isadmin']){
+                $condition[] = ['ISNULL(uni_account_users.uid)', true];
+            }else{
+                $condition[] = ['uni_account.name','like',"%{$keyword}%"];
+            }
+        }
+
+        if (!empty($founder_id)) {
+            $condition[] = ['uni_account_users.role','vice_founder'];
+            $condition[] = ['uni_account_users.uid',$founder_id];
+        }
+
+        $query = Account::searchAccountQuery(false)->where($condition);
+        $total = $query->count();
+        if ($page!=-1){
+            $query = $query->offset($offset)->limit($pSize);
+        }
+        $list = $query->orderBy('uni_account.createtime','desc')->groupBy('uni_account.uniacid')->get()->keyBy('uniacid')->toArray();
+
+        if (!empty($list)) {
+            if (!$_W['isfounder']) {
+                $account_user_roles = DB::table('uni_account_users')->where('uid', $_W['uid'])->get()->keyBy('uniacid')->toArray();
+            }
+            foreach ($list as $k => &$account) {
+                $account = AccountService::FetchUni($account['uniacid']);
+                $account['manageurl'] .= '&iscontroller=0';
+                if (!in_array($account_user_roles[$account['uniacid']]['role'], array('owner', 'manager')) && !$_W['isfounder']) {
+                    unset($account['manageurl']);
+                }
+                $account['list_type'] = 'account';
+                $account['support_version'] = $account->supportVersion;
+                $account['type_name'] = $account->typeName;
+                $account['level'] = $account_all_type_sign[$account['type_sign']]['level'][$account['level']];
+                $account['user_role'] = $account_user_roles[$account['uniacid']]['role'];
+                if ('clerk' == $account['user_role']) {
+                    unset($list[$k]);
+                    continue;
+                }
+                $account['is_star'] = DB::table('users_operate_star')->where(array(
+                    ['uid',$_W['uid']],
+                    ['uniacid',$account['uniacid']],
+                    ['module_name','']
+                ))->exists() ? 1 : 0;
+                if (0 != $account['endtime'] && 2 != $account['endtime'] && $account['endtime'] < TIMESTAMP) {
+                    $account['endtime_status'] = 1;
+                } else {
+                    $account['endtime_status'] = 0;
+                }
+
+            }
+            if (!empty($list)) {
+                $list = array_values($list);
+            }
+        }
+
+        if ($getlist) return $list ?: [];
+
+        return array($list, $total);
+    }
+
 }

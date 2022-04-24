@@ -38,8 +38,8 @@
                     <thead>
                     <tr>
                         <th>服务名称</th>
-                        <th>版本号</th>
-                        <th>简介</th>
+                        <th class="layui-hide-xs">版本号</th>
+                        <th class="layui-hide-xs">简介</th>
                         <th class="text-right">操作</th>
                     </tr>
                     </thead>
@@ -57,13 +57,13 @@
                             &nbsp;<span class="layui-badge layui-bg-cyan">已删除</span>
                             @endif
                         </td>
-                        <td>
+                        <td class="layui-hide-xs">
                             V{{ $service['version'] }}
                             @if(!empty($service['upgrade']))
                             <span class="layui-badge layui-bg-red">发现新版本</span>
                             @endif
                         </td>
-                        <td>{{ $service['summary'] }}</td>
+                        <td class="layui-hide-xs">{{ $service['summary'] }}</td>
                         <td class="text-right">
                             @if(empty($service['binded']))
                             <div class="layui-btn-group text-center">

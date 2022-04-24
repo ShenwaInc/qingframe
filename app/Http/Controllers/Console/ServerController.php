@@ -3,25 +3,43 @@
 namespace App\Http\Controllers\Console;
 
 use App\Http\Controllers\Controller;
+use App\Services\AccountService;
 use App\Services\MSService;
 use Illuminate\Http\Request;
 
 class ServerController extends Controller
 {
 
-    public function HttpRequest($server,$param1='index',$param2=""){
-        global $_W;
+    public function HttpRequest($server,$segment1='',$segment2=""){
+        global $_W, $_GPC;
         $_W['server'] = trim($server);
         $_W['inserver'] = true;
         $_W['basescript'] = "server";
-        $ctrl = trim($param1);
-        if (!empty($param2)){
-            $ctrl = implode("/", array($ctrl, trim($param2)));
-        }
         if (!function_exists('tpl_compile')){
             include_once app_path("Helpers/smarty.php");
         }
-        $data = serv($_W['server'])->HttpRequest('web', $ctrl);
+        $service = serv($_W['server']);
+        if (!method_exists($service, 'initServer')){
+            return $this->message($service->error);
+        }
+        $ctrl = trim($segment1);
+        if (!empty($segment2)){
+            $ctrl = implode("/", array($ctrl, trim($segment2)));
+        }
+        if ($service->Unique && empty($_W['uniacid'])){
+            if (!empty($_GPC['i'])){
+                $_W['uniacid'] = intval($_GPC['i']);
+            }
+            if (!empty($_GPC['uniacid'])){
+                $_W['uniacid'] = intval($_GPC['uniacid']);
+            }
+            if (empty($_W['uniacid'])){
+                return $this->checkout($service->url($ctrl));
+            }
+            $service->uniacid = $_W['uniacid'];
+            session()->put('uniacid',$_W['uniacid']);
+        }
+        $data = $service->HttpRequest('web', $ctrl);
         if (is_error($data)){
             return $this->message($data['message']);
         }
@@ -29,6 +47,25 @@ class ServerController extends Controller
             return $this->message($data["message"], $data['redirect'], $data['type']);
         }
         return $this->globalview("server.".str_replace("/",".", $ctrl),$data);
+    }
+
+    public function checkout($refresh=''){
+        global $_GPC, $_W;
+        if (!empty($_GPC['uniacid'])){
+            if (empty($refresh)){
+                $refresh = referer();
+            }
+            session()->put('uniacid',intval($_GPC['uniacid']));
+            $refresh = preg_replace('/[\?|\&]uniacid=[\d]+/', "", $refresh);
+            header("location:$refresh");
+            session_exit();
+        }
+        $data = array(
+            'refresh'=>$refresh,
+            'uniacid'=>intval($_W['uniacid']),
+            'platforms'=>AccountService::OwnerAccounts(array(), -1, true)
+        );
+        return $this->globalview("console.server.platform",$data);
     }
 
     public function index(Request $request){

@@ -18,6 +18,7 @@ class PlatformController extends Controller
     //
     public function index(){
         global $_W,$_GPC;
+
         session()->forget('uniacid');
         if (empty($_W['isfounder']) && !empty($_W['user']) && ($_W['user']['status'] == 1 || $_W['user']['status'] == 3)) {
             Auth::logout();
@@ -28,78 +29,24 @@ class PlatformController extends Controller
             return $this->message('站点已关闭，关闭原因：' . $_W['setting']['site']['closereason'], url('login'), 'error');
         }
 
+        $data = array('cancreate'=>true);
+
+        $params = post_var(array('keyword'));
+
         if ($_W['isadmin']) {
-            $founder_id = intval($_GPC['founder_id']);
+            $params['founder_id'] = intval($_GPC['founder_id']);
         }
 
-        $account_all_type_sign = AccountService::GetTypeSign();
-        $pindex = max(1, intval($_GPC['page']));
-        $offset = ($pindex-1)*24;;
-        $keyword = trim($_GPC['keyword']);
+        list($data['list'], $data['total']) = AccountService::OwnerAccounts($params, $_GPC['page']);
 
-        $condition = array();
-        if (!empty($keyword)) {
-            if($keyword=='admin' && $_W['isadmin']){
-                $condition[] = ['ISNULL(uni_account_users.uid)', true];
-            }else{
-                $condition[] = ['uni_account.name','like',"%{$keyword}%"];
-            }
-        }
-
-        if (!empty($founder_id)) {
-            $condition[] = ['uni_account_users.role','vice_founder'];
-            $condition[] = ['uni_account_users.uid',$founder_id];
-        }
-
-        $query = Account::searchAccountQuery(false)->where($condition);
-        $total = $query->count();
-        $list = $query->offset($offset)->limit(24)->orderBy('uni_account.createtime','desc')->groupBy('uni_account.uniacid')->get()->keyBy('uniacid')->toArray();
-
-        $cancreate = true;
         if (!$_W['isfounder']){
-            $maxcreate = (int)DB::table('users_extra_limit')->where('uid',$_W['uid'])->value('maxaccount');
-            if ($maxcreate<=$total){
-                $cancreate = false;
+            $maxCreate = (int)DB::table('users_extra_limit')->where('uid',$_W['uid'])->value('maxaccount');
+            if ($maxCreate<=$data['total']){
+                $data['cancreate'] = false;
             }
         }
 
-        if (!empty($list)) {
-            if (!$_W['isfounder']) {
-                $account_user_roles = DB::table('uni_account_users')->where('uid', $_W['uid'])->get()->keyBy('uniacid')->toArray();
-            }
-            foreach ($list as $k => &$account) {
-                $account = AccountService::FetchUni($account['uniacid']);
-                $account['manageurl'] .= '&iscontroller=0';
-                if (!in_array($account_user_roles[$account['uniacid']]['role'], array('owner', 'manager')) && !$_W['isfounder']) {
-                    unset($account['manageurl']);
-                }
-                $account['list_type'] = 'account';
-                $account['support_version'] = $account->supportVersion;
-                $account['type_name'] = $account->typeName;
-                $account['level'] = $account_all_type_sign[$account['type_sign']]['level'][$account['level']];
-                $account['user_role'] = $account_user_roles[$account['uniacid']]['role'];
-                if ('clerk' == $account['user_role']) {
-                    unset($list[$k]);
-                    continue;
-                }
-                $account['is_star'] = DB::table('users_operate_star')->where(array(
-                    ['uid',$_W['uid']],
-                    ['uniacid',$account['uniacid']],
-                    ['module_name','']
-                ))->exists() ? 1 : 0;
-                if (0 != $account['endtime'] && 2 != $account['endtime'] && $account['endtime'] < TIMESTAMP) {
-                    $account['endtime_status'] = 1;
-                } else {
-                    $account['endtime_status'] = 0;
-                }
-
-            }
-            if (!empty($list)) {
-                $list = array_values($list);
-            }
-        }
-
-        return $this->globalview('console.platform',array('list'=>$list,'total'=>$total,'cancreate'=>$cancreate));
+        return $this->globalview('console.platform', $data);
     }
 
     public function checkout(Request $request,$uniacid){

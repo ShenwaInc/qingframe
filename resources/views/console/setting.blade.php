@@ -21,7 +21,7 @@
         @if($op=='main')
         <div class="fui-card layui-card">
             <div class="layui-card-header nobd">
-                <a href="{{ url('console/setting/pageset') }}" class="fr text-blue" title="编辑站点信息"><i class="glyphicon glyphicon-edit"></i></a>
+                <a href="{{ url('console/setting/pageset') }}" class="fr text-blue ajaxshow" title="编辑站点信息"><i class="glyphicon glyphicon-edit"></i></a>
                 <span class="title">站点信息</span>
             </div>
             <div class="layui-card-body">
@@ -183,19 +183,12 @@
                     <div class="layui-card-body">
                         <div class="un-padding">
                             <table class="layui-table fui-table lines" lay-even lay-skin="nob">
-                                <colgroup>
-                                    <col width="320" />
-                                    <col width="150" />
-                                    <col width="150" />
-                                    <col />
-                                    <col width="200" />
-                                </colgroup>
                                 <thead>
                                     <tr>
                                         <th>组件</th>
-                                        <th>安装时间</th>
-                                        <th>上次更新</th>
-                                        <th>线上版本</th>
+                                        <th class="layui-hide-xs">安装时间</th>
+                                        <th class="layui-hide-xs">上次更新</th>
+                                        <th class="layui-hide-xs">线上版本</th>
                                         <th><div class="text-right">操作</div></th>
                                     </tr>
                                 </thead>
@@ -214,9 +207,9 @@
                                                 V{{$com['version']}}
                                             </div>
                                         </td>
-                                        <td>{{ $com['installtime'] }}</td>
-                                        <td>{!! $com['lastupdate'] !!}</td>
-                                        <td>
+                                        <td class="layui-hide-xs">{{ $com['installtime'] }}</td>
+                                        <td class="layui-hide-xs">{!! $com['lastupdate'] !!}</td>
+                                        <td class="layui-hide-xs">
                                             @if(empty($com['cloudinfo']))
                                                 -
                                             @else
