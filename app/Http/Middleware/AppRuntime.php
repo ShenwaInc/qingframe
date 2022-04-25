@@ -46,7 +46,6 @@ class AppRuntime
             }
         }
         $_W['attachurl'] = FileService::SetAttachUrl();
-        serv("weengine")->func("app");
         return $next($request);
     }
 }

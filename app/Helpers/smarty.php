@@ -62,6 +62,10 @@ function tpl_parse($str) {
     $str = preg_replace('/{csrftoken}/', '<?php echo tpl_token(); ?>', $str);
     $str = preg_replace('/{ajaxhash}/', ' ajaxhash="'.$GLOBALS['_GPC']['ajaxhash'].'"', $str);
 
+    if (function_exists('tpl_parse_extra')){
+        $str = tpl_parse_extra($str);
+    }
+
     return $str;
 }
 
@@ -121,32 +125,4 @@ function tpl_build($controller='index', $method='main', $basepath=''){
         }
     }
     return $template;
-}
-
-/**
- * @throws Exception
- */
-function tpl_load($basepath, $controller='index', $method='main', $platform='web'){
-    $template = $controller;
-    if ($controller=='index'){
-        if ($method!='main'){
-            $template = $method;
-        }
-    }else{
-        if ($method=='main'){
-            $template .= '/index';
-            if (!file_exists(MODULE_ROOT."{$basepath}/template/{$platform}/{$template}.html")){
-                $template = $controller;
-            }
-        }else{
-            $template .= "/{$method}";
-        }
-    }
-    $source = MODULE_ROOT."{$basepath}/template/{$platform}/{$template}.html";
-    if (!file_exists($source)){
-        throw new Exception("Error: template source '{$template}' is not exist!");
-    }
-    $compile = storage_path("framework/tpls/$platform/").MODULE_IDENTIFIE."/".$basepath."/{$template}.tpl.php";
-    tpl_compile($source, $compile);
-    return $compile;
 }
