@@ -18,8 +18,7 @@
 - 站点所指定的PHP必须安装这些拓展(需重启PHP)：sg11、fileinfo、exif
 - 站点所指定的PHP必须要确保这些函数没有被禁用(需重启PHP)：putenv、proc_open、symlink
 - 建议关闭站点的CDN加速或第三方代理，安装完成后再开启
-- 创建好站点后，需要给站点添加以下的伪静态规则
-
+- Nginx的运行环境需要给站点添加以下的伪静态规则
 ```
 location / {  
 	try_files $uri $uri/ /index.php$is_args$query_string;  
@@ -27,7 +26,11 @@ location / {
 ````
 
 ###拉取代码
-将仓库源码拉取到站点根目录中
+- 将仓库源码拉取到站点根目录中
+- 在根目录运行如下命令来安装依赖包
+```
+composer update
+```
 
 
 ###安装向导
