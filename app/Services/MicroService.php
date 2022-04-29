@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\View;
 
 class MicroService
 {
@@ -279,14 +280,13 @@ class MicroService
     public function View($data, $template=''){
         global $_W,$_GPC;
         if (is_error($data)){
-            message($data['message'],"","error");
+            $this->message($data['message']);
         }
         if ($_W['isapi']){
             die(json_encode($data));
         }
         if(isset($data['type']) && isset($data['message'])){
-            message($data['message'], $data['redirect'], $data['type']);
-            die();
+            $this->message($data['message'], $data['redirect'], $data['type']);
         }
         $platform = defined('IN_SYS') ? 'web' : 'app';
         if ($this->CompileDrive=='smarty'){
@@ -301,12 +301,12 @@ class MicroService
             $template = str_replace(".","/", $template);
             $source = MICRO_SERVER.$this->identity."/template/$platform/$template.html";
             if (!file_exists($source)){
-                message("Error: template source '$template' is not exist!", "", "error");
+                $this->message("Error: template source '$template' is not exist!", "", "error");
             }
             $compile = storage_path("framework/tpls/$platform") . "/severs/".$this->identity."/$template.tpl.php";
             tpl_compile($source, $compile);
             if (!file_exists($compile)){
-                message("Warning: include_once(): Failed opening '$compile'","","error");
+                $this->message("Warning: include_once(): Failed opening '$compile'","","error");
             }
             include $compile;
             session_exit();
@@ -314,6 +314,21 @@ class MicroService
             return false;
         }
         return true;
+    }
+
+    public function message($msg, $redirect = '', $type = 'error'){
+        global $_W, $_GPC;
+        $data = array('message'=>$msg,'redirect'=>$redirect,'type'=>$type);
+        ob_clean();
+        if ($_W['isajax']){
+            echo json_encode($data);
+        }else{
+            View::share('_W',$_W);
+            View::share('_GPC',$_GPC);
+            echo response()->view('message',$data)->content();
+        }
+        session()->save();
+        exit;
     }
 
     public function Composer($route=""){

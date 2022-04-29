@@ -45,7 +45,7 @@
                     </thead>
                     <tbody>
                     @foreach($servers as $key=>$service)
-                    <tr>
+                    <tr class="{{ $service['islocal'] ? 'localServer' : '' }}" data-id="{{ $service['identity'] }}">
                         <td>
                             <img class="layui-avatar" src="{{ tomedia($service['cover']) }}" height="36" />
                             @if($op=='index' && !empty($service['entry']))
@@ -57,11 +57,9 @@
                             &nbsp;<span class="layui-badge layui-bg-cyan">已删除</span>
                             @endif
                         </td>
-                        <td class="layui-hide-xs">
+                        <td class="layui-hide-xs js-version">
                             V{{ $service['version'] }}
-                            @if(!empty($service['upgrade']))
-                            <span class="layui-badge layui-bg-red">发现新版本</span>
-                            @endif
+                            <span class="layui-badge layui-bg-red{{ empty($service['upgrade']) ? ' layui-hide' : '' }}">发现新版本</span>
                         </td>
                         <td class="layui-hide-xs">{{ $service['summary'] }}</td>
                         <td class="text-right">
@@ -74,10 +72,10 @@
                                     @else
                                         <a class="layui-btn layui-btn-sm layui-btn-normal confirm" data-text="确定要恢复该服务？" href="{{ wurl('server', array("op"=>"restore", "nid"=>$service['identity'])) }}">恢复</a>
                                     @endif
-                                    @if(!empty($service['upgrade']))
-                                    <a class="layui-btn layui-btn-sm layui-btn-danger confirm" data-text="升级前请做好数据备份" lay-tips="该服务可升级至V{{ $service['upgrade']['version'] }}版本" href="{{ wurl('server', array("op"=>"upgrade", "nid"=>$service['identity'])) }}">升级</a>
-                                        @endif
-                                    <a class="layui-btn layui-btn-sm layui-btn-primary confirm" data-text="卸载后该服务相关的数据可能会被删除且不能恢复，是否确定要卸载？" href="{{ wurl('server', array("op"=>"uninstall", "nid"=>$service['identity'])) }}">卸载</a>
+                                    @if(!empty($service['upgrade']['canup']))
+                                    <a class="layui-btn layui-btn-sm layui-btn-danger confirm js-upgrade" data-text="升级前请做好数据备份" lay-tips="该服务可升级至V{{ $service['upgrade']['version'] }}版本" href="{{ wurl('server', array("op"=>"upgrade", "nid"=>$service['identity'])) }}">升级</a>
+                                    @endif
+                                    <a class="layui-btn layui-btn-sm layui-btn-primary confirm js-uninstall" data-text="卸载后该服务相关的数据可能会被删除且不能恢复，是否确定要卸载？" href="{{ wurl('server', array("op"=>"uninstall", "nid"=>$service['identity'])) }}">卸载</a>
                                 @endif
                             </div>
                             @endif
@@ -94,4 +92,29 @@
 
     </div>
 </div>
+@if($op=='index')
+<script type="text/javascript">
+    $(function (){
+        $('.localServer').each(function (index, element) {
+            let Elem = $(element);
+            let identity = Elem.attr('data-id');
+            if (Elem.find('.js-upgrade').length<=0){
+                Core.get('console/server', function (Html){
+                    if(Core.isJsonString(Html)){
+                        console.log(JSON.parse(Html));
+                        return false;
+                    }
+                    if(Html!==''){
+                        Elem.find('.js-uninstall').before(Html);
+                        Elem.find('.js-version .layui-badge').removeClass('layui-hide');
+                    }
+                }, {
+                    nid:identity,
+                    op:'cloudChk'
+                },'html');
+            }
+        });
+    })
+</script>
+@endif
 @include('common.footer')

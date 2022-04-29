@@ -1,6 +1,14 @@
+
 (function(w) {
     w.Swaws = {
+        onDisconnect:null,
+        onConnect:null,
+        Heartbeat:false,
+        HeartInterval:null,
+        UserSign:"",
+        socketRetry:0,
         init: function (UserSign, Server, Receive = false, Fail = false) {
+            this.UserSign = UserSign;
             if (this.io != null) {
                 this.io.close(10001);
                 return this.init(UserSign, Server, Receive, Fail);
@@ -21,18 +29,48 @@
                 console.log(data.Message);
             };
             WsSocket.onmessage = function (res) {
-                let data = JSON.parse(res.data), socketdata;
-                if (typeof (data.data) != 'object') return false;
+                let socketData = {};
+                let data = null;
+                if(typeof(res.data)=='object'){
+                    data = res.data;
+                }else{
+                    data = JSON.parse(res.data);
+                }
+                if (typeof (data) != 'object' || data==null) return false;
+                if(data.type===1 && data.method==='User/Connect'){
+                    self.Heartbeat = true;
+                    self.HeartInterval = setInterval(function (){
+                        let sendHeart = self.doHeartbeat();
+                        if (!sendHeart){
+                            clearInterval(self.HeartInterval);
+                            self.HeartInterval = null;
+                        }
+                    }, 15000);
+                    if (typeof (self.onConnect)=='function'){
+                        return self.onConnect(data);
+                    }
+                    if (typeof (Receive) == 'function') {
+                        return Receive({
+                            type:"WssConnect",
+                            UserId:self.UserSign
+                        });
+                    }
+                }
+                if (data.method==='Message/Heartbeat'){
+                    self.Heartbeat = true;
+                    return true;
+                }
+                if(typeof(data.data)!='object' || data.data==null) return false;
                 if (typeof (data.data.message) != 'undefined') {
                     if (typeof (data.data.message) == 'object') {
-                        socketdata = data.data.message;
+                        socketData = data.data.message;
                     } else if (self.isJsonString(data.data.message)) {
-                        socketdata = JSON.parse(data.data.message);
+                        socketData = JSON.parse(data.data.message);
                     } else {
-                        socketdata = {type: 'undefined', data: data.data.message};
+                        socketData = {type: 'undefined', data: data.data.message};
                     }
                 } else {
-                    socketdata = {
+                    socketData = {
                         type: data.method,
                         status: data.type,
                         data: data.data,
@@ -40,24 +78,47 @@
                     }
                 }
                 if (typeof (Receive) == 'function') {
-                    return Receive(socketdata);
+                    return Receive(socketData);
                 } else {
-                    console.log(socketdata);
+                    console.log(socketData);
                 }
             }
             WsSocket.onclose = function (e) {
                 console.log("Connection closed.", e);
                 self.io = null;
+                self.Heartbeat = false;
                 if (typeof (Fail) == 'function' && e.code!==1005) {
                     Fail();
                 }
+                if (typeof (this.onDisconnect)=='function'){
+                    this.onDisconnect();
+                }
             }
             WsSocket.onerror = function (event) {
+                self.Heartbeat = false;
                 if (typeof (Fail) == 'function') {
                     Fail();
                 }
             };
             this.io = WsSocket;
+            return WsSocket;
+        },
+        doHeartbeat:function (){
+            if (!this.Heartbeat){
+                console.log("已经失去心跳急需抢救");
+                this.io.close(3019);
+                return false;
+            }
+            this.Heartbeat = false;
+            let data = {
+                "Method": "Message/Heartbeat",
+                "Type": 0,
+                "Message": "",
+                "fromId": this.UserSign,
+                "data":{}
+            };
+            this.io.send(JSON.stringify(data));
+            return true;
         },
         isJsonString(str) {
             try {

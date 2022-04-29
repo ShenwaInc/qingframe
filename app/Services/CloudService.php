@@ -150,7 +150,7 @@ class CloudService
             }
         }
         //获取云端未安装组件
-        $cachekey = "cloud:module_list";
+        $cachekey = "cloud:module_list:1";
         $res = Cache::get($cachekey, array());
         if (empty($res)){
             $data = array(
@@ -160,7 +160,7 @@ class CloudService
                 'category'=>1
             );
             $res = CloudService::CloudApi("", $data);
-            Cache::put($cachekey, $res, 1800);
+            Cache::put($cachekey, $res, 600);
         }
         if (!is_error($res) && !empty($res['servers'])){
             foreach ($res['servers'] as $value){
@@ -174,7 +174,7 @@ class CloudService
                         continue;
                     }
                     if (empty($local['cloudinfo']) || !$local['cloudinfo']['isnew']){
-                        $local['action'] = '<a href="'.url('console/setting/comupdate').'?cid='.$local['id'].'" class="layui-btn layui-btn-sm layui-btn-danger confirm" data-text="升级前请做好源码和数据备份，避免升级故障导致系统无法正常运行">升级</a>'.$local['action'];
+                        $local['action'] = '<a href="'.url('console/setting/cloudUp').'?nid='.$identifie.'" class="layui-btn layui-btn-sm layui-btn-danger confirm" data-text="升级前请做好源码和数据备份，避免升级故障导致系统无法正常运行">升级</a>'.$local['action'];
                     }
                     $local['cloudinfo'] = array('isnew'=>true,'version'=>$value['release']['version'],'releasedate'=>$releaseDate);
                     $plugins[$identifie] = $local;

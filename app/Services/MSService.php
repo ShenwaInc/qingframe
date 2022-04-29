@@ -127,10 +127,14 @@ class MSService
             $data['frompage'] = 'local';
         }
         $res = CloudService::CloudApi("", $data);
-        //dd($res);
-        if (is_error($res)) return $res;
-        if (!isset($res['application'])) return error(-1, "应用解析失败");
-        Cache::put("microserver".$identity, $res, 3600);
+        if(is_error($res) || !isset($res['application'])){
+            if (!is_error($res)){
+                $res = error(-1, "应用解析失败");
+            }
+            Cache::put("microserver".$identity, $res, 600);
+            return $res;
+        }
+        Cache::put("microserver".$identity, $res);
         return $res;
     }
 
@@ -208,6 +212,7 @@ class MSService
             }
             $server['upgrade'] = array();
             $server['isdelete'] = false;
+            $server['islocal'] = true;
             if (!self::localexist($server['identity'])){
                 $server['isdelete'] = true;
             }
@@ -218,11 +223,12 @@ class MSService
                 }
             }
             if (empty($server['upgrade'])){
-                $cloudserver = self::cloudserver($server['identity']);
-                if (is_error($cloudserver)) continue;
+                $cloudserver = Cache::get("microserver".$server['identity'], error(-1, "Has no cache"));
+                if (is_error($cloudserver) || empty($cloudserver)) continue;
                 $release = $cloudserver['release'];
                 if (version_compare($release['version'], $server['version'], '>') || $release['releasedate']>$server['releases']){
-                    $server['actions'] .= '<a class="layui-btn layui-btn-sm layui-btn-danger confirm" data-text="升级前请做好数据备份" lay-tips="该服务可升级至V'.$release['version'].'Release'.$release['releasedate'].'" href="'.wurl('server', array('op'=>'cloudup', 'nid'=>$server['identity'])).'">升级</a>';
+                    $server['actions'] .= '<a class="layui-btn layui-btn-sm layui-btn-danger confirm js-upgrade" data-text="升级前请做好数据备份" lay-tips="该服务可升级至V'.$release['version'].'Release'.$release['releasedate'].'" href="'.wurl('server', array('op'=>'cloudup', 'nid'=>$server['identity'])).'">升级</a>';
+                    $server['upgrade'] = array('version'=>$release['version'],'canup'=>false);
                 }
             }
         }
