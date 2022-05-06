@@ -23,3 +23,5 @@ yarn-error.log
 /public/attachment
 /swasocket
 /servers/*
+/composer.lock
+/composer.json
