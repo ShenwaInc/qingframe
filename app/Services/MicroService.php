@@ -335,9 +335,8 @@ class MicroService
         if (!class_exists($className)){
             global $_W;
             if ($_W['isajax']){
-                $redirect = empty($route) ? "" :  $this->url($route);
-                if (!$_W['isfounder']) $redirect = "";
-                $result = $this->success("请先安装对应的依赖组件", $redirect,"error");
+                $redirect = $_W['isfounder'] ? url()->current() : "";
+                $result = $this->success("缺少依赖组件", $redirect,"error");
                 session_exit(json_encode($result));
             }
             $title = "安装依赖组件包";
