@@ -1,5 +1,6 @@
 {
     "name": "laravel/laravel",
+    "version": "1.7.01",
     "type": "project",
     "description": "The Laravel Framework.",
     "keywords": [
@@ -7,6 +8,15 @@
         "laravel"
     ],
     "license": "MIT",
+    "repositories": [
+        {
+            "type": "path",
+            "url": "./servers/*",
+            "options": {
+                "symlink": false
+            }
+        }
+    ],
     "require": {
         "php": "^7.2",
         "ext-curl": "*",
@@ -15,14 +25,13 @@
         "ext-json": "*",
         "ext-libxml": "*",
         "ext-openssl": "*",
+        "ext-pdo": "*",
         "ext-simplexml": "*",
         "ext-zip": "*",
         "ext-zlib": "*",
         "fideloper/proxy": "^4.0",
-        "johnlui/aliyun-oss": "^2.2",
         "laravel/framework": "^6.0",
-        "laravel/tinker": "^1.0",
-        "ext-pdo": "*"
+        "laravel/tinker": "^1.0"
     },
     "require-dev": {
         "facade/ignition": "^1.4",

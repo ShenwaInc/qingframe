@@ -331,8 +331,8 @@ class MicroService
         exit;
     }
 
-    public function Composer($route=""){
-        if (!file_exists(MICRO_SERVER.$this->identity."/vendor/autoload.php")){
+    public function Composer($className){
+        if (!class_exists($className)){
             global $_W;
             if ($_W['isajax']){
                 $redirect = empty($route) ? "" :  $this->url($route);
@@ -341,7 +341,8 @@ class MicroService
                 session_exit(json_encode($result));
             }
             $title = "安装依赖组件包";
-            $COMPOSERDIR = MICRO_SERVER.$this->identity."/";
+            $identity = $this->identity;
+            $COMPOSERDIR = base_path();
             include tpl_include("web/composer");
             session_exit();
         }

@@ -100,6 +100,12 @@ function tpl_server($template="", $server=''){
 function tpl_include($template){
     $platform = defined('IN_SYS') ? '/' : 'mobile/';
     $source = resource_path("template$platform")."$template.html";
+    if (defined("TPL_BASEPATH")){
+        $_source = TPL_BASEPATH."$template.html";
+        if (file_exists($_source)){
+            $source = $_source;
+        }
+    }
     if (!file_exists($source)){
         throw new Exception("Error: template source '$template' is not exist!");
     }
