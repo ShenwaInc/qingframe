@@ -3,7 +3,7 @@
         "identity": "dummy",
         "name": "Dummy",
         "cover": "https://shenwahuanan.oss-cn-shenzhen.aliyuncs.com/images/4/2022/04/HhE3GKnkG1GBxP6SgQzHAPP4EeABqa.png",
-        "summary": "New Dummy MicroServer",
+        "summary": "Dummy Service",
         "version": "1.0.1",
         "releases": "TIMESTAMP"
     },

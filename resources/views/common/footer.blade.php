@@ -20,17 +20,6 @@
             $(target).addClass('layui-hide');;
             $(target+'.form-item'+data.value).removeClass('layui-hide');
         });
-        $('.layui-fluid [lay-tips]').each(function (index,element) {
-            $(element).on({
-                mouseenter:function () {
-                    var tipstr = jQuery(this).attr('lay-tips');
-                    laytips = layer.tips(tipstr,this,{tips:1,time:0});
-                },
-                mouseleave:function () {
-                    layer.close(laytips);
-                }
-            });
-        });
         EventInit($('body'));
         if(typeof (FormRender)=='function'){
             FormRender(form);
@@ -45,18 +34,6 @@
         layupload = upload;
         laydropdown = dropdown;
     });
-    $('.showmenu').on('click',this,function(){
-        $(this).dropdown();
-    });
-    $('a.confirm').on('click',this,function(){
-        var comfirmText = $(this).data('text');
-        var redirect = $(this).attr('href');
-        layer.confirm(comfirmText, {icon: 3, title:'提示'}, function(index){
-            window.location.href = redirect;
-            layer.close(index);
-        });
-        return false;
-    });
     function DateInit(Obj){
         if (Obj.find('.layui-input-laydate').length>0){
             Obj.find('.layui-input-laydate').each(function(index, element) {
@@ -68,6 +45,30 @@
         }
     }
     function EventInit(Obj){
+        Obj.find('[lay-tips]').each(function (index,element) {
+            $(element).on({
+                mouseenter:function () {
+                    var tipstr = jQuery(this).attr('lay-tips');
+                    laytips = layer.tips(tipstr,this,{tips:1,time:0});
+                },
+                mouseleave:function () {
+                    layer.close(laytips);
+                }
+            });
+        });
+        Obj.find('.showmenu').click(function(){
+            $(this).dropdown();
+            return false;
+        });
+        Obj.find('a.confirm').click(function(){
+            var comfirmText = $(this).data('text');
+            var redirect = $(this).attr('href');
+            layer.confirm(comfirmText, {icon: 3, title:'提示'}, function(index){
+                window.location.href = redirect;
+                layer.close(index);
+            });
+            return false;
+        });
         Obj.find('[layadmin-event]').click(function () {
             let layevent = $(this).attr('layadmin-event');
             let WinBody = $('body');

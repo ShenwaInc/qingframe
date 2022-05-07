@@ -240,7 +240,7 @@ if(typeof Basetoken == 'undefined'){
                     accept:UploadBtn.data('url'),
                     error:function (e){
                         UploadBtn.removeClass("uploading");
-                        self.toast("上传失败，请重试");
+                        layer.msg("上传失败，请重试", {icon:2});
                     },
                     progress:function (n, elem, res, index){
                         layui.element.progress('uploadprogress', n+'%');

@@ -66,12 +66,84 @@ class SettingController extends Controller
         return $this->message('恭喜您，升级成功！', url('console/setting'),'success');
     }
 
+    public function cloudMarket(){
+        global $_GPC;
+        $page = max(1, intval($_GPC['page']));
+        $cacheKey = "cloud:module_list:$page";
+        $res = Cache::get($cacheKey, array());
+        if (empty($res)){
+            $data = array(
+                'r'=>'cloud.packages',
+                'pidentity'=>CloudService::$identity,
+                'page'=>$page,
+                'category'=>1
+            );
+            $res = CloudService::CloudApi("", $data);
+            Cache::put($cacheKey, $res, 600);
+        }
+        if (is_error($res)){
+            return $this->message($res['message']);
+        }
+        $plugins = array();
+        if (!empty($res['servers'])){
+            foreach ($res['servers'] as $value){
+                $identifie = str_replace("laravel_module_", "", $value['identity']);
+                if (empty($identifie)) continue;
+                $release = $value['release'];
+                $releaseDate = intval($value['release']['releasedate']);
+                //本地是否存在
+                $com = array(
+                    'id'=>0,
+                    'name'=>$value['name'],
+                    'identifie'=>$identifie,
+                    'version'=>$value['release']['version'],
+                    'releasedate'=>$releaseDate,
+                    'ability'=>$value['name'],
+                    'description'=>$value['summary'],
+                    'author'=>$value['author'],
+                    'website'=>$value['website'],
+                    'action'=>'',
+                    'logo'=>$value['icon'],
+                    'cloudinfo'=>[]
+                );
+                if (ModuleService::localExists($identifie)){
+                    $module = ModuleService::installCheck($identifie);
+                    if (!is_error($module) && $module->installed){
+                        //已安装
+                        $application = $module->application;
+                        if (!(version_compare($application['version'], $release['version'], '>=') && $application['releasedate']>=$releaseDate)){
+                            $com['action'] .= '<a href="'.url('console/setting/cloudUp').'?nid='.$identifie.'" class="layui-btn layui-btn-sm layui-btn-danger confirm" data-text="升级前请做好源码和数据备份，避免升级故障导致系统无法正常运行">升级</a>';
+                        }
+                        $com['action'] .= '<a href="'.url('console/setting/pluginrm').'?nid='.$identifie.'" class="layui-btn layui-btn-sm layui-btn-primary confirm" data-text="即将卸载该应用并删除应用产生的所有数据，是否确定要卸载？">卸载</a></div>';
+                    }else{
+                        if ($module['errno']!=-1){
+                            //已存在但未安装
+                        }else{
+                            $com['action'] = '<a href="'.url('console/setting/cloudinst').'?nid='.$value['identity'].'" class="layui-btn layui-btn-sm layui-btn-normal confirm" data-text="确定要安装该应用？">安装</a>';
+                        }
+                    }
+                }else{
+                    $com['action'] = '<a href="'.url('console/setting/cloudinst').'?nid='.$value['identity'].'" class="layui-btn layui-btn-sm layui-btn-normal confirm" data-text="确定要安装该应用？">安装</a>';
+                }
+                $plugins[$identifie] = $com;
+            }
+        }
+        serv("weengine")->func("web");
+        return $this->globalview('console.market', array(
+            'title'=>"应用市场",
+            'components'=>$plugins,
+            'pager'=>pagination($res['total'], $page)
+        ));
+    }
+
     public function index($op='main'){
         global $_W,$_GPC;
         if($op=='detection'){
             return $this->detection();
         }elseif ($op=='selfupgrade'){
             return $this->selfupgrade();
+        }elseif ($op=='market'){
+            return $this->cloudMarket();
         }
         $return = array('title'=>'站点设置','op'=>$op,'components'=>array());
         if (!isset($_W['setting']['page'])){
@@ -166,6 +238,19 @@ class SettingController extends Controller
             $cloudrequire = CloudService::RequireModule(trim($_GPC['nid']));
             if (is_error($cloudrequire)) return $this->message($cloudrequire['message']);
             return $this->message('恭喜您，安装完成！', url('console/setting/plugin'),'success');
+        }elseif($op=='cloudUp'){
+            $identity = trim($_GPC['nid']);
+            $cloudIdentity = "laravel_module_$identity";
+            $targetPath = public_path("addons/$identity/");
+            $res = CloudService::CloudUpdate($cloudIdentity, $targetPath);
+            if (is_error($res)){
+                return $this->message($res['message']);
+            }
+            $moduleUpdate = ModuleService::upgrade($identity);
+            if (is_error($moduleUpdate)) return $this->message($moduleUpdate['message']);
+            $redirect = url('console/setting/plugin');
+            CacheService::flush();
+            return $this->message('恭喜您，升级成功！', $redirect,'success');
         }else{
             $framework = DB::table('gxswa_cloud')->where('type',0)->first(['id','version','identity','type','online','releasedate','rootpath']);
             $return['framework'] = $framework;

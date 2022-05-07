@@ -18,10 +18,10 @@
                         {$_W['username']}
                     </a>
                     <dl class="layui-nav-child layui-anim layui-anim-upbit" style="padding: 0;">
-                        {if $_W['isfounder'] || !$_S['basic']['hidecopyright']}<dd><a href="{php echo url('user/profile')}" target="_blank"><span class="layui-icon layui-icon-username"></span>&nbsp;账户信息</a></dd>{/if}
+                        <dd><a href="{php echo wurl('user/profile')}" target="_blank"><span class="layui-icon layui-icon-username"></span>&nbsp;账户信息</a></dd>
                         <hr style="margin: 5px 0;">
                         <dd><a href="javascript:;" layadmin-event="updateCache"><span class="layui-icon layui-icon-refresh"></span>&nbsp;更新缓存</a></dd>
-                        {if $_W['isfounder'] || !$_S['basic']['hidecopyright']}<dd><a href="{php echo wurl('home/welcome')}" target="_blank"><span class="layui-icon layui-icon-website"></span>&nbsp;平台管理</a></dd>{/if}
+                        <dd><a href="{php echo wurl('')}"><span class="layui-icon layui-icon-website"></span>&nbsp;返回系统</a></dd>
                     </dl>
                 </li>
                 <li class="layui-nav-item layui-hide-xs js-fullscreen" lay-unselect>
@@ -33,7 +33,6 @@
         </div>
     </div>
 </div>
-{php $systemmenu = array();}
 {if !empty($systemmenu)}
 <!-- 侧边菜单 -->
 <div class="layui-side layui-side-menu fui-side-menu">
@@ -58,7 +57,7 @@
             </li>
             {/loop}
             <li class="layui-nav-item layui-hide">
-                <a href="{php echo url('home/welcome')}" lay-tips="返回系统" lay-direction="2">
+                <a href="{php echo wurl()}" lay-tips="返回系统">
                     <i class="layui-icon layui-icon-return"></i>
                     <cite>返回系统</cite>
                 </a>

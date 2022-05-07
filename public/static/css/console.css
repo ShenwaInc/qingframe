@@ -49,7 +49,7 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 
 /* text */
 .text-center{text-align: center}
-.text-right{text-align: right}
+.text-right, .layui-table th.text-right{text-align: right}
 .text-lg{font-size: 20px;}
 .text-bold{font-weight: bold;}
 .text-black, .layui-word-aux .text-black{color: #333333}

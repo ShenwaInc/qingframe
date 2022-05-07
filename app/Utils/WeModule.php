@@ -128,29 +128,13 @@ class WeModule
                 $source = IA_ROOT . "/web/themes/default/{$filename}.html";
             }
         } else {
-            $source = IA_ROOT . "/app/themes/{$_W['template']}/{$name}/{$filename}.html";
-            $compile = storage_path("framework/tpls/app/{$_W['template']}/{$name}/{$filename}.tpl.php");
+            $source = $defineDir . "/{$extra}template/mobile/$filename.html";
+            $compile = storage_path("framework/tpls/app/$name/$extra$filename.tpl.php");
             if (!is_file($source)) {
-                $source = IA_ROOT . "/app/themes/default/{$name}/{$filename}.html";
+                $source = $defineDir . "/{$extra}template/mobile/touch/$filename.html";
             }
             if (!is_file($source)) {
-                $source = $defineDir . "/template/mobile/{$filename}.html";
-            }
-            if (!is_file($source)) {
-                $source = $defineDir . "/template/wxapp/{$filename}.html";
-            }
-            if (!is_file($source)) {
-                $source = $defineDir . "/template/webapp/{$filename}.html";
-            }
-            if (!is_file($source)) {
-                $source = IA_ROOT . "/app/themes/{$_W['template']}/{$filename}.html";
-            }
-            if (!is_file($source)) {
-                if (in_array($filename, array('header', 'footer', 'slide', 'toolbar', 'message'))) {
-                    $source = IA_ROOT . "/app/themes/default/common/{$filename}.html";
-                } else {
-                    $source = IA_ROOT . "/app/themes/default/{$filename}.html";
-                }
+                $source = $defineDir . "/{$extra}template/webapp/$filename.html";
             }
         }
 

@@ -90,13 +90,18 @@ class ModuleService
 
     static function installCheck($identity){
         $module = DB::table('modules')->where('name',$identity)->first();
-        if (empty($module)) return error(-1,'该模块尚未安装');
+        if (empty($module)) return error(-2,'该模块尚未安装');
         $installpath = base_path("public/addons/$identity/");
         $manifestfile = $installpath . "Manifest.php";
         if(!file_exists($manifestfile)) return error(-1,'无法解析模块安装包');
         $ManiFest = require_once $manifestfile;
-        if (!$ManiFest->installed) return error(-1,'该模块尚未安装');
+        if (!$ManiFest->installed) return error(-3,'该模块尚未安装');
         return $ManiFest;
+    }
+
+    static function localExists($identity){
+        $manifest = base_path("public/addons/$identity/Manifest.php");
+        return file_exists($manifest);
     }
 
     static function upgrade($identity){

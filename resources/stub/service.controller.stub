@@ -1,0 +1,9 @@
+<?php
+
+class IndexController extends DummyService {
+
+    public function main(){
+        return $this->success("Hello world.");
+    }
+
+}

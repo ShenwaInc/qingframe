@@ -177,7 +177,7 @@
             <div class="fui-card layui-card">
                 @if($op=='plugin')
                     <div class="layui-card-header nobd">
-                        <a href="https://www.whotalk.com.cn/" target="_blank" class="fr layui-btn layui-btn-sm layui-btn-normal">应用市场</a>
+                        <a href="{{ wurl('setting/market') }}" class="fr layui-btn layui-btn-sm layui-btn-normal ajaxshow">应用市场</a>
                         <span class="title">应用插件</span>
                     </div>
                     <div class="layui-card-body">

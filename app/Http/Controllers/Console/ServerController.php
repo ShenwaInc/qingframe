@@ -135,6 +135,17 @@ class ServerController extends Controller
                 }
                 return $this->message();
             }
+            case "cloudChk" : {
+                $cloudServer = $MSS->cloudserver($identity);
+                if (!is_error($cloudServer)){
+                    $service = $MSS::getone($identity);
+                    $release = $cloudServer['release'];
+                    if (version_compare($release['version'], $service['version'], '>') || $release['releasedate']>$service['releases']){
+                        return '<a class="layui-btn layui-btn-sm layui-btn-danger confirm" data-text="升级前请做好数据备份" lay-tips="该服务可升级至V'.$release['version'].'Release'.$release['releasedate'].'" href="'.wurl('server', array('op'=>'cloudup', 'nid'=>$service['identity'])).'">升级</a>';
+                    }
+                }
+                return $this->message();
+            }
             default : {
                 $return['op'] = "index";
                 $return['servers'] = MSService::InitService();
