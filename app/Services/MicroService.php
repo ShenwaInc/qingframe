@@ -333,6 +333,15 @@ class MicroService
 
     public function Composer($className){
         if (!class_exists($className)){
+            $COMPOSERDIR = base_path();
+            if (DEVELOPMENT){
+                $autoloader = MICRO_SERVER.$this->identity."/vendor/autoload.php";
+                if (file_exists($autoloader)){
+                    require_once $autoloader;
+                    return true;
+                }
+                $COMPOSERDIR = MICRO_SERVER.$this->identity."/";
+            }
             global $_W;
             if ($_W['isajax']){
                 $redirect = $_W['isfounder'] ? url()->current() : "";
@@ -341,10 +350,10 @@ class MicroService
             }
             $title = "安装依赖组件包";
             $identity = $this->identity;
-            $COMPOSERDIR = base_path();
             include tpl_include("web/composer");
             session_exit();
         }
+        return true;
     }
 
 }
