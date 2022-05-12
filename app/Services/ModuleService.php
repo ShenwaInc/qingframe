@@ -3,7 +3,6 @@
 
 namespace App\Services;
 
-
 use App\Models\Account;
 use App\Models\Module;
 use Illuminate\Support\Facades\Cache;
@@ -81,7 +80,7 @@ class ModuleService
                 'dateline'=>TIMESTAMP
             );
             DB::table('gxswa_cloud')->updateOrInsert(array(
-                'identity'=>"laravel_module_$identity",
+                'identity'=>self::SysPrefix($identity),
                 'rootpath'=>"public/$path/$identity/"
             ),$comdata);
         }
@@ -104,7 +103,7 @@ class ModuleService
         return file_exists($manifest);
     }
 
-    static function upgrade($identity){
+    static function upgrade($identity,$from=''){
         $ManiFest = self::installCheck($identity);
         if (is_error($ManiFest)) return $ManiFest;
         if (!$ManiFest->installed) return error(-1,'该模块尚未安装');
@@ -130,17 +129,29 @@ class ModuleService
         $moduledata = self::ModuleData($application,$subscribes,$handles);
         DB::table('modules')->where('name',$application['identifie'])->update($moduledata);
         //更新模块数据表
-        if (!empty($component)){
+        if (!empty($component) || $from=='cloud'){
             $cloudinfo = empty($component['online']) ? array() : unserialize($component['online']);
             $cloudinfo['isnew'] = false;
-            DB::table('gxswa_cloud')->where('id',$component['id'])->update(array(
+            $cloudinfo['releasedate'] = $application['releasedate'];
+            $cloudinfo['version'] = $application['version'];
+            $cloudIdentity = self::SysPrefix($identity);
+            $comInfo = array(
                 'name'=>$application['name'],
                 'logo'=>$application['logo'],
                 'website'=>$application['url'],
+                'online'=>serialize($cloudinfo),
                 'version'=>$application['version'],
                 'updatetime'=>TIMESTAMP,
-                'releasedate'=>$application['releasedate']
-            ));
+                'releasedate'=>$application['releasedate'],
+                'dateline'=>TIMESTAMP
+            );
+            if (empty($component)){
+                $comInfo['modulename'] = $identity;
+                $comInfo['type'] = 1;
+                $comInfo['rootpath'] = "public/addons/$identity/";
+                $comInfo['addtime'] = TIMESTAMP;
+            }
+            DB::table('gxswa_cloud')->where('identity', $cloudIdentity)->updateOrInsert($comInfo);
         }
         return true;
     }
@@ -223,7 +234,7 @@ class ModuleService
                 $module_info['is_delete'] = $is_delete; 		}
 
             $module = $module_info;
-            Cache::put($cachekey, $module_info, 86400*7);
+            Cache::put($cachekey, $module_info);
         }
 
         if (!empty($enabled)) {
@@ -372,8 +383,12 @@ class ModuleService
         return array('basic', 'news', 'music', 'service', 'userapi', 'recharge', 'images', 'video', 'voice', 'wxcard', 'custom', 'chats', 'paycenter', 'keyword', 'special', 'welcome', 'default', 'apply', 'reply', 'core', 'store', 'wxapp');
     }
 
+    static function SysPrefix($identity=""){
+        return env('APP_MODULE_PRE', 'laravel_module_') . $identity;
+    }
+
     static function SysComponent($identity){
-        return DB::table('gxswa_cloud')->where('identity',"laravel_module_$identity")->first();
+        return DB::table('gxswa_cloud')->where('identity',self::SysPrefix($identity))->first();
     }
 
 }

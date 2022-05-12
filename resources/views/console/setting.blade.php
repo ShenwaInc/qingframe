@@ -2,7 +2,7 @@
 <div class="layui-fluid">
     <div class="main-content">
 
-        <h2>站点设置</h2>
+        <h2>系统管理</h2>
 
         <div class="layui-tab fui-tab margin-bottom-xl">
             <ul class="layui-tab-title title_tab">
@@ -177,7 +177,7 @@
             <div class="fui-card layui-card">
                 @if($op=='plugin')
                     <div class="layui-card-header nobd">
-                        <a href="{{ wurl('setting/market') }}" class="fr layui-btn layui-btn-sm layui-btn-normal ajaxshow">应用市场</a>
+                        <a href="{{ wurl('setting/market') }}" data-width="1340" class="fr layui-btn layui-btn-sm layui-btn-normal ajaxshow">应用市场</a>
                         <span class="title">应用插件</span>
                     </div>
                     <div class="layui-card-body">
@@ -188,7 +188,7 @@
                                         <th>组件</th>
                                         <th class="layui-hide-xs">安装时间</th>
                                         <th class="layui-hide-xs">上次更新</th>
-                                        <th class="layui-hide-xs">线上版本</th>
+                                        <th class="layui-hide-xs">最新版本</th>
                                         <th><div class="text-right">操作</div></th>
                                     </tr>
                                 </thead>
@@ -222,7 +222,7 @@
                                             @endif
                                         </td>
                                         <td class="text-right">
-                                            {!! $com['action'] !!}
+                                            <div class="layui-btn-group">{!! $com['action'] !!}</div>
                                         </td>
                                     </tr>
                                     @endforeach

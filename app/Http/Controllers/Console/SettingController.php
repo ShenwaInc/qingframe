@@ -31,7 +31,10 @@ class SettingController extends Controller
                 }
                 return $this->message('恭喜您，激活成功！',url('console'),'success');
             }else{
-                $redirect = CloudService::$cloudactive . $_W['siteroot'];
+                $redirect = $activestate['redirect'];
+                if (!empty($redirect)){
+                    $redirect .= (strexists($redirect,'?') ? '&' : '?') . "siteroot={$_W['siteroot']}";
+                }
                 return $this->message('您的站点尚未激活，即将进入激活流程...',$redirect,'error');
             }
         }
@@ -86,8 +89,9 @@ class SettingController extends Controller
         }
         $plugins = array();
         if (!empty($res['servers'])){
+            $modulePre = ModuleService::SysPrefix();
             foreach ($res['servers'] as $value){
-                $identifie = str_replace("laravel_module_", "", $value['identity']);
+                $identifie = str_replace($modulePre, "", $value['identity']);
                 if (empty($identifie)) continue;
                 $release = $value['release'];
                 $releaseDate = intval($value['release']['releasedate']);
@@ -106,6 +110,9 @@ class SettingController extends Controller
                     'logo'=>$value['icon'],
                     'cloudinfo'=>[]
                 );
+                if (mb_strlen($com['description'], 'utf8')>50){
+                    $com['description'] = mb_substr($com['description'], 0, 50, 'utf8') . '...';
+                }
                 if (ModuleService::localExists($identifie)){
                     $module = ModuleService::installCheck($identifie);
                     if (!is_error($module) && $module->installed){
@@ -181,38 +188,6 @@ class SettingController extends Controller
             }
             $redirect = url('console/setting/plugin');
             return $this->message('检测完成！',$redirect,'success');
-        }elseif ($op=='comupdate'){
-            $component = DB::table('gxswa_cloud')->where('id',intval($_GPC['cid']))->first(['id','identity','modulename','type','releasedate','rootpath']);
-            if (empty($component)) return $this->message('找不到该组件信息');
-            $cloudinfo = $this->checkcloud($component,2);
-            if ($cloudinfo['isnew']){
-                $basepath = $component['type']==2 ? CloudService::com_path() : base_path($component['rootpath']);
-                if ($component['type']==0) $basepath = base_path() . "/";
-                $cloudupdate = CloudService::CloudUpdate($component['identity'],$basepath);
-                if (is_error($cloudupdate)){
-                    return $this->message($cloudupdate['message']);
-                }
-            }
-            if ($component['type']==1){
-                //模块升级
-                $identity = !empty($component['modulename']) ? $component['modulename'] : $component['identity'];
-                $moduleupdate = ModuleService::upgrade($identity);
-                if (is_error($moduleupdate)) return $this->message($moduleupdate['message']);
-            }else{
-
-                unset($cloudinfo['structure'],$cloudinfo['difference']);
-                $cloudinfo['isnew'] = false;
-                DB::table('gxswa_cloud')->where('id',$component['id'])->update(array(
-                    'version'=>$cloudinfo['version'],
-                    'updatetime'=>TIMESTAMP,
-                    'dateline'=>TIMESTAMP,
-                    'releasedate'=>$cloudinfo['releasedate'],
-                    'online'=>serialize($cloudinfo)
-                ));
-            }
-            $redirect = url('console/setting/plugin');
-            CacheService::flush();
-            return $this->message('恭喜您，升级成功！', $redirect,'success');
         }elseif($op=='comremove'){
             $component = DB::table('gxswa_cloud')->where('id',intval($_GPC['cid']))->first(['id','identity','modulename','type','releasedate','rootpath']);
             if ($component['type']==1){
@@ -230,6 +205,12 @@ class SettingController extends Controller
             $install = ModuleService::install(trim($_GPC['nid']), 'addons', 'local');
             if (is_error($install)) return $this->message($install['message']);
             return $this->message('恭喜您，安装完成！', url('console/setting/plugin'),'success');
+        }elseif ($op=='pluginup'){
+            $identity = trim($_GPC['nid']);
+            $complete = ModuleService::upgrade($identity);
+            if (is_error($complete)) return $this->message($complete['message']);
+            CacheService::flush();
+            return $this->message('恭喜您，升级成功！', url('console/setting/plugin'),'success');
         }elseif ($op=='pluginrm'){
             $uninstall = ModuleService::uninstall(trim($_GPC['nid']));
             if (is_error($uninstall)) return $this->message($uninstall['message']);
@@ -240,13 +221,13 @@ class SettingController extends Controller
             return $this->message('恭喜您，安装完成！', url('console/setting/plugin'),'success');
         }elseif($op=='cloudUp'){
             $identity = trim($_GPC['nid']);
-            $cloudIdentity = "laravel_module_$identity";
+            $cloudIdentity = ModuleService::SysPrefix($identity);
             $targetPath = public_path("addons/$identity/");
             $res = CloudService::CloudUpdate($cloudIdentity, $targetPath);
             if (is_error($res)){
-                return $this->message($res['message']);
+                return $this->message($res['HingWork']);
             }
-            $moduleUpdate = ModuleService::upgrade($identity);
+            $moduleUpdate = ModuleService::upgrade($identity, 'cloud');
             if (is_error($moduleUpdate)) return $this->message($moduleUpdate['message']);
             $redirect = url('console/setting/plugin');
             CacheService::flush();
@@ -324,7 +305,7 @@ class SettingController extends Controller
     }
 
     public function save(Request $request){
-        global $_W,$_GPC;
+        global $_W;
         $op = $request->input('op');
         if (!$request->isMethod('post')){
             return $this->message();

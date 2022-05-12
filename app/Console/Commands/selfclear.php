@@ -2,9 +2,10 @@
 
 namespace App\Console\Commands;
 
+use App\Http\Middleware\App;
+use App\Services\CloudService;
 use App\Services\FileService;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Schema;
 
 class selfclear extends Command
 {
@@ -14,6 +15,7 @@ class selfclear extends Command
      * @var string
      */
     protected $signature = 'self:clear';
+    protected $application;
 
     /**
      * The console command description.
@@ -30,6 +32,7 @@ class selfclear extends Command
     public function __construct()
     {
         parent::__construct();
+        $this->application = new App();
     }
 
     /**
@@ -46,6 +49,7 @@ class selfclear extends Command
             base_path('bootstrap/helpers.php'),
             app_path('Services/AttachmentService.php'),
             app_path('Services/SocketService.php'),
+            app_path('Services/NoticeService.php'),
             resource_path('views/console/socket.blade.php'),
             resource_path('views/install/socket.blade.php')
         );
@@ -161,6 +165,9 @@ class selfclear extends Command
             resource_path('views/console/extra/'),
             resource_path('views/console/set/')
         );
+        global $_W;
+        $_W['config'] = config('system');
+        $undirs[] = CloudService::com_path('aliyun');
         foreach ($undirs as $dir){
             if (is_dir($dir)){
                 FileService::rmdirs($dir);
