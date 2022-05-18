@@ -43,24 +43,6 @@ class serverup extends Command
      */
     public function handle()
     {
-        if (!Schema::hasTable("microserver")){
-            Schema::create('microserver', function (Blueprint $table) {
-                $table->increments('id');
-                $table->string('identity', 20);
-                $table->string('name', 20);
-                $table->string('cover', 255)->default("");
-                $table->text("summary")->nullable();
-                $table->string("version",10)->default("");
-                $table->string("releases",20)->default("");
-                $table->string("drive", 10)->default("php");
-                $table->string("entrance", 255)->default("");
-                $table->mediumtext("datas")->nullable();
-                $table->mediumtext("configs")->nullable();
-                $table->boolean('status')->default(1);
-                $table->integer("addtime")->default(0)->unsigned();
-                $table->integer("dateline")->default(0)->unsigned();
-            });
-        }
         $MSS = new MSService();
         $res = $MSS->autoinstall();
         $this->info("Add {$res['install']} service,update {$res['upgrade']}, faild {$res['faild']}, found {$res['servers']} packages.");

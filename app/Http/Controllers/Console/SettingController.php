@@ -29,6 +29,7 @@ class SettingController extends Controller
                 if (!$complete){
                     return $this->message('文件写入失败，请检查根目录权限');
                 }
+                Artisan::call('server:update');
                 return $this->message('恭喜您，激活成功！',url('console'),'success');
             }else{
                 $redirect = $activestate['redirect'];

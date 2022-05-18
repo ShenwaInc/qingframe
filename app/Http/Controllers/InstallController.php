@@ -190,9 +190,6 @@ class InstallController extends Controller
                 )
             ]);
 
-            //servers update
-            Artisan::call('server:update');
-
         }else{
             if (empty($authkey)) return $this->message('微擎站点安全码不能为空');
             $installer['database']['prefix'] = 'ims_';
