@@ -47,6 +47,7 @@ class selfclear extends Command
             app_path('Console/Commands/repwd.php'),
             database_path('migrations/2021_08_10_113449_create_uni_settings_table.php'),
             base_path('bootstrap/helpers.php'),
+            base_path('.env.example'),
             app_path('Services/AttachmentService.php'),
             app_path('Services/SocketService.php'),
             app_path('Services/NoticeService.php'),

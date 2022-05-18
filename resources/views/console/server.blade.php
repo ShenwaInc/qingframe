@@ -47,7 +47,7 @@
                     @foreach($servers as $key=>$service)
                     <tr class="{{ $service['islocal'] ? 'localServer' : '' }}" data-id="{{ $service['identity'] }}">
                         <td>
-                            <img class="layui-avatar" src="{{ tomedia($service['cover']) }}" height="36" />
+                            <img class="layui-avatar" src="{{ asset($service['cover']) }}?v={{ $_W['config']['release'] }}" height="36" />
                             @if($op=='index' && !empty($service['entry']))
                             <a href="{{ $service['entry'] }}" class="color-default">{{ $service['name'] }}</a>
                             @else

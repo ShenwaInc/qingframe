@@ -66,6 +66,7 @@ class InstallController extends Controller
         }
         $installer = $this->installer;
         $authkey = $installer['authkey'];
+        $config = \config('system');
         if ($installer['dbconnect']==0){
             $authkey = \Str::random(8);
             $manager = $request->input('render');
@@ -159,7 +160,6 @@ class InstallController extends Controller
             ));
 
             //initializer laravel framework
-            $config = \config('system');
             DB::table('gxswa_cloud')->insert(array(
                 'identity'=>'swa_framework_laravel',
                 'name'=>'轻如框架V1',
@@ -208,7 +208,7 @@ class InstallController extends Controller
         }
         //写入配置文件
         $appname = !empty($manager['appname']) ? trim($manager['appname']) : 'Whotalk';
-        $envfile_tmp = base_path(".env.example");
+        $envfile_tmp = resource_path('stub/env.stub');
         $reader = fopen($envfile_tmp,'r');
         $envdata = fread($reader,filesize($envfile_tmp));
         fclose($reader);
@@ -217,6 +217,7 @@ class InstallController extends Controller
         $envdata = str_replace(array('{APP_NAME}','{AUTHKEY}','{BASEURL}','{FOUNDER}','{DB_HOST}','{DB_PORT}','{DB_DATABASE}','{DB_USERNAME}','{DB_PASSWORD}','{DB_PREFIX}'),array(
             $appname,$authkey,$baseurl,$uid,$database['host'],$database['port'],$database['database'],$database['username'],$database['password'],$database['prefix']
         ),$envdata);
+        $envdata = str_replace(array('{APP_VERSION}', '{APP_RELEASE}'), array($config['version'], $config['release']), $envdata);
         $envfile = base_path(".env");
         if (file_exists($envfile)){
             @unlink($envfile);

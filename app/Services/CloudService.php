@@ -136,23 +136,31 @@ class CloudService
             }
         }
         //获取本地模块
-        if (DEVELOPMENT){
-            $modules = FileService::file_tree(public_path('addons'), array('*/Manifest.php'));
-            if (!empty($modules)){
-                foreach ($modules as $value){
-                    $identity = str_replace(array(public_path('addons/'),"/Manifest.php"),'', $value);
-                    if (empty($identity) || isset($plugins[$identity])) continue;
-                    $className = ucfirst($identity)."_Manifest";
-                    $ManiFest = require_once $value;
-                    $com = $ManiFest->application;
-                    $com['logo'] = asset($com['logo']);
-                    $com['website'] = $com['url'];
-                    $com['cloudinfo'] = array();
-                    if ($ManiFest->installed){
+        $modules = FileService::file_tree(public_path('addons'), array('*/Manifest.php'));
+        if (!empty($modules)){
+            foreach ($modules as $value){
+                $identity = str_replace(array(public_path('addons/'),"/Manifest.php"),'', $value);
+                if (empty($identity)) continue;
+                $className = ucfirst($identity)."_Manifest";
+                $ManiFest = require_once $value;
+                if (!isset($ManiFest->application)) continue;
+                $com = $ManiFest->application;
+                $com['logo'] = asset($com['logo']);
+                $com['website'] = $com['url'];
+                $com['cloudinfo'] = array();
+                $com['installtime'] = '<span class="layui-badge">未安装</span>';
+                $com['addtime'] = 0;
+                $com['action'] = '';
+                if ($ManiFest->installed){
+                    if (isset($plugins[$identity])){
+                        $com['installtime'] = $plugins[$identity]['installtime'];
+                        $com['lastupdate'] = $plugins[$identity]['lastupdate'];
+                    }else{
                         $com['installtime'] = '本地安装';
                         $com['lastupdate'] = '-';
-                        $com['addtime'] = $com['releasedate'];
-                        $com['action'] = '';
+                    }
+                    $com['addtime'] = $com['releasedate'];
+                    if (DEVELOPMENT){
                         $Module = ModuleService::fetch($com['identifie']);
                         if (!empty($Module) && !is_error($Module)){
                             if (version_compare($com['version'], $Module['version'], '>')){
@@ -165,15 +173,12 @@ class CloudService
                                 $com['version'] = $Module['version'];
                             }
                         }
-                        $com['action'] .= '<a href="'.url('console/setting/pluginrm').'?nid='.$identity.'" class="layui-btn layui-btn-sm layui-btn-primary confirm" data-text="即将卸载该应用并删除应用产生的所有数据，是否确定要卸载？">卸载</a></div>';
-                    }else{
-                        $com['installtime'] = '-';
-                        $com['addtime'] = 0;
-                        $com['lastupdate'] = '<span class="layui-badge">未安装</span>';
-                        $com['action'] = '<a href="'.url('console/setting/plugininst').'?nid='.$identity.'" class="layui-btn layui-btn-sm layui-btn-normal confirm" data-text="确定要安装该应用？">安装</a>';
                     }
-                    $plugins[$identity] = $com;
+                    $com['action'] .= '<a href="'.url('console/setting/pluginrm').'?nid='.$identity.'" class="layui-btn layui-btn-sm layui-btn-primary confirm" data-text="即将卸载该应用并删除应用产生的所有数据，是否确定要卸载？">卸载</a></div>';
+                }elseif(DEVELOPMENT){
+                    $com['action'] = '<a href="'.url('console/setting/plugininst').'?nid='.$identity.'" class="layui-btn layui-btn-sm layui-btn-normal confirm" data-text="确定要安装该应用？">安装</a>';
                 }
+                $plugins[$identity] = $com;
             }
         }
         //获取云端未安装组件

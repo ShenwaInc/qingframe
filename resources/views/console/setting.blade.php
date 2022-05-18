@@ -207,7 +207,7 @@
                                                 V{{$com['version']}}
                                             </div>
                                         </td>
-                                        <td class="layui-hide-xs">{{ $com['installtime'] }}</td>
+                                        <td class="layui-hide-xs">{!! $com['installtime'] !!}</td>
                                         <td class="layui-hide-xs">{!! $com['lastupdate'] !!}</td>
                                         <td class="layui-hide-xs">
                                             @if(empty($com['cloudinfo']))
