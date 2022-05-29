@@ -31,11 +31,14 @@
 
                 <div class="layadmin-user-login-main">
                     <div class="layadmin-user-login-box layadmin-user-login-header">
-                        <p class="text-lg">{{ env('APP_NAME','Whotalk') }}后台管理系统</p>
+                        <p class="text-lg">{{ empty($account) ? env('APP_NAME','Whotalk') : $account['name'] }}后台管理系统</p>
                     </div>
                     <div class="layadmin-user-login-box layadmin-user-login-body layui-form">
                         <form action="{{ url('auth/login') }}" id="loginform" method="post">
                             @csrf
+                            @if(!empty($account))
+                                <input type="hidden" name="uniacid" value="{{ $account['uniacid'] }}" />
+                            @endif
                             <div class="layui-form-item">
                                 <label class="layadmin-user-login-icon layui-icon layui-icon-username" for="LAY-user-login-username"></label>
                                 <input type="text" name="username" value="{{ old('email') }}" autocomplete="username" required lay-verify="required" placeholder="用户名" class="layui-input @error('username') is-invalid @enderror" autofocus />

@@ -20,6 +20,10 @@ Route::group(['prefix' => 'auth','namespace'=>'Auth', 'middleware'=>['app']],fun
     Route::post('/logout', 'AuthController@Logout');
 });
 
+Route::group(['namespace'=>'Auth', 'middleware'=>['app']],function (){
+    Route::get('/login/{uniacid}', 'AuthController@Entry')->where('uniacid','[0-9]+');
+});
+
 Route::group(['prefix' => 'app','namespace' => 'App', 'middleware'=>['app', 'runtime']],function (){
     Route::match(['get', 'post'],'/m/{modulename}/{do?}', 'ModuleController@entry');
     Route::get('auth', 'AuthController@index');
@@ -30,7 +34,11 @@ Route::group(['prefix' => 'wem','namespace' => 'App', 'middleware'=>['app','runt
     Route::post('/subscribe/{action}', 'ModuleController@subscribe');
 });
 
-Route::group(['namespace'=>'Console', 'middleware'=>[\App\Http\Middleware\Installer::class, 'app']],function (){
+Route::group(['namespace'=>'Console', 'middleware'=>['installer', 'app']],function (){
+    Route::get('/', 'EntryController@index');
+});
+
+Route::group(['namespace'=>'Console', 'middleware'=>['app']],function (){
     Route::get('/', 'EntryController@index');
 });
 

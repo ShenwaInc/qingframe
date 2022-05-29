@@ -262,8 +262,10 @@ function tomedia($src, $local_path = false, $is_cahce = false) {
 
 function random($len,$is_number=false){
     if($is_number){
-        $start = pow(10,$len-1);
-        $stop = pow(10,$len) - 1;
+        $len = min(9, intval($len));
+        $len = max(1, $len);
+        $start = (int)pow(10,$len-1);
+        $stop = (int)pow(10,$len) - 1;
         return random_int($start, $stop);
     }
     return \Str::random($len);
@@ -346,8 +348,17 @@ function pdo_fetch($sql, $params = array()) {
     return DB::selectOne($sql,$params);
 }
 
+function pdo_getcount($tablename, $condition=array()){
+    return DB::table($tablename)->where($condition)->count();
+}
+
 function pdo_getcolumn($tablename, $condition, $field) {
     return DB::table($tablename)->where($condition)->value($field);
+}
+
+function pdo_truncate($tablename){
+    DB::table($tablename)->truncate();
+    return true;
 }
 
 function pdo_insert($tablename,$data,$insertgetid=false){

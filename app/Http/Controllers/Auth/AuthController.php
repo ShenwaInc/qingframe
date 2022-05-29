@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Services\AccountService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -62,9 +63,33 @@ class AuthController extends Controller
                 'city'=>'',
                 'createtime'=>TIMESTAMP
             ));
-            return $this->message('恭喜您，登录成功',url('console'),'success');
+            $redirect = url('console');
+            $uniacid = (int)$request->input('uniacid');
+            if (!empty($uniacid)){
+                $redirect = wurl('account/profile', array('uniacid'=>$uniacid));
+            }
+            return $this->message('恭喜您，登录成功', $redirect,'success');
         }
         return $this->failed_login();
+    }
+
+    public function Entry(Request $request,$uniacid){
+        $account = AccountService::FetchUni($uniacid);
+        if (is_error($account) || empty($account)){
+            abort(404);
+        }
+        if (!empty($account['isdeleted'])){
+            return $this->message("该平台已被删除", url('login'));
+        }
+        $user = $request->user();
+        if (!empty($user['uid'])){
+            $redirect = wurl('account/profile', array('uniacid'=>$uniacid));
+            return $this->message('恭喜您，登录成功', $redirect,'success');
+        }
+        if ($account['endtime']>0 && $account['endtime']<TIMESTAMP){
+            return $this->message("该平台服务已到期，请联系管理员处理");
+        }
+        return $this->globalview('auth.login', array('account'=>$account));
     }
 
     public function failed_login($msg='用户名或密码不正确'){

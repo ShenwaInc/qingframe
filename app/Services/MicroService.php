@@ -332,6 +332,8 @@ class MicroService
     }
 
     public function Composer($className){
+        $composer = MICRO_SERVER.$this->identity."/composer.json";
+        if (!file_exists($composer)) return true;
         if (!class_exists($className)){
             $COMPOSERDIR = base_path();
             if (DEVELOPMENT){
@@ -344,12 +346,20 @@ class MicroService
             }
             global $_W;
             if ($_W['isajax']){
-                $redirect = $_W['isfounder'] ? url()->current() : "";
+                $redirect = defined('IN_SYS') ? url()->current() : "";
                 $result = $this->success("缺少依赖组件", $redirect,"error");
                 session_exit(json_encode($result));
             }
             $title = "安装依赖组件包";
-            $identity = $this->identity;
+            $composerVer = " dev-master";
+            $JSON = file_get_contents($composer);
+            if (!empty($JSON)){
+                $composerObj = json_decode($JSON);
+                if (isset($composerObj['version'])){
+                    $composerVer = $composerObj['version'];
+                }
+            }
+            $requireName = "microserver/".$this->identity." ".$composerVer;
             include tpl_include("web/composer");
             session_exit();
         }

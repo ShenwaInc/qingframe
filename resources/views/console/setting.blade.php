@@ -21,7 +21,7 @@
         @if($op=='main')
         <div class="fui-card layui-card">
             <div class="layui-card-header nobd">
-                <a href="{{ url('console/setting/pageset') }}" class="fr text-blue ajaxshow" title="编辑站点信息"><i class="glyphicon glyphicon-edit"></i></a>
+                <a href="{{ url('console/setting/pageset') }}" class="fr text-blue ajaxshow" title="编辑站点信息"><i class="fa fa-edit"></i></a>
                 <span class="title">站点信息</span>
             </div>
             <div class="layui-card-body">
@@ -75,7 +75,7 @@
         </div>
         <div class="fui-card layui-card">
             <div class="layui-card-header nobd">
-                <a href="" class="fr text-blue layui-hide" title="修改系统设置"><i class="glyphicon glyphicon-edit"></i></a>
+                <a href="" class="fr text-blue layui-hide" title="修改系统设置"><i class="fa fa-edit"></i></a>
                 <span class="title">系统设置</span>
             </div>
             <div class="layui-card-body">

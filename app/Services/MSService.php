@@ -348,7 +348,7 @@ class MSService
         if($manifest['application']['identity']!=$service['identity']){
             return error(-1, "安装包的Identity不匹配");
         }
-        if(version_compare($manifest['application']['version'],$service['version'],'>')){
+        if(version_compare($manifest['application']['version'],$service['version'],'>') || $manifest['application']['releases']>$service['releases']){
             //判断依赖服务
             $requires = $this->checkrequire($service['require']);
             if (is_error($requires)){

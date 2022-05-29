@@ -41,7 +41,7 @@
                     <li class="layui-nav-item">
                         <a href="{{ url('login') }}">登录</a>
                     </li>
-                    <li class="layui-nav-item">
+                    <li class="layui-nav-item layui-hide">
                         <a href="{{ url('register') }}">注册</a>
                     </li>
                 @endif

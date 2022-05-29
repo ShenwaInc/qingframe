@@ -17,13 +17,27 @@
 </div>
 <script type="text/javascript">
 	var layform, layupload, laydropdown;
+    require.config({
+        baseUrl: '/static/js',
+        paths:{
+            'clipboard':'clipboard.min'
+        }
+    });
 	layui.use(['element', 'dropdown', 'form','laydate','upload','code'],function (){
 		var form = layui.form,dropdown = layui.dropdown,element = layui.element, upload = layui.upload;
 		form.on('radio(ctrls)', function(data){
 			var target = $(data.elem).data('target');
-			$(target).addClass('layui-hide');;
+			$(target).addClass('layui-hide');
 			$(target+'.form-item'+data.value).removeClass('layui-hide');
 		});
+        form.on('switch(ctrls)',function(data){
+            var ctrltarget = jQuery(data.elem).attr('data-target');
+            if(data.elem.checked){
+                jQuery(ctrltarget).removeClass('layui-hide');
+            }else{
+                jQuery(ctrltarget).addClass('layui-hide');
+            }
+        });
 		$('.showmenu').on('click',this,function(){
 			$(this).dropdown();
 		});
@@ -162,6 +176,9 @@
 			Ajaxget(geturl, title, options);
 			return false;
 		});
+        Obj.find(".js-clip").each(function () {
+            ClipInit(this, $(this).attr("data-url"))
+        })
 		if(inajax && Obj.find('.pagination').length>0){
 			Obj.find('.pagination').on("click","a",function (){
 				let url = $(this).attr('href');
@@ -235,6 +252,21 @@
 		}
 		return code;
 	}
+    function ClipInit(Elem, text=''){
+        require(["clipboard"], function (clip) {
+            var e = new clip(Elem, {
+                text: function () {
+                    return text;
+                }
+            });
+            e.on("success", function (t) {
+                layer.msg("复制成功！",{icon:1});
+            });
+            e.on("error", function (t) {
+                layer.msg("复制失败，请重试！",{icon:2});
+            })
+        });
+    }
 	function FormInit(filter){
 		layui.form.render(null, filter);
 	}

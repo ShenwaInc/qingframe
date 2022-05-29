@@ -2,7 +2,7 @@
 
 <div class="main-content fui-content">
 
-    <h2>平台管理</h2>
+    <h2>{{ $account['name'] }}</h2>
 
     <div class="layui-tab fui-tab margin-bottom-xl">
         <ul class="layui-tab-title title_tab">
@@ -27,7 +27,7 @@
 
     <div class="fui-card layui-card">
         <div class="layui-card-header nobd">
-            <a href="{{ wurl('account/edit',array('uniacid'=>$uniacid), true) }}" class="fr text-blue ajaxshow" title="编辑平台信息"><i class="glyphicon glyphicon-edit"></i></a>
+            <a href="{{ wurl('account/edit',array('uniacid'=>$uniacid), true) }}" class="fr text-blue ajaxshow" title="编辑平台信息"><i class="fa fa-edit"></i></a>
             <span class="title">平台资料</span>
         </div>
         <div class="layui-card-body">

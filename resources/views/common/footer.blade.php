@@ -13,6 +13,12 @@
 </div>
 <script type="text/javascript">
     var layform, layupload, laydropdown;
+    require.config({
+        baseUrl: '/static/js',
+        paths:{
+            'clipboard':'clipboard.min'
+        }
+    });
     layui.use(['element','form','laydate','upload','code','dropdown'],function (){
         var form = layui.form,element = layui.element, upload = layui.upload, dropdown = layui.dropdown;
         form.on('radio(ctrls)', function(data){
@@ -172,7 +178,25 @@
             },{inajax:1},'html',true);
             return false;
         });
+        Obj.find(".js-clip").each(function () {
+            ClipInit(this, $(this).attr("data-url"))
+        })
         DateInit(Obj);
+    }
+    function ClipInit(Elem, text=''){
+        require(["clipboard"], function (clip) {
+            var e = new clip(Elem, {
+                text: function () {
+                    return text;
+                }
+            });
+            e.on("success", function (t) {
+                layer.msg("复制成功！",{icon:1});
+            });
+            e.on("error", function (t) {
+                layer.msg("复制失败，请重试！",{icon:2});
+            })
+        });
     }
     function Wrandom(len=8, id){
         let codes = 'ABCDEFGHIJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';

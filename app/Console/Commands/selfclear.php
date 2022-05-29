@@ -51,6 +51,7 @@ class selfclear extends Command
             app_path('Services/AttachmentService.php'),
             app_path('Services/SocketService.php'),
             app_path('Services/NoticeService.php'),
+            app_path('Http/Controllers/Auth/RegisterController.php'),
             resource_path('views/console/socket.blade.php'),
             resource_path('views/install/socket.blade.php')
         );
