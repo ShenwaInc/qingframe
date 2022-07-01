@@ -17,8 +17,9 @@ class CreateUniAccountUsersTable extends Migration {
 			$table->increments('id');
 			$table->integer('uniacid')->unsigned()->index('uniacid');
 			$table->integer('uid')->unsigned()->index('uid');
-			$table->string('role');
+			$table->string('role')->default('');
 			$table->boolean('rank');
+            $table->string('entrance', 50)->default('');
 		});
 	}
 

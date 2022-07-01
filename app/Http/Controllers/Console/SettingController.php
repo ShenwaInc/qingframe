@@ -127,7 +127,7 @@ class SettingController extends Controller
                     if (!is_error($module) && $module->installed){
                         //已安装
                         $application = $module->application;
-                        if (!(version_compare($application['version'], $release['version'], '>=') && $application['releasedate']>=$releaseDate)){
+                        if (version_compare($release['version'], $application['version'], '>') || $releaseDate>$application['releasedate']){
                             $com['action'] .= '<a href="'.url('console/setting/cloudUp').'?nid='.$identifie.'" class="layui-btn layui-btn-sm layui-btn-danger confirm" data-text="升级前请做好源码和数据备份，避免升级故障导致系统无法正常运行">升级</a>';
                         }
                         $com['action'] .= '<a href="'.url('console/setting/pluginrm').'?nid='.$identifie.'" class="layui-btn layui-btn-sm layui-btn-primary confirm" data-text="即将卸载该应用并删除应用产生的所有数据，是否确定要卸载？">卸载</a></div>';

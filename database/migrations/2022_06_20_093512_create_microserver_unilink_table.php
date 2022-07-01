@@ -1,6 +1,6 @@
 <?php
 
-use App\Services\MSS;
+use App\Services\MSService;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\Schema;
 
@@ -13,7 +13,7 @@ class CreateMicroserverUnilinkTable extends Migration {
      */
     public function up()
     {
-        MSS::setup();
+        MSService::setup();
     }
 
     /**

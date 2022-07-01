@@ -3,10 +3,9 @@
 namespace App\Console\Commands;
 
 use App\Services\FileService;
-use App\Services\MSS;
+use App\Services\MSService;
 use Illuminate\Console\Command;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -161,7 +160,7 @@ class selfmigrate extends Command
             if (!Schema::hasColumn('uni_account_users', 'entrance')){
                 DB::statement("ALTER TABLE ".tablename('uni_account_users')." ADD `entrance` VARCHAR(100) NOT NULL DEFAULT '' AFTER `rank`;");
             }
-            MSS::setup();
+            MSService::setup();
             if(is_dir(base_path('socket'))){
                 FileService::rmdirs(base_path('socket'));
                 DB::table('gxswa_cloud')->where(array('identity'=>'laravel_whotalk_socket'))->update(array('rootpath'=>'swasocket/'));

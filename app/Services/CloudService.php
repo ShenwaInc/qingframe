@@ -102,22 +102,25 @@ class CloudService
     static function getPlugins(){
         $plugins = [];
         $condition = array('type'=>1);
-        //获取已安装模块
+        //获取已安装模块(从云端表中)
         $components = DB::table('gxswa_cloud')->where($condition)->orderByRaw("`id` desc")->get()->toArray();
         if (!empty($components)){
             foreach ($components as $com){
                 $com['cloudinfo'] = !empty($com['online']) ? unserialize($com['online']) : array();
+                $com['cloudinfo']['isLocal'] = false;
+                $com['cloudinfo']['isnew'] = (bool)$com['cloudinfo']['isnew'];
                 if (!empty($com['modulename'])){
                     $local = ModuleService::installCheck($com['modulename']);
                     if (is_error($local)){
                         $com['isDelete'] = true;
-                    }else{
-                        //判断是否可以升级
+                    }elseif(DEVELOPMENT && empty($com['cloudinfo']['isnew'])){
+                        //判断是否可以升级（本地升级）
                         $application = $local->application;
-                        if (version_compare($com['version'], $application['version'], '>=') && $com['releasedate']>=$application['releasedate']){
+                        if (version_compare($application['version'], $com['version'], '>') || $application['releasedate']>$com['releasedate']){
                             $com['cloudinfo'] = array(
                                 'version'=>$application['version'],
                                 'releasedate'=>$application['releasedate'],
+                                'isLocal'=>true,
                                 'isnew'=>true
                             );
                         }
@@ -128,7 +131,11 @@ class CloudService
                 $com['installtime'] = date('Y/m/d H:i',$com['addtime']);
                 $com['action'] = '<div class="layui-btn-group">';
                 if (!empty($com['cloudinfo']) && $com['cloudinfo']['isnew']){
-                    $com['action'] .= '<a href="'.url('console/setting/cloudUp').'?nid='.$com['modulename'].'" class="layui-btn layui-btn-sm layui-btn-danger confirm" data-text="升级前请做好源码和数据备份，避免升级故障导致系统无法正常运行">升级</a>';
+                    if($com['cloudinfo']['isLocal']){
+                        $com['action'] .= '<a href="'.wurl('setting/pluginup', array('nid'=>$com['modulename'])).'" class="layui-btn layui-btn-sm layui-btn-danger confirm" data-text="升级前请做好源码和数据备份，避免升级故障导致系统无法正常运行">升级</a>';
+                    }else{
+                        $com['action'] .= '<a href="'.url('console/setting/cloudUp').'?nid='.$com['modulename'].'" class="layui-btn layui-btn-sm layui-btn-danger confirm" data-text="升级前请做好源码和数据备份，避免升级故障导致系统无法正常运行">升级</a>';
+                    }
                 }
                 $com['action'] .= '<a href="'.url('console/setting/comcheck').'?cid='.$com['id'].'" class="layui-btn layui-btn-sm layui-btn-normal ajaxshow">'.(empty($com['cloudinfo']) ? '检测更新' : '重新检测').'</a>';
                 $com['action'] .= '<a href="'.url('console/setting/comremove').'?cid='.$com['id'].'" class="layui-btn layui-btn-sm layui-btn-primary confirm" data-text="即将卸载该应用并删除应用产生的所有数据，是否确定要卸载？">卸载</a></div>';

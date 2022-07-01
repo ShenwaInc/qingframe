@@ -10,7 +10,7 @@
     <meta name="format-detection" content="telephone=no">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="shortcut icon" href="/favicon.ico" />
-    <title>Whotalk安装向导</title>
+    <title>安装向导</title>
     <link rel="stylesheet" href="{{ asset('/static/layui/css/layui.css') }}?v={{ $_W['config']['release'] }}" />
     <link rel="stylesheet" href="{{ asset('/static/fului/fului-for-lay.css') }}?v={{ $_W['config']['release'] }}" />
     <link rel="stylesheet" href="{{ asset('/static/installer/style.css') }}?v={{ $_W['config']['release'] }}" />

@@ -70,7 +70,6 @@ class AccountController extends Controller
         global $_W;
         if ($this->role!='owner' && !$_W['isfounder'])return $this->message('您暂无权限操作');
         $return = array('title'=>'管理权限','users'=>array(),'uniacid'=>$this->uniacid,'role'=>$this->role);
-        $return['role'] = $this->role;
         $subs = UserService::GetSubs($_W['uid']);
         $op = $request->input('op','');
         if ($request->isMethod('post')){
@@ -214,12 +213,19 @@ class AccountController extends Controller
             if (empty($controller)) return $this->message("入口分类不能为空");
             $method = trim($_GPC['methods'][$controller]);
             if (empty($method)) return $this->message("默认入口不能为空");
-            $update = DB::table('uni_account_users')->updateOrInsert(array(
+            $condition = array(
                 'uid'=>$_W['uid'],
-                'uniacid'=>$this->uniacid,
-                'role'=>$this->role
-            ), array('entrance'=>$controller.":".$method));
-            if (!$update){
+                'uniacid'=>$this->uniacid
+            );
+            $account_users = DB::table('uni_account_users')->where($condition)->first();
+            if (empty($account_users)){
+                $condition['role'] = $this->role;
+                $condition['entrance'] = $controller.":".$method;
+                $complete = DB::table('uni_account_users')->insert($condition);
+            }else{
+                $complete = DB::table('uni_account_users')->where('id', $account_users['id'])->update(array('entrance'=>$controller.":".$method));
+            }
+            if (!$complete){
                 return $this->message();
             }
             return $this->message("保存成功！", referer(), 'success');

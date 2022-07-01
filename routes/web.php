@@ -38,10 +38,6 @@ Route::group(['namespace'=>'Console', 'middleware'=>['installer', 'app']],functi
     Route::get('/', 'EntryController@index');
 });
 
-Route::group(['namespace'=>'Console', 'middleware'=>['app']],function (){
-    Route::get('/', 'EntryController@index');
-});
-
 Route::group(['prefix' => 'api', 'namespace'=>'Api','middleware'=>['app']],function (){
     Route::any('/wechat/{uniacid}', 'WechatController@recived');
 });

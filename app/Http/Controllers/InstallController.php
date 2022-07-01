@@ -70,6 +70,7 @@ class InstallController extends Controller
         if ($installer['dbconnect']==0){
             $authkey = \Str::random(8);
             $manager = $request->input('render');
+            $appname = !empty($manager['appname']) ? trim($manager['appname']) : $config['name'];
             if (!isset($manager['username']) || trim($manager['username'])==''){
                 return $this->message('请填写您的超管账号');
             }
@@ -162,7 +163,7 @@ class InstallController extends Controller
             //initializer laravel framework
             DB::table('gxswa_cloud')->insert(array(
                 'identity'=>'swa_framework_laravel',
-                'name'=>'轻如框架V1',
+                'name'=>'轻如云微服务管理系统V1',
                 'modulename'=>'',
                 'type'=>0,
                 'logo'=>'//shenwahuanan.oss-cn-shenzhen.aliyuncs.com/images/4/2021/08/pK8iHw0eQg5hHgg4Kqe5E1E1hSBpZS.png',
@@ -179,7 +180,7 @@ class InstallController extends Controller
                 array(
                     'key'=>"page",
                     'value'=>serialize(array(
-                        'title'=>'Whotalk即时通讯系统',
+                        'title'=>$appname,
                         'icon'=>'/favicon.ico',
                         'logo'=>'/static/icon200.jpg',
                         'copyright'=>'© 2019-2022 Shenwa Studio. All Rights Reserved.',
@@ -191,7 +192,7 @@ class InstallController extends Controller
             ]);
 
         }else{
-            if (empty($authkey)) return $this->message('微擎站点安全码不能为空');
+            if (empty($authkey)) return $this->message('站点安全码不能为空');
             $installer['database']['prefix'] = 'ims_';
             $uid = (int)$dbconnect->table('users')->where('founder_groupid',1)->orderBy('uid','asc')->value('uid');
             //数据表检测，待完善
@@ -204,7 +205,6 @@ class InstallController extends Controller
             Log::error('storage_link_fail',array('errno'=>-1,'message'=>$exception->getMessage()));
         }
         //写入配置文件
-        $appname = !empty($manager['appname']) ? trim($manager['appname']) : 'Whotalk';
         $envfile_tmp = resource_path('stub/env.stub');
         $reader = fopen($envfile_tmp,'r');
         $envdata = fread($reader,filesize($envfile_tmp));
