@@ -44,6 +44,7 @@ class serverup extends Command
     public function handle()
     {
         $MSS = new MSService();
+        $MSS->setup();
         $res = $MSS->autoinstall();
         $this->info("Add {$res['install']} service,update {$res['upgrade']}, faild {$res['faild']}, found {$res['servers']} packages.");
         return true;

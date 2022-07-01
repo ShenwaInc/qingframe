@@ -191,11 +191,11 @@ class PayService {
      * $orderinfo 订单信息  array类型 用于校验支付信息是否正确
      */
     public static function notify(string $type,array $params,$from='notify'){
-        $uniontid = trim($params['out_trade_no']);
-        if (empty($uniontid)){
+        $unionTid = trim($params['out_trade_no']);
+        if (empty($unionTid)){
             return error(-1,'交易单号异常');
         }
-        $paylog = CorePaylog::detail(0,$uniontid);
+        $paylog = CorePaylog::detail(0,$unionTid);
         if (empty($paylog)){
             return error(-1,'交易不存在');
         }
@@ -258,52 +258,19 @@ class PayService {
     }
 
     public static function verify($params, $paytype, $config,$from='notify'){
-        $payresult = array('trade_status'=>'TRADE_SUCCESS','total_amount'=>0,'isxml'=>false);
+        $payResult = array('trade_status'=>'TRADE_SUCCESS','total_amount'=>0,'isxml'=>false);
         $isxml = false;
         if ($paytype=='alipay'){
-            $payresult['out_trade_no'] = $params['out_trade_no'];
+            $payResult['out_trade_no'] = $params['out_trade_no'];
             $alipay = $config['alipay'];
             if($params['sign_type']=='RSA2'){
-                $payresult['total_amount'] = $params['total_amount'];
-                CloudService::LoadCom('aop');
-                $aop = new AopClient;
-                $aop->gatewayUrl = "https://openapi.alipay.com/gateway.do";
-                $aop->appId = $alipay['appid'];
-                $aop->rsaPrivateKey = $alipay['privatekey'];
-                $aop->format = "json";
-                $aop->charset = "UTF-8";
-                $aop->signType = "RSA2";
-                $aop->alipayrsaPublicKey = $alipay['publickey'];
-                //实例化具体API对应的request类,类名称和接口名称对应,当前调用接口名称：alipay.trade.app.pay
-                $request = new AlipayTradeQueryRequest();
-
-                $request->setBizContent("{" .
-                    "\"out_trade_no\":\"".$params['out_trade_no']."\"," .
-                    "\"trade_no\":\"\"," .
-                    "\"org_pid\":\"\"," .
-                    "      \"query_options\":[" .
-                    "        \"trade_settle_info\"" .
-                    "      ]" .
-                    "  }");
-                $response = $aop->execute($request);
-
-                $responseNode = str_replace(".", "_", $request->getApiMethodName()) . "_response";
-                $resultCode = $response->$responseNode->code;
-                if(!empty($resultCode)){
-                    if ($resultCode==10000){
-                        if ($response->$responseNode->trade_status=='TRADE_SUCCESS'){
-                            return $payresult;
-                        }else{
-                            return error(-1,"支付未完成(".$response->$responseNode->trade_status.")");
-                        }
-                    }else{
-                        $message = $response->$responseNode->sub_msg;
-                        $message .= "(".$response->$responseNode->sub_code.")";
-                        return error(-1, $message);
-                    }
-                } else {
-                    return error(-1, '订单状态异常');
+                $result = serv('payment')->AlipayQuery($config['alipay'], $params);
+                if (is_error($result)) return $result;
+                if ($result['tradeStatus']!="TRADE_SUCCESS"){
+                    return error((0-$result['code']), $result['msg']);
                 }
+                $payResult['total_amount'] = $params['total_amount'] = floatval($result['totalAmount']);
+                return $payResult;
             }else{
                 foreach($params as $key => $value) {
                     if($key != 'sign' && $key != 'sign_type') {
@@ -318,9 +285,9 @@ class PayService {
                     return error(-1, '签名验证失败');
                 }
                 if (isset($params['total_fee'])){
-                    $payresult['total_amount'] = $params['total_fee'];
+                    $payResult['total_amount'] = $params['total_fee'];
                 }
-                return $payresult;
+                return $payResult;
             }
         }elseif($paytype=='wechat'){
             $input = file_get_contents('php://input');
@@ -367,10 +334,10 @@ class PayService {
             if ($sign != $params['sign']){
                 return error(-1,'签名验证失败');
             }
-            $payresult['out_trade_no'] = $params['out_trade_no'];
-            $payresult['total_amount'] = $params['total_fee'] / 100;
-            $payresult['isxml'] = $isxml;
-            return $payresult;
+            $payResult['out_trade_no'] = $params['out_trade_no'];
+            $payResult['total_amount'] = $params['total_fee'] / 100;
+            $payResult['isxml'] = $isxml;
+            return $payResult;
         }
         return error(-1,'未知的支付方式');
     }

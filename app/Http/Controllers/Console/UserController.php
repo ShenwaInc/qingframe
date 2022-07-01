@@ -89,7 +89,7 @@ class UserController extends Controller
                     DB::table('users_extra_limit')->insert(array('uid'=>$complete,'maxaccount'=>$maxaccount,'timelimit'=>$data['endtime']));
                 }
             }
-            if ($complete) return $this->message('保存成功！',wurl('user/subuser'), 'success');
+            if ($complete) return $this->message('保存成功！', referer(), 'success');
             return $this->message();
         }
         return $this->globalview('console.user.create',$return);
@@ -154,14 +154,14 @@ class UserController extends Controller
     public function doAvatar(Request $request){
         if ($request->isMethod('post')){
             global $_W;
-            $path = FileService::Upload($request);
-            if (is_error($path)){
-                return $this->message($path['message']);
+            $upload = serv('storage')->putFile('file');
+            if (is_error($upload)){
+                return $this->message($upload['message']);
             }
-            DB::table('users_profile')->where('uid',$_W['uid'])->update(['avatar'=>$path,'edittime'=>TIMESTAMP]);
+            DB::table('users_profile')->where('uid',$_W['uid'])->update(['avatar'=>$upload['path'],'edittime'=>TIMESTAMP]);
             $info = array(
-                'attachment' => $path,
-                'url' => tomedia($path)
+                'attachment' => $upload['path'],
+                'url' => $upload['url']
             );
             return $this->message($info,wurl('user/profile'),'success');
         }

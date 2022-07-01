@@ -9,7 +9,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="format-detection" content="telephone=no">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="shortcut icon" href="{{ asset('/favicon.ico') }}" />
+    <link rel="shortcut icon" href="{{ $_W ? tomedia($_W['setting']['page']['icon']) : asset('/favicon.ico') }}" />
     <title>后台管理系统</title>
     @php
         !(defined('TIMESTAMP')) && define('TIMESTAMP', time());

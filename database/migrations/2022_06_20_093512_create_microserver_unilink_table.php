@@ -1,11 +1,11 @@
 <?php
 
-use App\Services\MSService;
+use App\Services\MSS;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\Schema;
 
-class CreateMicroserverTable extends Migration
-{
+class CreateMicroserverUnilinkTable extends Migration {
+
     /**
      * Run the migrations.
      *
@@ -13,7 +13,7 @@ class CreateMicroserverTable extends Migration
      */
     public function up()
     {
-        MSService::setup();
+        MSS::setup();
     }
 
     /**
@@ -23,6 +23,7 @@ class CreateMicroserverTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('microserver');
+        Schema::dropIfExists('microserver_unilink');
     }
+
 }

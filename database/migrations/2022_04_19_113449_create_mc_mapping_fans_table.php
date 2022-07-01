@@ -12,6 +12,7 @@ class CreateMcMappingFansTable extends Migration {
      */
     public function up()
     {
+        if (Schema::hasTable('mc_mapping_fans')) return;
         Schema::create('mc_mapping_fans', function(Blueprint $table)
         {
             $table->increments('fanid');

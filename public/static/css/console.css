@@ -80,12 +80,14 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 .text-lg{font-size: 20px;}
 .text-bold{font-weight: bold;}
 .text-black, .layui-word-aux .text-black{color: #333333}
-.text-blue{color: #0081ff;}
+.text-blue, .color-default{color: #0081ff;}
 .text-red{color: #e54d42;}
 .text-gray, .text-empty{color:#aaaaaa;}
 .text-white{color: #FFFFFF;}
 .text-green{color: #39b54a;}
+.text-yellow{color: #fbbd08;}
 .text-empty{text-align: center; line-height: 100px}
+.text-cut{overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
 
 /* padding-margin */
 .padding{padding: 15px;}
@@ -110,7 +112,7 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 
 .main-content .un-padding{margin-left: -15px; margin-right: -15px;}
 
-.layui-card .layui-form-switch{margin-top: 0}
+.layui-card .fui-table .layui-form-switch{margin-top: 0}
 
 .layui-btn:not(.layui-btn-sm) + .layui-btn{margin-right: 15px;}
 
@@ -189,7 +191,7 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 .fui-tab .layui-tab-title a{color: #353535; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 1; max-width: 120px; padding: 0}
 .fui-tab .layui-tab-title .layui-this:after{border: none; border-bottom: 2px solid #07c160; height: 40px;}
 
-.fui-card{padding: 25px; box-shadow: 0 1px 5px 0 rgb(0 0 0 / 5%); margin-bottom: 30px;}
+.fui-card{padding: 25px; box-shadow: 0 1px 5px 0 rgb(0 0 0 / 5%); margin-bottom: 30px; border-radius: 3px;}
 .fui-card .layui-card-header{height: auto; min-height: 42px;}
 .fui-card .layui-card-header .title{font-size: 20px; font-weight: 400; line-height: 1;}
 .fui-card .layui-form-label{text-align: left;}

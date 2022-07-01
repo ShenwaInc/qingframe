@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
 class CreateUniSettingsTable extends Migration {
 
@@ -12,6 +13,7 @@ class CreateUniSettingsTable extends Migration {
 	 */
 	public function up()
 	{
+        if (Schema::hasTable('uni_settings')) return;
 		Schema::create('uni_settings', function(Blueprint $table)
 		{
 			$table->integer('uniacid')->unsigned()->primary();

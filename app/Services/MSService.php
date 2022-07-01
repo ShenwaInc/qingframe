@@ -2,12 +2,49 @@
 
 namespace App\Services;
 
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Schema;
 
 class MSService
 {
     public static $tablename = 'microserver';
     public static $devmode = DEVELOPMENT;
+
+    public static function setup(){
+        if (!Schema::hasTable("microserver")){
+            Schema::create('microserver', function (Blueprint $table) {
+                $table->increments('id');
+                $table->string('identity', 20);
+                $table->string('name', 20);
+                $table->string('cover', 255)->default("");
+                $table->text("summary")->nullable();
+                $table->string("version",10)->default("");
+                $table->string("releases",20)->default("");
+                $table->string("drive", 10)->default("php");
+                $table->string("entrance", 255)->default("");
+                $table->mediumtext("datas")->nullable();
+                $table->mediumtext("configs")->nullable();
+                $table->boolean('status')->default(1);
+                $table->integer("addtime")->default(0)->unsigned();
+                $table->integer("dateline")->default(0)->unsigned();
+            });
+        }
+        if (!Schema::hasTable('microserver_unilink')){
+            Schema::create('microserver_unilink', function (Blueprint $table) {
+                $table->increments('id');
+                $table->string('name', 20);
+                $table->string('title', 20);
+                $table->string('cover', 255)->default("");
+                $table->string("summary", 255)->default("");
+                $table->string("entry", 255)->default("");
+                $table->mediumtext("perms")->nullable();
+                $table->boolean('status')->default(1);
+                $table->integer("addtime")->default(0)->unsigned();
+                $table->integer("dateline")->default(0)->unsigned();
+            });
+        }
+    }
 
     public static function getmanifest($identity, $app=false){
         $manifest = MICRO_SERVER.$identity."/manifest.json";
@@ -328,6 +365,7 @@ class MSService
             return error(-1,'安装失败，请重试');
         }
         $this->getEvents(true);
+        $this->uniLink($service);
         if (!self::$devmode){
             if ($service['inextra'] && defined('MSERVER_EXTRA')){
                 CloudService::MoveDir(MSERVER_EXTRA.$identity, MICRO_SERVER.$identity);
@@ -374,6 +412,7 @@ class MSService
                 return error(-1,'更新失败，请重试');
             }
             $this->getEvents(true);
+            $this->uniLink($manifest);
             if (!self::$devmode){
                 //删除安装包文件
                 @unlink(MICRO_SERVER.$identity."/manifest.json");
@@ -381,6 +420,29 @@ class MSService
             return true;
         }
         return error(-1,"当前服务已经是最新版本");
+    }
+
+    public function uniLink($manifest){
+        if (isset($manifest['uniLink'])){
+            $uniLink = post_var(array('title','entry','summary','cover'), $manifest['uniLink']);
+            if (empty($uniLink['cover'])) $uniLink['cover'] = $manifest['application']['cover'];
+            if (empty($uniLink['entry'])) $uniLink['entry'] = $manifest['entrance'];
+            if (empty($uniLink['title'])) $uniLink['title'] = $manifest['application']['name'];
+            if (empty($uniLink['summary'])) $uniLink['summary'] = $manifest['application']['summary'];
+            if (!empty($manifest['uniLink']['perms'])){
+                $uniLink['perms'] = serialize($manifest['uniLink']['perms']);
+            }
+            $uniLink['status'] = 1;
+            $uniLink['dateline'] = TIMESTAMP;
+            $isExists = (int)pdo_getcolumn("microserver_unilink", array('name'=>$manifest['application']['identity']), 'id');
+            if (empty($isExists)){
+                $uniLink['addtime'] = TIMESTAMP;
+                $uniLink['name'] = $manifest['application']['identity'];
+                return pdo_insert("microserver_unilink", $uniLink);
+            }
+            return pdo_update("microserver_unilink", $uniLink, array('id'=>$isExists));
+        }
+        return pdo_delete("microserver_unilink", array("name"=>$manifest['application']['identity']));
     }
 
     public function uninstall($identity){
@@ -407,11 +469,19 @@ class MSService
     }
 
     public static function disable($identity){
-        return pdo_update(self::$tablename, array('status'=>0,'dateline'=>TIMESTAMP), array('identity'=>trim($identity)));
+        if (pdo_update(self::$tablename, array('status'=>0,'dateline'=>TIMESTAMP), array('identity'=>trim($identity)))){
+            pdo_update('microserver_unilink', array('status'=>0,'dateline'=>TIMESTAMP), array('name'=>trim($identity)));
+            return true;
+        }
+        return false;
     }
 
     public static function restore($identity){
-        return pdo_update(self::$tablename, array('status'=>1,'dateline'=>TIMESTAMP), array('identity'=>trim($identity)));
+        if (pdo_update(self::$tablename, array('status'=>1,'dateline'=>TIMESTAMP), array('identity'=>trim($identity)))){
+            pdo_update('microserver_unilink', array('status'=>1,'dateline'=>TIMESTAMP), array('name'=>trim($identity)));
+            return true;
+        }
+        return false;
     }
 
     public static function showparams($params=array(),$inuse=false){

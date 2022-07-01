@@ -39,6 +39,10 @@ class ServerController extends Controller
             $service->uniacid = $_W['uniacid'];
             session()->put('uniacid',$_W['uniacid']);
         }
+        if (!$_W['isfounder']){
+            //权限判断，待完善
+            //Todo something
+        }
         $data = $service->HttpRequest('web', $ctrl);
         if (is_error($data)){
             return $this->message($data['message']);

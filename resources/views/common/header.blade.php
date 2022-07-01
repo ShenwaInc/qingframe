@@ -6,7 +6,7 @@
     <div class="layui-header">
         <div class="fui-header-sm">
             <div class="layui-logo">
-                <a href="{{ url('console') }}">{{ $_W['config']['name'] }}</a>
+                <a href="{{ $_W['consolePage'] }}">{{ $_W['page']['title'] }}</a>
             </div>
 
             <ul class="layui-nav layui-layout-right">

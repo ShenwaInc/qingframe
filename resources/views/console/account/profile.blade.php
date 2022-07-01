@@ -2,24 +2,19 @@
 
 <div class="main-content fui-content">
 
-    <h2>{{ $account['name'] }}</h2>
+    <h2>平台管理</h2>
 
     <div class="layui-tab fui-tab margin-bottom-xl">
         <ul class="layui-tab-title title_tab">
             <li class="layui-this">
-                <a href="{{ wurl('account/profile',array('uniacid'=>$uniacid)) }}">平台信息</a>
+                <a href="{{ wurl('account/profile',array('uniacid'=>$uniacid)) }}">基础信息</a>
             </li>
             <li>
-                <a href="{{ wurl('account/setting',array('uniacid'=>$uniacid)) }}">参数设置</a>
+                <a href="{{ wurl('account/functions',array('uniacid'=>$uniacid)) }}">应用与服务</a>
             </li>
             @if(in_array($role,['founder','owner']) || $_W['isfounder'])
             <li>
-                <a href="{{ wurl('account/role',array('uniacid'=>$uniacid)) }}">管理权限</a>
-            </li>
-            @endif
-            @if($_W['isfounder'])
-            <li>
-                <a href="{{ wurl('account/component',array('uniacid'=>$uniacid)) }}">应用管理</a>
+                <a href="{{ wurl('account/role',array('uniacid'=>$uniacid)) }}">操作权限</a>
             </li>
             @endif
         </ul>
@@ -27,8 +22,10 @@
 
     <div class="fui-card layui-card">
         <div class="layui-card-header nobd">
+            @if(in_array($role,['founder','owner', 'manager']) || $_W['isfounder'])
             <a href="{{ wurl('account/edit',array('uniacid'=>$uniacid), true) }}" class="fr text-blue ajaxshow" title="编辑平台信息"><i class="fa fa-edit"></i></a>
-            <span class="title">平台资料</span>
+            @endif
+            <span class="title">基础信息</span>
         </div>
         <div class="layui-card-body">
             <div class="un-padding">
@@ -42,7 +39,9 @@
                         <tr>
                             <td><span class="fui-table-lable">平台名称</span></td>
                             <td class="soild-after">{{ $account['name'] }}</td>
-                            <td class="text-right soild-after"></td>
+                            <td class="text-right soild-after">
+                                <a href="javascript:;" data-url="{{ url("login/".$account['uniacid']) }}" class="text-blue js-clip">快速入口</a>
+                            </td>
                         </tr>
                         <tr>
                             <td><span class="fui-table-lable">平台LOGO</span></td>
@@ -80,6 +79,15 @@
                             </td>
                         </tr>
                         @endif
+                        <tr>
+                            <td><span class="fui-table-lable">默认入口</span></td>
+                            <td class="soild-after">
+                                <span id="expiretext">{!! $entrance !!}</span>
+                            </td>
+                            <td class="text-right soild-after">
+                                <a href="{{ wurl('account/entry',array('uniacid'=>$uniacid)) }}" title="修改默认入口" class="ajaxshow text-blue">修改</a>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -105,6 +113,7 @@
             }
         });
         @endif
+        @if(in_array($role,['founder','owner', 'manager']) || $_W['isfounder'])
         upload.render({
             elem: '.js-api-verify'
             ,url: '{{ url("console/account/apiverify") }}' //必填项
@@ -116,6 +125,7 @@
                 Core.report(res);
             }
         });
+        @endif
     });
     @if($_W['isfounder'])
     function setExpire(expiredata=''){

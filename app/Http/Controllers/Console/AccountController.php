@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Account;
 use App\Models\CorePaylog;
 use App\Models\Setting;
+use App\Services\AccountService;
 use App\Services\CacheService;
 use App\Services\PayService;
 use App\Services\SettingService;
@@ -22,6 +23,11 @@ class AccountController extends Controller
     public $uniacid = 0;
     public $role = 'operator';
     public $account = null;
+    public $entrys = array(
+        'account'=>'平台管理',
+        'module'=>'应用模块',
+        'server'=>'功能服务'
+    );
 
     function accInit($check=false){
         global $_W,$_GPC;
@@ -41,6 +47,8 @@ class AccountController extends Controller
                 return error(-1, "该平台服务已到期，请联系管理员处理");
             }
         }
+        $_W['account'] = $this->account;
+        $_W['page']['title'] = $this->account['name'];
         return $this->account;
     }
 
@@ -58,31 +66,11 @@ class AccountController extends Controller
         return $this->message('敬请期待');
     }
 
-    public function doComponent(Request $request){
-        global $_W;
-        if (!$_W['isfounder']){
-            return $this->message('暂无权限，请勿乱操作');
-        }
-        $return = array('title'=>'应用权限','uniacid'=>$this->uniacid);
-        $components = DB::table('uni_account_extra_modules')->where('uniacid',$this->uniacid)->first();
-        if (empty($components)){
-            $defaultmodule = DB::table('gxswa_cloud')->where('modulename',$_W['config']['defaultmodule'])->select(['name','modulename','logo'])->first();
-            $components = [['name'=>$defaultmodule['name'],'identity'=>$defaultmodule['modulename'],'logo'=>$defaultmodule['logo']]];
-            DB::table('uni_account_extra_modules')->insert(array(
-                'uniacid'=>$this->uniacid,
-                'modules'=>serialize($components)
-            ));
-            $return['components'] = $components;
-        }else{
-            $return['components'] = unserialize($components['modules']);
-        }
-        return $this->globalview('console.account.com',$return);
-    }
-
     public function doRole(Request $request){
         global $_W;
         if ($this->role!='owner' && !$_W['isfounder'])return $this->message('您暂无权限操作');
         $return = array('title'=>'管理权限','users'=>array(),'uniacid'=>$this->uniacid,'role'=>$this->role);
+        $return['role'] = $this->role;
         $subs = UserService::GetSubs($_W['uid']);
         $op = $request->input('op','');
         if ($request->isMethod('post')){
@@ -150,6 +138,7 @@ class AccountController extends Controller
             $return['users'] = $users;
         }
         $return['subusers'] = $subs;
+        $return['account'] = $this->account;
         $return['colors'] = array('owner'=>'orange','manager'=>'green','operator'=>'blue');
         return $this->globalview('console.account.role',$return);
     }
@@ -171,129 +160,6 @@ class AccountController extends Controller
         return $this->message();
     }
 
-    public function doSetting(Request $request){
-        global $_W;
-        $setting = SettingService::uni_load('', $this->uniacid);
-        if (empty($setting['payment'])){
-            $setting['payment'] = array(
-                'credit'=>array('pay_switch'=>0),
-                'alipay'=>array('pay_switch'=>0,'account'=>'','partner'=>'','secret'=>''),
-                'wechat'=>array('pay_switch'=>0,'mchid'=>'','apikey'=>'','')
-            );
-        }
-        if (empty($setting['notify'])){
-            $setting['notify'] = array(
-                'sms'=>array('switch'=>0,'type'=>''),
-                'email'=>array('switch'=>0,'smtp'=>'','port'=>'','username'=>'','password'=>'','sender'=>'')
-            );
-        }
-        $remote = "跟随系统";
-        $storage = serv('storage', $this->uniacid);
-        if (!$storage->settings['remote']['isglobal']){
-            $remotes = array('跟随系统','FTP','阿里云存储','七牛云存储','腾讯云存储','亚马逊S3');
-            $remote = $remotes[$storage->settings['remote']['type']];
-        }
-        $op = (string)$request->input('op','');
-        if ($request->isMethod('post')){
-            switch ($op){
-                case 'js-switch' :
-                    $name = $request->input('name','');
-                    $config = explode('.',$name);
-                    if (empty($config)) return $this->message('未指定配置项');
-                    if ($name=='payment.alipay.pay_switch'){
-                        $alipay = $setting['payment']['alipay'];
-                        if (empty($alipay['account']) || empty($alipay['partner'] || $alipay['secret'])){
-                            return $this->message('请先配置支付宝接口',wurl('account/setting',array('uniacid'=>$this->uniacid)));
-                        }
-                    }
-                    if ($name=='payment.wechat.pay_switch'){
-                        $wechat = $setting['payment']['wechat'];
-                        if (empty($wechat['mchid']) || empty($wechat['apikey'])){
-                            return $this->message('请先配置微信支付接口',wurl('account/setting',array('uniacid'=>$this->uniacid)));
-                        }
-                    }
-                    $value = (int)$request->input('value',0);
-                    $key = $config[0];
-                    if (isset($config[2])){
-                        $setting[$key][$config[1]][$config[2]] = $value;
-                    }elseif(isset($config[1])){
-                        $setting[$key][$config[1]] = $value;
-                    }else{
-                        $setting[$key] = $value;
-                    }
-                    $update = is_array($setting[$key]) ? serialize($setting[$key]) : $setting[$key];
-                    $complete = SettingService::uni_save($this->uniacid,$key,$update);
-                    if ($complete){
-                        return $this->message('保存成功！',wurl('account/setting',array('uniacid'=>$this->uniacid)), 'success');
-                    }
-                    break;
-                case 'save-wechat' :
-                    $wechat = $request->input('wechat',array());
-                    if (empty($wechat['mchid']) || empty($wechat['apikey'])){
-                        return $this->message('微信支付接口配置不正确');
-                    }
-                    $wechat['pay_switch'] = $setting['payment']['wechat']['pay_switch'];
-                    $setting['payment']['wechat'] = $wechat;
-                    $complete = SettingService::uni_save($this->uniacid,'payment',serialize($setting['payment']));
-                    if ($complete){
-                        return $this->message('保存成功！',wurl('account/setting',array('uniacid'=>$this->uniacid)), 'success');
-                    }
-                    break;
-                case 'save-alipay' :
-                    $alipay = $request->input('alipay',array());
-                    if (empty($alipay['account']) || empty($alipay['partner'] || $alipay['secret'])){
-                        return $this->message('支付宝接口配置未完善');
-                    }
-                    $alipay['pay_switch'] = $setting['payment']['alipay']['pay_switch'];
-                    $setting['payment']['alipay'] = $alipay;
-                    $complete = SettingService::uni_save($this->uniacid,'payment',serialize($setting['payment']));
-                    if ($complete){
-                        return $this->message('保存成功！',wurl('account/setting',array('uniacid'=>$this->uniacid)), 'success');
-                    }
-                    break;
-                default :
-                    break;
-            }
-            return $this->message();
-        }
-        if ($op=='demo-alipay'){
-            $_W['uniacid'] = $this->uniacid;
-            $_W['account'] = uni_fetch($this->uniacid);
-            $testfee = floatval(0.1 + (random(1,true) / 100));
-            $orderinfo = [
-                'openid'=>$_W['uid'],
-                'tid'=>random(10),
-                'fee'=>$testfee,
-                'tag'=>"测试充值{$testfee}元",
-                'is_usecard'=>0,
-                'card_type'=>0,
-                'card_id'=>0,
-                'card_fee'=>0,
-                'encrypt_code'=>random(6,true),
-                'is_wish'=>0
-            ];
-            $paylog = CorePaylog::create($orderinfo);
-
-            $orderinfo = [
-                'uniontid'=>$paylog['uniontid'],
-                'tag'=>$paylog['tag'],
-                'fee'=>$paylog['fee'],
-                'uniacid'=>$paylog['uniacid']
-            ];
-            $info = PayService::create('alipay',$orderinfo);
-
-            dd($info);
-        }
-        return $this->globalview('console.account.setting', array(
-            'uniacid'=>$this->uniacid,
-            'account'=>$this->account,
-            'setting'=>$setting,
-            'role'=>$this->role,
-            'title'=>'平台配置',
-            'remote'=>$remote
-        ));
-    }
-
     public function doEdit(Request $request){
         if (empty($this->account)){
             return $this->message('找不到该平台，可能已被删除');
@@ -308,6 +174,66 @@ class AccountController extends Controller
             return $this->message('保存成功！',wurl('account/profile',array('uniacid'=>$this->uniacid),true), 'success');
         }
         return $this->globalview('console.account.edit',array('title'=>'编辑平台信息','account'=>$this->account));
+    }
+
+    public function doFunctions(){
+        global $_W;
+        $account = $this->account;
+        $return = array('title'=>'平台管理','account'=>$account,'uniacid'=>$this->uniacid, 'components'=>[]);
+        $return['role'] = $this->role;
+        session()->put('uniacid', $account['uniacid']);
+        //读取可用服务
+        $servers = pdo_getall("microserver_unilink");
+        //判断微服务权限，待完善
+        $return['servers'] = $servers;
+
+        //读取可用模块
+        $components = pdo_get('uni_account_extra_modules', array('uniacid'=>$this->uniacid));
+        //DB::table('uni_account_extra_modules')->where('uniacid',$this->uniacid)->first();
+        if (empty($components) && !empty($_W['config']['defaultmodule'])){
+            $defaultModule = pdo_get("modules", array('name'=>$_W['config']['defaultmodule'], 'application_type'=>1));
+            if (!empty($defaultModule)){
+                $components = [['name'=>$defaultModule['title'],'identity'=>$defaultModule['name'],'logo'=>$defaultModule['logo']]];
+                DB::table('uni_account_extra_modules')->insert(array(
+                    'uniacid'=>$this->uniacid,
+                    'modules'=>serialize($components)
+                ));
+                $return['components'] = $components;
+            }
+        }else{
+            $return['components'] = unserialize($components['modules']);
+        }
+        //判断模块权限，待完善
+        return $this->globalview('console.account.functions',$return);
+    }
+
+    public function doEntry(){
+        global $_W, $_GPC;
+        if (checksubmit()){
+            $controller = trim($_GPC['ctrl']);
+            if (empty($controller)) return $this->message("入口分类不能为空");
+            $method = trim($_GPC['methods'][$controller]);
+            if (empty($method)) return $this->message("默认入口不能为空");
+            $update = DB::table('uni_account_users')->updateOrInsert(array(
+                'uid'=>$_W['uid'],
+                'uniacid'=>$this->uniacid,
+                'role'=>$this->role
+            ), array('entrance'=>$controller.":".$method));
+            if (!$update){
+                return $this->message();
+            }
+            return $this->message("保存成功！", referer(), 'success');
+        }
+        list($controller, $method) = AccountService::GetEntrance($_W['uid'], $this->uniacid);
+        $entrances = AccountService::GetAllEntrances($this->uniacid);
+        return $this->globalview('console.account.entry',array(
+            'title'=>'默认入口设置',
+            'uniacid'=>$this->uniacid,
+            'ctrl'=>$controller,
+            'method'=>$method,
+            'entrances'=>$entrances,
+            'titles'=>$this->entrys
+        ));
     }
 
     public function doProfile(Request $request){
@@ -333,6 +259,10 @@ class AccountController extends Controller
         $account['expirdate'] = $account['endtime']>0 ? date('Y-m-d',$account['endtime']) : '永久';
         $return = array('title'=>'平台管理','account'=>$account,'uniacid'=>$this->uniacid);
         $return['role'] = $this->role;
+        list($entry, $method) = AccountService::GetEntrance($_W['uid'], $this->uniacid);
+        $entrances = AccountService::GetAllEntrances($this->uniacid);
+        $return['entrance'] = $this->entrys[$entry]. "&nbsp;&gt;&nbsp;";
+        $return['entrance'] .= $entrances[$entry][$method];
         return $this->globalview('console.account.profile',$return);
     }
 
@@ -388,7 +318,7 @@ class AccountController extends Controller
                     'sync' => serialize(array('switch' => 0, 'acid' => '')),
                 ));
 
-                return $this->message('恭喜您，创建成功！',url('console/account',array('uniacid'=>$uniacid)),'success');
+                return $this->message('恭喜您，创建成功！',wurl('account/profile',array('uniacid'=>$uniacid)),'success');
             }
             return $this->message('创建失败，请重试');
         }

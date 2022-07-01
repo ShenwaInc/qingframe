@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Services\FileService;
+use App\Services\MSS;
 use Illuminate\Console\Command;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Artisan;
@@ -147,24 +148,20 @@ class selfmigrate extends Command
                     Schema::drop($dorpTable);
                 }
             }
-            if (!Schema::hasTable("microserver")){
-                Schema::create('microserver', function (Blueprint $table) {
-                    $table->increments('id');
-                    $table->string('identity', 20);
-                    $table->string('name', 20);
-                    $table->string('cover', 255)->default("");
-                    $table->text("summary")->nullable();
-                    $table->string("version",10)->default("");
-                    $table->string("releases",20)->default("");
-                    $table->string("drive", 10)->default("php");
-                    $table->string("entrance", 255)->default("");
-                    $table->mediumtext("datas")->nullable();
-                    $table->mediumtext("configs")->nullable();
-                    $table->boolean('status')->default(1);
-                    $table->integer("addtime")->default(0)->unsigned();
-                    $table->integer("dateline")->default(0)->unsigned();
-                });
+            if (Schema::hasTable('users_founder_own_create_groups')){
+                $DorpTables = array(
+                    'users_founder_own_create_groups',
+                    'users_founder_own_uni_groups',
+                    'users_founder_own_users_groups'
+                );
+                foreach ($DorpTables as $dorpTable){
+                    Schema::drop($dorpTable);
+                }
             }
+            if (!Schema::hasColumn('uni_account_users', 'entrance')){
+                DB::statement("ALTER TABLE ".tablename('uni_account_users')." ADD `entrance` VARCHAR(100) NOT NULL DEFAULT '' AFTER `rank`;");
+            }
+            MSS::setup();
             if(is_dir(base_path('socket'))){
                 FileService::rmdirs(base_path('socket'));
                 DB::table('gxswa_cloud')->where(array('identity'=>'laravel_whotalk_socket'))->update(array('rootpath'=>'swasocket/'));

@@ -4,7 +4,9 @@
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/public/addons/whotalk" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/public/addons/whotalk/plugin/authentication" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/public/addons/whotalk/plugin/cutenumber" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/public/addons/whotalk/plugin/tasks" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/servers/detection" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/servers/mqtt" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/servers/sms" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/servers/storage" vcs="Git" />

@@ -6,6 +6,7 @@ use App\Http\Middleware\App;
 use App\Services\CloudService;
 use App\Services\FileService;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Schema;
 
 class selfclear extends Command
 {
@@ -53,7 +54,9 @@ class selfclear extends Command
             app_path('Services/NoticeService.php'),
             app_path('Http/Controllers/Auth/RegisterController.php'),
             resource_path('views/console/socket.blade.php'),
-            resource_path('views/install/socket.blade.php')
+            resource_path('views/install/socket.blade.php'),
+            resource_path('views/console/account/com.blade.php'),
+            resource_path('views/console/account/setting.blade.php')
         );
         foreach ($unused as $file){
             if (file_exists($file)){
@@ -140,6 +143,9 @@ class selfclear extends Command
             'userapi_cache',
             'userapi_reply',
             'users_extra_templates',
+            'users_founder_own_create_groups',
+            'users_founder_own_uni_groups',
+            'users_founder_own_users_groups',
             'users_invitation',
             'users_lastuse',
             'video_reply',

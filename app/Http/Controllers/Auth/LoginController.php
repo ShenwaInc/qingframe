@@ -36,13 +36,14 @@ class LoginController extends Controller
      */
     public function __construct(Request $request)
     {
-        global $_GPC;
+        global $_GPC, $_W;
         $this->middleware('guest')->except('logout');
         $_GPC = $request->all();
         if (empty($_GPC['referer'])){
             $_GPC['referer'] = 'console';
         }
         View::share('_GPC',$_GPC);
+        View::share('_W',$_W);
     }
 
     /**

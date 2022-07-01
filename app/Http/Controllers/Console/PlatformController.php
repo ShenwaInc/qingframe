@@ -37,11 +37,11 @@ class PlatformController extends Controller
             $params['founder_id'] = intval($_GPC['founder_id']);
         }
 
-        list($data['list'], $data['total']) = AccountService::OwnerAccounts($params, $_GPC['page']);
+        list($data['list'], $data['total'], $data['created']) = AccountService::OwnerAccounts($params, $_GPC['page']);
 
         if (!$_W['isfounder']){
             $maxCreate = (int)DB::table('users_extra_limit')->where('uid',$_W['uid'])->value('maxaccount');
-            if ($maxCreate<=$data['total']){
+            if ($maxCreate<=$data['created']){
                 $data['cancreate'] = false;
             }
         }
@@ -49,22 +49,19 @@ class PlatformController extends Controller
         return $this->globalview('console.platform', $data);
     }
 
-    public function checkout(Request $request,$uniacid){
+    public function checkout($uniacid){
         global $_W;
         $_W['uniacid'] = intval($uniacid);
         session()->put('uniacid',$_W['uniacid']);
-        $module = $request->input('module');
-        if (empty($module)){
-            $module = DB::table('users_operate_history')->where(array('uid'=>$_W['uid'],'uniacid'=>$_W['uniacid']))->orderBy('createtime','desc')->value('module_name');
-            if (empty($module)){
-                $module = $_W['config']['defaultmodule'];
-            }
+        list($controller, $method) = AccountService::GetEntrance($_W['uid'], $_W['uniacid']);
+        if ($controller=='account'){
+            return redirect("console/account/{$method}?uniacid={$_W['uniacid']}");
+        }elseif($controller=='module'){
+            return redirect("console/m/$method");
+        }else{
+            $redirect = serv($method)->getEntry();
+            return redirect($redirect);
         }
-        $moduleObj = ModuleService::fetch($module);
-        if (empty($moduleObj)){
-            return redirect("console/account/profile?uniacid={$_W['uniacid']}");
-        }
-        return redirect("console/m/$module");
     }
 
 }

@@ -49,7 +49,7 @@
                         <td>
                             <img class="layui-avatar" src="{{ asset($service['cover']) }}?v={{ $_W['config']['release'] }}" height="36" />
                             @if($op=='index' && !empty($service['entry']))
-                            <a href="{{ $service['entry'] }}" class="color-default">{{ $service['name'] }}</a>
+                            <a href="{{ $service['entry'] }}" target="_blank" class="color-default">{{ $service['name'] }}</a>
                             @else
                             <span class="color-default">{{ $service['name'] }}</span>
                             @endif

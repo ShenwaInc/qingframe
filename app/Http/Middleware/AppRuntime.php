@@ -40,7 +40,7 @@ class AppRuntime
             MemberService::AuthFetch($_W['openid']);
         }
         if (!$_W['member']['uid']){
-            $member = (int)session("_app_member_session_{$uniacid}_",array());
+            $member = session("_app_member_session_{$uniacid}_",array());
             if (!empty($member)){
                 MemberService::AuthLogin($member, false);
             }

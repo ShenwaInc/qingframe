@@ -44,12 +44,49 @@ class AccountService {
         return $all_account_type_sign;
     }
 
-    static function GetOprateStar($uid,$uniacid,$module_name){
-        return DB::table('users_operate_star')->where(array(
-            ['uid',$uid],
-            ['uniacid',$uniacid],
-            ['module_name',$module_name]
-        ))->first();
+    static function GetOprateStar($uid,$uniacid,$module_name=''){
+        $condition = array('uid'=>$uid, 'uniacid'=>$uniacid);
+        if (!empty($module_name)){
+            $condition['module_name'] = $module_name;
+        }
+        return DB::table('users_operate_star')->where($condition)->first();
+    }
+
+    static function GetEntrance($uid,$uniacid){
+        $entrance = pdo_getcolumn('uni_account_users', array('uid'=>$uid,'uniacid'=>$uniacid), 'entrance');
+        if (empty($entrance)){
+            if(empty($GLOBALS['_W']['config']['defaultmodule'])){
+                $entrance = 'account:profile';
+            }else{
+                $entrance = 'module:'.$GLOBALS['_W']['config']['defaultmodule'];
+            }
+        }
+        return explode(":", $entrance);
+    }
+
+    static function GetAllEntrances($uniacid, $uid=0){
+        $entrances = array(
+            'account'=>array(
+                'profile'=>"基础信息",
+                'functions'=>'应用与服务',
+                'role'=>'操作权限'
+            ),
+            'module'=>[],
+            'server'=>[]
+        );
+        $modules = self::ExtraModules($uniacid);
+        if (!empty($modules)){
+            foreach ($modules as $module){
+                $entrances['module'][$module['identity']] = $module['name'];
+            }
+        }
+        $servers = DB::table('microserver_unilink')->where('status', 1)->get(['name','title','entry'])->toArray();
+        if (!empty($servers)){
+            foreach ($servers as $server){
+                $entrances['server'][$server['name']] = $server['title'];
+            }
+        }
+        return $entrances;
     }
 
     static function FetchUni($uniacid = 0) {
@@ -175,6 +212,7 @@ class AccountService {
 
         $query = Account::searchAccountQuery(false)->where($condition);
         $total = $query->count();
+        $created = 0;
         if ($page!=-1){
             $query = $query->offset($offset)->limit($pSize);
         }
@@ -199,6 +237,9 @@ class AccountService {
                     unset($list[$k]);
                     continue;
                 }
+                if ($account['user_role']=='owner' || $account['user_role']=='founder'){
+                    $created += 1;
+                }
                 $account['is_star'] = DB::table('users_operate_star')->where(array(
                     ['uid',$_W['uid']],
                     ['uniacid',$account['uniacid']],
@@ -218,7 +259,7 @@ class AccountService {
 
         if ($getlist) return $list ?: [];
 
-        return array($list, $total);
+        return array($list, $total, $created);
     }
 
 }

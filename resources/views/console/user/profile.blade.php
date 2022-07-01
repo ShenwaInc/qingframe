@@ -65,7 +65,7 @@
             let preview = $(this).data('prev');
             layui.upload.render({
                 elem: element
-                ,url: '{{ url("console/user/avatar") }}' //必填项
+                ,url: '{{ wurl("user/avatar") }}' //必填项
                 ,accept:'images'
                 ,acceptMime:'images/*'
                 ,exts:"{{ implode('|',$_W['setting']['upload']['image']['extentions']) }}"

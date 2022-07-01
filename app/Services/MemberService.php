@@ -99,15 +99,18 @@ class MemberService
         return $user['groupid'];
     }
 
-    public static function UniAuth($authtoken,$expir=false){
+    public static function UniAuth($authToken, $expire=false){
         global $_W;
-        $session = json_decode(base64_decode($authtoken), true);
+        $session = json_decode(base64_decode($authToken), true);
         if ($session['uid']){
-            if($session['expire']<TIMESTAMP && $expir) return false;
+            if($session['expire']<TIMESTAMP && $expire) return false;
             $member = DB::table('mc_members')->where(['uid'=>$session['uid'],'uniacid'=>$_W['uniacid']])->first();
             if (empty($member)) return false;
             if ($session['hash'] == md5($member['password'].$member['salt'].$session['expire'])){
                 $_W['member'] = $member;
+                if (empty($_W['openid'])){
+                    return self::AuthLogin($member);
+                }
                 $openid = DB::table('mc_mapping_fans')->where('uid',$member['uid'])->value('openid');
                 $_W['openid'] = !empty($openid) ? $openid : $member['uid'];
                 $_W['member']['openid'] = $_W['openid'];

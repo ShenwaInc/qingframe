@@ -38,6 +38,7 @@ class ConsolePermission
             exit();
         }
         $_W['inconsole'] = true;
+        $_W['consolePage'] = url('console');
         $_W['uid'] = $user['uid'];
         $profile = DB::table('users_profile')->where('uid',$_W['uid'])->select('avatar','gender','mobile','email')->first();
         $_W['user'] = array_merge($user,$profile);

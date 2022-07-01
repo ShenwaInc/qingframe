@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Services\AccountService;
+use App\Services\SettingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -89,6 +90,7 @@ class AuthController extends Controller
         if ($account['endtime']>0 && $account['endtime']<TIMESTAMP){
             return $this->message("该平台服务已到期，请联系管理员处理");
         }
+        SettingService::Load();
         return $this->globalview('auth.login', array('account'=>$account));
     }
 

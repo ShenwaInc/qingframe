@@ -1,7 +1,11 @@
 <?php
 
-Route::group(['prefix' => 'app','namespace' => 'App', 'middleware'=>[\App\Http\Middleware\App::class]],function (){
+Route::group(['prefix' => 'app','namespace' => 'App', 'middleware'=>['app']],function (){
     Route::match(['get', 'post'],'/m/{modulename}/{do?}', 'ModuleController@entry');
     Route::match(['get', 'post'],'/util/{option}', 'UtilController@Main');
     Route::get('auth', 'AuthController@index');
+});
+
+Route::group(['prefix'=>'server', 'middleware'=>['app', 'runtime']],function (){
+    Route::any('/{server}/{segment1?}/{segment2?}', 'HttpController@ServerApp')->where('server','[a-z]+');
 });

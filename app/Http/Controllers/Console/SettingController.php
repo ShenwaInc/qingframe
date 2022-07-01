@@ -52,9 +52,17 @@ class SettingController extends Controller
         return $this->message('检测完成！',url('console/setting'),'success');
     }
 
-    public function selfupgrade(){
+    public function selfUpgrade(){
         try {
             Artisan::call('self:update');
+        }catch (\Exception $exception){
+            return $this->message($exception->getMessage());
+        }
+        return $this->message('程序同步完成，即将操作升级...', url('console/setting/sysupgrade'),'success');
+    }
+
+    public function SystemUpgrade(){
+        try {
             Artisan::call('self:migrate');
             Artisan::call('route:clear');
             Artisan::call('server:update');
@@ -149,7 +157,9 @@ class SettingController extends Controller
         if($op=='detection'){
             return $this->detection();
         }elseif ($op=='selfupgrade'){
-            return $this->selfupgrade();
+            return $this->selfUpgrade();
+        }elseif ($op=='sysupgrade'){
+            return $this->SystemUpgrade();
         }elseif ($op=='market'){
             return $this->cloudMarket();
         }

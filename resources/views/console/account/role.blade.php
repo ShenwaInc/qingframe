@@ -2,31 +2,26 @@
 
 <div class="main-content">
 
-    <h2>平台权限</h2>
+    <h2>平台管理</h2>
 
     <div class="layui-tab fui-tab margin-bottom-xl">
         <ul class="layui-tab-title title_tab">
             <li>
-                <a href="{{ wurl('account/profile',array('uniacid'=>$uniacid)) }}">平台信息</a>
+                <a href="{{ wurl('account/profile',array('uniacid'=>$uniacid)) }}">基础信息</a>
             </li>
             <li>
-                <a href="{{ wurl('account/setting',array('uniacid'=>$uniacid)) }}">参数设置</a>
+                <a href="{{ wurl('account/functions',array('uniacid'=>$uniacid)) }}">应用与服务</a>
             </li>
             <li class="layui-this">
-                <a href="{{ wurl('account/role',array('uniacid'=>$uniacid)) }}">管理权限</a>
+                <a href="{{ wurl('account/role',array('uniacid'=>$uniacid)) }}">操作权限</a>
             </li>
-            @if($_W['isfounder'])
-                <li>
-                    <a href="{{ wurl('account/component',array('uniacid'=>$uniacid)) }}">应用管理</a>
-                </li>
-            @endif
         </ul>
     </div>
 
     <div class="fui-card layui-card">
         <div class="layui-card-header nobd">
             <a href="{{ wurl('account/role',array('uniacid'=>$uniacid,'op'=>'add'),true) }}" title="新增平台权限" class="fr layui-btn layui-btn-sm layui-btn-normal ajaxshow">新增权限</a>
-            <span class="title">平台权限</span>
+            <span class="title">操作权限</span>
         </div>
         <div class="layui-card-body">
             <div class="un-padding">
