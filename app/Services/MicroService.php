@@ -354,7 +354,7 @@ class MicroService
             $composerVer = " dev-master";
             $JSON = file_get_contents($composer);
             if (!empty($JSON)){
-                $composerObj = json_decode($JSON);
+                $composerObj = json_decode($JSON, true);
                 if (isset($composerObj['version'])){
                     $composerVer = $composerObj['version'];
                 }

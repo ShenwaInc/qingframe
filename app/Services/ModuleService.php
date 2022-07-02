@@ -150,8 +150,10 @@ class ModuleService
                 $comInfo['type'] = 1;
                 $comInfo['rootpath'] = "public/addons/$identity/";
                 $comInfo['addtime'] = TIMESTAMP;
+                DB::table('gxswa_cloud')->insert($comInfo);
+            }else{
+                DB::table('gxswa_cloud')->where('identity', $cloudIdentity)->update($comInfo);
             }
-            DB::table('gxswa_cloud')->where('identity', $cloudIdentity)->updateOrInsert($comInfo);
         }
         return true;
     }
