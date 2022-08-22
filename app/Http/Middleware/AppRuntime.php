@@ -32,9 +32,9 @@ class AppRuntime
         $_W['openid'] = session()->get("openid$uniacid",'');
         $_W['member'] = array('uid'=>0);
         //自动登录
-        $authtoken = $request->header('x-auth-token');
-        if (!empty($authtoken)){
-            MemberService::UniAuth($authtoken);
+        $authToken = $request->header('x-auth-token');
+        if (!empty($authToken)){
+            MemberService::UniAuth($authToken);
         }
         if (!$_W['member']['uid'] && !empty($_W['openid'])){
             MemberService::AuthFetch($_W['openid']);

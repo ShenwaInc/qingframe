@@ -15,7 +15,7 @@ class selfclear extends Command
      *
      * @var string
      */
-    protected $signature = 'self:clear';
+    protected $signature = 'self:clear {mode?}';
     protected $application;
 
     /**
@@ -180,6 +180,17 @@ class selfclear extends Command
             if (is_dir($dir)){
                 FileService::rmdirs($dir);
             }
+        }
+        $arguments = $this->argument();
+        if ($arguments['mode']=='release'){
+            $gitIgnores = FileService::file_tree(base_path("/"), array('*/.gitignore','*/*/.gitignore','.gitignore','*/*/*/.gitignore','*/*/*/*/.gitignore'));
+            if (!empty($gitIgnores)){
+                foreach ($gitIgnores as $file){
+                    if (!file_exists($file)) continue;
+                    @unlink($file);
+                }
+            }
+            $this->info("Clean ".count($gitIgnores)." files.");
         }
         $this->info('FrameWork Clean successfully.');
         return true;

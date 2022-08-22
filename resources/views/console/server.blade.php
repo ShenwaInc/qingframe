@@ -1,7 +1,7 @@
 @include('common.header')
 <div class="layui-fluid">
     <div class="main-content fui-content">
-        <h2>站点设置</h2>
+        <h2>系统管理</h2>
         <div class="layui-tab fui-tab margin-bottom-xl">
             <ul class="layui-tab-title title_tab">
                 <li>

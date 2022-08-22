@@ -143,6 +143,10 @@ function cache_write($key, $data, $expire = null) {
     return Cache::put($key, $data, $expire);
 }
 
+function cache_read($key, $default=null){
+    return Cache::get($key, $default);
+}
+
 function referer() {
     global $_GPC, $_W;
     $_W['referer'] = !empty($_GPC['referer']) ? $_GPC['referer'] : $_SERVER['HTTP_REFERER'];

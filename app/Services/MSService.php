@@ -193,8 +193,7 @@ class MSService
         if (!empty($res['servers'])){
             foreach ($res['servers'] as $value){
                 $identity = str_replace("microserver_","",$value['identity']);
-                if (self::localexist($identity)) continue;
-                if (self::localexist($identity)) continue;
+                if (self::localexist($identity, DEVELOPMENT)) continue;
                 $service = array(
                     'cover'=>$value['icon'],
                     'identity'=>$identity,
@@ -217,12 +216,21 @@ class MSService
         return (int)pdo_getcolumn(self::$tablename, array('identity'=>trim($identity)),'id') > 0;
     }
 
-    public static function localexist($identity){
+    public static function localexist($identity, $manifest=true){
+        $service = MICRO_SERVER.$identity."/".ucfirst($identity)."Service.php";
+        if (!file_exists($service)){
+            if(!defined('MSERVER_EXTRA')) return false;
+            $extraServer = dirname(MSERVER_EXTRA.$identity."/".ucfirst($identity)."Service.php");
+            if (!file_exists($extraServer)) return false;
+        }
+        if (!$manifest){
+            return true;
+        }
         $manifest = MICRO_SERVER.$identity."/manifest.json";
         if (!file_exists($manifest)){
             if(!defined('MSERVER_EXTRA')) return false;
-            $extrapath = dirname(MSERVER_EXTRA.$identity."/manifest.json");
-            if (!file_exists($extrapath)) return false;
+            $extraPath = dirname(MSERVER_EXTRA.$identity."/manifest.json");
+            if (!file_exists($extraPath)) return false;
         }
         return true;
     }
@@ -250,7 +258,7 @@ class MSService
             $server['upgrade'] = array();
             $server['isdelete'] = false;
             $server['islocal'] = true;
-            if (!self::localexist($server['identity'])){
+            if (!self::localexist($server['identity'], DEVELOPMENT)){
                 $server['isdelete'] = true;
             }
             $manifest = self::getmanifest($server['identity'], true);
@@ -260,9 +268,9 @@ class MSService
                 }
             }
             if (empty($server['upgrade'])){
-                $cloudserver = Cache::get("microserver".$server['identity'], error(-1, "Has no cache"));
-                if (is_error($cloudserver) || empty($cloudserver)) continue;
-                $release = $cloudserver['release'];
+                $cloudServer = Cache::get("microserver".$server['identity'], error(-1, "Has no cache"));
+                if (is_error($cloudServer) || empty($cloudServer)) continue;
+                $release = $cloudServer['release'];
                 if (version_compare($release['version'], $server['version'], '>') || $release['releasedate']>$server['releases']){
                     $server['actions'] .= '<a class="layui-btn layui-btn-sm layui-btn-danger confirm js-upgrade" data-text="升级前请做好数据备份" lay-tips="该服务可升级至V'.$release['version'].'Release'.$release['releasedate'].'" href="'.wurl('server', array('op'=>'cloudup', 'nid'=>$server['identity'])).'">升级</a>';
                     $server['upgrade'] = array('version'=>$release['version'],'canup'=>false);
