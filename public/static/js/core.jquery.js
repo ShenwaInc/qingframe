@@ -237,7 +237,7 @@ if(typeof Basetoken == 'undefined'){
                     headers:{
                         "X-CSRF-TOKEN":Basetoken
                     },
-                    accept:UploadBtn.data('url'),
+                    accept:UploadBtn.data('accept'),
                     error:function (e){
                         UploadBtn.removeClass("uploading");
                         layer.msg("上传失败，请重试", {icon:2});

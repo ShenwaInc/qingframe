@@ -351,7 +351,7 @@ class MicroService
                 session_exit(json_encode($result));
             }
             $title = "安装依赖组件包";
-            $composerVer = " dev-master";
+            $composerVer = " dev-main";
             $JSON = file_get_contents($composer);
             if (!empty($JSON)){
                 $composerObj = json_decode($JSON, true);

@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
-use App\Utils\Random;
 use App\Utils\Code;
 
 class CorePaylog extends Model
@@ -16,6 +15,7 @@ class CorePaylog extends Model
      * 生成订单信息
      * $orderinfo 订单信息 array类型
      * $identify 插件标识 string类型
+     * @throws \Exception
      */
     public static function create(array $orderinfo,$identify='core')
     {
