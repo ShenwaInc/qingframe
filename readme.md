@@ -2,9 +2,9 @@
 
 ###准备工作
 
-- 已备案域名（未备案域名无法解析到国内服务器，同时无法生成封装APP）
+- 已备案域名（未备案域名无法解析到国内服务器）
 - 云服务器（配置建议2核4G5M及以上，需开放80、22、443、3000及其它WEB常用端口）
-- 安装操作系统（建议使用Linux CentOS7.8及以上）
+- 安装操作系统（建议使用Linux CentOS 7.8及以上）
 - 安装远程命令行SSH或集成管理面板（如宝塔、WDCP等）
 
 ###运行环境
@@ -21,7 +21,7 @@
 - Nginx的运行环境需要给站点添加以下的伪静态规则
 ```
 location / {  
-	try_files $uri $uri/ /index.php$is_args$query_string;  
+    try_files $uri $uri/ /index.php$is_args$query_string;  
 }  
 ````
 
@@ -36,7 +36,7 @@ composer update
 ###安装向导
 - 将根目录下的.env.temp文件复制并重命名为 .env
 - 将根目录下的 /public/ 文件夹设为运行目录
-- 设置以下目录权限为755（目录的所有者最好为www）： app、resources、storage、servers
+- 设置以下目录权限为755（所有者为www）： app、resources、storage、servers
 - 输入网址运行安装向导，完成软件的安装
 
 

@@ -9,7 +9,7 @@
 
                         <p class="first">
                             <span class="row bolder">感谢您使用 轻如云微服务管理系统！</span>
-                            <span class="row bolder">本协议是广西神蛙网络科技有限公司（本文简称“神蛙科技”）与您，就您安装和使用 轻如微服务管理系统（本文简称“轻如云系统”） 软件的相关事项签订的合同。为使用 轻如云系统 软件，您应当充分阅读、理解本协议，其中限制、免责条款或者其他涉及您重大权益的条款（如违约处罚、争议管辖等）可能会以加粗、加下划线等形式提示您重点注意。</span>
+                            <span class="row bolder">本协议是广西神蛙网络科技有限公司（本文简称“神蛙科技”）与您，就您安装和使用 轻如云微服务管理系统（本文简称“轻如云系统”） 软件的相关事项签订的合同。为使用 轻如云系统 软件，您应当充分阅读、理解本协议，其中限制、免责条款或者其他涉及您重大权益的条款（如违约处罚、争议管辖等）可能会以加粗、加下划线等形式提示您重点注意。</span>
                             <span class="row underline bolder">除非您已充分阅读、理解并同意接受和遵守本协议，否则，请您不要安装或使用 轻如云系统 软件。您通过网页确认或以其他任何方式明示或者默示表示接受本协议，或您以任何方式使用 轻如云系统 服务的，即视为您已阅读并同意接受本协议的约束，本协议即在您与 神蛙科技 之间产生法律效力。</span>
                             <span class="row bolder">安装及使用 轻如云系统 服务应当遵守本协议及其服务规则。服务规则以 神蛙科技 官网或其他相关页面展示的内容为准，您应事先了解服务规则，并根据服务规则进行操作，以确保顺利使用。您若有违反本协议及服务规则的任何规定， 神蛙科技 有权随时依约采取相应措施并保留追究相关法律责任的权利。</span>
                         </p>
@@ -20,7 +20,7 @@
                                 <p class="block padding">
                                     <span>1.1&nbsp;</span>
                                     <span>
-                        轻如云系统 软件指 轻如云系统 ( <a class="blue" href="https://whotalk.com.cn">https://whotalk.com.cn</a> ) 提供的微服务管理框架及其衍生的各种产品、服务(具体以 轻如云系统（ <a class="blue" href="https://whotalk.com.cn">https://whotalk.com.cn</a> ）该网站下载的最新版软件且实际提供的为准），您可以根据自己的需求选择使用一项或多项具体服务并遵守其服务规则。</span>
+                        轻如云系统 软件指 轻如云系统 ( <a class="blue" href="https://www.qingruyun.com/">https://www.qingruyun.com</a> ) 提供的微服务管理框架及其衍生的各种产品、服务(具体以 轻如云系统（ <a class="blue" href="https://www.qingruyun.com/">https://www.qingruyun.com</a> ）该网站下载的最新版软件且实际提供的为准），您可以根据自己的需求选择使用一项或多项具体服务并遵守其服务规则。</span>
 
                                 </p>
                                 <p class="block padding underline">
@@ -163,7 +163,7 @@
                                 <p class="block left-padding">
                                     <span>3.3.4&nbsp;</span>
                                     <span>
-                        轻如云系统 在服务规则约定内提供可用性保障，（<a class="blue" href="https://whotalk.com.cn" target="_blank">详见 轻如云系统 服务等级协议</a>）您在使用或购买 轻如云系统 服务时即视为同意 轻如云系统 服务等级协议条款约定。
+                        轻如云系统 在服务规则约定内提供可用性保障，（<a class="blue" href="https://www.qingruyun.com/" target="_blank">详见 轻如云系统 服务等级协议</a>）您在使用或购买 轻如云系统 服务时即视为同意 轻如云系统 服务等级协议条款约定。
                     </span>
                                 </p>
                                 <p class="title">3.4 服务中止或终止</p>

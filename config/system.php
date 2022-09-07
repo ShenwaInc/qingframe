@@ -2,8 +2,8 @@
 
 return [
     'name'=>env('APP_NAME','Whotalk'),
-    'version'=>env('APP_VERSION','1.7.12'),
-    'release'=>env('APP_RELEASE',2022070202),
+    'version'=>env('APP_VERSION','1.7.13'),
+    'release'=>env('APP_RELEASE',2022090701),
     'identity'=>env('APP_IDENTITY', 'swa_framework_laravel'),
     'defaultmodule'=>env('APP_MODULE','whotalk'),
     'setting'=>array(

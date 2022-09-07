@@ -237,6 +237,13 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 .fui-side-menu .layui-nav-tree .layui-nav-itemed > a{font-weight: bold;}
 .fui-side-menu .list{border: none;}
 
+@media screen and (max-width:992px){
+    .layui-layout-admin .layui-side{transform:translate3d(-220px,0,0);-webkit-transform:translate3d(-220px,0,0);width:220px}
+    .layui-header .layui-logo{width: auto;}
+    .layui-nav.layui-layout-right{padding-right: 10px;}
+    .layadmin-pagetabs,.layui-layout-admin .layui-body,.layui-layout-admin .layui-footer,.layui-layout-admin .layui-layout-left{left:0 !important;}
+    .layui-layout-admin .layui-side ~ .layui-body{left: 0 !important;}
+}
 
 @media screen and (max-width: 768px){
     .layui-header{border-bottom: 1px solid #eee;}
