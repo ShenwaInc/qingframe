@@ -20,8 +20,7 @@ class AppRuntime
      * @param  \Closure  $next
      * @return mixed
      */
-    public function handle(Request $request, Closure $next)
-    {
+    public function handle(Request $request, Closure $next){
         global $_W;
         SettingService::Load();
         $_W['page'] = $_W['setting']['page'];
@@ -29,8 +28,18 @@ class AppRuntime
         if (empty($uniacid)) abort(404,'找不到该平台');
         $_W['uniacid'] = intval($uniacid);
         $_W['account'] = AccountService::FetchUni($uniacid);
-        $_W['openid'] = session()->get("openid$uniacid",'');
+        $_W['acid'] = intval($_W['account']['acid']) ?? $_W['uniacid'];
+        $_W['openid'] = session()->get("openid".$uniacid,'');
         $_W['member'] = array('uid'=>0);
+        $_W['oauth_account'] = $_W['account']['oauth'] = array(
+            'key' => $_W['account']['key'],
+            'secret' => $_W['account']['secret'],
+            'acid' => $_W['account']['acid'],
+            'type' => $_W['account']['type'],
+            'level' => $_W['account']['level'],
+            'support_oauthinfo' => $_W['account']->supportOauthInfo,
+            'support_jssdk' => $_W['account']->supportJssdk,
+        );
         //自动登录
         $authToken = $request->header('x-auth-token');
         if (!empty($authToken)){

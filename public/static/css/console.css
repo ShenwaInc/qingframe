@@ -64,6 +64,7 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 .round{border-radius: 50%;}
 .nobd{border: none !important;}
 .ajaxshow, .js-clip{cursor: pointer;}
+.layui-table .layui-avatar{background-color: #daecff; border-radius: 3px;}
 
 /* border */
 .dashed{border: 1px dashed #e4e8eb !important;}

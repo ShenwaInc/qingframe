@@ -32,13 +32,14 @@ class WechatService extends WeAccount
     }
 
     public function checkSign() {
+        global $_GPC;
         $token = $this->account['token'];
-        $signkey = array($token, $_GET['timestamp'], $_GET['nonce']);
+        $signkey = array($token, $_GPC['timestamp'], $_GPC['nonce']);
         sort($signkey, SORT_STRING);
         $signString = implode($signkey);
         $signString = sha1($signString);
 
-        return $signString == $_GET['signature'];
+        return $signString == $_GPC['signature'];
     }
 
 
@@ -373,8 +374,8 @@ class WechatService extends WeAccount
         }
         if (!empty($data_array['matchrule']['language'])) {
             $inarray = 0;
-            $MenuService = new MenuService;
-            $languages = $MenuService->menu_languages();
+            serv("weengine")->model("menu");
+            $languages = menu_languages();
             foreach ($languages as $key => $value) {
                 if (in_array($data_array['matchrule']['language'], $value, true)) {
                     $inarray = 1;
@@ -668,6 +669,8 @@ class WechatService extends WeAccount
         $record = array();
         $record['token'] = $token['access_token'];
         $record_expire = $token['expires_in'] - 200;
+        $record['expired'] = $record_expire;
+        $record['cacheTime'] = TIMESTAMP;
         $this->account['access_token'] = $record;
         Cache::put($cachekey, $record, $record_expire);
 
@@ -1230,7 +1233,7 @@ class WechatService extends WeAccount
     }
 
 
-    public function uploadMediaFixed($path, $type = 'images') {
+    public function uploadMediaFixed($path, $type = 'images', $title='') {
         global $_W;
         if (empty($path)) {
             return error(-1, '参数错误');
@@ -1245,18 +1248,19 @@ class WechatService extends WeAccount
         if (is_error($token)) {
             return $token;
         }
-        $url = "https://api.weixin.qq.com/cgi-bin/material/add_material?access_token={$token}&type={$type}";
+        $url = "https://api.weixin.qq.com/cgi-bin/material/add_material?access_token=$token";
         $data = array(
-            'media' => '@' . $path,
+            'media' => '@'. str_replace('\\', '/', realpath($path)),
+            'type' => $type
         );
 
-        if ('videos' == $type) {
+        if ('video' == $type) {
             $video_filename = ltrim($path, ATTACHMENT_ROOT);
-            $material = $material = pdo_get('core_attachment', array('uniacid' => $_W['uniacid'], 'attachment' => $video_filename));
+            $material = pdo_get('core_attachment', array('uniacid' => $_W['uniacid'], 'attachment' => $video_filename));
         }
-        $filename = pathinfo($path, PATHINFO_FILENAME);
+        $filename = $title ?: pathinfo($path, PATHINFO_FILENAME);
         $description = array(
-            'title' => 'videos' == $type ? $material['filename'] : $filename,
+            'title' => 'video' == $type ? $material['filename'] : $filename,
             'introduction' => $filename,
         );
         $data['description'] = urldecode(json_encode($description));
@@ -1563,12 +1567,12 @@ class WechatService extends WeAccount
     }
 
     public function getOauthInfo($code = '') {
-        global $_W, $_GPC;
+        global $_GPC;
         if (!empty($_GPC['code'])) {
             $code = $_GPC['code'];
         }
         if (empty($code)) {
-            $oauth_url = uni_account_oauth_host();
+            $oauth_url = AccountService::OauthHost();
             $url = $oauth_url . "app/index.php?{$_SERVER['QUERY_STRING']}";
             $forward = $this->getOauthCodeUrl(urlencode($url));
             header('Location: ' . $forward);
@@ -1800,6 +1804,10 @@ class WechatService extends WeAccount
         if (empty($result)) {
             return error(-1, "接口调用失败, 元数据: {$response['meta']}");
         } elseif (!empty($result['errcode'])) {
+            if(strexists($result['errmsg'], 'access_token is invalid or not latest')){
+                $cachekey = CacheService::system_key('accesstoken', array('uniacid' => $this->account['uniacid']));
+                //Cache::forget($cachekey);
+            }
             return error($result['errcode'], "访问公众平台接口失败, 错误: {$result['errmsg']}");
         }
 

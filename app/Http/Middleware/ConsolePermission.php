@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\View;
 
 define('IN_SYS', true);
+include_once app_path("Helpers/web.php");
 
 class ConsolePermission
 {
@@ -52,6 +53,7 @@ class ConsolePermission
             $_W['uniacid'] = $uniacid;
             $_W['role'] = UserService::AccountRole($_W['uid'],$uniacid);
             $_W['account'] = AccountService::FetchUni($uniacid);
+            $_W['acid'] = $_W['account']['acid'];
         }
         $_W['attachurl'] = FileService::SetAttachUrl();
         return $next($request);

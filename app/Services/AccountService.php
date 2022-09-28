@@ -74,6 +74,10 @@ class AccountService {
             'module'=>[],
             'server'=>[]
         );
+        $role = UserService::AccountRole($uid, $uniacid);
+        if (!in_array($role, array('founder', 'owner'))){
+            unset($entrances['account']['role']);
+        }
         $modules = self::ExtraModules($uniacid);
         if (!empty($modules)){
             foreach ($modules as $module){
@@ -98,8 +102,8 @@ class AccountService {
         }
         $account_api->uniacid = $uniacid;
         $account_api->__toArray();
-        $account_api['accessurl'] = $account_api['manageurl'] = url("console/account/{$uniacid}/post", array('account_type' => $account_api['type']), true);
-        $account_api['roleurl'] = url("console/account/{$uniacid}/postuser", array('account_type' => $account_api['type']), true);
+        $account_api['accessurl'] = $account_api['manageurl'] = url("console/account/$uniacid/post", array('account_type' => $account_api['type']), true);
+        $account_api['roleurl'] = url("console/account/$uniacid/postuser", array('account_type' => $account_api['type']), true);
         return $account_api;
     }
 
@@ -260,6 +264,37 @@ class AccountService {
         if ($getlist) return $list ?: [];
 
         return array($list, $total, $created);
+    }
+
+    static function OauthHost(){
+        global $_W;
+        $oauth_url = $_W['siteroot'];
+        $unisetting = SettingService::uni_load();
+        if (!empty($unisetting['bind_domain']) && !empty($unisetting['bind_domain']['domain'])) {
+            $oauth_url = $unisetting['bind_domain']['domain'] . '/';
+        } else {
+            if (1 == $_W['account']['type']) {
+                if (!empty($unisetting['oauth']['host'])) {
+                    $oauth_url = $unisetting['oauth']['host'] . '/';
+                } else {
+                    $global_unisetting = self::GlobalOauth();
+                    $oauth_url = !empty($global_unisetting['oauth']['host']) ? $global_unisetting['oauth']['host'] . '/' : $oauth_url;
+                }
+            }
+        }
+        return $oauth_url;
+    }
+
+    static function GlobalOauth(){
+        $oauth = SettingService::Load('global_oauth');
+        $oauth = !empty($oauth['global_oauth']) ? $oauth['global_oauth'] : array();
+        if (!empty($oauth['oauth']['account'])) {
+            $account_exist = self::FetchUni($oauth['oauth']['account']);
+            if (empty($account_exist) || is_error($account_exist)) {
+                $oauth['oauth']['account'] = 0;
+            }
+        }
+        return $oauth;
     }
 
 }

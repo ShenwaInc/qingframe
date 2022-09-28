@@ -55,12 +55,15 @@ class WeAccount extends \ArrayObject{
         $this->uniacid = $uniaccount['uniacid'];
         $cachekey = CacheService::system_key('uniaccount', array('uniacid' => $this->uniacid));
         $cache = Cache::get($cachekey, array());
+        $_account = array();
         if (empty($cache)) {
             $this->account = $uniaccount;
             $cache = $this->getAccountInfo($this->uniacid);
             Cache::put($cachekey, $cache,7*86400);
+        }else{
+            $_account = $cache->toArray();
         }
-        $this->account = array_merge($cache->toArray(), $uniaccount);
+        $this->account = array_merge($_account, $uniaccount);
     }
 
     public static function create($acidOrAccount = array()) {

@@ -305,18 +305,18 @@ class ModuleService
         return $module_support_type;
     }
 
-    static function UniModules($uniacid, $apptype=null){
-        $account_info = Account::getByUniacid($uniacid);
+    static function UniModules($uniacidOrAccount, $apptype=null){
+        $account_info = is_numeric($uniacidOrAccount) ? Account::getByUniacid($uniacidOrAccount) : $uniacidOrAccount;
         $uni_account_type = AccountService::GetType(1);
-        $owner_uid = DB::table('uni_account_users')->where(array('uniacid' => $uniacid, 'role' => array('owner', 'vice_founder')))->select(array('uid', 'role'))->get()->keyBy('role')->toArray();
+        $owner_uid = DB::table('uni_account_users')->where(array('uniacid' => $account_info['uniacid'], 'role' => array('owner', 'vice_founder')))->select(array('uid', 'role'))->get()->keyBy('role')->toArray();
         $owner_uid = !empty($owner_uid['owner']) ? $owner_uid['owner']['uid'] : (!empty($owner_uid['vice_founder']) ? $owner_uid['vice_founder']['uid'] : 0);
 
-        $cachekey = CacheService::system_key('unimodules',array('uniacid'=>$uniacid));
+        $cachekey = CacheService::system_key('unimodules',array('uniacid'=>$account_info['uniacid']));
         $modules = Cache::get($cachekey,array());
         if (empty($modules)){
             $enabled_modules = self::NonRecycleModules();
             if (!empty($owner_uid) && !UserService::isFounder($owner_uid, true)) {
-                $group_modules = AccountService::GroupModules($uniacid);
+                $group_modules = AccountService::GroupModules($account_info['uniacid']);
 
                 $user_modules = UserService::GetModules($owner_uid);
                 if (!empty($user_modules)) {

@@ -456,12 +456,10 @@ class MSService
     public function uninstall($identity){
         $service = self::getone($identity, false);
         if (empty($service)) return error(-1,'该服务尚未安装');
-        if (!empty($service['configs']['packagefrom']=='cloud')){
-            try {
-                script_run($service['configs']['uninstall'], MICRO_SERVER.$identity);
-            }catch (\Exception $exception){
-                return error(-1,"卸载失败：".$exception->getMessage());
-            }
+        try {
+            script_run($service['configs']['uninstall'], MICRO_SERVER.$identity);
+        }catch (\Exception $exception){
+            return error(-1,"卸载失败：".$exception->getMessage());
         }
         if (!pdo_delete(self::$tablename,array('id'=>$service['id']))){
             return error(-1,'卸载失败，请重试');

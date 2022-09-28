@@ -225,9 +225,7 @@ class HttpService
             $urlset['query'] = "?{$urlset['query']}";
         }
         if (strexists($url, 'https://') && !extension_loaded('openssl')) {
-            if (!extension_loaded('openssl')) {
-                return error(1, '请开启您PHP环境的openssl');
-            }
+            return error(1, '请开启您PHP环境的openssl');
         }
         if (empty($urlset['host'])) {
             $current_url = parse_url($GLOBALS['_W']['siteroot']);
@@ -293,10 +291,11 @@ class HttpService
             if (is_array($post)) {
                 $filepost = false;
                 foreach ($post as $name => &$value) {
-                    if (version_compare(phpversion(), '5.5') >= 0 && is_string($value) && '@' == substr($value, 0, 1)) {
+                    if (version_compare(phpversion(), '5.5', '>=') && is_string($value) && \Str::startsWith($value, '@')) {
+                        $filepost = true;
                         $post[$name] = new \CURLFile(ltrim($value, '@'));
                     }
-                    if ((is_string($value) && '@' == substr($value, 0, 1)) || (class_exists('CURLFile') && $value instanceof CURLFile)) {
+                    if ((is_string($value) && '@' == substr($value, 0, 1))) {
                         $filepost = true;
                     }
                 }

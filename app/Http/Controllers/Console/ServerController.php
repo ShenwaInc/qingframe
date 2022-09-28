@@ -43,7 +43,6 @@ class ServerController extends Controller
             //权限判断，待完善
             //Todo something
         }
-        serv("weengine")->func('web');
         $data = $service->HttpRequest('web', $ctrl);
         if (is_error($data)){
             return $this->message($data['message']);
