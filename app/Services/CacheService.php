@@ -561,7 +561,7 @@ class CacheService
         //更新配置缓存
         Artisan::call('config:clear');
         //更新最新版本号，已忽略
-        //CloudService::CloudEnv("APP_RELEASE={$_W['config']['release']}", "APP_RELEASE=".TIMESTAMP);
+        //CloudService::CloudEnv("APP_RELEASE={QingRelease}", "APP_RELEASE=".TIMESTAMP);
         //重建系统配置
         SettingService::Load();
         if ($_W['uniacid']){

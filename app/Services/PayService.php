@@ -76,7 +76,7 @@ class PayService {
                 'uniacid'=>$orderInfo['uniacid']
             );
             $ret = PaymentService::alipay_build($ps,$config);
-            session_exit('<title>支付宝支付</title><script type="text/javascript" src="/static/payment/alipay/ap.js?v='.$_W['config']['release'].'"></script><script type="text/javascript">_AP.pay("'.$ret['url'].'")</script>');
+            session_exit('<title>支付宝支付</title><script type="text/javascript" src="/static/payment/alipay/ap.js?v='.QingRelease.'"></script><script type="text/javascript">_AP.pay("'.$ret['url'].'")</script>');
             return true;
         }
         $config['notify_url'] = $_W['siteroot'] . 'payment/alipay';

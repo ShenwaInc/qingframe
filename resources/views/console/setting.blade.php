@@ -113,9 +113,9 @@
                             <tr>
                                 <td><span class="fui-table-lable">系统版本</span></td>
                                 <td class="soild-after">
-                                    V{{ $_W['config']['version'] }} Release{{$_W['config']['release']}}
+                                    V{{ QingVersion }} Release{{ QingRelease }}
                                     @if($cloudinfo['isnew'])
-                                    &nbsp;&nbsp;<span class="layui-badge layui-bg-red" title="V{{ $cloudinfo['version'] }} Release{{ $cloudinfo['releasedate'] }}">{{ $cloudinfo['releasedate']==$_W['config']['release'] ? '文件有改动' : '发现新版本' }}</span>
+                                    &nbsp;&nbsp;<span class="layui-badge layui-bg-red" title="V{{ $cloudinfo['version'] }} Release{{ $cloudinfo['releasedate'] }}">{{ $cloudinfo['releasedate']==QingRelease ? '文件有改动' : '发现新版本' }}</span>
                                     @endif
                                 </td>
                                 <td class="text-right soild-after">

@@ -11,12 +11,12 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="shortcut icon" href="/favicon.ico" />
     <title>安装向导</title>
-    <link rel="stylesheet" href="{{ asset('/static/layui/css/layui.css') }}?v={{ $_W['config']['release'] }}" />
-    <link rel="stylesheet" href="{{ asset('/static/fului/fului-for-lay.css') }}?v={{ $_W['config']['release'] }}" />
-    <link rel="stylesheet" href="{{ asset('/static/installer/style.css') }}?v={{ $_W['config']['release'] }}" />
-    <script type="text/javascript" src="{{ asset('/static/layui/layui.js') }}?v={{ $_W['config']['release'] }}"></script>
-    <script type="text/javascript" src="{{ asset('/static/js/jquery-1.11.1.min.js') }}?v={{ $_W['config']['release'] }}"></script>
-    <script type="text/javascript" src="{{ asset('/static/js/core.jquery.js') }}?v={{ $_W['config']['release'] }}"></script>
+    <link rel="stylesheet" href="{{ asset('/static/layui/css/layui.css') }}?v={{ QingRelease }}" />
+    <link rel="stylesheet" href="{{ asset('/static/fului/fului-for-lay.css') }}?v={{ QingRelease }}" />
+    <link rel="stylesheet" href="{{ asset('/static/installer/style.css') }}?v={{ QingRelease }}" />
+    <script type="text/javascript" src="{{ asset('/static/layui/layui.js') }}?v={{ QingRelease }}"></script>
+    <script type="text/javascript" src="{{ asset('/static/js/jquery-1.11.1.min.js') }}?v={{ QingRelease }}"></script>
+    <script type="text/javascript" src="{{ asset('/static/js/core.jquery.js') }}?v={{ QingRelease }}"></script>
 </head>
 
 <body class="layui-layout-admin">
