@@ -211,7 +211,7 @@ class MicroService
         //定义控制器
         $ctrl = "$basepath/$platform/".ucfirst($controller)."Controller.php";
         if (!file_exists($ctrl)){
-            if ($controller!='index' && !empty($controller)){
+            if ($controller!='index' && !empty($controller) && $method!='main'){
                 throw new \Exception("Warning: include_once(): Failed opening '$ctrl'");
             }
             $ctrl = "$basepath/$platform/IndexController.php";

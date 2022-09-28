@@ -222,7 +222,9 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 .fui-layer .layui-hide-layer{display: none}
 .fui-layer .layui-layer-content{padding: 15px;}
 .fui-layer .layui-layer-content > .padding{padding: 0}
-.fui-layer .layui-layer-content  .unpadding{margin: -15px !important;}
+.fui-layer .layui-layer-content .unpadding{margin: -15px !important; padding: 0}
+.fui-layer .main-content{width: 100%;}
+.fui-layer .fui-card{box-shadow: none;}
 
 .layui-layout-admin .fui-side-menu{width: 225px;box-sizing: border-box; transition: padding-top .3s ease-in-out; padding-top: 28px;}
 .fui-side-menu .layui-nav-tree{margin-left: 48px; width: auto; background-color: unset;}
