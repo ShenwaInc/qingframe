@@ -4,12 +4,13 @@ namespace App\Services;
 
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class MSService
 {
-    public static $tablename = 'microserver';
-    public static $devmode = DEVELOPMENT;
+    public static $tableName = 'microserver';
+    public static $devMode = DEVELOPMENT;
 
     public static function setup(){
         if (!Schema::hasTable("microserver")){
@@ -79,7 +80,7 @@ class MSService
     }
 
     public static function getservers($status=1){
-        return pdo_getall(self::$tablename, array('status'=>intval($status)));
+        return pdo_getall(self::$tableName, array('status'=>intval($status)));
     }
 
     public static function getone($identity, $simple=true){
@@ -87,7 +88,7 @@ class MSService
         if (!$simple){
             $fields = array_merge($fields, array("cover","summary","entrance","datas","configs"));
         }
-        $service = pdo_get(self::$tablename, array('identity'=>$identity), $fields);
+        $service = pdo_get(self::$tableName, array('identity'=>$identity), $fields);
         if (!empty($service) && !$simple){
             $service['datas'] = empty($service['datas']) ? array() : unserialize($service['datas']);
             $service['configs'] = empty($service['configs']) ? array() : unserialize($service['configs']);
@@ -213,7 +214,7 @@ class MSService
     }
 
     public static function isexist($identity){
-        return (int)pdo_getcolumn(self::$tablename, array('identity'=>trim($identity)),'id') > 0;
+        return (int)pdo_getcolumn(self::$tableName, array('identity'=>trim($identity)),'id') > 0;
     }
 
     public static function localexist($identity, $manifest=true){
@@ -246,7 +247,7 @@ class MSService
             if (!empty($server['entry']) && !is_error($server['entry'])){
                 $server['actions'] .= '<a class="layui-btn layui-btn-sm layui-btn-normal" target="_blank" href="'.$server['entry'].'">管理</a>';
             }
-            if (self::$devmode){
+            if (self::$devMode){
                 if (!empty(serv($server['identity'])->getMethods())){
                     $server['actions'] .= '<a class="layui-btn layui-btn-sm" target="_blank" href="'.wurl("server/methods/{$server['identity']}").'">调用方法</a>';
                 }
@@ -280,10 +281,12 @@ class MSService
         return $servers;
     }
 
-    public function checkrequire($requires){
+    public function checkRequire($requires){
         if (empty($requires)) return true;
+        $servers = [];
         foreach ($requires as $value){
             $identity = is_array($value) ? $value['id'] : $value;
+            $servers[] = $identity;
             if ($this->isexist($identity)){
                 //已安装
                 continue;
@@ -298,7 +301,26 @@ class MSService
                 if (is_error($installCloud)) return error(-1, "安装依赖的服务({$identity})时发生异常：{$installCloud['message']}");
             }
         }
-        return true;
+        return $servers;
+    }
+
+    public static function checkDepend($identity, $return=false){
+        //判断服务依赖
+        $servers = DB::table(self::$tableName)->select(array('id','identity','name','configs'))->where('configs', 'LIKE', "%$identity%")->get()->toArray();
+        if (!empty($servers)){
+            $depends = array();
+            foreach ($servers as $value){
+                $configs = $value['configs'] ? unserialize($value['configs']) : [];
+                if (!empty($configs['require']) && in_array($identity, $configs['require'])){
+                    $depends[$value['identity']] = $value['name'];
+                }
+            }
+            if ($return) return $depends;
+            if (!empty($depends)){
+                return error(-1, "操作失败：该服务正在被其它服务依赖（".implode('、', $depends)."）");
+            }
+        }
+        return [];
     }
 
     public function autoinstall(){
@@ -343,7 +365,7 @@ class MSService
         $service = $this->getmanifest($identity);
         if (is_error($service)) return $service;
         //判断依赖服务
-        $requires = $this->checkrequire($service['require']);
+        $requires = $this->checkRequire($service['require']);
         if (is_error($requires)){
             return $requires;
         }
@@ -351,6 +373,7 @@ class MSService
         $keys = array('identity','name','version','cover','summary','releases');
         $application = $this->getApplication($keys, $service);
         $configs = post_var(array('uninstall'), $service);
+        $configs['require'] = (array)$requires;
         if ($fromcloud){
             $configs['packagefrom'] = 'cloud';
         }
@@ -369,12 +392,12 @@ class MSService
         //操作入库
         $application['status'] = 1;
         $application['addtime'] = $application['dateline'] = TIMESTAMP;
-        if (!pdo_insert(self::$tablename, $application)){
+        if (!pdo_insert(self::$tableName, $application)){
             return error(-1,'安装失败，请重试');
         }
         $this->getEvents(true);
         $this->uniLink($service);
-        if (!self::$devmode){
+        if (!self::$devMode){
             if ($service['inextra'] && defined('MSERVER_EXTRA')){
                 CloudService::MoveDir(MSERVER_EXTRA.$identity, MICRO_SERVER.$identity);
             }
@@ -396,7 +419,7 @@ class MSService
         }
         if(version_compare($manifest['application']['version'],$service['version'],'>') || $manifest['application']['releases']>$service['releases']){
             //判断依赖服务
-            $requires = $this->checkrequire($service['require']);
+            $requires = $this->checkRequire($service['require']);
             if (is_error($requires)){
                 return $requires;
             }
@@ -404,6 +427,7 @@ class MSService
             $keys = array('name','version','cover','summary','releases');
             $application = $this->getApplication($keys, $manifest);
             $service['configs']['uninstall'] = $manifest['uninstall'];
+            $service['configs']['require'] = $requires;
             $application['configs'] = serialize($service['configs']);
             //运行升级脚本
             if (!empty($manifest['upgrade'])){
@@ -416,12 +440,12 @@ class MSService
             //操作入库
             $application['status'] = 1;
             $application['dateline'] = TIMESTAMP;
-            if (!pdo_update(self::$tablename, $application, array('identity'=>$service['identity']))){
+            if (!pdo_update(self::$tableName, $application, array('identity'=>$service['identity']))){
                 return error(-1,'更新失败，请重试');
             }
             $this->getEvents(true);
             $this->uniLink($manifest);
-            if (!self::$devmode){
+            if (!self::$devMode){
                 //删除安装包文件
                 @unlink(MICRO_SERVER.$identity."/manifest.json");
             }
@@ -456,16 +480,18 @@ class MSService
     public function uninstall($identity){
         $service = self::getone($identity, false);
         if (empty($service)) return error(-1,'该服务尚未安装');
+        $depends = self::checkDepend($identity);
+        if (is_error($depends)) return $depends;
         try {
             script_run($service['configs']['uninstall'], MICRO_SERVER.$identity);
         }catch (\Exception $exception){
             return error(-1,"卸载失败：".$exception->getMessage());
         }
-        if (!pdo_delete(self::$tablename,array('id'=>$service['id']))){
+        if (!pdo_delete(self::$tableName,array('id'=>$service['id']))){
             return error(-1,'卸载失败，请重试');
         }
         $this->getEvents(true);
-        if (!self::$devmode){
+        if (!self::$devMode){
             //删除服务安装包
             if($service['configs']['uninstall']){
                 FileService::mkdirs(MICRO_SERVER.$identity."/");
@@ -475,7 +501,11 @@ class MSService
     }
 
     public static function disable($identity){
-        if (pdo_update(self::$tablename, array('status'=>0,'dateline'=>TIMESTAMP), array('identity'=>trim($identity)))){
+        $depends = self::checkDepend($identity);
+        if (is_error($depends)){
+            return $depends;
+        }
+        if (pdo_update(self::$tableName, array('status'=>0,'dateline'=>TIMESTAMP), array('identity'=>trim($identity)))){
             pdo_update('microserver_unilink', array('status'=>0,'dateline'=>TIMESTAMP), array('name'=>trim($identity)));
             return true;
         }
@@ -483,7 +513,7 @@ class MSService
     }
 
     public static function restore($identity){
-        if (pdo_update(self::$tablename, array('status'=>1,'dateline'=>TIMESTAMP), array('identity'=>trim($identity)))){
+        if (pdo_update(self::$tableName, array('status'=>1,'dateline'=>TIMESTAMP), array('identity'=>trim($identity)))){
             pdo_update('microserver_unilink', array('status'=>1,'dateline'=>TIMESTAMP), array('name'=>trim($identity)));
             return true;
         }

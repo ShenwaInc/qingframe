@@ -50,6 +50,7 @@ class selfclear extends Command
             database_path('migrations/2021_08_10_113449_create_uni_account_menus_table.php'),
             base_path('bootstrap/helpers.php'),
             base_path('.env.example'),
+            base_path("servers/weengine/function/web.func.php"),
             app_path('Services/AttachmentService.php'),
             app_path('Services/SocketService.php'),
             app_path('Services/NoticeService.php'),

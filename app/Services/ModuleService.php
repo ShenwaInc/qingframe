@@ -60,7 +60,7 @@ class ModuleService
         if (!empty($ManiFest->servers)){
             try {
                 $MSS = new MSService();
-                $MSS->checkrequire($ManiFest->servers);
+                $MSS->checkRequire($ManiFest->servers);
             }catch (\Exception $exception){
                 return error(-1,'安装依赖服务时发生错误：'.$exception->getMessage());
             }
