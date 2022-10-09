@@ -6,6 +6,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Symfony\Component\Process\Process;
 
 class MSService
 {
@@ -360,7 +361,7 @@ class MSService
         return $return;
     }
 
-    public function install($identity, $fromcloud=false){
+    public function install($identity, $fromCloud=false){
         if ($this->isexist($identity)) return true;
         $service = $this->getmanifest($identity);
         if (is_error($service)) return $service;
@@ -374,7 +375,7 @@ class MSService
         $application = $this->getApplication($keys, $service);
         $configs = post_var(array('uninstall'), $service);
         $configs['require'] = (array)$requires;
-        if ($fromcloud){
+        if ($fromCloud){
             $configs['packagefrom'] = 'cloud';
         }
         if (!empty($configs)){
@@ -404,6 +405,10 @@ class MSService
             if ($service['bindcloud']){
                 @unlink(MICRO_SERVER.$identity."/manifest.json");
             }
+        }
+        //安装composer
+        if (file_exists(MICRO_SERVER.$identity."/composer.json")){
+            self::ComposerRequire(MICRO_SERVER.$identity."/", "microserver/".$identity);
         }
         return true;
     }
@@ -449,6 +454,10 @@ class MSService
                 //删除安装包文件
                 @unlink(MICRO_SERVER.$identity."/manifest.json");
             }
+            //安装composer
+            if (file_exists(MICRO_SERVER.$identity."/composer.json")){
+                self::ComposerRequire(MICRO_SERVER.$identity."/", "microserver/".$identity);
+            }
             return true;
         }
         return error(-1,"当前服务已经是最新版本");
@@ -493,11 +502,102 @@ class MSService
         $this->getEvents(true);
         if (!self::$devMode){
             //删除服务安装包
-            if($service['configs']['uninstall']){
-                FileService::mkdirs(MICRO_SERVER.$identity."/");
-            }
+            FileService::rmdirs(MICRO_SERVER.$identity."/");
         }
         return true;
+    }
+
+    /**
+     * 自动安装Composer依赖
+     * @param string $basePath composer.json路径
+     * @param string $name 包名称
+     * @return bool 安装结果
+    */
+    public static function ComposerRequire($basePath, $name){
+        $composer = $basePath."composer.json";
+        if (!file_exists($composer)) return true;
+        $WorkingDirectory = base_path("/");
+        if (DEVELOPMENT){
+            if (file_exists($basePath."composer.lock")){
+                return self::ComposerUpdate($basePath, $name);
+            }
+            $WorkingDirectory = $basePath;
+            $command = ['composer', 'update'];
+        }else{
+            $JSON = file_get_contents($composer);
+            $composerObj = json_decode($JSON, true);
+            $composerVer = $composerObj['version'] ?? "";
+            $LOCK = file_get_contents($WorkingDirectory."composer.lock");
+            $lockObj = json_decode($LOCK, true);
+            if (!empty($lockObj['packages'])){
+                foreach ($lockObj['packages'] as $package){
+                    if ($package['name']==$name){
+                        if (!empty($composerVer) && version_compare($composerVer, $package['version'], '>')){
+                            return self::ComposerUpdate($basePath, $name, $composerVer);
+                        }
+                        return true;
+                    }
+                }
+            }
+            $command = ['composer', 'require', $name, $composerVer?:'dev-main'];
+        }
+        try {
+            @ini_set('max_execution_time', 0);
+            $process = new Process($command);
+            $process->setWorkingDirectory($WorkingDirectory);
+            $process->setEnv(['COMPOSER_HOME'=>self::ComposerHome()]);
+            $process->run();
+            if ($process->isSuccessful()) {
+                return true;
+            }
+        }catch (\Exception $exception){
+            //Todo something
+        }
+        return false;
+    }
+
+    public static function ComposerUpdate($basePath, $name, $composerVer=''){
+        if (DEVELOPMENT){
+            $WorkingDirectory = $basePath;
+            $command = ['composer', 'update'];
+        }else{
+            $WorkingDirectory = base_path("/");
+            if (empty($composerVer)){
+                $composerVer = "dev-main";
+                $composer = $basePath."composer.json";
+                $JSON = file_get_contents($composer);
+                $composerObj = json_decode($JSON, true);
+                if (isset($composerObj['version'])){
+                    $composerVer = $composerObj['version'];
+                }
+            }
+            $command = ['composer', 'require', $name, $composerVer];
+        }
+        try {
+            @ini_set('max_execution_time', 0);
+            $process = new Process($command);
+            $process->setWorkingDirectory($WorkingDirectory);
+            $process->setEnv(['COMPOSER_HOME'=>self::ComposerHome()]);
+            $process->run();
+            if ($process->isSuccessful()) {
+                return true;
+            }
+        }catch (\Exception $exception){
+            //Todo something
+        }
+        return false;
+    }
+
+    public static function ComposerHome(){
+        $php_uname = php_uname();
+        if (strexists($php_uname, "Windows")){
+            return "C:\Users\<user>\AppData\Roaming\Composer";
+        }elseif (strexists($php_uname, "nux")){
+            return "/home/<user>/.composer";
+        }elseif (strexists($php_uname, 'OSX')){
+            return '/Users/<user>/.composer';
+        }
+        return "";
     }
 
     public static function disable($identity){

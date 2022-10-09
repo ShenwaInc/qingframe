@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\View;
+use Symfony\Component\Process\Process;
 
 class MicroService
 {
@@ -334,37 +335,31 @@ class MicroService
         exit;
     }
 
-    public function Composer($className){
+    /**
+     * 自动加载
+     * @return bool|void
+     */
+    public function Composer(){
         $composer = MICRO_SERVER.$this->identity."/composer.json";
         if (!file_exists($composer)) return true;
-        if (!class_exists($className)){
-            $COMPOSERDIR = base_path();
-            if (DEVELOPMENT){
-                $autoloader = MICRO_SERVER.$this->identity."/vendor/autoload.php";
-                if (file_exists($autoloader)){
-                    require_once $autoloader;
-                    return true;
+        if (DEVELOPMENT){
+            //开发者模式
+            $autoloader = MICRO_SERVER.$this->identity."/vendor/autoload.php";
+            if (file_exists($autoloader)){
+                require_once $autoloader;
+            }else{
+                if (!file_exists(MICRO_SERVER.$this->identity."/composer.lock")){
+                    $res = MSService::ComposerRequire(MICRO_SERVER.$this->identity."/", "microserver/".$this->identity);
+                    if ($res){
+                        require_once $autoloader;
+                        return true;
+                    }
                 }
-                $COMPOSERDIR = MICRO_SERVER.$this->identity."/";
+                $WorkingDirectory = str_replace("\\", "/", MICRO_SERVER.$this->identity."/");
+                $title = "安装依赖组件包";
+                include tpl_include("web/composer");
+                session_exit();
             }
-            global $_W;
-            if ($_W['isajax']){
-                $redirect = defined('IN_SYS') ? url()->current() : "";
-                $result = $this->success("缺少依赖组件", $redirect,"error");
-                session_exit(json_encode($result));
-            }
-            $title = "安装依赖组件包";
-            $composerVer = " dev-main";
-            $JSON = file_get_contents($composer);
-            if (!empty($JSON)){
-                $composerObj = json_decode($JSON, true);
-                if (isset($composerObj['version'])){
-                    $composerVer = $composerObj['version'];
-                }
-            }
-            $requireName = "microserver/".$this->identity." ".$composerVer;
-            include tpl_include("web/composer");
-            session_exit();
         }
         return true;
     }
