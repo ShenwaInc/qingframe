@@ -637,7 +637,7 @@ class MSService
                         break;
                     }
                     case 'array':{
-                        $param .= "=array()";
+                        $param .= "=[]";
                         break;
                     }
                     default:{
