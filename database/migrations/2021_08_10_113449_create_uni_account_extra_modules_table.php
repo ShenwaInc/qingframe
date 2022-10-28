@@ -16,6 +16,7 @@ class CreateUniAccountExtraModulesTable extends Migration {
 		{
 			$table->increments('id');
 			$table->integer('uniacid')->unsigned()->index('uniacid');
+			$table->string('identifie',50)->default('');
 			$table->text('modules', 65535);
 		});
 	}
