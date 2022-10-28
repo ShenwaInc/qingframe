@@ -187,7 +187,15 @@ if(typeof Basetoken == 'undefined'){
                 });
                 Ajaxwindow.find('.pagination').on("click","a",function (){
                     let url = $(this).attr('href');
-                    if (url!=="" && url.indexOf("#")!==0 && url.indexOf("javascript:")!==0){
+                    if (typeof(url)=="undefined" || url==="#" || url.indexOf("javascript:")===0){
+                        url = "";
+                    }
+                    if (url==="" && typeof($(this).attr('page'))!='undefined'){
+                        let page = $(this).attr('page');
+                        url = PickerUrl;
+                        url += (PickerUrl.indexOf("?")===-1 ? "?page=" : "&page=") + page;
+                    }
+                    if(url!==""){
                         self.get(url, function (Html){
                             if(self.isJsonString(Html)){
                                 var obj = jQuery.parseJSON(Html);
@@ -195,7 +203,7 @@ if(typeof Basetoken == 'undefined'){
                             }
                             Ajaxwindow.html(Html);
                             PickerEvent(selector);
-                        },{inajax:1,ajaxhash:WindowId},'html')
+                        },{inajax:1,ajaxhash:WindowId},'html');
                     }
                     return false;
                 });

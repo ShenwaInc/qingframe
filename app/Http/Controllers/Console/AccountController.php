@@ -310,7 +310,7 @@ class AccountController extends Controller
                 'groupid' => 0,
                 'default_acid' => 0,
                 'name' => $post['name'],
-                'description' => $post['description'],
+                'description' => trim($post['description']),
                 'logo'=>$post['logo'],
                 'title_initial' => 'W',
                 'createtime' => TIMESTAMP,

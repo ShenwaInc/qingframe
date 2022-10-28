@@ -169,8 +169,8 @@ class InstallController extends Controller
                 'logo'=>'//shenwahuanan.oss-cn-shenzhen.aliyuncs.com/images/4/2021/08/pK8iHw0eQg5hHgg4Kqe5E1E1hSBpZS.png',
                 'website'=>'https://www.gxswa.com/laravel/',
                 'rootpath'=>'',
-                'version'=>$config['version'],
-                'releasedate'=>$config['release'],
+                'version'=>QingVersion,
+                'releasedate'=>QingRelease,
                 'addtime'=>TIMESTAMP,
                 'dateline'=>TIMESTAMP
             ));
@@ -214,7 +214,7 @@ class InstallController extends Controller
         $envdata = str_replace(array('{APP_NAME}','{AUTHKEY}','{BASEURL}','{FOUNDER}','{DB_HOST}','{DB_PORT}','{DB_DATABASE}','{DB_USERNAME}','{DB_PASSWORD}','{DB_PREFIX}'),array(
             $appname,$authkey,$baseurl,$uid,$database['host'],$database['port'],$database['database'],$database['username'],$database['password'],$database['prefix']
         ),$envdata);
-        $envdata = str_replace(array('{APP_VERSION}', '{APP_RELEASE}'), array($config['version'], $config['release']), $envdata);
+        $envdata = str_replace(array('{APP_VERSION}', '{APP_RELEASE}'), array(QingVersion, QingRelease), $envdata);
         $envfile = base_path(".env");
         if (file_exists($envfile)){
             @unlink($envfile);
