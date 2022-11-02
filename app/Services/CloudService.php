@@ -12,7 +12,7 @@ class CloudService
     static $cloudapi = 'https://chat.gxit.org/app/index.php?i=4&c=entry&m=swa_supersale&do=api';
     static $cloudactive = 'https://chat.gxit.org/app/index.php?i=4&c=entry&m=swa_supersale&do=app&r=whotalkcloud.active';
     static $apilist = array('getcom'=>'cloud.vendor','rmcom'=>'cloud.vendor.remove','require'=>'cloud.install','structure'=>'cloud.structure','upgrade'=>'cloud.makepatch');
-    static $vendors = array('aop'=>'支付宝支付SDK','wxpayv3'=>'微信支付SDK','tim'=>'接口签名验证工具','getui'=>'APP推送SDK');
+    static $vendors = array('aop'=>'支付宝支付SDK','wxpayv3'=>'微信支付SDK','tim'=>'接口签名验证工具');
 
     static function ComExists($component){
         return is_dir(self::com_path("$component/"));
@@ -20,17 +20,13 @@ class CloudService
 
     static function LoadCom($component){
         if (!self::ComExists($component)) return error(-1,'未安装对应组件:'.self::$vendors[$component]);
-        $mainclass = array('aop'=>'AopClient','wxpayv3'=>'WxPayApi','tim'=>'TLSSigAPIv2','getui'=>'IGeTui');
+        $mainclass = array('aop'=>'AopClient','wxpayv3'=>'WxPayApi','tim'=>'TLSSigAPIv2');
         if (class_exists($mainclass[$component])) return true;
         $compath = self::com_path();
         switch ($component){
             case 'wxpayv3' :
                 require_once "{$compath}wxpayv3/WxPay.Api.php";
                 require_once "{$compath}wxpayv3/WxPay.Data.php";
-                break;
-            case 'alipay' :
-                require("{$compath}alipay/wappay/service/AlipayTradeService.php");
-                require_once("{$compath}alipay/wappay/buildermodel/AlipayTradeWapPayContentBuilder.php");
                 break;
             case 'aop' :
                 require_once "{$compath}aop/AopClient.php";
@@ -39,9 +35,6 @@ class CloudService
             case 'tim' :
                 include_once "{$compath}tim/TLSSigAPIv2.php";
                 break;
-            case 'getui' :
-                require_once "{$compath}getui/autoload.php";
-                break;
             default :
                 break;
         }
@@ -49,7 +42,7 @@ class CloudService
     }
 
     static function RequireCom(){
-        $hasCom = self::ComExists('getui');
+        $hasCom = self::ComExists('pinyin');
         if ($hasCom){
             return self::CloudUpdate('swa_whotalk_componet',self::com_path());
         }else{
@@ -457,8 +450,12 @@ class CloudService
         $result = json_decode($res['content'],true);
         if(empty($result) && $return) return $res['content'];
         if (isset($result['message']) && isset($result['type'])){
-            if ($result['type']!='success' && !is_array($result['message']) && !$result['redirect']){
-                return error(-1,$result['message']);
+            if ($result['type']!='success' && !is_array($result['message'])){
+                $respone = error(-1,$result['message']);
+                if (!empty($result['redirect'])){
+                    $respone['redirect'] = $result['redirect'];
+                }
+                return $respone;
             }
         }
         return $result;
