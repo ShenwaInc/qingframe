@@ -408,6 +408,7 @@ class MSService
         }
         //安装composer
         if (file_exists(MICRO_SERVER.$identity."/composer.json")){
+            @unlink(MICRO_SERVER.$identity."/composer.error");
             self::ComposerRequire(MICRO_SERVER.$identity."/", "microserver/".$identity);
         }
         return true;
@@ -456,6 +457,7 @@ class MSService
             }
             //安装composer
             if (file_exists(MICRO_SERVER.$identity."/composer.json")){
+                @unlink(MICRO_SERVER.$identity."/composer.error");
                 self::ComposerRequire(MICRO_SERVER.$identity."/", "microserver/".$identity);
             }
             return true;
@@ -500,6 +502,10 @@ class MSService
             return error(-1,'卸载失败，请重试');
         }
         $this->getEvents(true);
+        $composerExists = file_exists(MICRO_SERVER.$identity."/composer.json");
+        if ($composerExists){
+            self::ComposerRemove("microserver/".$identity);
+        }
         if (!self::$devMode){
             //删除服务安装包
             FileService::rmdirs(MICRO_SERVER.$identity."/");
@@ -539,19 +545,25 @@ class MSService
                     }
                 }
             }
-            $command = ['composer', 'require', $name, $composerVer?:'dev-main'];
+            $command = ['composer', 'require', $name];
+            if (!empty($composerVer)){
+                $command[] = $composerVer;
+            }
         }
         try {
-            @ini_set('max_execution_time', 0);
             $process = new Process($command);
             $process->setWorkingDirectory($WorkingDirectory);
             $process->setEnv(['COMPOSER_HOME'=>self::ComposerHome()]);
-            $process->run();
+            $process->start();
+            $process->wait();
             if ($process->isSuccessful()) {
                 return true;
+            }else{
+                self::ComposerFail($name, $process->getOutput());
             }
         }catch (\Exception $exception){
             //Todo something
+            self::ComposerFail($name, $exception->getMessage());
         }
         return false;
     }
@@ -563,7 +575,7 @@ class MSService
         }else{
             $WorkingDirectory = base_path("/");
             if (empty($composerVer)){
-                $composerVer = "dev-main";
+                $composerVer = "";
                 $composer = $basePath."composer.json";
                 $JSON = file_get_contents($composer);
                 $composerObj = json_decode($JSON, true);
@@ -571,14 +583,38 @@ class MSService
                     $composerVer = $composerObj['version'];
                 }
             }
-            $command = ['composer', 'require', $name, $composerVer];
+            $command = ['composer', 'require', $name];
+            if (!empty($composerVer)){
+                $command[] = $composerVer;
+            }
         }
         try {
-            @ini_set('max_execution_time', 0);
             $process = new Process($command);
             $process->setWorkingDirectory($WorkingDirectory);
             $process->setEnv(['COMPOSER_HOME'=>self::ComposerHome()]);
-            $process->run();
+            $process->start();
+            $process->wait();
+            if ($process->isSuccessful()) {
+                return true;
+            }else{
+                self::ComposerFail($name, $process->getOutput());
+            }
+        }catch (\Exception $exception){
+            //Todo something
+            self::ComposerFail($name, $exception->getMessage());
+        }
+        return false;
+    }
+
+    public static function ComposerRemove($require){
+        if (DEVELOPMENT) return true;
+        $WorkingDirectory = base_path("/");
+        try {
+            $process = new Process(["composer", "remove", $require]);
+            $process->setWorkingDirectory($WorkingDirectory);
+            $process->setEnv(['COMPOSER_HOME'=>self::ComposerHome()]);
+            $process->start();
+            $process->wait();
             if ($process->isSuccessful()) {
                 return true;
             }
@@ -588,10 +624,17 @@ class MSService
         return false;
     }
 
+    public static function ComposerFail($name, $output){
+        $logPath = MICRO_SERVER . str_replace("microserver/", "", $name) . ".error";
+        file_put_contents($logPath, $output);
+    }
+
     public static function ComposerHome(){
         $php_uname = php_uname();
         if (strexists($php_uname, "Windows")){
             return "C:\Users\<user>\AppData\Roaming\Composer";
+        }elseif (strexists($php_uname, "Linux")){
+            return "/root/.composer";
         }elseif (strexists($php_uname, "nux")){
             return "/home/<user>/.composer";
         }elseif (strexists($php_uname, 'OSX')){

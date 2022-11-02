@@ -341,6 +341,7 @@ class MicroService
      */
     public function Composer(){
         $composer = MICRO_SERVER.$this->identity."/composer.json";
+        $requireName = "microserver/".$this->identity;
         if (!file_exists($composer)) return true;
         if (DEVELOPMENT){
             //开发者模式
@@ -349,7 +350,7 @@ class MicroService
                 require_once $autoloader;
             }else{
                 if (!file_exists(MICRO_SERVER.$this->identity."/composer.lock")){
-                    $res = MSService::ComposerRequire(MICRO_SERVER.$this->identity."/", "microserver/".$this->identity);
+                    $res = MSService::ComposerRequire(MICRO_SERVER.$this->identity."/", $requireName);
                     if ($res){
                         require_once $autoloader;
                         return true;
@@ -360,6 +361,21 @@ class MicroService
                 include tpl_include("web/composer");
                 session_exit();
             }
+        }else{
+            if (file_exists(MICRO_SERVER.$this->identity."/composer.error")){
+                $WorkingDirectory = base_path("/");
+                $composerObj = json_decode(file_get_contents($composer), true);
+                $composerVer = $composerObj['version'] ?? "";
+            }
+        }
+        if (!empty($WorkingDirectory)){
+            global $_W;
+            if ($_W['isajax']){
+                $this->message("请先安装依赖组件包");
+            }
+            $title = "安装依赖组件包";
+            include tpl_include("web/composer");
+            session_exit();
         }
         return true;
     }
