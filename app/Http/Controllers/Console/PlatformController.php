@@ -54,10 +54,17 @@ class PlatformController extends Controller
         $_W['uniacid'] = intval($uniacid);
         session()->put('uniacid',$_W['uniacid']);
         list($controller, $method) = AccountService::GetEntrance($_W['uid'], $_W['uniacid']);
+        if ($controller=='module'){
+            $module_exists = ModuleService::fetch($method);
+            if (empty($module_exists) || is_error($module_exists)){
+                $controller = 'account';
+                $method = "profile";
+            }else{
+                return redirect("console/m/$method");
+            }
+        }
         if ($controller=='account'){
             return redirect("console/account/{$method}?uniacid={$_W['uniacid']}");
-        }elseif($controller=='module'){
-            return redirect("console/m/$method");
         }else{
             $redirect = serv($method)->getEntry();
             return redirect($redirect);
