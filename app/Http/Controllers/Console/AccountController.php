@@ -187,7 +187,7 @@ class AccountController extends Controller
         $return['servers'] = $servers;
 
         //读取可用模块
-        $components = pdo_get('uni_account_extra_modules', array('uniacid'=>$this->uniacid));
+        $components = pdo_getall('uni_account_extra_modules', array('uniacid'=>$this->uniacid));
         //DB::table('uni_account_extra_modules')->where('uniacid',$this->uniacid)->first();
         if (empty($components) && !empty($_W['config']['defaultmodule'])){
             $defaultModule = pdo_get("modules", array('name'=>$_W['config']['defaultmodule'], 'application_type'=>1));
@@ -200,7 +200,13 @@ class AccountController extends Controller
                 $return['components'] = $components;
             }
         }else{
-            $return['components'] = unserialize($components['modules']);
+            $new_components=[];
+            foreach ($components ?? [] as $value){
+                $modules=unserialize($value['modules']);
+                $new_components=array_merge($new_components,$modules);
+            }
+            $return['components'] = $new_components;
+
         }
         //判断模块权限，待完善
         return $this->globalview('console.account.functions',$return);
