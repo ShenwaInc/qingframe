@@ -387,6 +387,10 @@ class MSService
             try {
                 script_run($service['install'], MICRO_SERVER.$identity);
             }catch (\Exception $exception){
+                if (!self::$devMode){
+                    //删除服务安装包
+                    FileService::rmdirs(MICRO_SERVER.$identity."/");
+                }
                 return error(-1,"安装失败：".$exception->getMessage());
             }
         }
@@ -394,6 +398,15 @@ class MSService
         $application['status'] = 1;
         $application['addtime'] = $application['dateline'] = TIMESTAMP;
         if (!pdo_insert(self::$tableName, $application)){
+            try {
+                script_run($configs['uninstall'], MICRO_SERVER.$identity);
+                if (!self::$devMode){
+                    //删除服务安装包
+                    FileService::rmdirs(MICRO_SERVER.$identity."/");
+                }
+            }catch (\Exception $exception){
+                //Todo something
+            }
             return error(-1,'安装失败，请重试');
         }
         $this->getEvents(true);
