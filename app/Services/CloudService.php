@@ -470,6 +470,10 @@ class CloudService
         $cachekey = CacheService::system_key('HingWork:Authorize:Active');
         $authorize = Cache::get($cachekey,$default);
         $res = self::CloudApi('',array('r'=>'cloud.active','identity'=>config('system.identity')));
+        $authorize['redirect'] = self::$cloudactive;
+        if (!empty($res['redirect'])){
+            $authorize['redirect'] = trim($res['redirect']);
+        }
         if (is_error($res)){
             $authorize['state'] = $res['message'];
             return $authorize;
@@ -479,10 +483,6 @@ class CloudService
             return $authorize;
         }
 
-        $authorize['redirect'] = self::$cloudactive;
-        if (!empty($res['redirect'])){
-            $authorize['redirect'] = trim($res['redirect']);
-        }
         $authorize['siteid'] = $res['site']['id'];
         if ($res['site']['status']==1 && $res['authorize']['status']==1){
             $authorize['expiretime'] = $res['authorize']['expiretime'];

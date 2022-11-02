@@ -228,7 +228,9 @@ class SettingController extends Controller
             return $this->message('卸载完成', url('console/setting/plugin'),'success');
         }elseif ($op=='cloudinst'){
             $cloudrequire = CloudService::RequireModule(trim($_GPC['nid']));
-            if (is_error($cloudrequire)) return $this->message($cloudrequire['message']);
+            if (is_error($cloudrequire)){
+                return $this->message($cloudrequire['message'], $cloudrequire['redirect'] ?? null);
+            }
             return $this->message('恭喜您，安装完成！', url('console/setting/plugin'),'success');
         }elseif($op=='cloudUp'){
             $identity = trim($_GPC['nid']);
