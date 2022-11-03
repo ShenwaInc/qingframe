@@ -68,7 +68,7 @@ class MSService
      * @param $manifest
      * @return array
      */
-    public function getApplication(array $keys, $manifest)
+    public function getApplication($keys, $manifest)
     {
         $application = post_var($keys, $manifest['application']);
         $application['drive'] = $manifest['drive'];
@@ -545,7 +545,7 @@ class MSService
         }else{
             $JSON = file_get_contents($composer);
             $composerObj = json_decode($JSON, true);
-            $composerVer = $composerObj['version'] ?? "";
+            $composerVer = trim($composerObj['version']);
             $LOCK = file_get_contents($WorkingDirectory."composer.lock");
             $lockObj = json_decode($LOCK, true);
             if (!empty($lockObj['packages'])){
@@ -610,11 +610,11 @@ class MSService
             if ($process->isSuccessful()) {
                 return true;
             }else{
-                self::ComposerFail($name, $process->getOutput());
+                self::ComposerFail($name, $process->getOutput(), $command);
             }
         }catch (\Exception $exception){
             //Todo something
-            self::ComposerFail($name, $exception->getMessage());
+            self::ComposerFail($name, $exception->getMessage(), $command);
         }
         return false;
     }
@@ -637,8 +637,11 @@ class MSService
         return false;
     }
 
-    public static function ComposerFail($name, $output){
-        $logPath = MICRO_SERVER . str_replace("microserver/", "", $name) . ".error";
+    public static function ComposerFail($name, $output, $command=[]){
+        $logPath = MICRO_SERVER . str_replace("microserver/", "", $name) . "/composer.error";
+        if (!empty($command)){
+            $output = implode(" ", $command) . "：" . $output;
+        }
         file_put_contents($logPath, $output);
     }
 
