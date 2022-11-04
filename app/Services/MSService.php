@@ -144,13 +144,13 @@ class MSService
         return $service;
     }
 
-    public function cloudInstall($identity){
+    public function cloudInstall($identity, $autoInstall=false){
         $service = $this->cloudInfo($identity);
         if (is_error($service)) return $service;
         $cloudIdentity = "microserver_".$identity;
         $require = CloudService::CloudRequire($cloudIdentity, MICRO_SERVER.$identity."/");
         if (is_error($require)) return $require;
-        return $this->install($identity, true);
+        return $this->install($identity, true, $autoInstall);
     }
 
     public static function cloudserver($identity, $nocache=false){
@@ -294,11 +294,11 @@ class MSService
             }
             if ($this->localexist($identity)){
                 //未安装，但是本地存在则直接安装
-                $install = $this->install($identity);
+                $install = $this->install($identity, false, true);
                 if (is_error($install)) return error(-1, "安装依赖的服务({$identity})时发生异常：{$install['message']}");
             }else{
                 //本地不存在则从云端安装
-                $installCloud = $this->cloudInstall($identity);
+                $installCloud = $this->cloudInstall($identity, true);
                 if (is_error($installCloud)) return error(-1, "安装依赖的服务({$identity})时发生异常：{$installCloud['message']}");
             }
         }
@@ -361,7 +361,7 @@ class MSService
         return $return;
     }
 
-    public function install($identity, $fromCloud=false){
+    public function install($identity, $fromCloud=false, $autoInstall=false){
         if ($this->isexist($identity)) return true;
         $service = $this->getmanifest($identity);
         if (is_error($service)) return $service;
@@ -419,10 +419,8 @@ class MSService
                 @unlink(MICRO_SERVER.$identity."/manifest.json");
             }
         }
-        //安装composer
-        if (file_exists(MICRO_SERVER.$identity."/composer.json")){
-            @unlink(MICRO_SERVER.$identity."/composer.error");
-            self::ComposerRequire(MICRO_SERVER.$identity."/", "microserver/".$identity);
+        if (file_exists(MICRO_SERVER.$identity."/composer.json") && $autoInstall){
+            self::ComposerFail($identity, "");
         }
         return true;
     }
@@ -468,11 +466,6 @@ class MSService
                 //删除安装包文件
                 @unlink(MICRO_SERVER.$identity."/manifest.json");
             }
-            //安装composer
-            if (file_exists(MICRO_SERVER.$identity."/composer.json")){
-                @unlink(MICRO_SERVER.$identity."/composer.error");
-                self::ComposerRequire(MICRO_SERVER.$identity."/", "microserver/".$identity);
-            }
             return true;
         }
         return error(-1,"当前服务已经是最新版本");
@@ -515,6 +508,7 @@ class MSService
             return error(-1,'卸载失败，请重试');
         }
         $this->getEvents(true);
+        pdo_delete("microserver_unilink", array("name"=>$identity));
         $composerExists = file_exists(MICRO_SERVER.$identity."/composer.json");
         if ($composerExists){
             self::ComposerRemove("microserver/".$identity);
@@ -567,6 +561,7 @@ class MSService
             $process = new Process($command);
             $process->setWorkingDirectory($WorkingDirectory);
             $process->setEnv(['COMPOSER_HOME'=>self::ComposerHome()]);
+            $process->setTimeout(180);
             $process->start();
             $process->wait();
             if ($process->isSuccessful()) {
@@ -605,6 +600,7 @@ class MSService
             $process = new Process($command);
             $process->setWorkingDirectory($WorkingDirectory);
             $process->setEnv(['COMPOSER_HOME'=>self::ComposerHome()]);
+            $process->setTimeout(180);
             $process->start();
             $process->wait();
             if ($process->isSuccessful()) {
@@ -626,6 +622,7 @@ class MSService
             $process = new Process(["composer", "remove", $require]);
             $process->setWorkingDirectory($WorkingDirectory);
             $process->setEnv(['COMPOSER_HOME'=>self::ComposerHome()]);
+            $process->setTimeout(180);
             $process->start();
             $process->wait();
             if ($process->isSuccessful()) {

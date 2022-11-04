@@ -15,7 +15,7 @@ class ServerController extends Controller
         $_W['server'] = trim($server);
         $_W['inserver'] = true;
         $_W['basescript'] = "server";
-        if (!function_exists('tpl_compile')){
+        if (!function_exists('tpl_compile') && defined("IN_SYS")){
             include_once app_path("Helpers/smarty.php");
         }
         $service = serv($_W['server']);
@@ -97,6 +97,9 @@ class ServerController extends Controller
                 if (is_error($res)){
                     return $this->message($res['message']);
                 }
+                if (file_exists(MICRO_SERVER.$identity."/composer.json")){
+                    return $this->message("安装成功，即将安装服务依赖...", wurl("server", array('op'=>'composer', 'nid'=>$identity)), "success");
+                }
                 return $this->message("安装成功", wurl("server"), "success");
             }
             case "uninstall" :{
@@ -105,6 +108,31 @@ class ServerController extends Controller
                     return $this->message($res['message']);
                 }
                 return $this->message('服务已卸载完成',wurl("server"),'success');
+            }
+            case "composer" : {
+                $composer = MICRO_SERVER.$identity."/composer.json";
+                if (!file_exists($composer)){
+                    return $this->message("安装成功", wurl("server"), "success");
+                }
+                $res = $MSS::ComposerRequire(MICRO_SERVER.$identity."/", "microserver/".$identity);
+                if (!$res){
+                    $requireName = "microserver/".$identity;
+                    $WorkingDirectory = base_path()."/";
+                    if (DEVELOPMENT){
+                        $WorkingDirectory = str_replace("\\", "/", MICRO_SERVER.$identity."/");
+                    }
+                    $composerErr = MICRO_SERVER.$identity."/composer.error";
+                    if (!file_exists($composerErr)){
+                        $composerErr = "";
+                    }
+                    $title = "安装依赖组件包";
+                    if (!function_exists('tpl_compile')){
+                        include_once app_path("Helpers/smarty.php");
+                    }
+                    return include tpl_include("web/composer");
+                }
+                @unlink(MICRO_SERVER.$identity."/composer.error");
+                return $this->message("安装成功", wurl("server"), "success");
             }
             case "disable" : {
                 if (MSService::disable($identity)){
@@ -116,6 +144,9 @@ class ServerController extends Controller
                 $res = $MSS->upgrade($identity);
                 if (is_error($res)){
                     return $this->message($res['message']);
+                }
+                if (file_exists(MICRO_SERVER.$identity."/composer.json")){
+                    return $this->message("升级成功，即将安装服务依赖...", wurl("server", array('op'=>'composer', 'nid'=>$identity)), "success");
                 }
                 return $this->message("升级成功", wurl("server"), "success");
             }

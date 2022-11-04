@@ -163,7 +163,7 @@ class SettingController extends Controller
         }elseif ($op=='market'){
             return $this->cloudMarket();
         }
-        $return = array('title'=>'站点设置','op'=>$op,'components'=>array());
+        $return = array('title'=>'系统管理','op'=>$op,'components'=>array());
         if (!isset($_W['setting']['page'])){
             $_W['setting']['page'] = $_W['page'];
         }
@@ -199,52 +199,6 @@ class SettingController extends Controller
             }
             $redirect = url('console/setting/plugin');
             return $this->message('检测完成！',$redirect,'success');
-        }elseif($op=='comremove'){
-            $component = DB::table('gxswa_cloud')->where('id',intval($_GPC['cid']))->first(['id','identity','modulename','type','releasedate','rootpath']);
-            if ($component['type']==1){
-                $identity = !empty($component['modulename']) ? $component['modulename'] : $component['identity'];
-                $uninstall = ModuleService::uninstall($identity);
-                if (is_error($uninstall)) return $this->message($uninstall['message']);
-            }else{
-                return $this->message("暂不支持此类应用卸载");
-            }
-            if (!DEVELOPMENT){
-                FileService::rmdirs(base_path($component['rootpath']));
-            }
-            return $this->message('卸载完成', url('console/setting/plugin'),'success');
-        }elseif($op=='plugininst'){
-            $install = ModuleService::install(trim($_GPC['nid']), 'addons', 'local');
-            if (is_error($install)) return $this->message($install['message']);
-            return $this->message('恭喜您，安装完成！', url('console/setting/plugin'),'success');
-        }elseif ($op=='pluginup'){
-            $identity = trim($_GPC['nid']);
-            $complete = ModuleService::upgrade($identity);
-            if (is_error($complete)) return $this->message($complete['message']);
-            CacheService::flush();
-            return $this->message('恭喜您，升级成功！', url('console/setting/plugin'),'success');
-        }elseif ($op=='pluginrm'){
-            $uninstall = ModuleService::uninstall(trim($_GPC['nid']));
-            if (is_error($uninstall)) return $this->message($uninstall['message']);
-            return $this->message('卸载完成', url('console/setting/plugin'),'success');
-        }elseif ($op=='cloudinst'){
-            $cloudrequire = CloudService::RequireModule(trim($_GPC['nid']));
-            if (is_error($cloudrequire)){
-                return $this->message($cloudrequire['message'], trim($cloudrequire['redirect']));
-            }
-            return $this->message('恭喜您，安装完成！', url('console/setting/plugin'),'success');
-        }elseif($op=='cloudUp'){
-            $identity = trim($_GPC['nid']);
-            $cloudIdentity = ModuleService::SysPrefix($identity);
-            $targetPath = public_path("addons/$identity/");
-            $res = CloudService::CloudUpdate($cloudIdentity, $targetPath);
-            if (is_error($res)){
-                return $this->message($res['HingWork']);
-            }
-            $moduleUpdate = ModuleService::upgrade($identity, 'cloud');
-            if (is_error($moduleUpdate)) return $this->message($moduleUpdate['message']);
-            $redirect = url('console/setting/plugin');
-            CacheService::flush();
-            return $this->message('恭喜您，升级成功！', $redirect,'success');
         }else{
             $framework = DB::table('gxswa_cloud')->where('type',0)->first(['id','version','identity','type','online','releasedate','rootpath']);
             $return['framework'] = $framework;
