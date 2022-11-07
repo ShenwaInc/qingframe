@@ -80,14 +80,43 @@ class SettingController extends Controller
 
     public function selfUpgrade(){
         try {
-            Artisan::call('self:update');
+            //同步文件
+            $component = DB::table('gxswa_cloud')->where('type',0)->first(['id','identity','modulename','online','type','releasedate','rootpath']);
+            $cloudUpdate = CloudService::CloudUpdate($component['identity'],base_path().'/');
+            if (is_error($cloudUpdate)) return $this->message($cloudUpdate['message']);
+            //更新版本号
+            $cloudInfo = $this->checkcloud($component);
+            if (is_error($cloudInfo)) return $this->message($cloudInfo['message']);
+            DB::table('gxswa_cloud')->where('id',$component['id'])->update(array(
+                'version'=>$cloudInfo['version'],
+                'updatetime'=>TIMESTAMP,
+                'dateline'=>TIMESTAMP,
+                'releasedate'=>$cloudInfo['releasedate'],
+                'online'=>serialize(array(
+                    'isnew'=>false,
+                    'version'=>$cloudInfo['version'],
+                    'releasedate'=>$cloudInfo['releasedate']
+                ))
+            ));
+            CloudService::CloudEnv(array("APP_VERSION=".QingVersion,"APP_RELEASE=".QingRelease), array("APP_VERSION={$cloudInfo['version']}","APP_RELEASE={$cloudInfo['releasedate']}"));
         }catch (\Exception $exception){
             return $this->message($exception->getMessage());
         }
-        return $this->message('程序同步完成，即将操作升级...', url('console/setting/sysupgrade'),'success');
+        return $this->message('程序同步中，即将自动检测...', url('console/setting/sysupgrade'),'success');
     }
 
     public function SystemUpgrade(){
+        //升级文件对比
+        $component = DB::table('gxswa_cloud')->where('type',0)->first(['id','identity','type','online','releasedate','rootpath']);
+        if (!empty($component)){
+            $cloudinfo = $this->checkcloud($component);
+            if (!is_error($cloudinfo) && !empty($cloudinfo['hasDifference'])){
+                if (DEVELOPMENT){
+                    dd("以下文件同步失败，请检查文件夹权限：", $cloudinfo['difference']);
+                }
+                return $this->message('程序同步失败，请检查文件夹权限', wurl('setting'));
+            }
+        }
         try {
             Artisan::call('self:migrate');
             Artisan::call('route:clear');
@@ -253,10 +282,11 @@ class SettingController extends Controller
         if ($compare==0) return $ugradeinfo;
         $structure = $ugradeinfo['structure'];
         $ugradeinfo['difference'] = $this->compare($component,$ugradeinfo['structure']);
+        $ugradeinfo['hasDifference'] = $this->hasdifference($ugradeinfo['difference'],$component['type']);
         if ($component['releasedate']<$ugradeinfo['releasedate'] && $compare<2){
             $ugradeinfo['isnew'] = true;
         }else{
-            $ugradeinfo['isnew'] = $this->hasdifference($ugradeinfo['difference'],$component['type']);
+            $ugradeinfo['isnew'] = $ugradeinfo['hasDifference'];
         }
         if ($fromcache){
             $onlineinfo = $component['online'] ? unserialize($component['online']) : array();
