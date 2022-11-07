@@ -361,7 +361,7 @@ class MicroService
             }
         }else{
             if (file_exists(MICRO_SERVER.$this->identity."/composer.error")){
-                $WorkingDirectory = base_path("/");
+                $WorkingDirectory = base_path() . "/";
                 $composerObj = json_decode(file_get_contents($composer), true);
                 $composerVer = $composerObj['version'] ?? "";
                 $composerErr = MICRO_SERVER.$this->identity."/composer.error";

@@ -117,7 +117,7 @@ class InstallController extends Controller
                 'endtime'=>0
             );
             //create founder
-            $uid =  (int)DB::table('users')->insertGetId($founder);
+            $uid = DB::table('users')->insertGetId($founder);
             if(!$uid) return $this->message('数据写入失败');
             $_W['uid'] = $founder['uid'] = $uid;
             $_W['user'] = $founder;
@@ -184,9 +184,9 @@ class InstallController extends Controller
                         'icon'=>'/favicon.ico',
                         'logo'=>'/static/icon200.jpg',
                         'copyright'=>'© 2019-2022 Shenwa Studio. All Rights Reserved.',
-                        'links'=>'<a class="copyright-link" href="https://www.whotalk.com.cn/" target="_blank">Whotalk官网</a><a class="copyright-link" href="https://chat.gxit.org/app/index.php?i=4&c=entry&m=swa_supersale&do=app&r=whotalkcloud.post" target="_blank">制作APP</a><a class="copyright-link" href="https://shimo.im/docs/XRkgJOKZ41UrFbqM" target="_blank">使用教程</a><a class="copyright-link" href="https://www.yuque.com/docs/share/84abf7ef-7d11-44f1-a510-ed70ef14ef3d?#" target="_blank">更新日志</a>',
-                        'keywords'=>'Whotalk,IM,即时通讯,客服系统,SaaS即时通讯,开源,社交软件,WEB即时通讯,公众号客服,多开聊天软件,在线聊天,群聊,微擎模块,快速生成APP,聊天APP,群聊APP',
-                        'description'=>'Whotalk是一款精巧灵活的SaaS-IM基础服务软件，提供即时通讯软件的基础功能，具备强大的开放能力和极高的自由度，可快速编译为各类平台应用软件。'
+                        'links'=>'<a class="copyright-link" href="https://www.yuque.com/shenwa/qingru" target="_blank">开发手册</a><a class="copyright-link ajaxshow" href="/console/setting/market">应用市场</a><a class="copyright-link" href="https://www.gxit.org/" target="_blank">官方网站</a><a class="copyright-link" href="https://www.gxit.org/" target="_blank">提交工单</a>',
+                        'keywords'=>'SaaS软件，应用市场，APP开发，微信应用，微服务，微信营销，小程序开发，模块化开发，快速开发，脚手架，Laravel模块',
+                        'description'=>'轻如云系统是一个基于Laravel的跨平台快速开发框架，提供丰富的基础微服务，满足各类应用程序的快速开发需求'
                     ))
                 )
             ]);

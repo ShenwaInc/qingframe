@@ -56,7 +56,7 @@ class SettingController extends Controller
         $component = DB::table('gxswa_cloud')->where('type',0)->first(['id','identity','type','online','releasedate','rootpath']);
         if (empty($component)) return $this->message('系统出现致命错误');
         $cloudinfo = $this->checkcloud($component,1,true);
-        if (empty($cloudinfo['difference'])) return $this->message('当前已是最新版本');
+        if (empty($cloudinfo['difference'])) return $this->message('当前系统与云端对比没有差异');
         $structures = $this->makeStructure($cloudinfo['difference']);
         return $this->globalview("console.structure", array(
             'structures'=>$structures,
