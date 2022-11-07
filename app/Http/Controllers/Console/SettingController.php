@@ -52,6 +52,32 @@ class SettingController extends Controller
         return $this->message('检测完成！',url('console/setting'),'success');
     }
 
+    public function updateLog(){
+        $component = DB::table('gxswa_cloud')->where('type',0)->first(['id','identity','type','online','releasedate','rootpath']);
+        if (empty($component)) return $this->message('系统出现致命错误');
+        $cloudinfo = $this->checkcloud($component,1,true);
+        if (empty($cloudinfo['difference'])) return $this->message('当前已是最新版本');
+        $structures = $this->makeStructure($cloudinfo['difference']);
+        return $this->globalview("console.structure", array(
+            'structures'=>$structures,
+            'total'=>count($structures)
+        ));
+    }
+
+    public function makeStructure($difference,$basedir='',$root='/'){
+        $structures = [];
+        foreach ($difference as $item){
+            if (is_array($item)){
+                $files = $this->makeStructure($item[1],$basedir.$item[0].'/',$root);
+                $structures = array_merge($structures, $files);
+            }else{
+                $fileinfo = explode('|',$item);
+                $structures[] = $root.$basedir.$fileinfo[0];
+            }
+        }
+        return $structures;
+    }
+
     public function selfUpgrade(){
         try {
             Artisan::call('self:update');
@@ -162,6 +188,8 @@ class SettingController extends Controller
             return $this->SystemUpgrade();
         }elseif ($op=='market'){
             return $this->cloudMarket();
+        }elseif ($op=='updateLog'){
+            return $this->updateLog();
         }
         $return = array('title'=>'系统管理','op'=>$op,'components'=>array());
         if (!isset($_W['setting']['page'])){

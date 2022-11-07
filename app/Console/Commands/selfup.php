@@ -25,7 +25,7 @@ class selfup extends Command
      *
      * @var string
      */
-    protected $description = 'Whotalk framework upgrade';
+    protected $description = 'Framework upgrade';
 
     /**
      * Create a new command instance.
@@ -82,7 +82,7 @@ class selfup extends Command
         ));
         CloudService::CloudEnv(array("APP_VERSION={$system['version']}","APP_RELEASE={$system['release']}"), array("APP_VERSION={$arguments['version']}","APP_RELEASE={$arguments['release']}"));
 
-        $this->info('Whotalk framework upgrade successfully.');
+        $this->info('Framework upgrade successfully.');
         return true;
     }
 }
