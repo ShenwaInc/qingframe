@@ -190,11 +190,11 @@ class SettingController extends Controller
                         if ($module['errno']!=-1){
                             //已存在但未安装
                         }else{
-                            $com['action'] = '<a href="'.url('console/setting/cloudinst').'?nid='.$value['identity'].'" class="layui-btn layui-btn-sm layui-btn-normal confirm" data-text="确定要安装该应用？">安装</a>';
+                            $com['action'] = '<a href="'.wurl('module/require', array('nid'=>$value['identity'])).'" class="layui-btn layui-btn-sm layui-btn-normal confirm" data-text="确定要安装该应用？">安装</a>';
                         }
                     }
                 }else{
-                    $com['action'] = '<a href="'.url('console/setting/cloudinst').'?nid='.$value['identity'].'" class="layui-btn layui-btn-sm layui-btn-normal confirm" data-text="确定要安装该应用？">安装</a>';
+                    $com['action'] = '<a href="'.wurl('module/require', array('nid'=>$value['identity'])).'" class="layui-btn layui-btn-sm layui-btn-normal confirm" data-text="确定要安装该应用？">安装</a>';
                 }
                 $plugins[$identifie] = $com;
             }
@@ -254,7 +254,7 @@ class SettingController extends Controller
             if (is_error($cloudinfo)){
                 return $this->message($cloudinfo['message']);
             }
-            $redirect = url('console/setting/plugin');
+            $redirect = wurl('module');
             return $this->message('检测完成！',$redirect,'success');
         }else{
             $framework = DB::table('gxswa_cloud')->where('type',0)->first(['id','version','identity','type','online','releasedate','rootpath']);

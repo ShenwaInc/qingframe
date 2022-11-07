@@ -312,7 +312,7 @@ class MSService
             $depends = array();
             foreach ($servers as $value){
                 $configs = $value['configs'] ? unserialize($value['configs']) : [];
-                if (!empty($configs['require']) && in_array($identity, $configs['require'])){
+                if (!empty($configs['require']) && in_array($identity, $configs['require'], true)){
                     $depends[$value['identity']] = $value['name'];
                 }
             }
@@ -415,9 +415,7 @@ class MSService
             if ($service['inextra'] && defined('MSERVER_EXTRA')){
                 CloudService::MoveDir(MSERVER_EXTRA.$identity, MICRO_SERVER.$identity);
             }
-            if ($service['bindcloud']){
-                @unlink(MICRO_SERVER.$identity."/manifest.json");
-            }
+            @unlink(MICRO_SERVER.$identity."/manifest.json");
         }
         if (file_exists(MICRO_SERVER.$identity."/composer.json") && $autoInstall){
             self::ComposerFail($identity, "");
@@ -615,7 +613,7 @@ class MSService
 
     public static function ComposerRemove($require){
         if (DEVELOPMENT) return true;
-        $WorkingDirectory = base_path("/");
+        $WorkingDirectory = base_path()."/";
         try {
             $process = new Process(["composer", "remove", $require]);
             $process->setWorkingDirectory($WorkingDirectory);
@@ -628,7 +626,11 @@ class MSService
         }catch (\Exception $exception){
             //Todo something
         }
-        return false;
+        echo "依赖组件卸载失败，请使用宝塔终端或其它ssh依次运行如下指令：<br/>";
+        dd(
+            "cd ".$WorkingDirectory,
+            "composer remove $require"
+        );
     }
 
     public static function ComposerFail($name, $output, $command=[]){

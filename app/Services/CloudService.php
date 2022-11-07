@@ -127,11 +127,11 @@ class CloudService
                     if($com['cloudinfo']['isLocal']){
                         $com['action'] .= '<a href="'.wurl('module/upgrade', array('nid'=>$com['modulename'])).'" class="layui-btn layui-btn-sm layui-btn-danger confirm" data-text="升级前请做好源码和数据备份，避免升级故障导致系统无法正常运行">升级</a>';
                     }else{
-                        $com['action'] .= '<a href="'.url('console/module/update', array('nid'=>$com['modulename'])).'" class="layui-btn layui-btn-sm layui-btn-danger confirm" data-text="升级前请做好源码和数据备份，避免升级故障导致系统无法正常运行">升级</a>';
+                        $com['action'] .= '<a href="'.wurl('module/update', array('nid'=>$com['modulename'])).'" class="layui-btn layui-btn-sm layui-btn-danger confirm" data-text="升级前请做好源码和数据备份，避免升级故障导致系统无法正常运行">升级</a>';
                     }
                 }
-                $com['action'] .= '<a href="'.url('console/setting/comcheck').'?cid='.$com['id'].'" class="layui-btn layui-btn-sm layui-btn-normal ajaxshow">'.(empty($com['cloudinfo']) ? '检测更新' : '重新检测').'</a>';
-                $com['action'] .= '<a href="'.url('console/module/remove', array('nid'=>$com['modulename'])).'" class="layui-btn layui-btn-sm layui-btn-primary confirm" data-text="即将卸载该应用并删除应用产生的所有数据，是否确定要卸载？">卸载</a></div>';
+                $com['action'] .= '<a href="'.wurl('setting/comcheck', array('cid'=>$com['id'])).'" class="layui-btn layui-btn-sm layui-btn-normal ajaxshow">'.(empty($com['cloudinfo']) ? '检测更新' : '重新检测').'</a>';
+                $com['action'] .= '<a href="'.wurl('module/remove', array('nid'=>$com['modulename'])).'" class="layui-btn layui-btn-sm layui-btn-primary confirm" data-text="即将卸载该应用并删除应用产生的所有数据，是否确定要卸载？">卸载</a></div>';
                 $plugins[$com['modulename']] = $com;
             }
         }
@@ -175,9 +175,9 @@ class CloudService
                             }
                         }
                     }
-                    $com['action'] .= '<a href="'.url('console/module/remove', array('nid'=>$identity)).'" class="layui-btn layui-btn-sm layui-btn-primary confirm" data-text="即将卸载该应用并删除应用产生的所有数据，是否确定要卸载？">卸载</a></div>';
+                    $com['action'] .= '<a href="'.wurl('module/remove', array('nid'=>$identity)).'" class="layui-btn layui-btn-sm layui-btn-primary confirm" data-text="即将卸载该应用并删除应用产生的所有数据，是否确定要卸载？">卸载</a></div>';
                 }elseif(DEVELOPMENT){
-                    $com['action'] = '<a href="'.url('console/module/install', array('nid'=>$identity)).'" class="layui-btn layui-btn-sm layui-btn-normal confirm" data-text="确定要安装该应用？">安装</a>';
+                    $com['action'] = '<a href="'.wurl('module/install', array('nid'=>$identity)).'" class="layui-btn layui-btn-sm layui-btn-normal confirm" data-text="确定要安装该应用？">安装</a>';
                 }
                 $plugins[$identity] = $com;
             }
@@ -208,7 +208,7 @@ class CloudService
                     if (version_compare($local['version'], $value['release']['version'], '<') || $local['releasedate']<$releaseDate){
                         $cloudinfo['isnew'] = true;
                         if (empty($local['cloudinfo']) || !$local['cloudinfo']['isnew']){
-                            $local['action'] = '<a href="'.url('console/module/update', array('nid'=>$identity)).'" class="layui-btn layui-btn-sm layui-btn-danger confirm" data-text="升级前请做好源码和数据备份，避免升级故障导致系统无法正常运行">升级</a>'.$local['action'];
+                            $local['action'] = '<a href="'.wurl('module/update', array('nid'=>$identity)).'" class="layui-btn layui-btn-sm layui-btn-danger confirm" data-text="升级前请做好源码和数据备份，避免升级故障导致系统无法正常运行">升级</a>'.$local['action'];
                         }
                     }
                     $local['cloudinfo'] = $cloudinfo;
@@ -229,7 +229,7 @@ class CloudService
                     $com['lastupdate'] = '<span class="layui-badge">未安装</span>';
                     $com['cloudinfo'] = array();
                     $com['installtime'] = '-';
-                    $com['action'] = '<a href="'.url('console/module/require', array('nid'=>$identity)).'" class="layui-btn layui-btn-sm layui-btn-normal confirm" data-text="确定要安装该应用？">安装</a>';
+                    $com['action'] = '<a href="'.wurl('module/require', array('nid'=>$value['identity'])).'" class="layui-btn layui-btn-sm layui-btn-normal confirm" data-text="确定要安装该应用？">安装</a>';
                     $plugins[$identify] = $com;
                 }
             }
