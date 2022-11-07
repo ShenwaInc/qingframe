@@ -126,6 +126,7 @@ class ServerController extends Controller
                         $composerErr = "";
                     }
                     $title = "安装依赖组件包";
+                    $composerNext = '<strong>安装好后，请<a href="'.wurl('server').'" class="text-blue">点此返回上一页</a></strong>';
                     if (!function_exists('tpl_compile')){
                         include_once app_path("Helpers/smarty.php");
                     }
@@ -146,7 +147,7 @@ class ServerController extends Controller
                     return $this->message($res['message']);
                 }
                 if (file_exists(MICRO_SERVER.$identity."/composer.json")){
-                    return $this->message("升级成功，即将安装服务依赖...", wurl("server", array('op'=>'composer', 'nid'=>$identity)), "success");
+                    return $this->message("升级成功，即将更新服务依赖组件...", wurl("server", array('op'=>'composer', 'nid'=>$identity)), "success");
                 }
                 return $this->message("升级成功", wurl("server"), "success");
             }
@@ -155,12 +156,18 @@ class ServerController extends Controller
                 if (is_error($res)){
                     return $this->message($res['message']);
                 }
+                if (file_exists(MICRO_SERVER.$identity."/composer.json")){
+                    return $this->message("升级成功，即将更新服务依赖组件...", wurl("server", array('op'=>'composer', 'nid'=>$identity)), "success");
+                }
                 return $this->message("升级成功", wurl("server"), "success");
             }
             case "cloudinst" : {
                 $res = $MSS->cloudInstall($identity);
                 if (is_error($res)){
                     return $this->message($res['message']);
+                }
+                if (file_exists(MICRO_SERVER.$identity."/composer.json")){
+                    return $this->message("安装成功，即将安装服务依赖...", wurl("server", array('op'=>'composer', 'nid'=>$identity)), "success");
                 }
                 return $this->message("安装成功", wurl("server"), "success");
             }

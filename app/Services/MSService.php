@@ -529,7 +529,7 @@ class MSService
     public static function ComposerRequire($basePath, $name){
         $composer = $basePath."composer.json";
         if (!file_exists($composer)) return true;
-        $WorkingDirectory = base_path("/");
+        $WorkingDirectory = base_path() . "/";
         if (DEVELOPMENT){
             if (file_exists($basePath."composer.lock")){
                 return self::ComposerUpdate($basePath, $name);
@@ -561,7 +561,6 @@ class MSService
             $process = new Process($command);
             $process->setWorkingDirectory($WorkingDirectory);
             $process->setEnv(['COMPOSER_HOME'=>self::ComposerHome()]);
-            $process->setTimeout(180);
             $process->start();
             $process->wait();
             if ($process->isSuccessful()) {
@@ -600,7 +599,6 @@ class MSService
             $process = new Process($command);
             $process->setWorkingDirectory($WorkingDirectory);
             $process->setEnv(['COMPOSER_HOME'=>self::ComposerHome()]);
-            $process->setTimeout(180);
             $process->start();
             $process->wait();
             if ($process->isSuccessful()) {
@@ -622,7 +620,6 @@ class MSService
             $process = new Process(["composer", "remove", $require]);
             $process->setWorkingDirectory($WorkingDirectory);
             $process->setEnv(['COMPOSER_HOME'=>self::ComposerHome()]);
-            $process->setTimeout(180);
             $process->start();
             $process->wait();
             if ($process->isSuccessful()) {
