@@ -37,11 +37,15 @@ function serv(string $name, $params=null){
     if (!file_exists($service)){
         return new CatchCall("Service ".ucfirst($name)." Not Found.");
     }
-    require_once $service;
-    $class_name = ucfirst($name) . 'Service';
-    $instance = new $class_name($params);
-    if ($instance->service['status']!=1){
-        return new CatchCall("Service $name has stopped.");
+    try {
+        require_once $service;
+        $class_name = ucfirst($name) . 'Service';
+        $instance = new $class_name($params);
+        if ($instance->service['status']!=1){
+            return new CatchCall("Service $name has stopped.");
+        }
+    }catch (Exception $exception){
+        return new CatchCall($exception->getMessage());
     }
     $_servers[$name] = $instance;
     return $instance;

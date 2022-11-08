@@ -11,7 +11,6 @@ use Symfony\Component\Process\Process;
 class MSService
 {
     public static $tableName = 'microserver';
-    public static $devMode = DEVELOPMENT;
 
     public static function setup(){
         if (!Schema::hasTable("microserver")){
@@ -248,7 +247,7 @@ class MSService
             if (!empty($server['entry']) && !is_error($server['entry'])){
                 $server['actions'] .= '<a class="layui-btn layui-btn-sm layui-btn-normal" target="_blank" href="'.$server['entry'].'">管理</a>';
             }
-            if (self::$devMode){
+            if (DEVELOPMENT){
                 if (!empty(serv($server['identity'])->getMethods())){
                     $server['actions'] .= '<a class="layui-btn layui-btn-sm" target="_blank" href="'.wurl("server/methods/{$server['identity']}").'">调用方法</a>';
                 }
@@ -387,7 +386,7 @@ class MSService
             try {
                 script_run($service['install'], MICRO_SERVER.$identity);
             }catch (\Exception $exception){
-                if (!self::$devMode){
+                if (!DEVELOPMENT){
                     //删除服务安装包
                     FileService::rmdirs(MICRO_SERVER.$identity."/");
                 }
@@ -400,7 +399,7 @@ class MSService
         if (!pdo_insert(self::$tableName, $application)){
             try {
                 script_run($configs['uninstall'], MICRO_SERVER.$identity);
-                if (!self::$devMode){
+                if (!DEVELOPMENT){
                     //删除服务安装包
                     FileService::rmdirs(MICRO_SERVER.$identity."/");
                 }
@@ -411,7 +410,7 @@ class MSService
         }
         $this->getEvents(true);
         $this->uniLink($service);
-        if (!self::$devMode){
+        if (!DEVELOPMENT){
             if ($service['inextra'] && defined('MSERVER_EXTRA')){
                 CloudService::MoveDir(MSERVER_EXTRA.$identity, MICRO_SERVER.$identity);
             }
@@ -460,7 +459,7 @@ class MSService
             }
             $this->getEvents(true);
             $this->uniLink($manifest);
-            if (!self::$devMode){
+            if (!DEVELOPMENT){
                 //删除安装包文件
                 @unlink(MICRO_SERVER.$identity."/manifest.json");
             }
@@ -494,24 +493,25 @@ class MSService
 
     public function uninstall($identity){
         $service = self::getone($identity, false);
-        if (empty($service)) return error(-1,'该服务尚未安装');
-        $depends = self::checkDepend($identity);
-        if (is_error($depends)) return $depends;
-        try {
-            script_run($service['configs']['uninstall'], MICRO_SERVER.$identity);
-        }catch (\Exception $exception){
-            return error(-1,"卸载失败：".$exception->getMessage());
+        if (!empty($service)){
+            $depends = self::checkDepend($identity);
+            if (is_error($depends)) return $depends;
+            try {
+                script_run($service['configs']['uninstall'], MICRO_SERVER.$identity);
+            }catch (\Exception $exception){
+                return error(-1,"卸载失败：".$exception->getMessage());
+            }
+            if (!pdo_delete(self::$tableName,array('id'=>$service['id']))){
+                return error(-1,'卸载失败，请重试');
+            }
+            $this->getEvents(true);
+            pdo_delete("microserver_unilink", array("name"=>$identity));
+            $composerExists = file_exists(MICRO_SERVER.$identity."/composer.json");
+            if ($composerExists){
+                self::ComposerRemove("microserver/".$identity);
+            }
         }
-        if (!pdo_delete(self::$tableName,array('id'=>$service['id']))){
-            return error(-1,'卸载失败，请重试');
-        }
-        $this->getEvents(true);
-        pdo_delete("microserver_unilink", array("name"=>$identity));
-        $composerExists = file_exists(MICRO_SERVER.$identity."/composer.json");
-        if ($composerExists){
-            self::ComposerRemove("microserver/".$identity);
-        }
-        if (!self::$devMode){
+        if (!DEVELOPMENT){
             //删除服务安装包
             FileService::rmdirs(MICRO_SERVER.$identity."/");
         }
@@ -559,6 +559,7 @@ class MSService
             $process = new Process($command);
             $process->setWorkingDirectory($WorkingDirectory);
             $process->setEnv(['COMPOSER_HOME'=>self::ComposerHome()]);
+            $process->setTimeout(100);
             $process->start();
             $process->wait();
             if ($process->isSuccessful()) {
@@ -597,6 +598,7 @@ class MSService
             $process = new Process($command);
             $process->setWorkingDirectory($WorkingDirectory);
             $process->setEnv(['COMPOSER_HOME'=>self::ComposerHome()]);
+            $process->setTimeout(100);
             $process->start();
             $process->wait();
             if ($process->isSuccessful()) {
@@ -618,6 +620,7 @@ class MSService
             $process = new Process(["composer", "remove", $require]);
             $process->setWorkingDirectory($WorkingDirectory);
             $process->setEnv(['COMPOSER_HOME'=>self::ComposerHome()]);
+            $process->setTimeout(180);
             $process->start();
             $process->wait();
             if ($process->isSuccessful()) {
@@ -626,7 +629,7 @@ class MSService
         }catch (\Exception $exception){
             //Todo something
         }
-        echo "依赖组件卸载失败，请使用宝塔终端或其它ssh依次运行如下指令：<br/>";
+        echo "依赖组件卸载失败，请使用宝塔终端或其它ssh依次运行如下指令（执行完后请刷新此页面）：<br/>";
         dd(
             "cd ".$WorkingDirectory,
             "composer remove $require"
