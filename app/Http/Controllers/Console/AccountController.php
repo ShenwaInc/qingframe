@@ -182,7 +182,7 @@ class AccountController extends Controller
         $return['role'] = $this->role;
         session()->put('uniacid', $account['uniacid']);
         //读取可用服务
-        $servers = pdo_getall("microserver_unilink");
+        $servers = pdo_getall("microserver_unilink", array('status'=>1));
         //判断微服务权限，待完善
         $return['servers'] = $servers;
 

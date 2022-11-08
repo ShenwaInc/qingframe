@@ -52,16 +52,71 @@ class SettingController extends Controller
         return $this->message('检测完成！',url('console/setting'),'success');
     }
 
+    public function updateLog(){
+        $component = DB::table('gxswa_cloud')->where('type',0)->first(['id','identity','type','online','releasedate','rootpath']);
+        if (empty($component)) return $this->message('系统出现致命错误');
+        $cloudinfo = $this->checkcloud($component,1,true);
+        if (empty($cloudinfo['difference'])) return $this->message('当前系统与云端对比没有差异');
+        $structures = $this->makeStructure($cloudinfo['difference']);
+        return $this->globalview("console.structure", array(
+            'structures'=>$structures,
+            'total'=>count($structures)
+        ));
+    }
+
+    public function makeStructure($difference,$basedir='',$root='/'){
+        $structures = [];
+        foreach ($difference as $item){
+            if (is_array($item)){
+                $files = $this->makeStructure($item[1],$basedir.$item[0].'/',$root);
+                $structures = array_merge($structures, $files);
+            }else{
+                $fileinfo = explode('|',$item);
+                $structures[] = $root.$basedir.$fileinfo[0];
+            }
+        }
+        return $structures;
+    }
+
     public function selfUpgrade(){
         try {
-            Artisan::call('self:update');
+            //同步文件
+            $component = DB::table('gxswa_cloud')->where('type',0)->first(['id','identity','modulename','online','type','releasedate','rootpath']);
+            $cloudUpdate = CloudService::CloudUpdate($component['identity'],base_path().'/');
+            if (is_error($cloudUpdate)) return $this->message($cloudUpdate['message']);
+            //更新版本号
+            $cloudInfo = $this->checkcloud($component);
+            if (is_error($cloudInfo)) return $this->message($cloudInfo['message']);
+            DB::table('gxswa_cloud')->where('id',$component['id'])->update(array(
+                'version'=>$cloudInfo['version'],
+                'updatetime'=>TIMESTAMP,
+                'dateline'=>TIMESTAMP,
+                'releasedate'=>$cloudInfo['releasedate'],
+                'online'=>serialize(array(
+                    'isnew'=>false,
+                    'version'=>$cloudInfo['version'],
+                    'releasedate'=>$cloudInfo['releasedate']
+                ))
+            ));
+            CloudService::CloudEnv(array("APP_VERSION=".QingVersion,"APP_RELEASE=".QingRelease), array("APP_VERSION={$cloudInfo['version']}","APP_RELEASE={$cloudInfo['releasedate']}"));
         }catch (\Exception $exception){
             return $this->message($exception->getMessage());
         }
-        return $this->message('程序同步完成，即将操作升级...', url('console/setting/sysupgrade'),'success');
+        return $this->message('程序同步中，即将自动检测...', url('console/setting/sysupgrade'),'success');
     }
 
     public function SystemUpgrade(){
+        //升级文件对比
+        $component = DB::table('gxswa_cloud')->where('type',0)->first(['id','identity','type','online','releasedate','rootpath']);
+        if (!empty($component)){
+            $cloudinfo = $this->checkcloud($component);
+            if (!is_error($cloudinfo) && !empty($cloudinfo['hasDifference'])){
+                if (DEVELOPMENT){
+                    dd("以下文件同步失败，请检查文件夹权限：", $cloudinfo['difference']);
+                }
+                return $this->message('程序同步失败，请检查文件夹权限', wurl('setting'));
+            }
+        }
         try {
             Artisan::call('self:migrate');
             Artisan::call('route:clear');
@@ -135,11 +190,11 @@ class SettingController extends Controller
                         if ($module['errno']!=-1){
                             //已存在但未安装
                         }else{
-                            $com['action'] = '<a href="'.url('console/setting/cloudinst').'?nid='.$value['identity'].'" class="layui-btn layui-btn-sm layui-btn-normal confirm" data-text="确定要安装该应用？">安装</a>';
+                            $com['action'] = '<a href="'.wurl('module/require', array('nid'=>$value['identity'])).'" class="layui-btn layui-btn-sm layui-btn-normal confirm" data-text="确定要安装该应用？">安装</a>';
                         }
                     }
                 }else{
-                    $com['action'] = '<a href="'.url('console/setting/cloudinst').'?nid='.$value['identity'].'" class="layui-btn layui-btn-sm layui-btn-normal confirm" data-text="确定要安装该应用？">安装</a>';
+                    $com['action'] = '<a href="'.wurl('module/require', array('nid'=>$value['identity'])).'" class="layui-btn layui-btn-sm layui-btn-normal confirm" data-text="确定要安装该应用？">安装</a>';
                 }
                 $plugins[$identifie] = $com;
             }
@@ -162,8 +217,10 @@ class SettingController extends Controller
             return $this->SystemUpgrade();
         }elseif ($op=='market'){
             return $this->cloudMarket();
+        }elseif ($op=='updateLog'){
+            return $this->updateLog();
         }
-        $return = array('title'=>'站点设置','op'=>$op,'components'=>array());
+        $return = array('title'=>'系统管理','op'=>$op,'components'=>array());
         if (!isset($_W['setting']['page'])){
             $_W['setting']['page'] = $_W['page'];
         }
@@ -197,52 +254,8 @@ class SettingController extends Controller
             if (is_error($cloudinfo)){
                 return $this->message($cloudinfo['message']);
             }
-            $redirect = url('console/setting/plugin');
+            $redirect = wurl('module');
             return $this->message('检测完成！',$redirect,'success');
-        }elseif($op=='comremove'){
-            $component = DB::table('gxswa_cloud')->where('id',intval($_GPC['cid']))->first(['id','identity','modulename','type','releasedate','rootpath']);
-            if ($component['type']==1){
-                $identity = !empty($component['modulename']) ? $component['modulename'] : $component['identity'];
-                $uninstall = ModuleService::uninstall($identity);
-                if (is_error($uninstall)) return $this->message($uninstall['message']);
-            }else{
-                return $this->message("暂不支持此类应用卸载");
-            }
-            if (!DEVELOPMENT){
-                FileService::rmdirs(base_path($component['rootpath']));
-            }
-            return $this->message('卸载完成', url('console/setting/plugin'),'success');
-        }elseif($op=='plugininst'){
-            $install = ModuleService::install(trim($_GPC['nid']), 'addons', 'local');
-            if (is_error($install)) return $this->message($install['message']);
-            return $this->message('恭喜您，安装完成！', url('console/setting/plugin'),'success');
-        }elseif ($op=='pluginup'){
-            $identity = trim($_GPC['nid']);
-            $complete = ModuleService::upgrade($identity);
-            if (is_error($complete)) return $this->message($complete['message']);
-            CacheService::flush();
-            return $this->message('恭喜您，升级成功！', url('console/setting/plugin'),'success');
-        }elseif ($op=='pluginrm'){
-            $uninstall = ModuleService::uninstall(trim($_GPC['nid']));
-            if (is_error($uninstall)) return $this->message($uninstall['message']);
-            return $this->message('卸载完成', url('console/setting/plugin'),'success');
-        }elseif ($op=='cloudinst'){
-            $cloudrequire = CloudService::RequireModule(trim($_GPC['nid']));
-            if (is_error($cloudrequire)) return $this->message($cloudrequire['message']);
-            return $this->message('恭喜您，安装完成！', url('console/setting/plugin'),'success');
-        }elseif($op=='cloudUp'){
-            $identity = trim($_GPC['nid']);
-            $cloudIdentity = ModuleService::SysPrefix($identity);
-            $targetPath = public_path("addons/$identity/");
-            $res = CloudService::CloudUpdate($cloudIdentity, $targetPath);
-            if (is_error($res)){
-                return $this->message($res['HingWork']);
-            }
-            $moduleUpdate = ModuleService::upgrade($identity, 'cloud');
-            if (is_error($moduleUpdate)) return $this->message($moduleUpdate['message']);
-            $redirect = url('console/setting/plugin');
-            CacheService::flush();
-            return $this->message('恭喜您，升级成功！', $redirect,'success');
         }else{
             $framework = DB::table('gxswa_cloud')->where('type',0)->first(['id','version','identity','type','online','releasedate','rootpath']);
             $return['framework'] = $framework;
@@ -269,10 +282,11 @@ class SettingController extends Controller
         if ($compare==0) return $ugradeinfo;
         $structure = $ugradeinfo['structure'];
         $ugradeinfo['difference'] = $this->compare($component,$ugradeinfo['structure']);
+        $ugradeinfo['hasDifference'] = $this->hasdifference($ugradeinfo['difference'],$component['type']);
         if ($component['releasedate']<$ugradeinfo['releasedate'] && $compare<2){
             $ugradeinfo['isnew'] = true;
         }else{
-            $ugradeinfo['isnew'] = $this->hasdifference($ugradeinfo['difference'],$component['type']);
+            $ugradeinfo['isnew'] = $ugradeinfo['hasDifference'];
         }
         if ($fromcache){
             $onlineinfo = $component['online'] ? unserialize($component['online']) : array();

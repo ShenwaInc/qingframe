@@ -11,7 +11,7 @@
                     <a href="{{ url('console/server') }}">服务管理</a>
                 </li>
                 <li>
-                    <a href="{{ url('console/setting/plugin') }}">应用管理</a>
+                    <a href="{{ url('console/module') }}">应用管理</a>
                 </li>
             </ul>
         </div>

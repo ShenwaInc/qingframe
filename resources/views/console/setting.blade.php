@@ -6,14 +6,14 @@
 
         <div class="layui-tab fui-tab margin-bottom-xl">
             <ul class="layui-tab-title title_tab">
-                <li @if($op=='main')  class="layui-this" @endif>
+                <li class="layui-this">
                     <a href="{{ url('console/setting') }}">站点信息</a>
                 </li>
                 <li>
                     <a href="{{ url('console/server') }}">服务管理</a>
                 </li>
-                <li @if($op=='plugin')  class="layui-this" @endif>
-                    <a href="{{ url('console/setting/plugin') }}">应用管理</a>
+                <li>
+                    <a href="{{ url('console/module') }}">应用管理</a>
                 </li>
             </ul>
         </div>
@@ -120,9 +120,10 @@
                                 </td>
                                 <td class="text-right soild-after">
                                     @if($cloudinfo['isnew'])
-                                        <a href="{{ url('console/setting/selfupgrade') }}" class="text-red confirm" data-text="升级前请做好源码和数据备份，避免升级故障导致系统无法正常运行">一键升级</a>&nbsp;&nbsp;
+                                        <a href="{{ wurl('setting/selfupgrade') }}" class="text-red confirm" data-text="升级前请做好源码和数据备份，避免升级故障导致系统无法正常运行">一键升级</a>&nbsp;&nbsp;
+                                        <a href="{{ wurl('setting/updateLog') }}" class="text-blue ajaxshow">更新说明</a>&nbsp;&nbsp;
                                     @endif
-                                    <a href="{{ url('console/setting/detection') }}" class="text-blue ajaxshow">检测更新</a>
+                                    <a href="{{ wurl('setting/detection') }}" class="text-blue ajaxshow">检测更新</a>
                                 </td>
                             </tr>
                         </tbody>

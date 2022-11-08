@@ -12,7 +12,7 @@ class CloudService
     static $cloudapi = 'https://chat.gxit.org/app/index.php?i=4&c=entry&m=swa_supersale&do=api';
     static $cloudactive = 'https://chat.gxit.org/app/index.php?i=4&c=entry&m=swa_supersale&do=app&r=whotalkcloud.active';
     static $apilist = array('getcom'=>'cloud.vendor','rmcom'=>'cloud.vendor.remove','require'=>'cloud.install','structure'=>'cloud.structure','upgrade'=>'cloud.makepatch');
-    static $vendors = array('aop'=>'支付宝支付SDK','wxpayv3'=>'微信支付SDK','tim'=>'接口签名验证工具','getui'=>'APP推送SDK');
+    static $vendors = array('aop'=>'支付宝支付SDK','wxpayv3'=>'微信支付SDK','tim'=>'接口签名验证工具');
 
     static function ComExists($component){
         return is_dir(self::com_path("$component/"));
@@ -20,17 +20,13 @@ class CloudService
 
     static function LoadCom($component){
         if (!self::ComExists($component)) return error(-1,'未安装对应组件:'.self::$vendors[$component]);
-        $mainclass = array('aop'=>'AopClient','wxpayv3'=>'WxPayApi','tim'=>'TLSSigAPIv2','getui'=>'IGeTui');
+        $mainclass = array('aop'=>'AopClient','wxpayv3'=>'WxPayApi','tim'=>'TLSSigAPIv2');
         if (class_exists($mainclass[$component])) return true;
         $compath = self::com_path();
         switch ($component){
             case 'wxpayv3' :
                 require_once "{$compath}wxpayv3/WxPay.Api.php";
                 require_once "{$compath}wxpayv3/WxPay.Data.php";
-                break;
-            case 'alipay' :
-                require("{$compath}alipay/wappay/service/AlipayTradeService.php");
-                require_once("{$compath}alipay/wappay/buildermodel/AlipayTradeWapPayContentBuilder.php");
                 break;
             case 'aop' :
                 require_once "{$compath}aop/AopClient.php";
@@ -39,9 +35,6 @@ class CloudService
             case 'tim' :
                 include_once "{$compath}tim/TLSSigAPIv2.php";
                 break;
-            case 'getui' :
-                require_once "{$compath}getui/autoload.php";
-                break;
             default :
                 break;
         }
@@ -49,7 +42,7 @@ class CloudService
     }
 
     static function RequireCom(){
-        $hasCom = self::ComExists('getui');
+        $hasCom = self::ComExists('pinyin');
         if ($hasCom){
             return self::CloudUpdate('swa_whotalk_componet',self::com_path());
         }else{
@@ -132,13 +125,13 @@ class CloudService
                 $com['action'] = '<div class="layui-btn-group">';
                 if (!empty($com['cloudinfo']) && $com['cloudinfo']['isnew']){
                     if($com['cloudinfo']['isLocal']){
-                        $com['action'] .= '<a href="'.wurl('setting/pluginup', array('nid'=>$com['modulename'])).'" class="layui-btn layui-btn-sm layui-btn-danger confirm" data-text="升级前请做好源码和数据备份，避免升级故障导致系统无法正常运行">升级</a>';
+                        $com['action'] .= '<a href="'.wurl('module/upgrade', array('nid'=>$com['modulename'])).'" class="layui-btn layui-btn-sm layui-btn-danger confirm" data-text="升级前请做好源码和数据备份，避免升级故障导致系统无法正常运行">升级</a>';
                     }else{
-                        $com['action'] .= '<a href="'.url('console/setting/cloudUp').'?nid='.$com['modulename'].'" class="layui-btn layui-btn-sm layui-btn-danger confirm" data-text="升级前请做好源码和数据备份，避免升级故障导致系统无法正常运行">升级</a>';
+                        $com['action'] .= '<a href="'.wurl('module/update', array('nid'=>$com['modulename'])).'" class="layui-btn layui-btn-sm layui-btn-danger confirm" data-text="升级前请做好源码和数据备份，避免升级故障导致系统无法正常运行">升级</a>';
                     }
                 }
-                $com['action'] .= '<a href="'.url('console/setting/comcheck').'?cid='.$com['id'].'" class="layui-btn layui-btn-sm layui-btn-normal ajaxshow">'.(empty($com['cloudinfo']) ? '检测更新' : '重新检测').'</a>';
-                $com['action'] .= '<a href="'.url('console/setting/comremove').'?cid='.$com['id'].'" class="layui-btn layui-btn-sm layui-btn-primary confirm" data-text="即将卸载该应用并删除应用产生的所有数据，是否确定要卸载？">卸载</a></div>';
+                $com['action'] .= '<a href="'.wurl('setting/comcheck', array('cid'=>$com['id'])).'" class="layui-btn layui-btn-sm layui-btn-normal ajaxshow">'.(empty($com['cloudinfo']) ? '检测更新' : '重新检测').'</a>';
+                $com['action'] .= '<a href="'.wurl('module/remove', array('nid'=>$com['modulename'])).'" class="layui-btn layui-btn-sm layui-btn-primary confirm" data-text="即将卸载该应用并删除应用产生的所有数据，是否确定要卸载？">卸载</a></div>';
                 $plugins[$com['modulename']] = $com;
             }
         }
@@ -158,6 +151,7 @@ class CloudService
                 $com['installtime'] = '<span class="layui-badge">未安装</span>';
                 $com['addtime'] = 0;
                 $com['action'] = '';
+                //已安装
                 if ($ManiFest->installed){
                     if (isset($plugins[$identity])){
                         $com['installtime'] = $plugins[$identity]['installtime'];
@@ -176,14 +170,14 @@ class CloudService
                                     'releasedate'=>$com['releasedate'],
                                     'isnew'=>true
                                 );
-                                $com['action'] .= '<a href="'.wurl('setting/pluginup', array('nid'=>$Module['name'])).'" class="layui-btn layui-btn-sm layui-btn-danger confirm" data-text="升级前请做好源码和数据备份，避免升级故障导致系统无法正常运行">升级</a>';
+                                $com['action'] .= '<a href="'.wurl('module/upgrade', array('nid'=>$Module['name'])).'" class="layui-btn layui-btn-sm layui-btn-danger confirm" data-text="升级前请做好源码和数据备份，避免升级故障导致系统无法正常运行">升级</a>';
                                 $com['version'] = $Module['version'];
                             }
                         }
                     }
-                    $com['action'] .= '<a href="'.url('console/setting/pluginrm').'?nid='.$identity.'" class="layui-btn layui-btn-sm layui-btn-primary confirm" data-text="即将卸载该应用并删除应用产生的所有数据，是否确定要卸载？">卸载</a></div>';
+                    $com['action'] .= '<a href="'.wurl('module/remove', array('nid'=>$identity)).'" class="layui-btn layui-btn-sm layui-btn-primary confirm" data-text="即将卸载该应用并删除应用产生的所有数据，是否确定要卸载？">卸载</a></div>';
                 }elseif(DEVELOPMENT){
-                    $com['action'] = '<a href="'.url('console/setting/plugininst').'?nid='.$identity.'" class="layui-btn layui-btn-sm layui-btn-normal confirm" data-text="确定要安装该应用？">安装</a>';
+                    $com['action'] = '<a href="'.wurl('module/install', array('nid'=>$identity)).'" class="layui-btn layui-btn-sm layui-btn-normal confirm" data-text="确定要安装该应用？">安装</a>';
                 }
                 $plugins[$identity] = $com;
             }
@@ -214,7 +208,7 @@ class CloudService
                     if (version_compare($local['version'], $value['release']['version'], '<') || $local['releasedate']<$releaseDate){
                         $cloudinfo['isnew'] = true;
                         if (empty($local['cloudinfo']) || !$local['cloudinfo']['isnew']){
-                            $local['action'] = '<a href="'.url('console/setting/cloudUp').'?nid='.$identify.'" class="layui-btn layui-btn-sm layui-btn-danger confirm" data-text="升级前请做好源码和数据备份，避免升级故障导致系统无法正常运行">升级</a>'.$local['action'];
+                            $local['action'] = '<a href="'.wurl('module/update', array('nid'=>$identity)).'" class="layui-btn layui-btn-sm layui-btn-danger confirm" data-text="升级前请做好源码和数据备份，避免升级故障导致系统无法正常运行">升级</a>'.$local['action'];
                         }
                     }
                     $local['cloudinfo'] = $cloudinfo;
@@ -235,7 +229,7 @@ class CloudService
                     $com['lastupdate'] = '<span class="layui-badge">未安装</span>';
                     $com['cloudinfo'] = array();
                     $com['installtime'] = '-';
-                    $com['action'] = '<a href="'.url('console/setting/cloudinst').'?nid='.$value['identity'].'" class="layui-btn layui-btn-sm layui-btn-normal confirm" data-text="确定要安装该应用？">安装</a>';
+                    $com['action'] = '<a href="'.wurl('module/require', array('nid'=>$value['identity'])).'" class="layui-btn layui-btn-sm layui-btn-normal confirm" data-text="确定要安装该应用？">安装</a>';
                     $plugins[$identify] = $com;
                 }
             }
@@ -457,8 +451,12 @@ class CloudService
         $result = json_decode($res['content'],true);
         if(empty($result) && $return) return $res['content'];
         if (isset($result['message']) && isset($result['type'])){
-            if ($result['type']!='success' && !is_array($result['message']) && !$result['redirect']){
-                return error(-1,$result['message']);
+            if ($result['type']!='success' && !is_array($result['message'])){
+                $respone = error(-1,$result['message']);
+                if (!empty($result['redirect'])){
+                    $respone['redirect'] = $result['redirect'];
+                }
+                return $respone;
             }
         }
         return $result;
@@ -470,6 +468,10 @@ class CloudService
         $cachekey = CacheService::system_key('HingWork:Authorize:Active');
         $authorize = Cache::get($cachekey,$default);
         $res = self::CloudApi('',array('r'=>'cloud.active','identity'=>config('system.identity')));
+        $authorize['redirect'] = self::$cloudactive;
+        if (!empty($res['redirect'])){
+            $authorize['redirect'] = trim($res['redirect']);
+        }
         if (is_error($res)){
             $authorize['state'] = $res['message'];
             return $authorize;
@@ -479,10 +481,6 @@ class CloudService
             return $authorize;
         }
 
-        $authorize['redirect'] = self::$cloudactive;
-        if (!empty($res['redirect'])){
-            $authorize['redirect'] = trim($res['redirect']);
-        }
         $authorize['siteid'] = $res['site']['id'];
         if ($res['site']['status']==1 && $res['authorize']['status']==1){
             $authorize['expiretime'] = $res['authorize']['expiretime'];

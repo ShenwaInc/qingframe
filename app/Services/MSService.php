@@ -68,7 +68,7 @@ class MSService
      * @param $manifest
      * @return array
      */
-    public function getApplication(array $keys, $manifest)
+    public function getApplication($keys, $manifest)
     {
         $application = post_var($keys, $manifest['application']);
         $application['drive'] = $manifest['drive'];
@@ -144,13 +144,13 @@ class MSService
         return $service;
     }
 
-    public function cloudInstall($identity){
+    public function cloudInstall($identity, $autoInstall=false){
         $service = $this->cloudInfo($identity);
         if (is_error($service)) return $service;
         $cloudIdentity = "microserver_".$identity;
         $require = CloudService::CloudRequire($cloudIdentity, MICRO_SERVER.$identity."/");
         if (is_error($require)) return $require;
-        return $this->install($identity, true);
+        return $this->install($identity, true, $autoInstall);
     }
 
     public static function cloudserver($identity, $nocache=false){
@@ -294,11 +294,11 @@ class MSService
             }
             if ($this->localexist($identity)){
                 //未安装，但是本地存在则直接安装
-                $install = $this->install($identity);
+                $install = $this->install($identity, false, true);
                 if (is_error($install)) return error(-1, "安装依赖的服务({$identity})时发生异常：{$install['message']}");
             }else{
                 //本地不存在则从云端安装
-                $installCloud = $this->cloudInstall($identity);
+                $installCloud = $this->cloudInstall($identity, true);
                 if (is_error($installCloud)) return error(-1, "安装依赖的服务({$identity})时发生异常：{$installCloud['message']}");
             }
         }
@@ -312,7 +312,7 @@ class MSService
             $depends = array();
             foreach ($servers as $value){
                 $configs = $value['configs'] ? unserialize($value['configs']) : [];
-                if (!empty($configs['require']) && in_array($identity, $configs['require'])){
+                if (!empty($configs['require']) && in_array($identity, $configs['require'], true)){
                     $depends[$value['identity']] = $value['name'];
                 }
             }
@@ -361,7 +361,7 @@ class MSService
         return $return;
     }
 
-    public function install($identity, $fromCloud=false){
+    public function install($identity, $fromCloud=false, $autoInstall=false){
         if ($this->isexist($identity)) return true;
         $service = $this->getmanifest($identity);
         if (is_error($service)) return $service;
@@ -387,6 +387,10 @@ class MSService
             try {
                 script_run($service['install'], MICRO_SERVER.$identity);
             }catch (\Exception $exception){
+                if (!self::$devMode){
+                    //删除服务安装包
+                    FileService::rmdirs(MICRO_SERVER.$identity."/");
+                }
                 return error(-1,"安装失败：".$exception->getMessage());
             }
         }
@@ -394,6 +398,15 @@ class MSService
         $application['status'] = 1;
         $application['addtime'] = $application['dateline'] = TIMESTAMP;
         if (!pdo_insert(self::$tableName, $application)){
+            try {
+                script_run($configs['uninstall'], MICRO_SERVER.$identity);
+                if (!self::$devMode){
+                    //删除服务安装包
+                    FileService::rmdirs(MICRO_SERVER.$identity."/");
+                }
+            }catch (\Exception $exception){
+                //Todo something
+            }
             return error(-1,'安装失败，请重试');
         }
         $this->getEvents(true);
@@ -402,13 +415,10 @@ class MSService
             if ($service['inextra'] && defined('MSERVER_EXTRA')){
                 CloudService::MoveDir(MSERVER_EXTRA.$identity, MICRO_SERVER.$identity);
             }
-            if ($service['bindcloud']){
-                @unlink(MICRO_SERVER.$identity."/manifest.json");
-            }
+            @unlink(MICRO_SERVER.$identity."/manifest.json");
         }
-        //安装composer
-        if (file_exists(MICRO_SERVER.$identity."/composer.json")){
-            self::ComposerRequire(MICRO_SERVER.$identity."/", "microserver/".$identity);
+        if (file_exists(MICRO_SERVER.$identity."/composer.json") && $autoInstall){
+            self::ComposerFail($identity, "");
         }
         return true;
     }
@@ -454,10 +464,6 @@ class MSService
                 //删除安装包文件
                 @unlink(MICRO_SERVER.$identity."/manifest.json");
             }
-            //安装composer
-            if (file_exists(MICRO_SERVER.$identity."/composer.json")){
-                self::ComposerRequire(MICRO_SERVER.$identity."/", "microserver/".$identity);
-            }
             return true;
         }
         return error(-1,"当前服务已经是最新版本");
@@ -500,6 +506,11 @@ class MSService
             return error(-1,'卸载失败，请重试');
         }
         $this->getEvents(true);
+        pdo_delete("microserver_unilink", array("name"=>$identity));
+        $composerExists = file_exists(MICRO_SERVER.$identity."/composer.json");
+        if ($composerExists){
+            self::ComposerRemove("microserver/".$identity);
+        }
         if (!self::$devMode){
             //删除服务安装包
             FileService::rmdirs(MICRO_SERVER.$identity."/");
@@ -516,7 +527,7 @@ class MSService
     public static function ComposerRequire($basePath, $name){
         $composer = $basePath."composer.json";
         if (!file_exists($composer)) return true;
-        $WorkingDirectory = base_path("/");
+        $WorkingDirectory = base_path() . "/";
         if (DEVELOPMENT){
             if (file_exists($basePath."composer.lock")){
                 return self::ComposerUpdate($basePath, $name);
@@ -526,7 +537,7 @@ class MSService
         }else{
             $JSON = file_get_contents($composer);
             $composerObj = json_decode($JSON, true);
-            $composerVer = $composerObj['version'] ?? "";
+            $composerVer = trim($composerObj['version']);
             $LOCK = file_get_contents($WorkingDirectory."composer.lock");
             $lockObj = json_decode($LOCK, true);
             if (!empty($lockObj['packages'])){
@@ -539,19 +550,25 @@ class MSService
                     }
                 }
             }
-            $command = ['composer', 'require', $name, $composerVer?:'dev-main'];
+            $command = ['composer', 'require', $name];
+            if (!empty($composerVer)){
+                $command[] = $composerVer;
+            }
         }
         try {
-            @ini_set('max_execution_time', 0);
             $process = new Process($command);
             $process->setWorkingDirectory($WorkingDirectory);
             $process->setEnv(['COMPOSER_HOME'=>self::ComposerHome()]);
-            $process->run();
+            $process->start();
+            $process->wait();
             if ($process->isSuccessful()) {
                 return true;
+            }else{
+                self::ComposerFail($name, $process->getOutput());
             }
         }catch (\Exception $exception){
             //Todo something
+            self::ComposerFail($name, $exception->getMessage());
         }
         return false;
     }
@@ -563,7 +580,7 @@ class MSService
         }else{
             $WorkingDirectory = base_path("/");
             if (empty($composerVer)){
-                $composerVer = "dev-main";
+                $composerVer = "";
                 $composer = $basePath."composer.json";
                 $JSON = file_get_contents($composer);
                 $composerObj = json_decode($JSON, true);
@@ -571,27 +588,65 @@ class MSService
                     $composerVer = $composerObj['version'];
                 }
             }
-            $command = ['composer', 'require', $name, $composerVer];
+            $command = ['composer', 'require', $name];
+            if (!empty($composerVer)){
+                $command[] = $composerVer;
+            }
         }
         try {
-            @ini_set('max_execution_time', 0);
             $process = new Process($command);
             $process->setWorkingDirectory($WorkingDirectory);
             $process->setEnv(['COMPOSER_HOME'=>self::ComposerHome()]);
-            $process->run();
+            $process->start();
+            $process->wait();
+            if ($process->isSuccessful()) {
+                return true;
+            }else{
+                self::ComposerFail($name, $process->getOutput(), $command);
+            }
+        }catch (\Exception $exception){
+            //Todo something
+            self::ComposerFail($name, $exception->getMessage(), $command);
+        }
+        return false;
+    }
+
+    public static function ComposerRemove($require){
+        if (DEVELOPMENT) return true;
+        $WorkingDirectory = base_path()."/";
+        try {
+            $process = new Process(["composer", "remove", $require]);
+            $process->setWorkingDirectory($WorkingDirectory);
+            $process->setEnv(['COMPOSER_HOME'=>self::ComposerHome()]);
+            $process->start();
+            $process->wait();
             if ($process->isSuccessful()) {
                 return true;
             }
         }catch (\Exception $exception){
             //Todo something
         }
-        return false;
+        echo "依赖组件卸载失败，请使用宝塔终端或其它ssh依次运行如下指令：<br/>";
+        dd(
+            "cd ".$WorkingDirectory,
+            "composer remove $require"
+        );
+    }
+
+    public static function ComposerFail($name, $output, $command=[]){
+        $logPath = MICRO_SERVER . str_replace("microserver/", "", $name) . "/composer.error";
+        if (!empty($command)){
+            $output = implode(" ", $command) . "：" . $output;
+        }
+        file_put_contents($logPath, $output);
     }
 
     public static function ComposerHome(){
         $php_uname = php_uname();
         if (strexists($php_uname, "Windows")){
             return "C:\Users\<user>\AppData\Roaming\Composer";
+        }elseif (strexists($php_uname, "Linux")){
+            return "/root/.composer";
         }elseif (strexists($php_uname, "nux")){
             return "/home/<user>/.composer";
         }elseif (strexists($php_uname, 'OSX')){

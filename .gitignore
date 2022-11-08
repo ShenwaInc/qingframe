@@ -22,6 +22,5 @@ yarn-error.log
 /public/data/
 /public/attachment
 /swasocket
-/servers/*
 /composer.lock
 /composer.json

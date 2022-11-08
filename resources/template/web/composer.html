@@ -12,8 +12,12 @@
                     <pre class="layui-code" lay-title="使用Composer安装依赖包">
 cd {$WorkingDirectory}
 
-composer {if DEVELOPMENT}update{else}require {$requireName} {$composerVer}{/if}</pre>
-                    <div class="margin-bottom"><strong>安装好后，请<a href="{$_W['siteurl']}" class="text-blue">刷新</a>此页面，或返回上一步操作</strong></div>
+composer {if DEVELOPMENT}update{else}require {$requireName} {$composerVer}{/if}{if !empty($composerErr)}
+
+rm -f {$composerErr}{/if}</pre>
+                    <div class="margin-bottom">
+                        {if !empty($composerNext)}{$composerNext}{else}<strong>安装好后，请<a href="{$_W['siteurl']}" class="text-blue">刷新</a>此页面，或返回上一步操作</strong>{/if}
+                    </div>
                     <blockquote class="layui-elem-quote">如果您的服务器没有安装Composer，请参考如下指令，或者参考<a href="https://pkg.xyz/#how-to-install-composer" target="_blank" class="color-default">Composer官网的安装说明</a></blockquote>
                     <pre class="layui-code" lay-title="安装Composer">
 yum install -y composer

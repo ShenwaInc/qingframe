@@ -25,7 +25,7 @@ class selfup extends Command
      *
      * @var string
      */
-    protected $description = 'Whotalk framework upgrade';
+    protected $description = 'Framework upgrade';
 
     /**
      * Create a new command instance.
@@ -58,12 +58,15 @@ class selfup extends Command
 
         //更新版本信息
         $arguments = $this->argument();
-        $system = config('system');
+        $system = array(
+            'version'=>env("APP_VERSION"),
+            'release'=>(int)env("APP_RELEASE")
+        );
         if (empty($arguments['version'])){
             $ugradeinfo = CloudService::CloudApi('structure',array('identity'=>$component['identity']));
             if (is_error($ugradeinfo)){
                 $arguments['version'] = $system['version'];
-                $arguments['release'] = intval($system['release']) + 1;
+                $arguments['release'] = $system['release'] + 1;
             }else{
                 $arguments['version'] = $ugradeinfo['version'];
                 $arguments['release'] = $ugradeinfo['releasedate'];
@@ -82,7 +85,7 @@ class selfup extends Command
         ));
         CloudService::CloudEnv(array("APP_VERSION={$system['version']}","APP_RELEASE={$system['release']}"), array("APP_VERSION={$arguments['version']}","APP_RELEASE={$arguments['release']}"));
 
-        $this->info('Whotalk framework upgrade successfully.');
+        $this->info('Framework upgrade successfully.');
         return true;
     }
 }
