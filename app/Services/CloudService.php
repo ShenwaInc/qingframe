@@ -12,62 +12,7 @@ class CloudService
     static $cloudapi = 'https://chat.gxit.org/app/index.php?i=4&c=entry&m=swa_supersale&do=api';
     static $cloudactive = 'https://chat.gxit.org/app/index.php?i=4&c=entry&m=swa_supersale&do=app&r=whotalkcloud.active';
     static $apilist = array('getcom'=>'cloud.vendor','rmcom'=>'cloud.vendor.remove','require'=>'cloud.install','structure'=>'cloud.structure','upgrade'=>'cloud.makepatch');
-    static $vendors = array('aop'=>'支付宝支付SDK','wxpayv3'=>'微信支付SDK','tim'=>'接口签名验证工具');
-
-    static function ComExists($component){
-        return is_dir(self::com_path("$component/"));
-    }
-
-    static function LoadCom($component){
-        if (!self::ComExists($component)) return error(-1,'未安装对应组件:'.self::$vendors[$component]);
-        $mainclass = array('aop'=>'AopClient','wxpayv3'=>'WxPayApi','tim'=>'TLSSigAPIv2');
-        if (class_exists($mainclass[$component])) return true;
-        $compath = self::com_path();
-        switch ($component){
-            case 'wxpayv3' :
-                require_once "{$compath}wxpayv3/WxPay.Api.php";
-                require_once "{$compath}wxpayv3/WxPay.Data.php";
-                break;
-            case 'aop' :
-                require_once "{$compath}aop/AopClient.php";
-                require_once "{$compath}aop/request/AlipayTradeQueryRequest.php";
-                break;
-            case 'tim' :
-                include_once "{$compath}tim/TLSSigAPIv2.php";
-                break;
-            default :
-                break;
-        }
-        return true;
-    }
-
-    static function RequireCom(){
-        $hasCom = self::ComExists('pinyin');
-        if ($hasCom){
-            return self::CloudUpdate('swa_whotalk_componet',self::com_path());
-        }else{
-            $requirecom = self::CloudRequire('swa_whotalk_componet',self::com_path());
-            if (!is_error($requirecom)){
-                //组件包下载标记
-                DB::table('gxswa_cloud')->updateOrInsert(array(
-                        'identity'=>'swa_whotalk_componet'
-                    ),array(
-                        'name'=>'Whotalk国际版依赖包',
-                        'modulename'=>'',
-                        'type'=>2,
-                        'logo'=>'https://shenwahuanan.oss-cn-shenzhen.aliyuncs.com/images/4/2021/08/Mpar00P5PjJPrxAW1FWCP3CPz87qjc.png',
-                        'website'=>'https://www.whotalk.com.cn/',
-                        'version'=>'1.0.8',
-                        'releasedate'=>2022051208,
-                        'rootpath'=>'',
-                        'online'=>'',
-                        'addtime'=>TIMESTAMP,
-                        'dateline'=>TIMESTAMP
-                    ));
-            }
-            return $requirecom;
-        }
-    }
+    static $vendors = array('wxpayv3'=>'微信支付SDK','tim'=>'接口签名验证工具');
 
     static function RequireModule($identity,$path='addons'){
         $modulePre = ModuleService::SysPrefix();
@@ -141,10 +86,14 @@ class CloudService
             foreach ($modules as $value){
                 $identity = str_replace(array(public_path('addons/'),"/Manifest.php"),'', $value);
                 if (empty($identity)) continue;
-                $className = ucfirst($identity)."_Manifest";
-                $ManiFest = require_once $value;
-                if (!isset($ManiFest->application)) continue;
-                $com = $ManiFest->application;
+                try {
+                    $className = ucfirst($identity)."_Manifest";
+                    $ManiFest = require_once $value;
+                    if (!isset($ManiFest->application)) continue;
+                    $com = $ManiFest->application;
+                }catch (\Exception $exception){
+                    continue;
+                }
                 $com['logo'] = asset($com['logo']);
                 $com['website'] = $com['url'];
                 $com['cloudinfo'] = array();

@@ -21,11 +21,16 @@ class AppRuntime
      * @return mixed
      */
     public function handle(Request $request, Closure $next){
+        $this->Runtime($request->input('i'), $request->header('x-auth-token'));
+        return $next($request);
+    }
+
+    public function Runtime($uniacid, $authToken=null){
+        if (empty($uniacid)) abort(404,'找不到该平台');
         global $_W;
         SettingService::Load();
+        $_W['session_id'] = session()->getId();
         $_W['page'] = $_W['setting']['page'];
-        $uniacid = $request->input('i',0);
-        if (empty($uniacid)) abort(404,'找不到该平台');
         $_W['uniacid'] = intval($uniacid);
         $_W['account'] = AccountService::FetchUni($uniacid);
         $_W['acid'] = intval($_W['account']['acid']) ?? $_W['uniacid'];
@@ -40,9 +45,8 @@ class AppRuntime
             'support_oauthinfo' => $_W['account']->supportOauthInfo,
             'support_jssdk' => $_W['account']->supportJssdk,
         );
-        //自动登录
-        $authToken = $request->header('x-auth-token');
         if (!empty($authToken)){
+            //自动登录
             MemberService::UniAuth($authToken);
         }
         if (!$_W['member']['uid'] && !empty($_W['openid'])){
@@ -55,6 +59,5 @@ class AppRuntime
             }
         }
         $_W['attachurl'] = FileService::SetAttachUrl();
-        return $next($request);
     }
 }

@@ -47,6 +47,9 @@ class ServerController extends Controller
         if (is_error($data)){
             return $this->message($data['message']);
         }
+        if (!is_array($data)){
+            return $data;
+        }
         if (isset($data['message']) && isset($data['type'])){
             return $this->message($data["message"], $data['redirect'], $data['type']);
         }

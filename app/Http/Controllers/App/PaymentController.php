@@ -12,7 +12,7 @@ class PaymentController extends Controller
     //支付回调：异步
     public function notify(Request $request, $payment){
         $params = $request->all();
-        $result = PayService::notify($payment,$params);
+        $result = serv("payment")->notify($payment,$params);
         $params['result'] = $result;
         Log::info('PaymentNotify'.ucfirst($payment),$params);
         if (is_error($result)){
@@ -35,7 +35,7 @@ class PaymentController extends Controller
     public function response(Request $request, $payment){
         serv("weengine")->func("app");
         $params = $request->all();
-        $result =  PayService::notify($payment,$params, 'return');
+        $result =  serv("payment")->Notify($payment,$params, 'return');
         if (is_error($result)){
             return $this->message($result['message']);
         }

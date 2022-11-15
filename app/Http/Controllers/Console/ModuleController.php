@@ -64,7 +64,7 @@ class ModuleController extends Controller
     public function doUpgrade(Request $request){
         $identity = $request->input('nid', "");
         $complete = ModuleService::upgrade($identity);
-        if (is_error($complete)) return $this->message($complete['message']);
+        if (is_error($complete)) return $this->message($complete['message'], trim($complete['redirect']));
         CacheService::flush();
         return $this->message('恭喜您，升级成功！', url('console/module'),'success');
     }

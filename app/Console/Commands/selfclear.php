@@ -55,6 +55,8 @@ class selfclear extends Command
             app_path('Services/SocketService.php'),
             app_path('Services/NoticeService.php'),
             app_path('Services/MenuService.php'),
+            app_path('Services/PaymentService.php'),
+            app_path('Services/PayService.php'),
             app_path('Utils/WeEngine.php'),
             app_path('Http/Controllers/Auth/RegisterController.php'),
             app_path('Http/Controllers/Api/WechatController.php'),

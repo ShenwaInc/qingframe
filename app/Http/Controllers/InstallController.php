@@ -20,12 +20,14 @@ class InstallController extends Controller
 
     public $installer = ['isagree'=>0,'database'=>array(),'dbconnect'=>0,'authkey'=>''];
 
-    function __construct(){
+    public function checkInstalled(){
         $installedfile = base_path('storage/installed.bin');
         if(file_exists($installedfile)){
             abort(404);
-            die();
         }
+    }
+
+    function __construct(){
         $reset = (int)\request()->input('reset',0);
         if ($reset==1){
             Cache::forget('installer');
@@ -42,6 +44,7 @@ class InstallController extends Controller
 
     //
     public function index(){
+        $this->checkInstalled();
         if ($this->installer['isagree']){
             return redirect()->action('installController@database');
         }
@@ -49,6 +52,7 @@ class InstallController extends Controller
     }
 
     public function install(Request $request){
+        $this->checkInstalled();
         global $_W;
         if (!$request->isMethod('post')){
             return $this->message('安装失败，请重试');
@@ -239,6 +243,7 @@ class InstallController extends Controller
     }
 
     public function agreement(){
+        $this->checkInstalled();
         $isagree = (int)\request('isagree');
         $this->installer['isagree'] = $isagree;
         if (!Cache::put('installer',$this->installer,7200)){
@@ -248,6 +253,7 @@ class InstallController extends Controller
     }
 
     public function database(){
+        $this->checkInstalled();
         if (!$this->installer['isagree']){
             return redirect()->action('installController@index');
         }
@@ -255,6 +261,7 @@ class InstallController extends Controller
     }
 
     public function dbDetect(Request $request){
+        $this->checkInstalled();
         if ($request->isMethod('post')) {
             $dbconfig = $request->input('dbconfig');
             if (empty($dbconfig)) return $this->message();
@@ -326,6 +333,7 @@ class InstallController extends Controller
     }
 
     public function render(){
+        $this->checkInstalled();
         if (!$this->installer['isagree']){
             return redirect()->action('installController@index');
         }

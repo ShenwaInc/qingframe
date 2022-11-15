@@ -118,7 +118,10 @@ class ModuleService
         //执行升级脚本
         if (method_exists($ManiFest,'upgrader')){
             try {
-                $ManiFest->upgrader();
+                $res = $ManiFest->upgrader();
+                if (is_error($res)){
+                    return $res;
+                }
             } catch (\Exception $exception){
                 return error(-1,'升级失败：运行脚本出现错误:'.$exception->getMessage());
             }
