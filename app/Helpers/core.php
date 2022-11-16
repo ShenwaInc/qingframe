@@ -393,6 +393,23 @@ function pdo_count($tablename, $condition = array(), $cachetime = 15) {
     return DB::table($tablename)->where($condition)->count();
 }
 
+function pdo_indexexists($tablename, $indexname = ''){
+    if (!Schema::hasTable($tablename)){
+        return false;
+    }
+    if (!empty($indexname)){
+        $indexs = DB::select("SHOW INDEX FROM ".tablename($tablename));
+        if (!empty($indexs) && is_array($indexs)) {
+            foreach ($indexs as $row) {
+                if ($row['Key_name'] == $indexname) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
 function pdo_fieldexists($tablename, $fieldname = '') {
     return Schema::hasColumn($tablename,$fieldname);
 }

@@ -56,7 +56,7 @@ class SettingController extends Controller
         $component = DB::table('gxswa_cloud')->where('type',0)->first(['id','identity','type','online','releasedate','rootpath']);
         if (empty($component)) return $this->message('系统出现致命错误');
         $cloudinfo = $this->checkcloud($component,1,true);
-        if (empty($cloudinfo['difference'])) return $this->message('当前系统与云端对比没有差异');
+        if (empty($cloudinfo['difference'])) return $this->message('当前系统已经是最新版本');
         $structures = $this->makeStructure($cloudinfo['difference']);
         return $this->globalview("console.structure", array(
             'structures'=>$structures,
@@ -250,12 +250,16 @@ class SettingController extends Controller
         }elseif ($op=='comcheck'){
             $component = DB::table('gxswa_cloud')->where('id',intval($_GPC['cid']))->first(['id','identity','type','online','releasedate','rootpath']);
             if (empty($component)) return $this->message('找不到该服务组件');
-            $cloudinfo = $this->checkcloud($component);
+            $cloudinfo = $this->checkcloud($component, 1, true);
             if (is_error($cloudinfo)){
                 return $this->message($cloudinfo['message']);
             }
-            $redirect = wurl('module');
-            return $this->message('检测完成！',$redirect,'success');
+            if (empty($cloudinfo['difference'])) return $this->message('该应用已升级到最新版本');
+            $structures = $this->makeStructure($cloudinfo['difference']);
+            return $this->globalview("console.structure", array(
+                'structures'=>$structures,
+                'total'=>count($structures)
+            ));
         }else{
             $framework = DB::table('gxswa_cloud')->where('type',0)->first(['id','version','identity','type','online','releasedate','rootpath']);
             $return['framework'] = $framework;
