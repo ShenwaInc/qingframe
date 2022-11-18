@@ -254,7 +254,7 @@ class SettingController extends Controller
             if (is_error($cloudinfo)){
                 return $this->message($cloudinfo['message']);
             }
-            if (empty($cloudinfo['difference'])) return $this->message('该应用已升级到最新版本');
+            if (empty($cloudinfo['difference'])) return $this->message('该应用已升级到最新版本', "", "success");
             $structures = $this->makeStructure($cloudinfo['difference']);
             return $this->globalview("console.structure", array(
                 'structures'=>$structures,

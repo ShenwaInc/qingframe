@@ -276,6 +276,9 @@ class CloudService
         );
         $zipcontent = self::CloudApi('upgrade',$data,true);
         if (is_error($zipcontent)) return $zipcontent;
+        if (empty($zipcontent)){
+            return error(-1,'补丁获取失败');
+        }
         if (!$patch){
             $patch = base_path('storage/patch/');
         }
@@ -284,8 +287,8 @@ class CloudService
         }
         $filename = FileService::file_random_name($patch,'zip');
         $fullname = $patch.$filename;
-        if (false == file_put_contents($fullname, $zipcontent)) {
-            return error(-1,'补丁下载失败：权限不足');
+        if (!file_put_contents($fullname, $zipcontent)) {
+            return error(-1,'补丁下载失败：请检查文件权限');
         }
         $patchpath = $patch.$identity.$ugradeinfo['releasedate'].'/';
         if (is_dir($patchpath)){
