@@ -238,10 +238,12 @@ class MicroService
      * 事件广播
      * @param string $listener 监听器名称，一般是英文名
      * @param array|null $data 广播数据
-     * @param array|null|mixed 服务构造参数
+     * @param string|null 服务构造参数
      * @return bool
      */
-    public function Event($listener, $data=array(), $param=null){
+    public function Event($listener, $data=array(), $channel='global'){
+        $event = "$channel.$listener";
+        return event($event, $data);
         if (empty($this->events)){
             $globalEvents = Cache::get("GLOBALS_EVENTS", array());
             if(empty($globalEvents)){
@@ -257,7 +259,7 @@ class MicroService
         $servers = $this->events[$listener];
         foreach ($servers as $serv){
             try {
-                serv($serv, $param)->Processor($listener, $data);
+                serv($serv)->Processor($listener, $data);
             }catch (\Exception $exception){
                 //Todo something
             }

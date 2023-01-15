@@ -337,8 +337,13 @@ function pdo_getall($tablename, $condition = array(), $fields = array(), $keyfie
     return $res;
 }
 
-function pdo_fetchall($sql, $params = array()) {
-    return DB::select($sql,$params);
+function pdo_fetchall($sql, $params = array(), $keyfield = '') {
+    $result = DB::select($sql,$params);
+    if (!empty($result) && $keyfield){
+        $keys = array_column($result, $keyfield);
+        return empty($keys) ? $result : array_combine($keys, $result);
+    }
+    return $result;
 }
 
 function pdo_fetchcolumn($sql, $params = array(), $column = 0) {

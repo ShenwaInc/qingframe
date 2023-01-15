@@ -11,8 +11,7 @@ class CloudService
     static $identity = 'swa_framework_laravel';
     static $cloudapi = 'https://chat.gxit.org/app/index.php?i=4&c=entry&m=swa_supersale&do=api';
     static $cloudactive = 'https://chat.gxit.org/app/index.php?i=4&c=entry&m=swa_supersale&do=app&r=whotalkcloud.active';
-    static $apilist = array('getcom'=>'cloud.vendor','rmcom'=>'cloud.vendor.remove','require'=>'cloud.install','structure'=>'cloud.structure','upgrade'=>'cloud.makepatch');
-    static $vendors = array('wxpayv3'=>'微信支付SDK','tim'=>'接口签名验证工具');
+    static $apilist = array('rmcom'=>'cloud.vendor.remove','require'=>'cloud.install','structure'=>'cloud.structure','upgrade'=>'cloud.makepatch');
 
     static function RequireModule($identity,$path='addons'){
         $modulePre = ModuleService::SysPrefix();
@@ -26,15 +25,6 @@ class CloudService
         }
         //进入模块安装流程
         return ModuleService::install($moduleName,$path,$from);
-    }
-
-    static function com_path($path=""){
-        global $_W;
-        if (!isset($_W['com_path'])){
-            $compath = substr(sha1($_W['config']['setting']['authkey']."-".$_W['config']['site']['id']),5,6);
-            $_W['com_path'] = app_path("com$compath/");
-        }
-        return $_W['com_path'] . $path;
     }
 
     static function getPlugins(){
@@ -230,7 +220,7 @@ class CloudService
             FileService::mkdirs($patch);
         }
         $filename = FileService::file_random_name($patch,'zip');
-        if (false == file_put_contents($patch.$filename, $zipcontent)) {
+        if (!file_put_contents($patch . $filename, $zipcontent)) {
             return error(-1,'安装包解压失败：权限不足');
         }
 

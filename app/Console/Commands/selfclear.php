@@ -162,9 +162,6 @@ class selfclear extends Command
             resource_path('views/console/extra/'),
             resource_path('views/console/set/')
         );
-        global $_W;
-        $_W['config'] = config('system');
-        $undirs[] = CloudService::com_path('aliyun');
         foreach ($undirs as $dir){
             if (is_dir($dir)){
                 FileService::rmdirs($dir);
