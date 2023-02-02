@@ -45,7 +45,7 @@ class ModuleService
             try {
                 $ManiFest->installer();
             } catch (\Exception $exception){
-                return error(-1,'安装失败：运行脚本出现错误');
+                return error(-1,'安装失败：'.(DEVELOPMENT?$exception->getMessage():'运行脚本出现错误'));
             }
         }
         //写入模块数据表
@@ -96,6 +96,29 @@ class ModuleService
         $ManiFest = require_once $manifestfile;
         if (!$ManiFest->installed) return error(-3,'该模块尚未安装');
         return $ManiFest;
+    }
+
+    /**
+     * 获取模块列表（已安装）
+     * @param int $recycle 0正常1停用2删除-1所有
+     * @param int $issystem 0普通应用1系统应用
+     * @return array 模块列表
+    */
+    static function moduleList($recycle=0, $issystem=0){
+        $modules = DB::table('modules')->select(['mid','name','title','version','logo','from','status'])->where('issystem', intval($issystem))->get()->keyBy('name')->toArray();
+        if (empty($modules)) return [];
+        if ($recycle==-1) return $modules;
+        $recycles = DB::table('modules_recycle')->select('type')->get()->keyBy('name')->toArray();
+        foreach ($modules as $key=>$module){
+            if ($recycle>0){
+                if ($recycle!=intval($recycles[$module['name']])){
+                    unset($modules[$key]);
+                }
+            }elseif (isset($recycles[$key])){
+                unset($modules[$key]);
+            }
+        }
+        return $modules;
     }
 
     static function localExists($identity){

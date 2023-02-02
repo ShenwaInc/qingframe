@@ -22,8 +22,8 @@
 
     <div class="fui-card layui-card">
         <div class="layui-card-header nobd">
-            @if($_W['isfounder'])
-                <a href="{{ wurl('account/modules',array('uniacid'=>$uniacid), true) }}" class="fr text-blue ajaxshow layui-hide" title="平台模块管理">管理</a>
+            @if($_W['isfounder'] || $role=='founder')
+                <a href="{{ wurl('account/modules',array('uniacid'=>$uniacid), true) }}" class="fr text-blue ajaxshow" title="平台模块管理">管理</a>
             @endif
             <span class="title">应用模块</span>
         </div>

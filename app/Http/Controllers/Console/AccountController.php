@@ -8,6 +8,7 @@ use App\Models\CorePaylog;
 use App\Models\Setting;
 use App\Services\AccountService;
 use App\Services\CacheService;
+use App\Services\ModuleService;
 use App\Services\PayService;
 use App\Services\SettingService;
 use App\Services\UserService;
@@ -178,17 +179,17 @@ class AccountController extends Controller
     public function doFunctions(){
         global $_W;
         $account = $this->account;
-        $return = array('title'=>'平台管理','account'=>$account,'uniacid'=>$this->uniacid, 'components'=>[]);
+        $return = array('title'=>'平台管理','account'=>$account,'uniacid'=>$this->uniacid);
         $return['role'] = $this->role;
         session()->put('uniacid', $account['uniacid']);
         //读取可用服务
         $servers = pdo_getall("microserver_unilink", array('status'=>1));
         //判断微服务权限，待完善
         $return['servers'] = $servers;
+        $return['components'] = [];
 
         //读取可用模块
-        $components = pdo_getall('uni_account_extra_modules', array('uniacid'=>$this->uniacid));
-        //DB::table('uni_account_extra_modules')->where('uniacid',$this->uniacid)->first();
+        $components = AccountService::ExtraModules($_W['uniacid']);
         if (empty($components) && !empty($_W['config']['defaultmodule'])){
             $defaultModule = pdo_get("modules", array('name'=>$_W['config']['defaultmodule'], 'application_type'=>1));
             if (!empty($defaultModule)){
@@ -200,16 +201,53 @@ class AccountController extends Controller
                 $return['components'] = $components;
             }
         }else{
-            $new_components=[];
-            foreach ($components ?? [] as $value){
-                $modules=unserialize($value['modules']);
-                $new_components=array_merge($new_components,$modules);
+            foreach ($components as $component){
+                //判断模块是否可用
+                $module = ModuleService::fetch($component['identity']);
+                if (empty($module)) continue;
+                $return['components'][] = $component;
             }
-            $return['components'] = $new_components;
-
         }
-        //判断模块权限，待完善
+        if (!$_W['isfounder'] && !empty($return['components'])){
+            //判断当前用户模块权限（操作员/管理员），待完善
+            //$enabled_modules = UserService::GetModules($_W['uid']);
+        }
         return $this->globalview('console.account.functions',$return);
+    }
+
+    public function doModules(Request $request){
+        global $_W;
+        $enabled_modules = ModuleService::moduleList();
+        if ($request->isMethod('post')){
+            $extraModules = $request->input('extras_modules');
+            $modules = [];
+            if (!empty($extraModules)){
+                foreach ($extraModules as $key=>$extra){
+                    if (empty($enabled_modules[$key])) continue;
+                    if (empty($extra)) continue;
+                    $modules[] = array(
+                        'name'=>$enabled_modules[$key]['title'],
+                        'identity'=>$key,
+                        'logo'=>$enabled_modules[$key]['logo']
+                    );
+                }
+            }
+            if (!DB::table('uni_account_extra_modules')->updateOrInsert(array('uniacid'=>$this->uniacid), array('modules'=>serialize($modules)))){
+                return $this->message('保存失败，请重试');
+            }
+            CacheService::flush();
+            return $this->message('操作成功！',wurl('account/functions',array('uniacid'=>$this->uniacid),true), 'success');
+        }
+        $return = array('title'=>'编辑平台模块权限', 'modules'=>[]);
+        $return['extras'] = AccountService::ExtraModules($_W['uniacid']);
+        if (!empty($enabled_modules)){
+            foreach ($enabled_modules as $key=>$value){
+                $module = ModuleService::fetch($key);
+                if (empty($module)) continue;
+                $return['modules'][$key] = $value;
+            }
+        }
+        return $this->globalview('console.account.modules',$return);
     }
 
     public function doEntry(){
