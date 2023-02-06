@@ -375,11 +375,12 @@ function pdo_truncate($tablename){
 }
 
 function pdo_insert($tablename,$data,$insertgetid=false){
-    $query = DB::table($tablename);
-    if ($insertgetid){
-        return $query->insertGetId($data);
-    }
-    return $query->insert($data);
+    $GLOBALS['_W']['__db_last_inserid_'] = DB::table($tablename)->insertGetId($data);
+    return $GLOBALS['_W']['__db_last_inserid_'];
+}
+
+function pdo_insertid(){
+    return $GLOBALS['_W']['__db_last_inserid_'];
 }
 
 function pdo_insertgetid($tablename,$data){

@@ -55,11 +55,7 @@ class AccountService {
     static function GetEntrance($uid,$uniacid){
         $entrance = pdo_getcolumn('uni_account_users', array('uid'=>$uid,'uniacid'=>$uniacid), 'entrance');
         if (empty($entrance)){
-            if(empty($GLOBALS['_W']['config']['defaultmodule'])){
-                $entrance = 'account:profile';
-            }else{
-                $entrance = 'module:'.$GLOBALS['_W']['config']['defaultmodule'];
-            }
+            $entrance = 'account:profile';
         }
         return explode(":", $entrance);
     }

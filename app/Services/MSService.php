@@ -559,7 +559,7 @@ class MSService
             $process = new Process($command);
             $process->setWorkingDirectory($WorkingDirectory);
             $process->setEnv(['COMPOSER_HOME'=>self::ComposerHome()]);
-            $process->setTimeout(100);
+            $process->setTimeout(300);
             $process->start();
             $process->wait();
             if ($process->isSuccessful()) {
@@ -598,7 +598,7 @@ class MSService
             $process = new Process($command);
             $process->setWorkingDirectory($WorkingDirectory);
             $process->setEnv(['COMPOSER_HOME'=>self::ComposerHome()]);
-            $process->setTimeout(100);
+            $process->setTimeout(300);
             $process->start();
             $process->wait();
             if ($process->isSuccessful()) {
