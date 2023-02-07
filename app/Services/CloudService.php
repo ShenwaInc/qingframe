@@ -71,16 +71,15 @@ class CloudService
             }
         }
         //获取本地模块
-        $modules = FileService::file_tree(public_path('addons'), array('*/Manifest.php'));
+        $modules = FileService::file_tree(public_path('addons'), array('*/manifest.json'));
         if (!empty($modules)){
             foreach ($modules as $value){
-                $identity = str_replace(array(public_path('addons/'),"/Manifest.php"),'', $value);
+                $identity = str_replace(array(public_path('addons/'),"/manifest.json"),'', $value);
                 if (empty($identity)) continue;
                 try {
-                    $className = ucfirst($identity)."_Manifest";
-                    $ManiFest = require_once $value;
-                    if (!isset($ManiFest->application)) continue;
-                    $com = $ManiFest->application;
+                    $ManiFest = ModuleService::getManifest($identity);
+                    if (is_error($ManiFest)) continue;
+                    $com = $ManiFest['application'];
                 }catch (\Exception $exception){
                     continue;
                 }
@@ -91,7 +90,7 @@ class CloudService
                 $com['addtime'] = 0;
                 $com['action'] = '';
                 //已安装
-                if ($ManiFest->installed){
+                if ($ManiFest['installed']){
                     if (isset($plugins[$identity])){
                         $com['installtime'] = $plugins[$identity]['installtime'];
                         $com['lastupdate'] = $plugins[$identity]['lastupdate'];

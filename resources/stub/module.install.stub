@@ -1,0 +1,9 @@
+<?php
+
+/**
+ * 模块安装脚本，您可以在这里编写任意PHP语句，安装时会自动执行
+ */
+
+//Todo something
+
+$FINISH = true;

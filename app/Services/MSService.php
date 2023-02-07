@@ -287,8 +287,14 @@ class MSService
         foreach ($requires as $value){
             $identity = is_array($value) ? $value['id'] : $value;
             $servers[] = $identity;
-            if ($this->isexist($identity)){
-                //已安装
+            $service = self::getone($identity);
+            if (!empty($service)){
+                //已安装，版本检测
+                $version = is_array($value) ? $value['version'] : "";
+                if (!empty($version) && version_compare($version, $service['version'], '>')){
+                    //提示更新版本
+                    return error(-1, "该应用依赖的服务【{$service['name']}($identity)】的版本不低于V{$version}，请升级服务后重试");
+                }
                 continue;
             }
             if ($this->localexist($identity)){

@@ -34,33 +34,47 @@ class ModuleService
         return true;
     }
 
+    static function getManifest($identity,$path='addons'){
+        $manifestFile = base_path("public/$path/$identity/manifest.json");
+        if(!file_exists($manifestFile)) return error(-1,'无法解析模块安装包');
+        $JSON = file_get_contents($manifestFile);
+        $result = json_decode($JSON, true);
+        if (empty($result) || !isset($result['application'])) return error(-1,'无效的模块安装包');
+        $result['installed'] = false;
+        if (DB::table('modules')->where('name', $identity)->exists()){
+            $result['installed'] = true;
+        }
+        return $result;
+    }
+
     static function install($identity,$path='addons',$from='cloud'){
-        $installpath = base_path("public/$path/$identity/");
-        $manifestfile = $installpath . "Manifest.php";
-        if(!file_exists($manifestfile)) return error(-1,'无法解析模块安装包');
-        $ManiFest = require_once $manifestfile;
-        if ($ManiFest->installed) return true;
+        $ManiFest = self::getManifest($identity, $path);
+        if (is_error($ManiFest)) return $ManiFest;
+        if ($ManiFest['installed']) return true;
         //执行安装脚本
-        if (method_exists($ManiFest,'installer')){
+        if (!empty($ManiFest['install'])){
             try {
-                $ManiFest->installer();
+                script_run($ManiFest['install'], public_path("{$path}/{$identity}/"));
             } catch (\Exception $exception){
-                return error(-1,'安装失败：'.(DEVELOPMENT?$exception->getMessage():'运行脚本出现错误'));
+                return error(-1,'安装失败：'.(DEVELOPMENT?$exception->getMessage():'运行安装脚本出现错误'));
             }
         }
         //写入模块数据表
-        $application = $ManiFest->application;
-        $subscribes = method_exists($ManiFest,'subscribes') ? $ManiFest->subscribes : array();
-        $handles = method_exists($ManiFest,'handles') ? $ManiFest->handles : array();
+        $application = $ManiFest['application'];
+        $subscribes = $ManiFest['subscribes'] ?: array();
+        $handles = $ManiFest['handles'] ?: array();
         $module = self::ModuleData($application,$subscribes,$handles);
+        if (!empty($ManiFest['permissions'])){
+            $module['permissions'] = serialize($ManiFest['permissions']);
+        }
         $module['from'] = $from;
         if (!DB::table('modules')->insert($module)){
             return error(-1,'无法解析模块安装包');
         }
-        if (!empty($ManiFest->servers)){
+        if (!empty($ManiFest['servers'])){
             try {
                 $MSS = new MSService();
-                $MSS->checkRequire($ManiFest->servers);
+                $MSS->checkRequire($ManiFest['servers']);
             }catch (\Exception $exception){
                 return error(-1,'安装依赖服务时发生错误：'.$exception->getMessage());
             }
@@ -88,13 +102,9 @@ class ModuleService
     }
 
     static function installCheck($identity){
-        $module = DB::table('modules')->where('name',$identity)->first();
-        if (empty($module)) return error(-2,'该模块尚未安装');
-        $installpath = base_path("public/addons/$identity/");
-        $manifestfile = $installpath . "Manifest.php";
-        if(!file_exists($manifestfile)) return error(-1,'无法解析模块安装包');
-        $ManiFest = require_once $manifestfile;
-        if (!$ManiFest->installed) return error(-3,'该模块尚未安装');
+        $ManiFest = self::getManifest($identity);
+        if (is_error($ManiFest)) return $ManiFest;
+        if (!$ManiFest['installed']) return error(-3,'该模块尚未安装');
         return $ManiFest;
     }
 
@@ -122,15 +132,13 @@ class ModuleService
     }
 
     static function localExists($identity){
-        $manifest = base_path("public/addons/$identity/Manifest.php");
-        return file_exists($manifest);
+        return file_exists(base_path("public/addons/$identity/manifest.json"));
     }
 
     static function upgrade($identity,$from=''){
         $ManiFest = self::installCheck($identity);
         if (is_error($ManiFest)) return $ManiFest;
-        if (!$ManiFest->installed) return error(-1,'该模块尚未安装');
-        $application = $ManiFest->application;
+        $application = $ManiFest['application'];
         $component = self::SysComponent($application['identifie']);
         if (!empty($component)){
             //已经是最新版本
@@ -139,20 +147,18 @@ class ModuleService
             }
         }
         //执行升级脚本
-        if (method_exists($ManiFest,'upgrader')){
+        if (!empty($ManiFest['upgrade'])){
             try {
-                $res = $ManiFest->upgrader();
-                if (is_error($res)){
-                    return $res;
-                }
+                script_run($ManiFest['upgrade'], public_path("addons/$identity/"));
             } catch (\Exception $exception){
-                return error(-1,'升级失败：运行脚本出现错误:'.$exception->getMessage());
+                return error(-1,'升级失败：运行升级脚本出现错误:'.$exception->getMessage());
             }
         }
         //更新模块数据表
-        $subscribes = method_exists($ManiFest,'subscribes') ? $ManiFest->subscribes : array();
-        $handles = method_exists($ManiFest,'handles') ? $ManiFest->handles : array();
+        $subscribes = $ManiFest['subscribes'] ?: array();
+        $handles = $ManiFest['handles'] ?: array();
         $moduledata = self::ModuleData($application,$subscribes,$handles);
+        $moduledata['permissions'] = empty($ManiFest['permissions']) ? "" : serialize($ManiFest['permissions']);
         DB::table('modules')->where('name',$application['identifie'])->update($moduledata);
         //更新模块数据表
         if (!empty($component) || $from=='cloud'){
@@ -187,17 +193,17 @@ class ModuleService
     static function uninstall($identity){
         $ManiFest = self::installCheck($identity);
         if (is_error($ManiFest)) return $ManiFest;
-        $component = self::SysComponent($ManiFest->application['identifie']);
+        $component = self::SysComponent($ManiFest['application']['identifie']);
         //执行卸载脚本
-        if (method_exists($ManiFest,'uninstaller')){
+        if (!empty($ManiFest['uninstall'])){
             try {
-                $ManiFest->uninstaller();
+                script_run($ManiFest['uninstall'], public_path("addons/$identity/"));
             } catch (\Exception $exception){
                 return error(-1,'卸载失败：运行脚本出现错误:'.$exception->getMessage());
             }
         }
         //更新模块数据表
-        DB::table('modules')->where('name',$ManiFest->application['identifie'])->delete();
+        DB::table('modules')->where('name',$ManiFest['application']['identifie'])->delete();
         if (!empty($component)){
             DB::table('gxswa_cloud')->where('id',$component['id'])->delete();
             if (!DEVELOPMENT){

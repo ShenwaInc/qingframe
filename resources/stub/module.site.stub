@@ -1,0 +1,45 @@
+<?php
+
+use App\Utils\WeModule;
+
+class DummyModuleSite extends WeModule{
+
+	public function doWebIndex(){
+	    //后台默认入口
+		//Todo something
+		return "Hello World.";
+	}
+
+	public function doMobileIndex(){
+	    //前台默认入口
+        //Todo something
+        return "Hello World.";
+	}
+
+    /**
+     * 处理模块支付结果
+     * @param array $params 支付参数（result-结果, from-回调方式, type-支付方式, tid-内部订单号）
+    */
+	public function payResult($params){
+        global $_W,$_S;
+        if ('success' == $params['result'] && 'notify' == $params['from']) {
+            //支付回调（异步），处理支付结果
+            //Todo something
+        }
+
+        if ('return' == $params['from']) {
+            //支付回调（同步），处理支付结果
+            //Todo something
+            if ('success' == $params['result']) {
+                message('成功支付', $redirect, 'success');
+            } else {
+                message('支付失败，请重试', referer(), 'error');
+            }
+        }
+
+        return $params;
+	}
+}
+
+
+?>
