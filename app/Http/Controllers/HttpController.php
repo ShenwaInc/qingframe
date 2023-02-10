@@ -46,9 +46,9 @@ class HttpController extends Controller
         $method = "main";
         $serverName = ucfirst($server) . 'Service';
         if (!class_exists($serverName)){
-            require_once MICRO_SERVER.strtolower($server)."/{$serverName}.php";
+            require_once MICRO_SERVER.strtolower($server)."/$serverName.php";
         }
-        $ctrl = MICRO_SERVER.strtolower($server)."/run/{$ctroller}Controller.php";
+        $ctrl = MICRO_SERVER.strtolower($server)."/run/".ucfirst($ctroller)."Controller.php";
         if (!file_exists($ctrl)){
             $ctrl = MICRO_SERVER.strtolower($server)."/run/IndexController.php";
             $method = $ctroller;

@@ -16,6 +16,7 @@ class MicroService
     public $CompileDrive = "smarty";
     public $Unique = false;
     public $framework = "laravel";
+    public $enabled = true;
     public $events = [];
 
     function __construct($name){
@@ -30,6 +31,7 @@ class MicroService
             $fields = array_merge($fields, array("cover","summary","entrance","datas","configs"));
         }
         $service = pdo_get($this->tableName, array('identity'=>$this->identity), $fields);
+        if (empty($service['status'])) $this->enabled = false;
         if (defined('IN_SYS')){
             $service['datas'] = empty($service['datas']) ? array() : unserialize($service['datas']);
             if (!empty($service['datas'])){
@@ -243,7 +245,6 @@ class MicroService
      */
     public function Event($listener, $data=array(), $channel='global'){
         $event = "$channel.$listener";
-        return event($event, $data);
         if (empty($this->events)){
             $globalEvents = Cache::get("GLOBALS_EVENTS", array());
             if(empty($globalEvents)){
