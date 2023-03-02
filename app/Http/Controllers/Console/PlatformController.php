@@ -19,7 +19,6 @@ class PlatformController extends Controller
     public function index(){
         global $_W,$_GPC;
 
-        session()->forget('uniacid');
         if (empty($_W['isfounder']) && !empty($_W['user']) && ($_W['user']['status'] == 1 || $_W['user']['status'] == 3)) {
             Auth::logout();
             return $this->message('您的账号正在审核或是已经被系统禁止，请联系网站管理员解决！');
@@ -29,8 +28,12 @@ class PlatformController extends Controller
             return $this->message('站点已关闭，关闭原因：' . $_W['setting']['site']['closereason'], url('login'), 'error');
         }
 
-        $data = array('cancreate'=>true);
+        if (SITEACID){
+            return redirect("console/account/".SITEACID);
+        }
 
+        session()->forget('uniacid');
+        $data = array('cancreate'=>true);
         $params = post_var(array('keyword'));
 
         if ($_W['isadmin']) {

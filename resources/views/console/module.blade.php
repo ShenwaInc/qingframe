@@ -31,7 +31,7 @@
                             <th>应用</th>
                             <th class="layui-hide-xs">安装时间</th>
                             <th class="layui-hide-xs">上次更新</th>
-                            <th class="layui-hide-xs">最新版本</th>
+                            <th class="layui-hide-xs">云端版本</th>
                             <th><div class="text-right">操作</div></th>
                         </tr>
                         </thead>
@@ -54,7 +54,7 @@
                                     <td class="layui-hide-xs">{!! $com['lastupdate'] !!}</td>
                                     <td class="layui-hide-xs">
                                         @if(empty($com['cloudinfo']))
-                                            -
+                                            本地应用
                                         @else
                                             V{{ $com['cloudinfo']['version'] }}&nbsp;&nbsp;Release{{ $com['cloudinfo']['releasedate'] }}
                                             @if($com['cloudinfo']['isnew'])

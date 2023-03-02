@@ -21,7 +21,8 @@ class AppRuntime
      * @return mixed
      */
     public function handle(Request $request, Closure $next){
-        $this->Runtime($request->input('i'), $request->header('x-auth-token'));
+        $uniacid = $request->input('i', SITEACID);
+        $this->Runtime($uniacid, $request->header('x-auth-token'));
         return $next($request);
     }
 

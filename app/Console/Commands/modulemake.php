@@ -14,7 +14,7 @@ class modulemake extends Command {
      *
      * @var string
      */
-    protected $signature = 'make:module {modulename}';
+    protected $signature = 'make:module {identity} {name?}';
     public $Application;
 
     /**
@@ -49,9 +49,11 @@ class modulemake extends Command {
     {
         //
         $arguments = $this->argument();
-        $identity = trim($arguments['modulename']);
+        $identity = trim($arguments['identity']);
+        $moduleName = $arguments['name'] ? trim($arguments['name']) : ucfirst($identity);
+        $this->info("Identity:$identity, moduleName:$moduleName");
         try {
-            if (DB::table('modules')->where('name', $identity)->exists()){
+            if (DB::table('modules')->where('name', $identity)->value('mid')){
                 return $this->report("Module $identity already installed!");
             }
             if (ModuleService::localExists($identity)){
@@ -73,7 +75,7 @@ class modulemake extends Command {
             return $this->report("Create package faild: may not have permission.");
         }
         $Manifest = file_get_contents(resource_path('stub/module.manifest.stub'));
-        $Manifest = str_replace(array("Dummy","dummy","TIMESTAMP"), array(ucfirst($identity), $identity, date("YmdH01", TIMESTAMP)), $Manifest);
+        $Manifest = str_replace(array("Dummy","dummy","TIMESTAMP"), array($moduleName, $identity, date("YmdH01", TIMESTAMP)), $Manifest);
         $manifile = $package."manifest.json";
         if (!file_put_contents($manifile, $Manifest)){
             return $this->report("Create package faild: may not have permission.");
@@ -87,7 +89,7 @@ class modulemake extends Command {
         if (!file_put_contents($package."/install.php", $Installer)){
             return $this->report("Create package faild: may not have permission.");
         }
-        $this->info('Create Module '.ucfirst($identity).' successfully.');
+        $this->info('Create Module '.$moduleName.' successfully.');
         return true;
     }
 }

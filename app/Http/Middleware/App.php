@@ -14,6 +14,7 @@ define('MAGIC_QUOTES_GPC', (function_exists('get_magic_quotes_gpc') && @get_magi
 define('ATTACHMENT_ROOT', storage_path('app/public/'));
 define('TIMESTAMP', time());
 define('DEVELOPMENT', (bool)env('APP_DEVELOPMENT',0));
+define('SITEACID', env('APP_UNIACID', 0));
 define('QingVersion', env('APP_VERSION'));
 define('QingRelease', env('APP_RELEASE'));
 global $_W,$_GPC;
@@ -44,6 +45,7 @@ class App
         $_W['ishttps'] = \Str::startsWith($_W['siteurl'],'https');
         $_W['sitescheme'] = $_W['ishttps'] ? 'https://' : 'http://';
         $_W['siteroot'] = $_W['sitescheme'] . $_SERVER['HTTP_HOST'] .'/';
+        $_W['siteacid'] = SITEACID;
         $_W['uniacid'] = $_W['uid'] = 0;
         $_W['user'] = array('uid'=>$_W['uid'],'username'=>'未登录');
         $_W['account'] = array('uniacid'=>0);

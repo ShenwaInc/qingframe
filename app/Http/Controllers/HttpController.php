@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Middleware\AppRuntime;
+
 class HttpController extends Controller
 {
 
@@ -12,7 +14,15 @@ class HttpController extends Controller
         if (!empty($segment2)){
             $ctrl = implode("/", array($ctrl, trim($segment2)));
         }
-        $data = serv($server)->HttpRequest('api', $ctrl);
+        $service = serv($server);
+        if (is_error($service) || !$service->enabled){
+            abort(404);
+        }
+        $uniacid = request()->input('i', SITEACID);
+        if ($service->Unique){
+            (new AppRuntime())->Runtime($uniacid, request()->header('x-auth-token'));
+        }
+        $data = $service->HttpRequest('api', $ctrl);
         if (is_error($data)) return $this->message($data['message'], trim($data['redirect']));
         if (!is_array($data)) return $data;
         if (isset($data['message']) && isset($data['type'])){
@@ -27,7 +37,15 @@ class HttpController extends Controller
         if (!empty($segment2)){
             $ctrl = implode("/", array($ctrl, trim($segment2)));
         }
-        $data = serv($server)->HttpRequest('app', $ctrl);
+        $service = serv($server);
+        if (is_error($service) || !$service->enabled){
+            abort(404);
+        }
+        $uniacid = request()->input('i', SITEACID);
+        if ($service->Unique){
+            (new AppRuntime())->Runtime($uniacid, request()->header('x-auth-token'));
+        }
+        $data = $service->HttpRequest('app', $ctrl);
         if (!is_error($data)) {
             if (!is_array($data)) return $data;
             if (isset($data['message']) && isset($data['type'])) {

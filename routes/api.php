@@ -33,7 +33,7 @@ Route::group(['prefix' => 'auth/{uniacid}', 'namespace' => 'Auth'], function () 
 
 Route::group(['prefix'=>'server', 'middleware'=>['app']],function (){
     Route::any('/run/{server}/{segment1?}', 'HttpController@ServerRun')->where('server','[a-z]+');
-    Route::any('/{server}/{segment1?}/{segment2?}', 'HttpController@ServerApi')->where('server','[a-z]+')->middleware(AppRuntime::class);
+    Route::any('/{server}/{segment1?}/{segment2?}', 'HttpController@ServerApi')->where('server','[a-z]+');
 });
 
 Route::group(['prefix' => 'm/', 'namespace' => 'App','middleware'=>['app','runtime']], function () {

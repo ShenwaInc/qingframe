@@ -7,7 +7,7 @@ namespace App\Services;
 use App\Utils\Image;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class FileService
 {
@@ -39,13 +39,11 @@ class FileService
     }
 
     public static function file_write($filename, $data) {
-        global $_W;
-        $filename = ATTACHMENT_ROOT . '/' . $filename;
-        self::mkdirs(dirname($filename));
-        file_put_contents($filename, $data);
-        @chmod($filename, $_W['config']['setting']['filemode']);
-
-        return is_file($filename);
+        $uri = ATTACHMENT_ROOT . '/' . $filename;
+        $path = dirname($uri);
+        self::mkdirs($path);
+        Storage::put($filename, $data);
+        return is_file($uri);
     }
 
     function file_read($filename) {

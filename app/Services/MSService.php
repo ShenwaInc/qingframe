@@ -253,7 +253,7 @@ class MSService
                 }
                 $apis = serv($server['identity'])->getApis();
                 if (!empty($apis['wiki']) || !empty($apis['schemas'])){
-                    $server['actions'] .= '<a class="layui-btn layui-btn-sm" href="'.wurl("server/apis/{$server['identity']}").'" target="_blank">接口文档</a>';
+                    $server['actions'] .= '<a class="layui-btn layui-btn-sm" href="'.wurl("server/apis/{$server['identity']}").'" target="_blank">接口</a>';
                 }
             }
             $server['upgrade'] = array();

@@ -385,6 +385,7 @@ class CloudService
         $data['t'] = TIMESTAMP;
         $data['siteroot'] = $_W['siteroot'];
         $data['siteid'] = $_W['config']['site']['id'];
+        $data['devmode'] = env('APP_DEVELOPMENT',0);
         $data['sign'] = self::GetSignature($data['appsecret'],$data);
         $CloudApi = env('APP_CLOUD_API', self::$cloudapi);
         $res = HttpService::ihttp_post($CloudApi,$data);

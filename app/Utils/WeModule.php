@@ -152,81 +152,23 @@ class WeModule
     }
 
 
-    protected function fileSave($file_string, $type = 'jpg', $name = 'auto') {
-        global $_W;
-        load()->func('file');
-
-        $allow_ext = array(
-            'images' => array('gif', 'jpg', 'jpeg', 'bmp', 'png', 'ico'),
-            'audios' => array('mp3', 'wma', 'wav', 'amr'),
-            'videos' => array('wmv', 'avi', 'mpg', 'mpeg', 'mp4'),
-        );
-        if (in_array($type, $allow_ext['images'])) {
-            $type_path = 'images';
-        } elseif (in_array($type, $allow_ext['audios'])) {
-            $type_path = 'audios';
-        } elseif (in_array($type, $allow_ext['videos'])) {
-            $type_path = 'videos';
-        }
-
-        if (empty($type_path)) {
-            return error(1, '禁止保存文件类型');
-        }
-
-        $uniacid = intval($_W['uniacid']);
-        if (empty($name) || 'auto' == $name) {
-            $path = "{$type_path}/{$uniacid}/{$this->module['name']}/" . date('Y/m/');
-            FileService::mkdirs(ATTACHMENT_ROOT . '/' . $path);
-
-            $filename = FileService::file_random_name(ATTACHMENT_ROOT . '/' . $path, $type);
-        } else {
-            $path = "{$type_path}/{$uniacid}/{$this->module['name']}/";
-            FileService::mkdirs(dirname(ATTACHMENT_ROOT . '/' . $path));
-
-            $filename = $name;
-            if (!strexists($filename, $type)) {
-                $filename .= '.' . $type;
-            }
-        }
-        if (file_put_contents(ATTACHMENT_ROOT . $path . $filename, $file_string)) {
-            FileService::file_remote_upload($path);
-
-            return $path . $filename;
-        } else {
-            return false;
-        }
-    }
-
-    protected function fileUpload($file_string, $type = 'image') {
-        $types = array('image', 'video', 'audio');
-    }
-
     protected function getFunctionFile($name) {
-        $module_type = str_replace('wemodule', '', strtolower(get_parent_class($this)));
-        if ('site' == $module_type) {
-            $module_type = 0 === stripos($name, 'doWeb') ? 'web' : 'mobile';
-            $function_name = 'web' == $module_type ? strtolower(substr($name, 5)) : strtolower(substr($name, 8));
-        } else {
-            $function_name = strtolower(substr($name, 6));
-        }
-        $dir = IA_ROOT . '/framework/builtin/' . $this->modulename . '/inc/' . $module_type;
-        $file = "$dir/{$function_name}.inc.php";
-        if (!file_exists($file)) {
-            $file = str_replace('framework/builtin', 'addons', $file);
-        }
-
-        return $file;
+        $module_type = 0 === stripos($name, 'doWeb') ? 'web' : 'mobile';
+        $function_name = 'web' == $module_type ? strtolower(substr($name, 5)) : strtolower(substr($name, 8));
+        $dir = IA_ROOT . '/addons/' . $this->modulename . '/inc/' . $module_type;
+        return "$dir/{$function_name}.inc.php";
     }
 
+    /**
+     * @throws \Exception
+     */
     public function __call($name, $param) {
         $file = $this->getFunctionFile($name);
         if (file_exists($file)) {
             require $file;
-            exit;
+            session_exit();
         }
-        trigger_error('模块方法' . $name . '不存在.', E_USER_WARNING);
-
-        return false;
+        throw new \Exception('模块方法' . $name . '不存在.');
     }
 
 }

@@ -1488,7 +1488,7 @@ class WechatService extends WeAccount
             preg_match('/filename=\"?([^"]*)/', $response['headers']['Content-disposition'], $match);
             $filename = $_W['uniacid'] . '/' . date('Y/m/') . $match[1];
             $pathinfo = pathinfo($filename);
-            if (in_array(strtolower($pathinfo['extension']), array('mp4'))) {
+            if (strtolower($pathinfo['extension']) == 'mp4') {
                 $filename = 'videos/' . $filename;
             } elseif (in_array(strtolower($pathinfo['extension']), array('amr', 'mp3', 'wma', 'wmv'))) {
                 $filename = 'audios/' . $filename;
