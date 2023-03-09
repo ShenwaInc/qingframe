@@ -56,7 +56,31 @@ class ConsolePermission
             $_W['acid'] = $_W['account']['acid'];
         }
         $_W['attachurl'] = FileService::SetAttachUrl();
+        //路由权限判断
+        if (!$_W['isfounder']) $this->checkPermission($request,$_W['uid'],$_W['uniacid']);
         return $next($request);
+    }
+
+    /**
+     * 路由权限判断（待完善）
+     * 目前只判断了是否可以进入应用和服务
+     * @param object $request  Request
+     * @param int    $uniacid 平台id
+     * @param int    $uid 当前用户id
+     */
+    private function checkPermission($request,int $uid,int $uniacid){
+        $permission= DB::table('users_permission')->where(['uid'=>$uid,'uniacid'=>$uniacid])->value('permission');
+        $permission=unserialize($permission);
+        //微服务权限判断
+        $serverName=$request->route('server');
+        if(!empty($serverName) && empty($permission['servers'][$serverName])){
+            message('没有访问权限');
+        }
+        //应用模块判断
+        $modulename=$request->route('modulename');
+        if(!empty($modulename) && empty($permission['modules'][$modulename])){
+            message('没有访问权限');
+        }
     }
 
 }
