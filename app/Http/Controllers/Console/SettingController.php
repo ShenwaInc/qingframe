@@ -223,7 +223,6 @@ class SettingController extends Controller
         if (!isset($_W['setting']['remote'])){
             $_W['setting']['remote'] = array('type'=>0);
         }
-        $return['attachs'] = array('关闭','FTP','阿里云存储','七牛云存储','腾讯云存储','亚马逊S3');
         if ($op=='pageset'){
             return $this->globalview("console.pageset",$return);
         }
@@ -239,11 +238,7 @@ class SettingController extends Controller
             }
             return $this->message('操作成功！',url('console/setting'),'success');
         }
-        if ($op=='plugin'){
-            $return['types'] = array('框架','应用','服务','资源');
-            $return['colors'] = array('red','blue','green','orange');
-            $return['components'] = CloudService::getPlugins();
-        }elseif ($op=='comcheck'){
+        if ($op=='comcheck'){
             $component = DB::table('gxswa_cloud')->where('id',intval($_GPC['cid']))->first(['id','identity','type','online','releasedate','rootpath']);
             if (empty($component)) return $this->message('找不到该服务组件');
             $cloudinfo = $this->checkcloud($component, 1, true);
@@ -261,6 +256,7 @@ class SettingController extends Controller
             $return['framework'] = $framework;
             $return['cloudinfo'] = !empty($framework['online']) ? unserialize($framework['online']) : array('isnew'=>false);
         }
+        $return['activeState'] = CloudService::CloudActive();
         return $this->globalview('console.setting', $return);
     }
 

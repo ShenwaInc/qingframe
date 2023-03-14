@@ -143,13 +143,13 @@ class MSService
         return $service;
     }
 
-    public function cloudInstall($identity, $autoInstall=false){
+    public function cloudInstall($identity){
         $service = $this->cloudInfo($identity);
         if (is_error($service)) return $service;
         $cloudIdentity = "microserver_".$identity;
         $require = CloudService::CloudRequire($cloudIdentity, MICRO_SERVER.$identity."/");
         if (is_error($require)) return $require;
-        return $this->install($identity, true, $autoInstall);
+        return $this->install($identity, true);
     }
 
     public static function cloudserver($identity, $nocache=false){
@@ -301,11 +301,11 @@ class MSService
             }
             if ($this->localexist($identity)){
                 //未安装，但是本地存在则直接安装
-                $install = $this->install($identity, false, true);
+                $install = $this->install($identity);
                 if (is_error($install)) return error(-1, "安装依赖的服务({$identity})时发生异常：{$install['message']}");
             }else{
                 //本地不存在则从云端安装
-                $installCloud = $this->cloudInstall($identity, true);
+                $installCloud = $this->cloudInstall($identity);
                 if (is_error($installCloud)) return error(-1, "安装依赖的服务({$identity})时发生异常：{$installCloud['message']}");
             }
         }
