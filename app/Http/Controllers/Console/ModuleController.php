@@ -34,6 +34,7 @@ class ModuleController extends Controller
     }
 
     public function index(Request $request, $option='list'){
+        global $_W;
         $method = "do".ucfirst($option);
         if (method_exists($this, $method)){
             return $this->$method($request);
@@ -42,6 +43,15 @@ class ModuleController extends Controller
         $return['types'] = array('框架','应用','服务','资源');
         $return['colors'] = array('red','blue','green','orange');
         $return['components'] = CloudService::getPlugins();
+        $swaSocket = serv('websocket');
+        $return['socket'] = [
+            'server'=>"wss://socket.whotalk.com.cn/wss",
+            'userSign'=>md5($_W['config']['setting']['authkey'].":terminal:{$_W['uid']}"),
+            'userId'=>$_W['uid']
+        ];
+        if ($swaSocket->enabled){
+            $return['socket']['server'] = $swaSocket->settings['server'];
+        }
         return $this->globalview('console.module', $return);
     }
 
@@ -103,7 +113,7 @@ class ModuleController extends Controller
         $identity = $request->input('nid', "");
         $uninstall = ModuleService::uninstall($identity);
         if (is_error($uninstall)) return $this->message($uninstall['message']);
-        return $this->message('卸载完成', url('console/setting/plugin'),'success');
+        return $this->message('卸载完成', url('console/module'),'success');
     }
 
 

@@ -205,7 +205,6 @@ class ServerController extends Controller
         if ($swaSocket->enabled){
             $return['socket']['server'] = $swaSocket->settings['server'];
         }
-        $return['max_execution_time'] = ini_get('max_execution_time');
         return $this->globalview("console.server", $return);
     }
 

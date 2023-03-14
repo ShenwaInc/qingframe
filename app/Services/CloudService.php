@@ -19,6 +19,7 @@ class CloudService
         $targetpath = base_path("public/$path/$moduleName");
         $from = 'local';
         if (!is_dir($targetpath)){
+            MSService::TerminalSend(['mode'=>'info', 'message'=>'即将从云端获取模块']);
             $result = self::CloudRequire($identity,$targetpath);
             if(is_error($result)) return $result;
             $from = 'cloud';
@@ -59,14 +60,11 @@ class CloudService
                 $com['installtime'] = date('Y/m/d H:i',$com['addtime']);
                 $com['action'] = '<div class="layui-btn-group">';
                 if (!empty($com['cloudinfo']) && $com['cloudinfo']['isnew']){
-                    if($com['cloudinfo']['isLocal']){
-                        $com['action'] .= '<a href="'.wurl('module/upgrade', array('nid'=>$com['modulename'])).'" class="layui-btn layui-btn-sm layui-btn-danger confirm" data-text="升级前请做好源码和数据备份，避免升级故障导致系统无法正常运行">升级</a>';
-                    }else{
-                        $com['action'] .= '<a href="'.wurl('module/update', array('nid'=>$com['modulename'])).'" class="layui-btn layui-btn-sm layui-btn-danger confirm" data-text="升级前请做好源码和数据备份，避免升级故障导致系统无法正常运行">升级</a>';
-                    }
+                    //从云端升级
+                    $com['action'] .= '<a href="'.wurl('module/update', array('nid'=>$com['modulename'])).'" class="layui-btn layui-btn-sm layui-btn-danger js-terminal" data-text="升级前请做好源码和数据备份，避免升级故障导致系统无法正常运行">升级</a>';
                 }
                 $com['action'] .= '<a href="'.wurl('setting/comcheck', array('cid'=>$com['id'])).'" class="layui-btn layui-btn-sm layui-btn-normal ajaxshow">检测更新</a>';
-                $com['action'] .= '<a href="'.wurl('module/remove', array('nid'=>$com['modulename'])).'" class="layui-btn layui-btn-sm layui-btn-primary confirm" data-text="即将卸载该应用并删除应用产生的所有数据，是否确定要卸载？">卸载</a></div>';
+                $com['action'] .= '<a href="'.wurl('module/remove', array('nid'=>$com['modulename'])).'" class="layui-btn layui-btn-sm layui-btn-primary js-terminal" data-text="即将卸载该应用并删除应用产生的所有数据，是否确定要卸载？">卸载</a></div>';
                 $plugins[$com['modulename']] = $com;
             }
         }
@@ -108,14 +106,15 @@ class CloudService
                                     'releasedate'=>$com['releasedate'],
                                     'isnew'=>true
                                 );
-                                $com['action'] .= '<a href="'.wurl('module/upgrade', array('nid'=>$Module['name'])).'" class="layui-btn layui-btn-sm layui-btn-danger confirm" data-text="升级前请做好源码和数据备份，避免升级故障导致系统无法正常运行">升级</a>';
+                                //从本地升级
+                                $com['action'] .= '<a href="'.wurl('module/upgrade', array('nid'=>$Module['name'])).'" class="layui-btn layui-btn-sm layui-btn-danger js-terminal" data-text="升级前请做好源码和数据备份，避免升级故障导致系统无法正常运行">升级</a>';
                                 $com['version'] = $Module['version'];
                             }
                         }
                     }
-                    $com['action'] .= '<a href="'.wurl('module/remove', array('nid'=>$identity)).'" class="layui-btn layui-btn-sm layui-btn-primary confirm" data-text="即将卸载该应用并删除应用产生的所有数据，是否确定要卸载？">卸载</a></div>';
+                    $com['action'] .= '<a href="'.wurl('module/remove', array('nid'=>$identity)).'" class="layui-btn layui-btn-sm layui-btn-primary js-terminal" data-text="即将卸载该应用并删除应用产生的所有数据，是否确定要卸载？">卸载</a></div>';
                 }elseif(DEVELOPMENT){
-                    $com['action'] = '<a href="'.wurl('module/install', array('nid'=>$identity)).'" class="layui-btn layui-btn-sm layui-btn-normal confirm" data-text="确定要安装该应用？">安装</a>';
+                    $com['action'] = '<a href="'.wurl('module/install', array('nid'=>$identity)).'" class="layui-btn layui-btn-sm layui-btn-normal js-terminal" data-text="确定要安装该应用？">安装</a>';
                 }
                 $plugins[$identity] = $com;
             }
@@ -146,7 +145,7 @@ class CloudService
                     if (version_compare($local['version'], $value['release']['version'], '<') || $local['releasedate']<$releaseDate){
                         $cloudinfo['isnew'] = true;
                         if (empty($local['cloudinfo']) || !$local['cloudinfo']['isnew']){
-                            $local['action'] = '<a href="'.wurl('module/update', array('nid'=>$identity)).'" class="layui-btn layui-btn-sm layui-btn-danger confirm" data-text="升级前请做好源码和数据备份，避免升级故障导致系统无法正常运行">升级</a>'.$local['action'];
+                            $local['action'] = '<a href="'.wurl('module/update', array('nid'=>$identity)).'" class="layui-btn layui-btn-sm layui-btn-danger js-terminal" data-text="升级前请做好源码和数据备份，避免升级故障导致系统无法正常运行">升级</a>'.$local['action'];
                         }
                     }
                     $local['cloudinfo'] = $cloudinfo;
@@ -167,7 +166,7 @@ class CloudService
                     $com['lastupdate'] = '<span class="layui-badge">未安装</span>';
                     $com['cloudinfo'] = array();
                     $com['installtime'] = '-';
-                    $com['action'] = '<a href="'.wurl('module/require', array('nid'=>$value['identity'])).'" class="layui-btn layui-btn-sm layui-btn-normal confirm" data-text="确定要安装该应用？">安装</a>';
+                    $com['action'] = '<a href="'.wurl('module/require', array('nid'=>$value['identity'])).'" class="layui-btn layui-btn-sm layui-btn-normal js-terminal" data-text="确定要安装该应用？">安装</a>';
                     $plugins[$identify] = $com;
                 }
             }
@@ -248,15 +247,18 @@ class CloudService
     }
 
     static function CloudUpdate($identity,$targetpath,$patch=''){
+        MSService::TerminalSend(['mode'=>'info', 'message'=>'从云端对比应用程序...']);
         $data = array(
             'identity'=>$identity,
             'fp'=>config('system.identity')
         );
         $ugradeinfo = self::CloudApi('structure',$data);
         if (is_error($ugradeinfo)) return $ugradeinfo;
+        MSService::TerminalSend(['mode'=>'info', 'message'=>'正在对比云端应用程序...']);
         $structures = json_decode(base64_decode($ugradeinfo['structure']), true);
         $difference = self::CloudCompare($structures,$targetpath);
         if (empty($difference)) return true;
+        MSService::TerminalSend(['mode'=>'info', 'message'=>'从云端同步应用程序...']);
         $data = array(
             'identity'=>$identity,
             'fp'=>config('system.identity'),
@@ -266,6 +268,7 @@ class CloudService
         $zipcontent = self::CloudApi('upgrade',$data,true);
         if (is_error($zipcontent)) return $zipcontent;
         if (empty($zipcontent)){
+            MSService::TerminalSend(['mode'=>'err', 'message'=>'云端程序同步失败，请检查网络状态']);
             return error(-1,'补丁获取失败');
         }
         if (!$patch){
@@ -277,6 +280,7 @@ class CloudService
         $filename = FileService::file_random_name($patch,'zip');
         $fullname = $patch.$filename;
         if (!file_put_contents($fullname, $zipcontent)) {
+            MSService::TerminalSend(['mode'=>'err', 'message'=>'云端程序同步失败，请检查文件权限']);
             return error(-1,'补丁下载失败：请检查文件权限');
         }
         $patchpath = $patch.$identity.$ugradeinfo['releasedate'].'/';
@@ -291,8 +295,10 @@ class CloudService
             @unlink($fullname);
         }else{
             @unlink($fullname);
+            MSService::TerminalSend(['mode'=>'err', 'message'=>'应用程序补丁包解压失败，请检查文件夹权限']);
             return error(-1,'补丁解压失败，请重试');
         }
+        MSService::TerminalSend(['mode'=>'info', 'message'=>'更新应用程序源码...']);
         //5、将补丁文件更新到本地
         self::CloudPatch($targetpath,$patchpath,true);
         FileService::rmdirs($patchpath);

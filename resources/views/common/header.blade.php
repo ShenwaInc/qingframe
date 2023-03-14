@@ -11,6 +11,15 @@
 
             <ul class="layui-nav layui-layout-right">
                 @if($_W['uid']>0)
+                    @if($_W['isfounder'])
+                        <li class="layui-nav-item">
+                            @if($_W['config']['site']['id']==0)
+                                <a href="{{url('console/active')}}">系统激活<span class="layui-badge-dot"></span></a>
+                            @else
+                                <a href="{{url('console/setting')}}">系统管理</a>
+                            @endif
+                        </li>
+                    @endif
                     <li class="layui-nav-item">
                         <a href="javascript:;">
                             <img src="{{ tomedia($_W['user']['avatar']) }}" class="layui-nav-img user-avatar" />
@@ -23,15 +32,6 @@
                             <dd><a href="javascript:Core.logout();">退出账户</a></dd>
                         </dl>
                     </li>
-                    @if($_W['isfounder'])
-                    <li class="layui-nav-item">
-                        @if($_W['config']['site']['id']==0)
-                            <a href="{{url('console/active')}}">系统激活<span class="layui-badge-dot"></span></a>
-                        @else
-                            <a href="{{url('console/setting')}}">系统管理</a>
-                        @endif
-                    </li>
-                    @endif
                     <li class="layui-nav-item layui-hide-xs js-fullscreen" lay-unselect>
                         <a href="javascript:;" layadmin-event="fullscreen">
                             <i class="layui-icon layui-icon-screen-full"></i>
