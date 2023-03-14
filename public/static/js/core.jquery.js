@@ -96,7 +96,7 @@ if(typeof Basetoken == 'undefined'){
             }
             return jQuery.ajax(AjaxObj);
         },
-        report: function (res) {
+        report: function (res, timeOut=1200) {
             if (typeof (res) != 'object' && this.isJsonString(res)) {
                 res = jQuery.parseJSON(res);
             }
@@ -120,7 +120,7 @@ if(typeof Basetoken == 'undefined'){
                     w.location.href = redirect;
                 }
                 if (act==='redirect') return direction();
-                setTimeout(direction, 1200);
+                setTimeout(direction, timeOut);
             }
         },
         isJsonString: function (str){

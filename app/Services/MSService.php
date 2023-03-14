@@ -270,11 +270,12 @@ class MSService
             }
             if (empty($server['upgrade'])){
                 $cloudServer = Cache::get("microserver".$server['identity'], error(-1, "Has no cache"));
-                if (is_error($cloudServer) || empty($cloudServer)) continue;
-                $release = $cloudServer['release'];
-                if (version_compare($release['version'], $server['version'], '>') || $release['releasedate']>$server['releases']){
-                    $server['actions'] .= '<a class="layui-btn layui-btn-sm layui-btn-danger confirm js-upgrade" data-text="升级前请做好数据备份" lay-tips="该服务可升级至V'.$release['version'].'Release'.$release['releasedate'].'" href="'.wurl('server', array('op'=>'cloudup', 'nid'=>$server['identity'])).'">升级</a>';
-                    $server['upgrade'] = array('version'=>$release['version'],'canup'=>false);
+                if (!is_error($cloudServer) && !empty($cloudServer)){
+                    $release = $cloudServer['release'];
+                    if (version_compare($release['version'], $server['version'], '>') || $release['releasedate']>$server['releases']){
+                        $server['actions'] .= '<a class="layui-btn layui-btn-sm layui-btn-danger js-upgrade js-terminal" data-text="升级前请做好数据备份" lay-tips="该服务可升级至V'.$release['version'].'Release'.$release['releasedate'].'" href="'.wurl('server', array('op'=>'cloudup', 'nid'=>$server['identity'])).'">升级</a>';
+                        $server['upgrade'] = array('version'=>$release['version'],'canup'=>false);
+                    }
                 }
             }
         }
@@ -284,6 +285,7 @@ class MSService
     public function checkRequire($requires){
         if (empty($requires)) return true;
         $servers = [];
+        $this->TerminalSend(['mode'=>'info', 'message'=>'即将安装相关依赖服务...']);
         foreach ($requires as $value){
             $identity = is_array($value) ? $value['id'] : $value;
             $servers[] = $identity;
@@ -307,6 +309,7 @@ class MSService
                 if (is_error($installCloud)) return error(-1, "安装依赖的服务({$identity})时发生异常：{$installCloud['message']}");
             }
         }
+        $this->TerminalSend(['mode'=>'success', 'message'=>'相关依赖服务安装完成！']);
         return $servers;
     }
 
@@ -323,7 +326,9 @@ class MSService
             }
             if ($return) return $depends;
             if (!empty($depends)){
-                return error(-1, "操作失败：该服务正在被其它服务依赖（".implode('、', $depends)."）");
+                $message = "操作失败：该服务正在被其它服务依赖（".implode('、', $depends)."），如需继续卸载，请先卸载对应服务。";
+                self::TerminalSend(["mode"=>"err", "message"=>$message]);
+                return error(-1, $message);
             }
         }
         return [];
@@ -370,14 +375,15 @@ class MSService
         if ($this->isexist($identity)) return true;
         $service = $this->getmanifest($identity);
         if (is_error($service)) return $service;
+        //构造服务信息
+        $keys = array('identity','name','version','cover','summary','releases');
+        $application = $this->getApplication($keys, $service);
+        $this->TerminalSend(["mode"=>"info", "message"=>"正在安装微服务【{$application['name']}^{$application['version']}】"]);
         //判断依赖服务
         $requires = $this->checkRequire($service['require']);
         if (is_error($requires)){
             return $requires;
         }
-        //构造服务信息
-        $keys = array('identity','name','version','cover','summary','releases');
-        $application = $this->getApplication($keys, $service);
         $configs = post_var(array('uninstall'), $service);
         $configs['require'] = (array)$requires;
         if ($fromCloud){
@@ -386,10 +392,10 @@ class MSService
         if (!empty($configs)){
             $application['configs'] = serialize($configs);
         }
-        //加载所需资源，待完善
         //运行安装脚本
         if (!empty($service['install'])){
             try {
+                $this->TerminalSend(["mode"=>"info", "message"=>"正在运行服务安装脚本..."]);
                 script_run($service['install'], MICRO_SERVER.$identity);
             }catch (\Exception $exception){
                 if (!DEVELOPMENT){
@@ -422,8 +428,17 @@ class MSService
             }
             @unlink(MICRO_SERVER.$identity."/manifest.json");
         }
-        if (file_exists(MICRO_SERVER.$identity."/composer.json") && $autoInstall){
-            self::ComposerFail($identity, "");
+        //加载Composer依赖
+        if (file_exists(MICRO_SERVER.$identity."/composer.json")){
+            $ComposerName = "microserver/$identity";
+            $this->TerminalSend(["mode"=>"info", "message"=>"即将安装Composer依赖【{$ComposerName}】"]);
+            $res = $this->ComposerRequire(MICRO_SERVER.$identity."/", $ComposerName);
+            if (is_error($res)) return $res;
+            if (!$res){
+                $composerUrl = wurl("server", array('op'=>'composer', 'nid'=>$identity), true);
+                $this->TerminalSend(["mode"=>"err", "message"=>"Composer依赖安装失败，请打开该网址手动安装：$composerUrl"]);
+                return error(-102, "Composer依赖安装失败，请手动安装");
+            }
         }
         return true;
     }
@@ -437,21 +452,23 @@ class MSService
         if($manifest['application']['identity']!=$service['identity']){
             return error(-1, "安装包的Identity不匹配");
         }
-        if(version_compare($manifest['application']['version'],$service['version'],'>') || $manifest['application']['releases']>$service['releases']){
+        //构造服务信息
+        $keys = array('name','version','cover','summary','releases');
+        $application = $this->getApplication($keys, $manifest);
+        $this->TerminalSend(["mode"=>"info", "message"=>"正在升级微服务【{$application['name']}^{$application['version']}】"]);
+        if(version_compare($application['version'],$service['version'],'>') || $application['releases']>$service['releases']){
             //判断依赖服务
             $requires = $this->checkRequire($service['require']);
             if (is_error($requires)){
                 return $requires;
             }
-            //构造服务信息
-            $keys = array('name','version','cover','summary','releases');
-            $application = $this->getApplication($keys, $manifest);
             $service['configs']['uninstall'] = $manifest['uninstall'];
             $service['configs']['require'] = $requires;
             $application['configs'] = serialize($service['configs']);
             //运行升级脚本
             if (!empty($manifest['upgrade'])){
                 try {
+                    $this->TerminalSend(["mode"=>"info", "message"=>"正在运行服务升级脚本..."]);
                     script_run($manifest['upgrade'], MICRO_SERVER.$identity);
                 }catch (\Exception $exception){
                     return error(-1,"安装失败：".$exception->getMessage());
@@ -465,6 +482,17 @@ class MSService
             }
             $this->getEvents(true);
             $this->uniLink($manifest);
+            if (file_exists(MICRO_SERVER.$identity."/composer.json")){
+                $ComposerName = "microserver/$identity";
+                $this->TerminalSend(["mode"=>"info", "message"=>"即将安装Composer依赖【{$ComposerName}】"]);
+                $res = $this->ComposerRequire(MICRO_SERVER.$identity."/", $ComposerName);
+                if (is_error($res)) return $res;
+                if (!$res){
+                    $composerUrl = wurl("server", array('op'=>'composer', 'nid'=>$identity), true);
+                    $this->TerminalSend(["mode"=>"err", "message"=>"Composer依赖安装失败，请打开该网址手动安装：$composerUrl"]);
+                    return error(-102, "Composer依赖安装失败，请手动安装");
+                }
+            }
             if (!DEVELOPMENT){
                 //删除安装包文件
                 @unlink(MICRO_SERVER.$identity."/manifest.json");
@@ -514,7 +542,8 @@ class MSService
             pdo_delete("microserver_unilink", array("name"=>$identity));
             $composerExists = file_exists(MICRO_SERVER.$identity."/composer.json");
             if ($composerExists){
-                self::ComposerRemove("microserver/".$identity);
+                $res = self::ComposerRemove("microserver/".$identity);
+                if (is_error($res)) return $res;
             }
         }
         if (!DEVELOPMENT){
@@ -522,6 +551,26 @@ class MSService
             FileService::rmdirs(MICRO_SERVER.$identity."/");
         }
         return true;
+    }
+
+    public static function TerminalSend($data){
+        global $_W;
+        $data['type'] = 'terminal';
+        $userIds = md5($_W['config']['setting']['authkey'].":terminal:{$_W['uid']}");
+        $swaSocket = serv('websocket');
+        if ($swaSocket->enabled){
+            return $swaSocket->Send($data, $userIds, 0);
+        }
+        $sendData = array(
+            'message'=>json_encode($data),
+            'userIds'=>$userIds,
+            'fromId'=>0,
+            'token'=>$_W['token'],
+            'siteRoot'=>$_W['siteroot']
+        );
+        $res =  HttpService::ihttp_post('https://socket.whotalk.com.cn/api/message/sendMessageToUser', $sendData);
+        if(is_error($res)) return $res;
+        return json_decode($res['content'],true);
     }
 
     /**
@@ -532,6 +581,7 @@ class MSService
     */
     public static function ComposerRequire($basePath, $name){
         $composer = $basePath."composer.json";
+        $startTime = time();
         if (!file_exists($composer)) return true;
         $WorkingDirectory = base_path() . "/";
         if (DEVELOPMENT){
@@ -565,22 +615,33 @@ class MSService
             $process = new Process($command);
             $process->setWorkingDirectory($WorkingDirectory);
             $process->setEnv(['COMPOSER_HOME'=>self::ComposerHome()]);
-            $process->setTimeout(300);
-            $process->start();
+            $process->setTimeout(ini_get('max_execution_time')-5);
+            $process->run(function ($type, $buffer) {
+                self::TerminalSend(["mode"=>str_replace('err', 'warm', $type), "message"=>$buffer]);
+            });
             $process->wait();
             if ($process->isSuccessful()) {
+                $stopTime = time();
+                self::TerminalSend(["mode"=>"success", "message"=>"Composer依赖【{$name}】安装成功！耗时".($stopTime-$startTime)."秒"]);
                 return true;
             }else{
                 self::ComposerFail($name, $process->getOutput());
+                self::TerminalSend(["mode"=>"err", "message"=>"Composer依赖【{$name}】安装失败，请手动安装。Composer相关操作请参考：https://www.yuque.com/shenwa/qingru/ze9hby#qUvo3"]);
             }
         }catch (\Exception $exception){
             //Todo something
-            self::ComposerFail($name, $exception->getMessage());
+            $message = $exception->getMessage();
+            self::TerminalSend(["mode"=>"err", "message"=>$message]);
+            if (strexists($message, 'exceeded the timeout')){
+                self::TerminalSend(["mode"=>"err", "message"=>"Composer安装耗时大于程序最大运行时间(".ini_get('max_execution_time')."秒)，请适当调整该数值后再重试"]);
+            }
+            self::ComposerFail($name, $message);
         }
         return false;
     }
 
     public static function ComposerUpdate($basePath, $name, $composerVer=''){
+        $startTime = time();
         if (DEVELOPMENT){
             $WorkingDirectory = $basePath;
             $command = ['composer', 'update'];
@@ -604,42 +665,59 @@ class MSService
             $process = new Process($command);
             $process->setWorkingDirectory($WorkingDirectory);
             $process->setEnv(['COMPOSER_HOME'=>self::ComposerHome()]);
-            $process->setTimeout(300);
-            $process->start();
+            $process->setTimeout(ini_get('max_execution_time')-5);
+            $process->run(function ($type, $buffer) {
+                self::TerminalSend(["mode"=>str_replace('err', 'warm', $type), "message"=>$buffer]);
+            });
             $process->wait();
             if ($process->isSuccessful()) {
+                $stopTime = time();
+                self::TerminalSend(["mode"=>"success", "message"=>"Composer依赖【{$name}】更新成功！耗时".($stopTime-$startTime)."秒"]);
                 return true;
             }else{
                 self::ComposerFail($name, $process->getOutput(), $command);
+                self::TerminalSend(["mode"=>"err", "message"=>"Composer依赖【{$name}】更新失败，请手动安装。Composer相关操作请参考：https://www.yuque.com/shenwa/qingru/ze9hby#qUvo3"]);
             }
         }catch (\Exception $exception){
             //Todo something
-            self::ComposerFail($name, $exception->getMessage(), $command);
+            $message = $exception->getMessage();
+            self::TerminalSend(["mode"=>"err", "message"=>$message]);
+            if (strexists($message, 'exceeded the timeout')){
+                self::TerminalSend(["mode"=>"err", "message"=>"Composer安装耗时大于程序最大运行时间(".ini_get('max_execution_time')."秒)，请适当调整该数值后再重试"]);
+            }
+            self::ComposerFail($name, $message);
         }
         return false;
     }
 
     public static function ComposerRemove($require){
-        if (DEVELOPMENT) return true;
+        if (DEVELOPMENT){
+            self::TerminalSend(["mode"=>"warm", "message"=>"请手动删除微服务的Composer依赖包"]);
+            return true;
+        }
+        $startTime = time();
         $WorkingDirectory = base_path()."/";
         try {
             $process = new Process(["composer", "remove", $require]);
             $process->setWorkingDirectory($WorkingDirectory);
             $process->setEnv(['COMPOSER_HOME'=>self::ComposerHome()]);
-            $process->setTimeout(180);
-            $process->start();
+            $process->setTimeout(ini_get('max_execution_time'));
+            $process->run(function ($type, $buffer) {
+                self::TerminalSend(["mode"=>$type, "message"=>$buffer]);
+            });
             $process->wait();
             if ($process->isSuccessful()) {
+                $stopTime = time();
+                self::TerminalSend(["mode"=>"success", "message"=>"Composer依赖【{$require}】卸载完成！耗时".($stopTime-$startTime)."秒"]);
                 return true;
             }
         }catch (\Exception $exception){
             //Todo something
         }
-        echo "依赖组件卸载失败，请使用宝塔终端或其它ssh依次运行如下指令（执行完后请刷新此页面）：<br/>";
-        dd(
-            "cd ".$WorkingDirectory,
-            "composer remove $require"
-        );
+        self::TerminalSend(["mode"=>"err", "message"=>"Composer依赖卸载失败，请使用宝塔终端或其它ssh依次运行如下指令（执行完后请刷新此页面）"]);
+        self::TerminalSend(["mode"=>"cmd", "message"=>"cd ".$WorkingDirectory]);
+        self::TerminalSend(["mode"=>"cmd", "message"=>"composer remove $require"]);
+        return error(-1, "Composer依赖【{$require}】卸载失败");
     }
 
     public static function ComposerFail($name, $output, $command=[]){
@@ -727,7 +805,7 @@ class MSService
                 if (!empty($service) && isset($service['application'])){
                     if (self::isexist($service['application']['identity'])) continue;
                     $serv = $service['application'];
-                    $serv['actions'] = '<a class="layui-btn layui-btn-sm layui-btn-normal confirm" data-text="确定要安装该服务？" href="'.wurl('server', array("op"=>"install", "nid"=>$serv['identity'])).'">安装</a>';
+                    $serv['actions'] = '<a class="layui-btn layui-btn-sm layui-btn-normal js-terminal" data-text="确定要安装该服务？" href="'.wurl('server', array("op"=>"install", "nid"=>$serv['identity'])).'">安装</a>';
                     $serv['status'] = -1;
                     $serv['isdelete'] = false;
                     $servers[$serv['identity']] = $serv;
