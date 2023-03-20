@@ -9,7 +9,7 @@
 <script type="text/javascript">
     var terminalState = false, terminalPrefix = "[{{ $_W['user']['username']."@" }}{{ str_replace(['https://','http://','/'], '', $_W['siteroot']) }}]# ";
     function SocketReceive(data){
-        console.log("接收到终端消息", data);
+        //console.log("接收到终端消息", data);
         if(data.type==="terminal"){
             terminalShow(data.message, data.mode);
         }

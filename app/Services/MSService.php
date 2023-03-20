@@ -533,6 +533,7 @@ class MSService
             try {
                 script_run($service['configs']['uninstall'], MICRO_SERVER.$identity);
             }catch (\Exception $exception){
+                $this->TerminalSend(["mode"=>"err", "message"=>$exception->getMessage()]);
                 return error(-1,"卸载失败：".$exception->getMessage());
             }
             if (!pdo_delete(self::$tableName,array('id'=>$service['id']))){
