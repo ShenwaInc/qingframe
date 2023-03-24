@@ -6,6 +6,17 @@
     .fui-terminal .layui-code-ol .warm{color: #fbbd08 !important;}
     .fui-terminal .layui-code-ol .success{color: #39b54a !important; font-weight: bold;}
 </style>
+@php
+if (empty($socket)){
+    global $_W;
+    $swaSocket = serv('websocket');
+    $socket = [
+            'server'=>$swaSocket->enabled?$swaSocket->settings['server']:"wss://socket.whotalk.com.cn/wss",
+            'userSign'=>md5($_W['config']['setting']['authkey'].":terminal:".$_W['uid']),
+            'userId'=>$_W['uid']
+    ];
+}
+@endphp
 <script type="text/javascript">
     var terminalState = false, terminalPrefix = "[{{ $_W['user']['username']."@" }}{{ str_replace(['https://','http://','/'], '', $_W['siteroot']) }}]# ";
     function SocketReceive(data){
@@ -21,7 +32,6 @@
         layer.open({
             type: 1,
             skin: 'fui-layer fui-terminal', //样式类名
-            closeBtn: 0,
             anim: 2,
             title:"轻如云终端",
             shadeClose: false, //开启遮罩关闭
@@ -38,6 +48,9 @@
                         Core.report(res, 2000);
                     }, {inajax:1, _token:"{{ $_W['token'] }}"});
                 }
+            },
+            cancel:function (index, layero){
+                layer.msg("程序仍在后端运行中...");
             }
         });
     }

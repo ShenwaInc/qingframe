@@ -54,6 +54,9 @@ class PlatformController extends Controller
 
     public function checkout($uniacid){
         global $_W;
+        if ($_W['config']['site']['id']==0){
+            return redirect("console/active");
+        }
         $_W['uniacid'] = intval($uniacid);
         session()->put('uniacid',$_W['uniacid']);
         list($controller, $method) = AccountService::GetEntrance($_W['uid'], $_W['uniacid']);

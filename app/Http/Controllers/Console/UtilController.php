@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Console;
 
 use App\Http\Controllers\Controller;
 use App\Services\CacheService;
+use App\Services\CloudService;
 use App\Services\FileService;
 use App\Services\HttpService;
 use App\Services\SettingService;
@@ -185,7 +186,19 @@ class UtilController extends Controller
     //
     public function save(Request $request,$op='index'){
         global $_W,$_GPC;
-        $uniacid = (int)$request->input('uniacid');
+        if ($op=='cloudcode'){
+            if (checksubmit('sendcode')){
+                $mobile = $request->input('mobile');
+                if (empty($mobile) || !preg_match('/^(\+)?(86)?0?1\d{10}$/', $mobile)) return $this->message("请输入正确的手机号");
+                $data = array('r'=>'util.code', 'token'=>1,'mobile'=>$mobile,"sendcode"=>"1","from"=>"autocheck");
+                $res = CloudService::CloudApi("", $data);
+                if (is_error($res)){
+                    return $this->message($res['message']);
+                }
+                return $this->message($res['message'], "", $res["type"]);
+            }
+            return $this->message();
+        }
         if ($op=='file'){
             $do = $request->input('do');
             if ('delete' == $do){

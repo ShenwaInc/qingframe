@@ -76,6 +76,9 @@ class ServerController extends Controller
     }
 
     public function index(Request $request){
+        if (empty($GLOBALS['_W']['config']['site']['id'])){
+            return redirect("console/active");
+        }
         $startTime = time();
         $op = $request->get("op","index");
         $identity = $request->get("nid", "");

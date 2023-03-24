@@ -168,7 +168,7 @@ class WeModule
             require $file;
             session_exit();
         }
-        throw new \Exception('模块方法' . $name . '不存在.');
+        abort(404, "模块方法{$name}不存在");
     }
 
 }

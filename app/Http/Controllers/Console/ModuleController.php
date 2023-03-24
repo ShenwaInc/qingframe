@@ -35,6 +35,9 @@ class ModuleController extends Controller
 
     public function index(Request $request, $option='list'){
         global $_W;
+        if (empty($_W['config']['site']['id'])){
+            return redirect("console/active");
+        }
         $method = "do".ucfirst($option);
         if (method_exists($this, $method)){
             return $this->$method($request);

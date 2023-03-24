@@ -175,17 +175,13 @@
                                 <td><span class="fui-table-lable">云服务</span></td>
                                 <td class="soild-after">
                                     @if($activeState['status']==1)
-                                        系统已激活（站点ID：{{ $activeState['siteid'] }}）
+                                        {{$activeState['name']}}（站点ID：<span class="text-blue js-clip" data-url="{{ $activeState['siteid'] }}">{{ $activeState['siteid'] }}</span>）
                                     @else
                                         {{ $activeState['state'] }}
                                     @endif
                                 </td>
                                 <td class="text-right soild-after">
-                                    @if($activeState['status']==1)
-                                        {{ $activeState['expiretime'] ? date('Y-m-d', $activeState['expiretime'])."到期" : "永久有效" }}
-                                    @elseif(!empty($activeState['redirect']))
-                                        <a href="{{ $activeState['redirect'] }}" class="text-blue" target="_blank">自助激活</a>
-                                    @endif
+                                    <a href="{{ url('console/active') }}" class="text-blue">重新激活</a>
                                 </td>
                             </tr>
                             <tr>
@@ -207,4 +203,5 @@
 
     </div>
 </div>
+@include('console.terminal')
 @include('common.footer')

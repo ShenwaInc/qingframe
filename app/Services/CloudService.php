@@ -10,7 +10,6 @@ class CloudService
 
     static $identity = 'swa_framework_laravel';
     static $cloudapi = 'https://chat.gxit.org/app/index.php?i=4&c=entry&m=swa_supersale&do=api';
-    static $cloudactive = 'https://chat.gxit.org/app/index.php?i=4&c=entry&m=swa_supersale&do=app&r=whotalkcloud.active';
     static $apilist = array('rmcom'=>'cloud.vendor.remove','require'=>'cloud.install','structure'=>'cloud.structure','upgrade'=>'cloud.makepatch');
 
     static function RequireModule($identity,$path='addons'){
@@ -113,8 +112,11 @@ class CloudService
                         }
                     }
                     $com['action'] .= '<a href="'.wurl('module/remove', array('nid'=>$identity)).'" class="layui-btn layui-btn-sm layui-btn-primary js-terminal" data-text="即将卸载该应用并删除应用产生的所有数据，是否确定要卸载？">卸载</a></div>';
-                }elseif(DEVELOPMENT){
-                    $com['action'] = '<a href="'.wurl('module/install', array('nid'=>$identity)).'" class="layui-btn layui-btn-sm layui-btn-normal js-terminal" data-text="确定要安装该应用？">安装</a>';
+                }else{
+                    $com['lastupdate'] = '-';
+                    if(DEVELOPMENT){
+                        $com['action'] = '<a href="'.wurl('module/install', array('nid'=>$identity)).'" class="layui-btn layui-btn-sm layui-btn-normal js-terminal" data-text="确定要安装该应用？">安装</a>';
+                    }
                 }
                 $plugins[$identity] = $com;
             }
@@ -163,9 +165,12 @@ class CloudService
                         'website'=>$value['website'],
                         'logo'=>$value['icon']
                     );
-                    $com['lastupdate'] = '<span class="layui-badge">未安装</span>';
-                    $com['cloudinfo'] = array();
-                    $com['installtime'] = '-';
+                    $com['lastupdate'] = '-';
+                    $com['cloudinfo'] = array(
+                        'version'=>$value['release']['version'],
+                        'releasedate'=>$releaseDate
+                    );
+                    $com['installtime'] = '<span class="layui-badge">未安装</span>';
                     $com['action'] = '<a href="'.wurl('module/require', array('nid'=>$value['identity'])).'" class="layui-btn layui-btn-sm layui-btn-normal js-terminal" data-text="确定要安装该应用？">安装</a>';
                     $plugins[$identify] = $com;
                 }
@@ -247,14 +252,14 @@ class CloudService
     }
 
     static function CloudUpdate($identity,$targetpath,$patch=''){
-        MSService::TerminalSend(['mode'=>'info', 'message'=>'从云端对比应用程序...']);
+        MSService::TerminalSend(['mode'=>'info', 'message'=>'从云端对比程序源码...']);
         $data = array(
             'identity'=>$identity,
             'fp'=>config('system.identity')
         );
         $ugradeinfo = self::CloudApi('structure',$data);
         if (is_error($ugradeinfo)) return $ugradeinfo;
-        MSService::TerminalSend(['mode'=>'info', 'message'=>'正在对比云端应用程序...']);
+        MSService::TerminalSend(['mode'=>'info', 'message'=>'获取到云端程序信息：V'.$ugradeinfo['version']]);
         $structures = json_decode(base64_decode($ugradeinfo['structure']), true);
         $difference = self::CloudCompare($structures,$targetpath);
         if (empty($difference)) return true;
@@ -295,10 +300,10 @@ class CloudService
             @unlink($fullname);
         }else{
             @unlink($fullname);
-            MSService::TerminalSend(['mode'=>'err', 'message'=>'应用程序补丁包解压失败，请检查文件夹权限']);
+            MSService::TerminalSend(['mode'=>'err', 'message'=>'补丁包解压失败，请检查文件夹权限']);
             return error(-1,'补丁解压失败，请重试');
         }
-        MSService::TerminalSend(['mode'=>'info', 'message'=>'更新应用程序源码...']);
+        MSService::TerminalSend(['mode'=>'info', 'message'=>'更新程序源码...']);
         //5、将补丁文件更新到本地
         self::CloudPatch($targetpath,$patchpath,true);
         FileService::rmdirs($patchpath);
@@ -412,11 +417,10 @@ class CloudService
 
     static function CloudActive(){
         global $_W;
-        $default = array('state'=>'未获得授权','siteid'=>0,'siteroot'=>$_W['siteroot'],'expiretime'=>0,'status'=>0,'redirect'=>"");
+        $default = array('state'=>'未开始激活','siteid'=>0,'siteroot'=>$_W['siteroot'],'expiretime'=>0,'status'=>0,'uid'=>0,'mobile'=>"",'name'=>$_W['config']['name']);
         $cachekey = CacheService::system_key('HingWork:Authorize:Active');
         $authorize = Cache::get($cachekey,$default);
-        $res = self::CloudApi('',array('r'=>'cloud.active','identity'=>config('system.identity')));
-        $authorize['redirect'] = self::$cloudactive;
+        $res = self::CloudApi('',array('r'=>'cloud.active.state', 'siteName'=>$authorize['name'],'identity'=>config('system.identity')));
         if (!empty($res['redirect'])){
             $authorize['redirect'] = trim($res['redirect']);
         }
@@ -424,21 +428,18 @@ class CloudService
             $authorize['state'] = $res['message'];
             return $authorize;
         }
-        if (!isset($res['site']) || !isset($res['authorize'])){
-            $authorize['state'] = '授权状态查询失败';
+        if (!isset($res['siteinfo'])){
+            $authorize['state'] = '激活状态查询失败';
             return $authorize;
         }
 
-        $authorize['siteid'] = $res['site']['id'];
-        if ($res['site']['status']==1 && $res['authorize']['status']==1){
-            $authorize['expiretime'] = $res['authorize']['expiretime'];
-            if ($res['authorize']['expiretime']>0 && $res['authorize']['expiretime']<TIMESTAMP){
-                $authorize['status'] = 2;
-                $authorize['state'] = '授权已到期';
-            }else{
-                $authorize['status'] = 1;
-                $authorize['state'] = '已授权';
-            }
+        $authorize['siteid'] = $res['siteinfo']['id'];
+        //$authorize['name'] = $res['siteinfo']['name'];
+        $authorize['uid'] = $res['siteinfo']['uid'];
+        $authorize['mobile'] = $res['siteinfo']['mobile'];
+        $authorize['status'] = $res['siteinfo']['status'];
+        if ($res['siteinfo']['status']==1){
+            $authorize['state'] = '已激活';
         }
 
         Cache::put($cachekey, $authorize, 3600);
