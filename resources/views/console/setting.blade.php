@@ -51,22 +51,20 @@
                         </tr>
                         <tr>
                             <td><span class="fui-table-lable">SEO关键字</span></td>
-                            <td class="soild-after">{{ $_W['setting']['page']['keywords'] ? $_W['setting']['page']['keywords'] : '暂未设置' }}</td>
+                            <td class="soild-after">{{ $_W['setting']['page']['keywords'] ?  : '暂未设置' }}</td>
                         </tr>
                         <tr>
                             <td><span class="fui-table-lable">SEO描述</span></td>
-                            <td class="soild-after">{{ $_W['setting']['page']['description'] ? $_W['setting']['page']['description'] : '暂无描述' }}</td>
+                            <td class="soild-after">{{ $_W['setting']['page']['description'] ?  : '暂无描述' }}</td>
                         </tr>
                         <tr>
                             <td><span class="fui-table-lable">底部版权信息</span></td>
-                            <td class="soild-after">{{ $_W['setting']['page']['copyright'] }}</td>
+                            <td class="soild-after">{!! $_W['setting']['page']['copyright'] !!}</td>
                         </tr>
                         <tr>
                             <td><span class="fui-table-lable">底部导航连接</span></td>
                             <td class="soild-after text-blue">
-                                @php
-                                    echo $_W['setting']['page']['links'];
-                                @endphp
+                                {!! $_W['setting']['page']['links'] !!}
                             </td>
                         </tr>
                         </tbody>
@@ -175,7 +173,9 @@
                                 <td><span class="fui-table-lable">云服务</span></td>
                                 <td class="soild-after">
                                     @if($activeState['status']==1)
-                                        {{$activeState['name']}}（站点ID：<span class="text-blue js-clip" data-url="{{ $activeState['siteid'] }}">{{ $activeState['siteid'] }}</span>）
+                                        {{$activeState['name']}}（站点ID：<span class="text-blue js-clip"
+                                                                            data-url="{{ $activeState['siteid'] }}">{{ $activeState['siteid'] }}</span>
+                                        ）
                                     @else
                                         {{ $activeState['state'] }}
                                     @endif
