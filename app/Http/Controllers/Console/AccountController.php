@@ -208,9 +208,26 @@ class AccountController extends Controller
                 $return['components'][] = $component;
             }
         }
-        if (!$_W['isfounder'] && !empty($return['components'])){
-            //判断当前用户模块权限（操作员/管理员），待完善
-            //$enabled_modules = UserService::GetModules($_W['uid']);
+        //判断当前用户模块权限（操作员/管理员）
+        if (!$_W['isfounder']){
+            //获取权限
+            $permission= DB::table('users_permission')->where(['uid'=>$_W['uid'],'uniacid'=>$this->uniacid])->value('permission');
+            //为空默认有全部权限(未设置过权限)
+            if(!empty($permission)){
+                $permission=unserialize($permission);
+                foreach ($return['components'] as $key => $value){
+                    //没有权限，移除本应用模块
+                    if(empty($permission['modules'][$value['identity']])){
+                        unset($return['components'][$key]);
+                    }
+                }
+                foreach ($return['servers'] as $key => $value){
+                    //没有权限，移除本服务
+                    if(empty($permission['servers'][$value['name']])){
+                        unset($return['servers'][$key]);
+                    }
+                }
+            }
         }
         return $this->globalview('console.account.functions',$return);
     }
@@ -374,6 +391,94 @@ class AccountController extends Controller
         }
         $return = array('title'=>'创建平台');
         return $this->globalview('console.account.create', $return);
+    }
+    public function doPermission(Request $request){
+        $uid=$request->input('uid');
+        $uniacid=$request->input('uniacid');
+        //获取权限
+        $permissionInfo= DB::table('users_permission')->where(['uid'=>$uid,'uniacid'=>$this->uniacid])->first();
+
+        //保存权限
+        if ($request->isMethod('post')){
+            $routesData=$request->input('routes');
+            $permission=serialize($routesData);
+
+            if(!empty($permissionInfo)){
+                $res=DB::table('users_permission')->where(['id'=>$permissionInfo['id']])->update(['permission'=>$permission]);
+            }else{
+                $data=[
+                    'uniacid'=>$uniacid,
+                    'uid'=>$uid,
+                    'permission'=>$permission
+                ];
+                $res=DB::table('users_permission')->insert($data);
+            }
+
+            if($res) return $this->message('保存成功',wurl('account/role',array('uniacid'=>$uniacid)),'success');
+
+            return $this->message('保存失败，请重试');
+        }
+        //获取已安装应用
+        $modulesList = ModuleService::moduleList();
+        $permission=unserialize($permissionInfo['permission'] ?? []);
+        $components = AccountService::ExtraModules($uniacid);
+
+        foreach ($modulesList as $key  => &$value){
+            //未添加，移除应用
+            if(empty($components[$key])){
+                unset($modulesList[$key]);
+                continue;
+            }
+
+            $value['permissions']=unserialize($value['permissions'] ?? '');
+            if(empty($value['permissions'])) continue;
+
+            $currentPermission=$permission['modules'][$key] ?? null;
+            if(empty($currentPermission)) continue;
+
+            //比较是否已设置权限
+            foreach ($value['permissions'] as &$val){
+                $val['exist']=in_array($val['route'],$currentPermission) ? true : false;
+
+                //二级权限
+                foreach ($val['subPerm'] ?? [] as $k => $v){
+                    $val['subPerm'][$k]['exist']=in_array($v['route'],$currentPermission) ? true : false;
+                }
+            }
+            unset($val);
+        }
+        unset($value);
+        //读取可用服务
+        $serversList = pdo_getall("microserver_unilink", array('status'=>1));
+        foreach ($serversList as &$value){
+
+            $value['perms']=unserialize($value['perms'] ?? '');
+
+            if(empty($value['perms']))
+                $value['perms']=['name'=>'微服务入口','route'=>'entrance'];
+
+
+            $currentPermission=$permission['servers'][$value['name']] ?? [];
+
+            //比较是否已设置权限
+            foreach ($value['perms'] as $ke => &$val){
+                $val=['name'=>$val,'route'=>$ke];
+                $val['exist']=in_array($val['route'],$currentPermission) ? true : false;
+
+                //二级权限
+                foreach ($val['subPerm'] ?? [] as $k => $v){
+                    $val['subPerm'][$k]['exist']=in_array($v['route'],$currentPermission) ? true : false;
+                }
+            }
+            unset($val);
+        }
+        unset($value);
+        return $this->globalview('console.account.permission',[
+            'uid'         => $uid,
+            'uniacid'     => $uniacid,
+            'modulesList' => $modulesList,
+            'serversList'     => $serversList,
+        ]);
     }
 
 }

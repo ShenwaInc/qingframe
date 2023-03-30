@@ -56,7 +56,53 @@ class ConsolePermission
             $_W['acid'] = $_W['account']['acid'];
         }
         $_W['attachurl'] = FileService::SetAttachUrl();
+        //验证是否有效应用模块
+        $this->checkModules($request,$uniacid);
+        //路由权限判断
+        if (!$_W['isfounder']) $this->checkPermission($request,$_W['uid'],$_W['uniacid']);
         return $next($request);
+    }
+
+    /**
+     * 路由权限判断（待完善）
+     * 目前只判断了是否可以进入应用和服务
+     * @param \Illuminate\Http\Request $request  Request
+     * @param int  $uniacid 平台id
+     * @param int  $uid 当前用户id
+     */
+    private function checkPermission($request,$uid,$uniacid):void
+    {
+        $permission= DB::table('users_permission')->where(['uid'=>$uid,'uniacid'=>$uniacid])->value('permission');
+        //为空默认有全部权限(未设置过权限)
+        if(!empty($permission)){
+            $permission=unserialize($permission);
+            //微服务权限判断
+            $serverName=$request->route('server');
+            if(!empty($serverName) && empty($permission['servers'][$serverName])){
+                message('没有访问权限');
+            }
+            //应用模块判断
+            $modulename=$request->route('modulename');
+            if(!empty($modulename)){
+                if(empty($permission['modules'][$modulename]))
+                    message('没有访问权限');
+            }
+        }
+    }
+
+    /**
+     * 验证是否有效应用模块
+     * @param \Illuminate\Http\Request $request
+     * @param int $uniacid 平台id
+     */
+    private function checkModules($request,$uniacid):void
+    {
+        //获取已安装应用模块
+        $components = AccountService::ExtraModules($uniacid);
+        $modulename=$request->route('modulename');
+        if(!empty($modulename) && empty($components[$modulename])){
+            message('找不到此应用');
+        }
     }
 
 }

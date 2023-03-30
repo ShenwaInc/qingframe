@@ -121,7 +121,7 @@ class ModuleService
      * @return array 模块列表
     */
     static function moduleList($recycle=0, $issystem=0){
-        $modules = DB::table('modules')->select(['mid','name','title','version','logo','from','status'])->where('issystem', intval($issystem))->get()->keyBy('name')->toArray();
+        $modules = DB::table('modules')->select(['mid','name','title','version','logo','from','status','permissions'])->where('issystem', intval($issystem))->get()->keyBy('name')->toArray();
         if (empty($modules)) return [];
         if ($recycle==-1) return $modules;
         $recycles = DB::table('modules_recycle')->select('type')->get()->keyBy('name')->toArray();

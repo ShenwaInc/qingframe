@@ -54,7 +54,7 @@
                                         <a href="javascript:;" onclick="showWindow(this)" data-id="#role-setowner" title="更换所有者" class="text-blue">修改</a>
                                     @endif
                                 @else
-                                    <a href="javascript:layer.msg('敬请期待',{icon:7});" class="text-blue margin-right-sm layui-hide">设置权限</a>
+                                    <a href="{{ wurl('account/permission',array('uniacid'=>$uniacid,'uid'=>$value['uid']),true) }}" class="text-blue margin-right-sm">设置权限</a>
                                     <a href="{{ wurl('account/role',array('uniacid'=>$uniacid,'uid'=>$value['uid'],'op'=>'remove'),true) }}" class="text-red confirm" data-text="确定要删除该用户的操作权限吗？">删除</a>
                                 @endif
                             </td>
