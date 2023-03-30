@@ -1,12 +1,14 @@
 <?php
 
+use App\Http\Middleware\App;
 use App\Http\Middleware\AppRuntime;
 
-Route::group(['prefix' => 'app','namespace' => 'App', 'middleware'=>['app']],function (){
+Route::group(['namespace' => 'App', 'middleware'=>['app', 'runtime']],function (){
     Route::match(['get', 'post'],'/m/{modulename}/{do?}', 'ModuleController@entry');
-    Route::match(['get', 'post'],'/util/{option}', 'UtilController@Main');
     Route::get('auth', 'AuthController@index');
 });
+
+Route::match(['get', 'post'],'/util/{option}', 'UtilController@Main')->middleware(App::class);
 
 Route::group(['prefix'=>'server', 'middleware'=>['app']],function (){
     Route::any('/{server}/{segment1?}/{segment2?}', 'HttpController@ServerApp')->where('server','[a-z]+')->middleware(AppRuntime::class);

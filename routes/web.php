@@ -24,11 +24,6 @@ Route::group(['namespace'=>'Auth', 'middleware'=>['app']],function (){
     Route::get('/login/{uniacid}', 'AuthController@Entry')->where('uniacid','[0-9]+');
 });
 
-Route::group(['prefix' => 'app','namespace' => 'App', 'middleware'=>['app', 'runtime']],function (){
-    Route::match(['get', 'post'],'/m/{modulename}/{do?}', 'ModuleController@entry');
-    Route::get('auth', 'AuthController@index');
-});
-
 Route::group(['prefix' => 'wem','namespace' => 'App', 'middleware'=>['app','runtime']],function (){
     Route::match(['get', 'post'],'/{modulename}/{do?}', 'ModuleController@entry');
     Route::post('/subscribe/{action}', 'ModuleController@subscribe');
