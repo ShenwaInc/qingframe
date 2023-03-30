@@ -73,17 +73,20 @@ class ConsolePermission
     private function checkPermission($request,$uid,$uniacid):void
     {
         $permission= DB::table('users_permission')->where(['uid'=>$uid,'uniacid'=>$uniacid])->value('permission');
-        $permission=unserialize($permission);
-        //微服务权限判断
-        $serverName=$request->route('server');
-        if(!empty($serverName) && empty($permission['servers'][$serverName])){
-            message('没有访问权限');
-        }
-        //应用模块判断
-        $modulename=$request->route('modulename');
-        if(!empty($modulename)){
-            if(empty($permission['modules'][$modulename]))
+        //为空默认有全部权限(未设置过权限)
+        if(!empty($permission)){
+            $permission=unserialize($permission);
+            //微服务权限判断
+            $serverName=$request->route('server');
+            if(!empty($serverName) && empty($permission['servers'][$serverName])){
                 message('没有访问权限');
+            }
+            //应用模块判断
+            $modulename=$request->route('modulename');
+            if(!empty($modulename)){
+                if(empty($permission['modules'][$modulename]))
+                    message('没有访问权限');
+            }
         }
     }
 

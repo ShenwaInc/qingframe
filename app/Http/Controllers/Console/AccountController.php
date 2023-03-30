@@ -212,23 +212,20 @@ class AccountController extends Controller
         if (!$_W['isfounder']){
             //获取权限
             $permission= DB::table('users_permission')->where(['uid'=>$_W['uid'],'uniacid'=>$this->uniacid])->value('permission');
-            $permission=unserialize($permission);
-
-            if(empty($permission)){
-                $return['components']=[];
-                $return['servers']=[];
-            }
-
-            foreach ($return['components'] as $key => $value){
-                //没有权限，移除本应用模块
-                if(empty($permission['modules'][$value['identity']])){
-                    unset($return['components'][$key]);
+            //为空默认有全部权限(未设置过权限)
+            if(!empty($permission)){
+                $permission=unserialize($permission);
+                foreach ($return['components'] as $key => $value){
+                    //没有权限，移除本应用模块
+                    if(empty($permission['modules'][$value['identity']])){
+                        unset($return['components'][$key]);
+                    }
                 }
-            }
-            foreach ($return['servers'] as $key => $value){
-                //没有权限，移除本服务
-                if(empty($permission['servers'][$value['name']])){
-                    unset($return['servers'][$key]);
+                foreach ($return['servers'] as $key => $value){
+                    //没有权限，移除本服务
+                    if(empty($permission['servers'][$value['name']])){
+                        unset($return['servers'][$key]);
+                    }
                 }
             }
         }
