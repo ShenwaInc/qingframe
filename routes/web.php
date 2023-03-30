@@ -24,11 +24,6 @@ Route::group(['namespace'=>'Auth', 'middleware'=>['app']],function (){
     Route::get('/login/{uniacid}', 'AuthController@Entry')->where('uniacid','[0-9]+');
 });
 
-Route::group(['prefix' => 'app','namespace' => 'App', 'middleware'=>['app', 'runtime']],function (){
-    Route::match(['get', 'post'],'/m/{modulename}/{do?}', 'ModuleController@entry');
-    Route::get('auth', 'AuthController@index');
-});
-
 Route::group(['prefix' => 'wem','namespace' => 'App', 'middleware'=>['app','runtime']],function (){
     Route::match(['get', 'post'],'/{modulename}/{do?}', 'ModuleController@entry');
     Route::post('/subscribe/{action}', 'ModuleController@subscribe');
@@ -42,7 +37,7 @@ Route::group(['prefix' => 'console', 'namespace' => 'Console', 'middleware'=>['a
     Route::get('/', 'PlatformController@index');
     Route::get('/util/{op?}', 'UtilController@index');
     Route::post('/util/{op?}', 'UtilController@save');
-    Route::get('/active', 'SettingController@active');
+    Route::match(['get', 'post'],'/active', 'SettingController@active');
     Route::get('/setting/{op?}', 'SettingController@index');
     Route::post('/setting', 'SettingController@save');
     Route::get('/account/{uniacid}', 'PlatformController@checkout')->where('uniacid','[0-9]+');

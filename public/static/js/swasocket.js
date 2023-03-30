@@ -1,4 +1,3 @@
-
 (function(w) {
     w.Swaws = {
         onDisconnect:null,
@@ -39,6 +38,7 @@
                 if (typeof (data) != 'object' || data==null) return false;
                 if(data.type===1 && data.method==='User/Connect'){
                     self.Heartbeat = true;
+                    self.socketRetry = 0;
                     self.HeartInterval = setInterval(function (){
                         let sendHeart = self.doHeartbeat();
                         if (!sendHeart){
@@ -90,8 +90,18 @@
                 if (typeof (Fail) == 'function' && e.code!==1005) {
                     Fail();
                 }
-                if (typeof (this.onDisconnect)=='function'){
-                    this.onDisconnect();
+                if (typeof (self.onDisconnect)=='function'){
+                    self.onDisconnect();
+                }
+                if((e.code!==1000 && e.code!==1006) || typeof(e.code)=='undefined'){
+                    if(self.socketRetry>=5){
+                        return console.error("通讯服务器连接失败");
+                    }
+                    self.socketRetry += 1;
+                    console.log('开始第'+self.socketRetry+'次重新连接');
+                    setTimeout(function(){
+                        return self.init(UserSign, Server, Receive, Fail);
+                    },2000);
                 }
             }
             WsSocket.onerror = function (event) {
@@ -102,6 +112,17 @@
             };
             this.io = WsSocket;
             return WsSocket;
+        },
+        Send: function (data, userIds){
+            let socketData = {
+                "Method": "Message/SendToUsers",
+                "Type": 0,
+                "Message": JSON.stringify(data),
+                "data":{
+                    "userIds":userIds
+                }
+            };
+            return this.io.send(JSON.stringify(socketData));
         },
         doHeartbeat:function (){
             if (!this.Heartbeat){

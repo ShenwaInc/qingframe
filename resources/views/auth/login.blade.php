@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
+    @php
+        global $_W;
+        if (empty($_W['setting']['page'])){
+            App\Services\SettingService::Load();
+            $_W['page'] = $_W['setting']['page'];
+        }
+    @endphp
     <meta charset="UTF-8">
     <meta name="renderer" content="webkit">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -11,12 +18,9 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="shortcut icon" href="{{ $_W ? tomedia($_W['setting']['page']['icon']) : asset('/favicon.ico') }}" />
     <title>后台管理系统</title>
-    @php
-        !(defined('TIMESTAMP')) && define('TIMESTAMP', time());
-    @endphp
     <link rel="stylesheet" href="{{ asset('/static/bootstrap/css/bootstrap.min.css') }}?v={{ TIMESTAMP }}" />
     <link rel="stylesheet" href="{{ asset('/static/layui/css/layui.css') }}?v={{ TIMESTAMP }}" />
-    <link rel="stylesheet" href="{{ asset('/static/fului/fului-for-lay.css') }}?v={{ TIMESTAMP }}" />
+    <link rel="stylesheet" href="{{ asset('/static/css/console.css') }}?v={{ TIMESTAMP }}" />
     <script type="text/javascript" src="{{ asset('/static/layui/layui.js') }}?v={{ TIMESTAMP }}"></script>
     <script type="text/javascript" src="{{ asset('/static/js/jquery-1.11.1.min.js') }}?v={{ TIMESTAMP }}"></script>
     <script type="text/javascript" src="{{ asset('/static/js/core.jquery.js') }}?v={{ TIMESTAMP }}"></script>
@@ -56,7 +60,11 @@
                         </form>
                     </div>
                 </div>
-
+                <div class="fui-footer">
+                    <div class="fui-footer-extra text-center">
+                        <p class="fui-footer-copyright">{!! $_W['page']['copyright'] !!}</p>
+                    </div>
+                </div>
             </div>
         </div>
         <!-- 辅助元素，一般用于移动设备下遮罩 -->
@@ -77,5 +85,12 @@
             });
         });
     </script>
+    <style>
+        .layui-layout-admin .layui-body{padding-top: 0;}
+        .fui-footer{position: absolute; left: 0; width: 100%; bottom: 0; max-width: unset; padding-bottom: 30px;}
+        .fui-footer-copyright{color: #ffffff; font-size: inherit}
+        .fui-footer-copyright a{color: #0081ff;}
+        .layui-btn-fluid{box-sizing: border-box;}
+    </style>
 </body>
 </html>

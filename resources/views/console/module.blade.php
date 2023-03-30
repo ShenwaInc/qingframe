@@ -58,9 +58,7 @@
                                         @else
                                             V{{ $com['cloudinfo']['version'] }}&nbsp;&nbsp;Release{{ $com['cloudinfo']['releasedate'] }}
                                             @if($com['cloudinfo']['isnew'])
-                                                <span class="layui-badge layui-bg-red">{{ $com['cloudinfo']['releasedate']==$com['releasedate'] ? '有改动' : '有更新' }}</span>
-                                            @else
-                                                <span class="layui-badge layui-bg-green">最新</span>
+                                                <span class="layui-badge-dot" lay-tips="{{ $com['cloudinfo']['releasedate']==$com['releasedate'] ? '本地源码有改动' : '云端程序有更新' }}"></span>
                                             @endif
                                         @endif
                                     </td>
@@ -78,4 +76,5 @@
 
     </div>
 </div>
+@include('console.terminal')
 @include('common.footer')

@@ -7,6 +7,7 @@ use App\Services\CacheService;
 use App\Services\CloudService;
 use App\Services\FileService;
 use App\Services\ModuleService;
+use App\Services\MSService;
 use App\Services\SettingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
@@ -15,31 +16,48 @@ use Illuminate\Support\Facades\DB;
 
 class SettingController extends Controller
 {
-    //
+
     public function active(){
         global $_W;
         if(!$_W['isfounder']){
             return $this->message('暂无权限');
         }
-        if ($_W['config']['site']['id']==0){
-            $activestate = CloudService::CloudActive();
-            if ($activestate['status']==1){
-                $_W['config']['site']['id'] = $activestate['siteid'];
-                $complete = CloudService::CloudEnv('APP_SITEID=0', "APP_SITEID={$activestate['siteid']}");
-                if (!$complete){
-                    return $this->message('文件写入失败，请检查根目录权限');
-                }
-                Artisan::call('server:update');
-                return $this->message('恭喜您，激活成功！',url('console'),'success');
-            }else{
-                $redirect = $activestate['redirect'];
-                if (!empty($redirect)){
-                    $redirect .= (strexists($redirect,'?') ? '&' : '?') . "siteroot={$_W['siteroot']}";
-                }
-                return $this->message('您的站点尚未激活，即将进入激活流程...',$redirect,'error');
+        $activestate = CloudService::CloudActive();
+        if (checksubmit()){
+            $siteInfo = \request()->input('site');
+            if (empty($siteInfo['mobile']) || !preg_match('/^(\+)?(86)?0?1\d{10}$/', $siteInfo['mobile'])){
+                return $this->message("请输入正确的手机号");
             }
+            if (empty($siteInfo['verify_code'])){
+                return $this->message("请输入手机短信验证码");
+            }
+            $userId = intval($siteInfo['uid']);
+            if (!$userId && empty($siteInfo['password'])){
+                return $this->message("请设置一个云端密码");
+            }
+            if (empty($siteInfo['name'])) $siteInfo['name'] = $activestate['name'];
+            $siteInfo['siteid'] = $activestate['siteid'];
+            $siteInfo['r'] = "cloud.active.save";
+            $res = CloudService::CloudApi("", $siteInfo);
+            if (is_error($res)){
+                return $this->message($res['message']);
+            }
+            $redirect = "";
+            if ($res['type']=="success"){
+                if ($_W['config']['site']['id']==0){
+                    $_W['config']['site']['id'] = $activestate['siteid'];
+                    if (!CloudService::CloudEnv('APP_SITEID=0', "APP_SITEID={$activestate['siteid']}")){
+                        return $this->message('文件写入失败，请检查根目录权限');
+                    }
+                    Artisan::call('server:update');
+                    CacheService::flush();
+                }
+                $res['message'] = '恭喜您，激活成功！';
+                $redirect = url('console');
+            }
+            return $this->message($res['message'], $redirect, $res["type"]);
         }
-        return $this->message('您的站点已激活',url('console'),'success');
+        return $this->globalview("console.active", ["siteinfo"=>$activestate, "title"=>"云服务激活"]);
     }
 
     public function detection(){
@@ -80,10 +98,15 @@ class SettingController extends Controller
 
     public function selfUpgrade(){
         try {
+            MSService::TerminalSend(['mode'=>'info', 'message'=>'即将同步系统程序源码：']);
             //同步文件
             $component = DB::table('gxswa_cloud')->where('type',0)->first(['id','identity','modulename','online','type','releasedate','rootpath']);
             $cloudUpdate = CloudService::CloudUpdate($component['identity'],base_path().'/');
-            if (is_error($cloudUpdate)) return $this->message($cloudUpdate['message']);
+            if (is_error($cloudUpdate)){
+                MSService::TerminalSend(['mode'=>'err', 'message'=>'程序同步失败：'.$cloudUpdate['message']]);
+                return $this->message($cloudUpdate['message']);
+            }
+            MSService::TerminalSend(['mode'=>'success', 'message'=>'程序同步完成，更新系统版本信息']);
             //更新版本号
             $cloudInfo = $this->checkcloud($component);
             if (is_error($cloudInfo)) return $this->message($cloudInfo['message']);
@@ -100,9 +123,10 @@ class SettingController extends Controller
             ));
             CloudService::CloudEnv(array("APP_VERSION=".QingVersion,"APP_RELEASE=".QingRelease), array("APP_VERSION={$cloudInfo['version']}","APP_RELEASE={$cloudInfo['releasedate']}"));
         }catch (\Exception $exception){
+            MSService::TerminalSend(['mode'=>'err', 'message'=>"程序同步失败：".$exception->getMessage()]);
             return $this->message($exception->getMessage());
         }
-        return $this->message('程序同步中，即将自动检测...', url('console/setting/sysupgrade'),'success');
+        return $this->message('程序同步完成，即将自动更新...', url('console/setting/sysupgrade'),'success');
     }
 
     public function SystemUpgrade(){
@@ -179,9 +203,9 @@ class SettingController extends Controller
                         //已安装
                         $application = $module->application;
                         if (version_compare($release['version'], $application['version'], '>') || $releaseDate>$application['releasedate']){
-                            $com['action'] .= '<a href="'.url('console/setting/cloudUp').'?nid='.$identifie.'" class="layui-btn layui-btn-sm layui-btn-danger confirm" data-text="升级前请做好源码和数据备份，避免升级故障导致系统无法正常运行">升级</a>';
+                            $com['action'] .= '<a href="'.url('console/module/update').'?nid='.$identifie.'" class="layui-btn layui-btn-sm layui-btn-danger confirm" data-text="升级前请做好源码和数据备份，避免升级故障导致系统无法正常运行">升级</a>';
                         }
-                        $com['action'] .= '<a href="'.url('console/setting/pluginrm').'?nid='.$identifie.'" class="layui-btn layui-btn-sm layui-btn-primary confirm" data-text="即将卸载该应用并删除应用产生的所有数据，是否确定要卸载？">卸载</a></div>';
+                        $com['action'] .= '<a href="'.url('console/module/remove').'?nid='.$identifie.'" class="layui-btn layui-btn-sm layui-btn-primary confirm" data-text="即将卸载该应用并删除应用产生的所有数据，是否确定要卸载？">卸载</a></div>';
                     }else{
                         if ($module['errno']!=-1){
                             //已存在但未安装
@@ -205,6 +229,9 @@ class SettingController extends Controller
 
     public function index($op='main'){
         global $_W,$_GPC;
+        if ($_W['config']['site']['id']==0){
+            return redirect("console/active");
+        }
         if($op=='detection'){
             return $this->detection();
         }elseif ($op=='selfupgrade'){
@@ -223,7 +250,6 @@ class SettingController extends Controller
         if (!isset($_W['setting']['remote'])){
             $_W['setting']['remote'] = array('type'=>0);
         }
-        $return['attachs'] = array('关闭','FTP','阿里云存储','七牛云存储','腾讯云存储','亚马逊S3');
         if ($op=='pageset'){
             return $this->globalview("console.pageset",$return);
         }
@@ -239,11 +265,7 @@ class SettingController extends Controller
             }
             return $this->message('操作成功！',url('console/setting'),'success');
         }
-        if ($op=='plugin'){
-            $return['types'] = array('框架','应用','服务','资源');
-            $return['colors'] = array('red','blue','green','orange');
-            $return['components'] = CloudService::getPlugins();
-        }elseif ($op=='comcheck'){
+        if ($op=='comcheck'){
             $component = DB::table('gxswa_cloud')->where('id',intval($_GPC['cid']))->first(['id','identity','type','online','releasedate','rootpath']);
             if (empty($component)) return $this->message('找不到该服务组件');
             $cloudinfo = $this->checkcloud($component, 1, true);
@@ -261,6 +283,7 @@ class SettingController extends Controller
             $return['framework'] = $framework;
             $return['cloudinfo'] = !empty($framework['online']) ? unserialize($framework['online']) : array('isnew'=>false);
         }
+        $return['activeState'] = CloudService::CloudActive();
         return $this->globalview('console.setting', $return);
     }
 

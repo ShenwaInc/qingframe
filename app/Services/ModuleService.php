@@ -48,19 +48,22 @@ class ModuleService
     }
 
     static function install($identity,$path='addons',$from='cloud'){
+        $startTime = time();
         $ManiFest = self::getManifest($identity, $path);
         if (is_error($ManiFest)) return $ManiFest;
         if ($ManiFest['installed']) return true;
+        $application = $ManiFest['application'];
+        MSService::TerminalSend(['mode'=>'info', 'message'=>"即将安装应用模块【{$application['name']}^{$application['version']}】"]);
         //执行安装脚本
         if (!empty($ManiFest['install'])){
             try {
+                MSService::TerminalSend(['mode'=>'info', 'message'=>"正在运行应用安装脚本..."]);
                 script_run($ManiFest['install'], public_path("{$path}/{$identity}/"));
             } catch (\Exception $exception){
                 return error(-1,'安装失败：'.(DEVELOPMENT?$exception->getMessage():'运行安装脚本出现错误'));
             }
         }
         //写入模块数据表
-        $application = $ManiFest['application'];
         $subscribes = $ManiFest['subscribes'] ?: array();
         $handles = $ManiFest['handles'] ?: array();
         $module = self::ModuleData($application,$subscribes,$handles);
@@ -79,6 +82,9 @@ class ModuleService
                 return error(-1,'安装依赖服务时发生错误：'.$exception->getMessage());
             }
         }
+        $stopTime = time();
+        $timeOut = $from=='cloud' ? '' : "耗时".($stopTime-$startTime)."秒";
+        MSService::TerminalSend(['mode'=>'success', 'message'=>"模块安装完成！".$timeOut]);
         //写入组件表
         if ($from=='cloud'){
             $comdata = array(
@@ -136,9 +142,11 @@ class ModuleService
     }
 
     static function upgrade($identity,$from=''){
+        $startTime = time();
         $ManiFest = self::installCheck($identity);
         if (is_error($ManiFest)) return $ManiFest;
         $application = $ManiFest['application'];
+        MSService::TerminalSend(['mode'=>'info', 'message'=>"即将升级应用模块【{$application['name']}^{$application['version']}】"]);
         $component = self::SysComponent($application['identifie']);
         if (!empty($component)){
             //已经是最新版本
@@ -149,6 +157,7 @@ class ModuleService
         //执行升级脚本
         if (!empty($ManiFest['upgrade'])){
             try {
+                MSService::TerminalSend(['mode'=>'info', 'message'=>"正在运行应用升级脚本..."]);
                 script_run($ManiFest['upgrade'], public_path("addons/$identity/"));
             } catch (\Exception $exception){
                 return error(-1,'升级失败：运行升级脚本出现错误:'.$exception->getMessage());
@@ -160,6 +169,15 @@ class ModuleService
         $moduledata = self::ModuleData($application,$subscribes,$handles);
         $moduledata['permissions'] = empty($ManiFest['permissions']) ? "" : serialize($ManiFest['permissions']);
         DB::table('modules')->where('name',$application['identifie'])->update($moduledata);
+        //安装模块依赖服务
+        if (!empty($ManiFest['servers'])){
+            try {
+                $MSS = new MSService();
+                $MSS->checkRequire($ManiFest['servers']);
+            }catch (\Exception $exception){
+                return error(-1,'安装依赖服务时发生错误：'.$exception->getMessage());
+            }
+        }
         //更新模块数据表
         if (!empty($component) || $from=='cloud'){
             $cloudinfo = empty($component['online']) ? array() : unserialize($component['online']);
@@ -187,6 +205,8 @@ class ModuleService
                 DB::table('gxswa_cloud')->where('identity', $cloudIdentity)->update($comInfo);
             }
         }
+        $stopTime = time();
+        MSService::TerminalSend(['mode'=>'success', 'message'=>"模块升级完成！耗时".($stopTime-$startTime)."秒"]);
         return true;
     }
 
@@ -197,6 +217,7 @@ class ModuleService
         //执行卸载脚本
         if (!empty($ManiFest['uninstall'])){
             try {
+                MSService::TerminalSend(['mode'=>'info', 'message'=>"正在运行应用卸载脚本..."]);
                 script_run($ManiFest['uninstall'], public_path("addons/$identity/"));
             } catch (\Exception $exception){
                 return error(-1,'卸载失败：运行脚本出现错误:'.$exception->getMessage());

@@ -2,13 +2,11 @@
 <div class="fui-footer">
     <div class="fui-footer-info soild-after">
         <div class="fui-footer-link">
-            @php
-                echo htmlspecialchars_decode($_W['page']['links'], ENT_QUOTES);
-            @endphp
+            {!! $_W['page']['links'] !!}
         </div>
     </div>
     <div class="fui-footer-extra">
-        <p class="fui-footer-copyright">{{ $_W['page']['copyright'] }}</p>
+        <p class="fui-footer-copyright">{!! $_W['page']['copyright'] !!}</p>
     </div>
 </div>
 <script type="text/javascript">

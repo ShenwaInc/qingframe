@@ -76,6 +76,10 @@ class ServerController extends Controller
     }
 
     public function index(Request $request){
+        if (empty($GLOBALS['_W']['config']['site']['id'])){
+            return redirect("console/active");
+        }
+        $startTime = time();
         $op = $request->get("op","index");
         $identity = $request->get("nid", "");
         $return = array("title"=>"微服务管理", "op"=>$op);
@@ -91,7 +95,7 @@ class ServerController extends Controller
                 $return['servers'] = MSService::getlocal();
                 $cloudservers = MSService::cloudservers();
                 if (!empty($cloudservers)){
-                    $return['servers'] = array_merge($return['servers'], $cloudservers);
+                    $return['servers'] = array_merge($cloudservers, $return['servers']);
                 }
                 break;
             }
@@ -100,10 +104,9 @@ class ServerController extends Controller
                 if (is_error($res)){
                     return $this->message($res['message']);
                 }
-                if (file_exists(MICRO_SERVER.$identity."/composer.json")){
-                    return $this->message("安装成功，即将安装服务依赖...", wurl("server", array('op'=>'composer', 'nid'=>$identity)), "success");
-                }
-                return $this->message("安装成功", wurl("server"), "success");
+                $stopTime = time();
+                $MSS->TerminalSend(["mode"=>"success", "message"=>"安装成功！总耗时".($stopTime-$startTime)."秒"]);
+                return $this->message("安装成功！", wurl("server"), "success");
             }
             case "uninstall" :{
                 $res = $MSS->uninstall($identity);
@@ -117,7 +120,9 @@ class ServerController extends Controller
                 if (!file_exists($composer)){
                     return $this->message("安装成功", wurl("server"), "success");
                 }
+                $MSS::TerminalSend(["mode"=>"info", "message"=>"即将安装Composer依赖【microserver/{$identity}】"]);
                 $res = $MSS::ComposerRequire(MICRO_SERVER.$identity."/", "microserver/".$identity);
+                if (is_error($res)) return $res;
                 if (!$res){
                     $requireName = "microserver/".$identity;
                     $WorkingDirectory = base_path()."/";
@@ -149,9 +154,8 @@ class ServerController extends Controller
                 if (is_error($res)){
                     return $this->message($res['message']);
                 }
-                if (file_exists(MICRO_SERVER.$identity."/composer.json")){
-                    return $this->message("升级成功，即将更新服务依赖组件...", wurl("server", array('op'=>'composer', 'nid'=>$identity)), "success");
-                }
+                $stopTime = time();
+                $MSS->TerminalSend(["mode"=>"success", "message"=>"升级成功！总耗时".($stopTime-$startTime)."秒"]);
                 return $this->message("升级成功", wurl("server"), "success");
             }
             case "cloudup" : {
@@ -159,9 +163,8 @@ class ServerController extends Controller
                 if (is_error($res)){
                     return $this->message($res['message']);
                 }
-                if (file_exists(MICRO_SERVER.$identity."/composer.json")){
-                    return $this->message("升级成功，即将更新服务依赖组件...", wurl("server", array('op'=>'composer', 'nid'=>$identity)), "success");
-                }
+                $stopTime = time();
+                $MSS->TerminalSend(["mode"=>"success", "message"=>"升级成功！总耗时".($stopTime-$startTime)."秒"]);
                 return $this->message("升级成功", wurl("server"), "success");
             }
             case "cloudinst" : {
@@ -169,9 +172,8 @@ class ServerController extends Controller
                 if (is_error($res)){
                     return $this->message($res['message']);
                 }
-                if (file_exists(MICRO_SERVER.$identity."/composer.json")){
-                    return $this->message("安装成功，即将安装服务依赖...", wurl("server", array('op'=>'composer', 'nid'=>$identity)), "success");
-                }
+                $stopTime = time();
+                $MSS->TerminalSend(["mode"=>"success", "message"=>"安装成功！总耗时".($stopTime-$startTime)."秒"]);
                 return $this->message("安装成功", wurl("server"), "success");
             }
             case "restore" : {
@@ -181,7 +183,7 @@ class ServerController extends Controller
                 return $this->message();
             }
             case "cloudChk" : {
-                $cloudServer = $MSS->cloudserver($identity);
+                $cloudServer = $MSS->cloudserver($identity, true);
                 if (!is_error($cloudServer)){
                     $service = $MSS::getone($identity);
                     $release = $cloudServer['release'];
@@ -195,6 +197,16 @@ class ServerController extends Controller
                 $return['op'] = "index";
                 $return['servers'] = MSService::InitService();
             }
+        }
+        $swaSocket = serv('websocket');
+        global $_W;
+        $return['socket'] = [
+            'server'=>"wss://socket.whotalk.com.cn/wss",
+            'userSign'=>md5($_W['config']['setting']['authkey'].":terminal:{$_W['uid']}"),
+            'userId'=>$_W['uid']
+        ];
+        if ($swaSocket->enabled){
+            $return['socket']['server'] = $swaSocket->settings['server'];
         }
         return $this->globalview("console.server", $return);
     }

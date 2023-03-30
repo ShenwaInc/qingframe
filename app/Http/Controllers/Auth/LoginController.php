@@ -37,6 +37,7 @@ class LoginController extends Controller
     public function __construct(Request $request)
     {
         global $_GPC, $_W;
+        $this->middleware('app')->except('handle');
         $this->middleware('guest')->except('logout');
         $_GPC = $request->all();
         if (empty($_GPC['referer'])){

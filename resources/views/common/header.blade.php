@@ -18,20 +18,25 @@
                         </a>
                         <dl id="layui-admin-usermenu" class="layui-nav-child layui-anim layui-anim-upbit">
                             <dd><a href="{{ wurl('user/profile') }}">账户管理</a></dd>
-                            @if($_W['isfounder'])
-                                @if($_W['config']['site']['id']==0)
-                                    <dd>
-                                        <a href="{{url('console/active')}}">系统激活<span class="layui-badge-dot"></span></a>
-                                    </dd>
-                                @else
-                                    <dd><a href="{{url('console/setting')}}">系统管理</a></dd>
-                                @endif
-                            @endif
                             <dd><a href="javascript:Core.cacheclear();">更新缓存</a></dd>
                             <hr />
                             <dd><a href="javascript:Core.logout();">退出账户</a></dd>
                         </dl>
                     </li>
+                    @if($_W['isfounder'])
+                        <li class="layui-nav-item">
+                            @if($_W['config']['site']['id']==0)
+                                <a href="{{url('console/active')}}">系统激活<span class="layui-badge-dot"></span></a>
+                            @else
+                                <a href="{{url('console/setting')}}">系统管理</a>
+                                <dl id="layui-admin-sysmenu" class="layui-nav-child layui-anim layui-anim-upbit">
+                                    <dd><a href="{{ url('console/setting') }}">站点信息</a></dd>
+                                    <dd><a href="{{ url('console/server') }}">服务管理</a></dd>
+                                    <dd><a href="{{ url('console/module') }}">应用管理</a></dd>
+                                </dl>
+                            @endif
+                        </li>
+                    @endif
                     <li class="layui-nav-item layui-hide-xs js-fullscreen" lay-unselect>
                         <a href="javascript:;" layadmin-event="fullscreen">
                             <i class="layui-icon layui-icon-screen-full"></i>
