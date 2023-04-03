@@ -22,7 +22,8 @@ if (empty($socket)){
     function SocketReceive(data){
         //console.log("接收到终端消息", data);
         if(data.type==="terminal"){
-            terminalShow(data.message, data.mode);
+            let finish = typeof(data.finish)=='undefined' ? false : data.finish;
+            terminalShow(data.message, data.mode, finish);
         }
     }
     function terminalInit(url="", show=false){
@@ -59,11 +60,13 @@ if (empty($socket)){
             }
         });
     }
-    function terminalShow(message, mode='info'){
+    function terminalShow(message, mode='info', finish=false){
         if(!terminalState) return terminalInit("", {message:message, mode:mode});
+        terminalRunning = !finish;
         if(!terminalRunning){
-            terminalRunning = true;
             $(".fui-layer.fui-terminal").find('span.layui-icon-loading').removeClass('layui-hide');
+        }else{
+            $(".fui-layer.fui-terminal").find('span.layui-icon-loading').addClass('layui-hide');
         }
         let TerminalOl = $("#TerminalInfo").find('ol.layui-code-ol');
         if(mode==='cmd'){

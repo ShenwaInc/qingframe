@@ -579,9 +579,10 @@ class MSService
         return true;
     }
 
-    public static function TerminalSend($data){
+    public static function TerminalSend($data, $finish=false){
         global $_W;
         $data['type'] = 'terminal';
+        $data['finish'] = $finish;
         $userIds = md5($_W['config']['setting']['authkey'].":terminal:{$_W['uid']}");
         $swaSocket = serv('websocket');
         if ($swaSocket->enabled){

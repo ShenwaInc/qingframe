@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\CacheService;
 use App\Services\CloudService;
 use App\Services\ModuleService;
+use App\Services\MSService;
 use App\Utils\WeModule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -64,7 +65,9 @@ class ModuleController extends Controller
     public function doInstall(Request $request){
         $identity = $request->input('nid', "");
         $install = ModuleService::install($identity, 'addons', 'local');
-        if (is_error($install)) return $this->message($install['message']);
+        if (is_error($install)){
+            return $this->TerminalError($install['message']);
+        }
         return $this->message('恭喜您，安装完成！', url('console/module'),'success');
     }
 
@@ -74,7 +77,9 @@ class ModuleController extends Controller
     public function doUpgrade(Request $request){
         $identity = $request->input('nid', "");
         $complete = ModuleService::upgrade($identity);
-        if (is_error($complete)) return $this->message($complete['message'], trim($complete['redirect']));
+        if (is_error($complete)){
+            return $this->TerminalError($complete['message']);
+        }
         CacheService::flush();
         return $this->message('恭喜您，升级成功！', url('console/module'),'success');
     }
@@ -86,6 +91,7 @@ class ModuleController extends Controller
         $identity = $request->input('nid', "");
         $cloudrequire = CloudService::RequireModule($identity);
         if (is_error($cloudrequire)){
+            MSService::TerminalSend(["mode"=>"err", "message"=>$cloudrequire['message']], true);
             return $this->message($cloudrequire['message'], trim($cloudrequire['redirect']));
         }
         return $this->message('恭喜您，安装完成！', url('console/module'),'success');
@@ -100,13 +106,21 @@ class ModuleController extends Controller
         $targetPath = public_path("addons/$identity/");
         $res = CloudService::CloudUpdate($cloudIdentity, $targetPath);
         if (is_error($res)){
-            return $this->message($res['message']);
+            MSService::TerminalSend(["mode"=>"err", "message"=>$res['message']], true);
+            return $this->message($res['message'], trim($res['redirect']));
         }
         $moduleUpdate = ModuleService::upgrade($identity, 'cloud');
-        if (is_error($moduleUpdate)) return $this->message($moduleUpdate['message']);
+        if (is_error($moduleUpdate)){
+            return $this->TerminalError($moduleUpdate['message']);
+        }
         $redirect = url('console/module');
         CacheService::flush();
         return $this->message('恭喜您，升级成功！', $redirect,'success');
+    }
+
+    public function TerminalError($message){
+        MSService::TerminalSend(["mode"=>"err", "message"=>$message], true);
+        return $this->message($message);
     }
 
     /**
@@ -115,7 +129,7 @@ class ModuleController extends Controller
     public function doRemove(Request $request){
         $identity = $request->input('nid', "");
         $uninstall = ModuleService::uninstall($identity);
-        if (is_error($uninstall)) return $this->message($uninstall['message']);
+        if (is_error($uninstall)) return $this->TerminalError($uninstall['message']);
         return $this->message('卸载完成', url('console/module'),'success');
     }
 

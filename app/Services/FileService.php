@@ -166,12 +166,7 @@ class FileService
 
 
     public static function mkdirs($path, $perm=0777, $rec=false) {
-        if (!is_dir($path)) {
-            self::mkdirs(dirname($path));
-            mkdir($path, $perm, $rec);
-        }
-
-        return is_dir($path);
+        return Storage::makeDirectory($path);
     }
 
 
@@ -192,17 +187,11 @@ class FileService
 
 
     public static function rmdirs($path, $clean = false) {
-        if (!is_dir($path)) {
-            return false;
+        $res = Storage::deleteDirectory($path);
+        if ($res && $clean){
+            Storage::makeDirectory($path);
         }
-        $files = glob($path . '/*');
-        if ($files) {
-            foreach ($files as $file) {
-                is_dir($file) ? self::rmdirs($file) : @unlink($file);
-            }
-        }
-
-        return $clean ? true : @rmdir($path);
+        return $res;
     }
 
     static function file_upload_path($type='image'){

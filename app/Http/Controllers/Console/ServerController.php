@@ -75,6 +75,11 @@ class ServerController extends Controller
         return $this->globalview("console.server.platform",$data);
     }
 
+    public function TerminalError($message){
+        MSService::TerminalSend(["mode"=>"err", "message"=>$message], true);
+        return $this->message($message);
+    }
+
     public function index(Request $request){
         if (empty($GLOBALS['_W']['config']['site']['id'])){
             return redirect("console/active");
@@ -102,27 +107,31 @@ class ServerController extends Controller
             case "install" : {
                 $res = $MSS->install($identity);
                 if (is_error($res)){
-                    return $this->message($res['message']);
+                    return $this->TerminalError($res['message']);
                 }
                 $stopTime = time();
-                $MSS->TerminalSend(["mode"=>"success", "message"=>"安装成功！总耗时".($stopTime-$startTime)."秒"]);
+                $MSS->TerminalSend(["mode"=>"success", "message"=>"安装成功！总耗时".($stopTime-$startTime)."秒"], true);
                 return $this->message("安装成功！", wurl("server"), "success");
             }
             case "uninstall" :{
                 $res = $MSS->uninstall($identity);
                 if (is_error($res)){
-                    return $this->message($res['message']);
+                    return $this->TerminalError($res['message']);
                 }
+                $MSS->TerminalSend(["mode"=>"success", "message"=>"服务卸载完成！"], true);
                 return $this->message('服务已卸载完成',wurl("server"),'success');
             }
             case "composer" : {
                 $composer = MICRO_SERVER.$identity."/composer.json";
                 if (!file_exists($composer)){
+                    $MSS->TerminalSend(["mode"=>"success", "message"=>"安装成功！"], true);
                     return $this->message("安装成功", wurl("server"), "success");
                 }
                 $MSS::TerminalSend(["mode"=>"info", "message"=>"即将安装Composer依赖【microserver/{$identity}】"]);
                 $res = $MSS::ComposerRequire(MICRO_SERVER.$identity."/", "microserver/".$identity);
-                if (is_error($res)) return $res;
+                if (is_error($res)){
+                    return $this->TerminalError($res['message']);
+                }
                 if (!$res){
                     $requireName = "microserver/".$identity;
                     $WorkingDirectory = base_path()."/";
@@ -141,6 +150,7 @@ class ServerController extends Controller
                     return include tpl_include("web/composer");
                 }
                 @unlink(MICRO_SERVER.$identity."/composer.error");
+                $MSS->TerminalSend(["mode"=>"success", "message"=>"Composer安装完成"], true);
                 return $this->message("安装成功", wurl("server"), "success");
             }
             case "disable" : {
@@ -152,28 +162,28 @@ class ServerController extends Controller
             case "upgrade" : {
                 $res = $MSS->upgrade($identity);
                 if (is_error($res)){
-                    return $this->message($res['message']);
+                    return $this->TerminalError($res['message']);
                 }
                 $stopTime = time();
-                $MSS->TerminalSend(["mode"=>"success", "message"=>"升级成功！总耗时".($stopTime-$startTime)."秒"]);
+                $MSS->TerminalSend(["mode"=>"success", "message"=>"升级成功！总耗时".($stopTime-$startTime)."秒"], true);
                 return $this->message("升级成功", wurl("server"), "success");
             }
             case "cloudup" : {
                 $res = $MSS->cloudUpdate($identity);
                 if (is_error($res)){
-                    return $this->message($res['message']);
+                    return $this->TerminalError($res['message']);
                 }
                 $stopTime = time();
-                $MSS->TerminalSend(["mode"=>"success", "message"=>"升级成功！总耗时".($stopTime-$startTime)."秒"]);
+                $MSS->TerminalSend(["mode"=>"success", "message"=>"升级成功！总耗时".($stopTime-$startTime)."秒"], true);
                 return $this->message("升级成功", wurl("server"), "success");
             }
             case "cloudinst" : {
                 $res = $MSS->cloudInstall($identity);
                 if (is_error($res)){
-                    return $this->message($res['message']);
+                    return $this->TerminalError($res['message']);
                 }
                 $stopTime = time();
-                $MSS->TerminalSend(["mode"=>"success", "message"=>"安装成功！总耗时".($stopTime-$startTime)."秒"]);
+                $MSS->TerminalSend(["mode"=>"success", "message"=>"安装成功！总耗时".($stopTime-$startTime)."秒"], true);
                 return $this->message("安装成功", wurl("server"), "success");
             }
             case "restore" : {

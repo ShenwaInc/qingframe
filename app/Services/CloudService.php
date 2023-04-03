@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class CloudService
 {
@@ -273,7 +274,7 @@ class CloudService
         $zipcontent = self::CloudApi('upgrade',$data,true);
         if (is_error($zipcontent)) return $zipcontent;
         if (empty($zipcontent)){
-            MSService::TerminalSend(['mode'=>'err', 'message'=>'云端程序同步失败，请检查网络状态']);
+            MSService::TerminalSend(['mode'=>'err', 'message'=>'云端程序同步失败，请更新缓存后再试']);
             return error(-1,'补丁获取失败');
         }
         if (!$patch){
@@ -359,24 +360,26 @@ class CloudService
         $handle = dir($source);
         if ($dh = opendir($source)){
             while ($entry = $handle->read()) {
-                if ($entry!= "." && $entry!=".." && $entry!=".svn" && $entry!=".git"){
-                    $new = $source.$entry;
-                    if(is_dir($new)) {
-                        if (!is_dir($target.$entry)){
-                            FileService::mkdirs($target.$entry.'/');
-                        }
-                        self::CloudPatch($target.$entry.'/',$source.$entry.'/',$overwrite);
-                    }else{
-                        if(file_exists($target.$entry)){
-                            if($overwrite){
-                                @unlink($target.$entry);
-                            }else{
-                                if (md5_file($target.$entry)==md5_file($new)) continue;
-                                @unlink($target.$entry);
-                            }
-                        }
-                        @copy($new, $target.$entry);
+                $ignores = array(".", "..", ".svn", ".git", ".gitignore");
+                if (in_array($entry, $ignores)){
+                    continue;
+                }
+                $new = $source.$entry;
+                if(is_dir($new)) {
+                    if (!is_dir($target.$entry)){
+                        Storage::makeDirectory($target.$entry.'/');
                     }
+                    self::CloudPatch($target.$entry.'/',$source.$entry.'/',$overwrite);
+                }else{
+                    if(file_exists($target.$entry)){
+                        if($overwrite){
+                            @unlink($target.$entry);
+                        }else{
+                            if (md5_file($target.$entry)==md5_file($new)) continue;
+                            @unlink($target.$entry);
+                        }
+                    }
+                    @copy($new, $target.$entry);
                 }
             }
             closedir($dh);

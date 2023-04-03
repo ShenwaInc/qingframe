@@ -84,7 +84,7 @@ class ModuleService
         }
         $stopTime = time();
         $timeOut = $from=='cloud' ? '' : "耗时".($stopTime-$startTime)."秒";
-        MSService::TerminalSend(['mode'=>'success', 'message'=>"模块安装完成！".$timeOut]);
+        MSService::TerminalSend(['mode'=>'success', 'message'=>"模块安装完成！".$timeOut], true);
         //写入组件表
         if ($from=='cloud'){
             $comdata = array(
