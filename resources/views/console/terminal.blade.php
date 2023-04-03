@@ -18,7 +18,7 @@ if (empty($socket)){
 }
 @endphp
 <script type="text/javascript">
-    var terminalState = false, terminalPrefix = "[{{ $_W['user']['username']."@" }}{{ str_replace(['https://','http://','/'], '', $_W['siteroot']) }}]# ";
+    var terminalState = false, terminalPrefix = "[{{ $_W['user']['username']."@" }}{{ str_replace(['https://','http://','/'], '', $_W['siteroot']) }}]# ", terminalRunning = false;
     function SocketReceive(data){
         //console.log("接收到终端消息", data);
         if(data.type==="terminal"){
@@ -37,6 +37,7 @@ if (empty($socket)){
             shadeClose: false, //开启遮罩关闭
             content: html,
             success:function (layero, index){
+                terminalRunning = true;
                 layui.code();
                 if(show){
                     terminalShow(show.message, show.mode);
@@ -45,12 +46,16 @@ if (empty($socket)){
                 }
                 if(url){
                     Core.get(url, function (res){
+                        terminalRunning = false;
                         Core.report(res, 2000);
                     }, {inajax:1, _token:"{{ $_W['token'] }}"});
                 }
             },
             cancel:function (index, layero){
-                layer.msg("程序仍在后端运行中...");
+                terminalState = false;
+                if(terminalRunning){
+                    layer.msg("程序仍在后端运行中...");
+                }
             }
         });
     }
