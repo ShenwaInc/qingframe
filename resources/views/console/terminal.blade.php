@@ -48,25 +48,23 @@ if (empty($socket)){
                 if(url){
                     Core.request(url, 'GET', {inajax:1, _token:"{{ $_W['token'] }}"}, 'json', function (res){
                         terminalRunning = false;
-                        $("#TerminalPopup").find('span.layui-icon-loading').addClass('layui-hide');
+                        $(layero).find('span.layui-icon-loading').addClass('layui-hide');
                         Core.report(res, 2500);
                     }, false, function (e){
                         terminalRunning = false;
-                        $("#TerminalPopup").find('span.layui-icon-loading').addClass('layui-hide');
+                        $(layero).find('span.layui-icon-loading').addClass('layui-hide');
                         layer.msg('操作失败', {icon: 2});
                     });
-                }
-            },
-            cancel:function (index, layero){
-                terminalState = false;
-                if(terminalRunning){
-                    layer.msg("程序仍在后端运行中...");
                 }
             }
         });
     }
     function terminalShow(message, mode='info'){
         if(!terminalState) return terminalInit("", {message:message, mode:mode});
+        if(!terminalRunning){
+            terminalRunning = true;
+            $(".fui-layer.fui-terminal").find('span.layui-icon-loading').removeClass('layui-hide');
+        }
         let TerminalOl = $("#TerminalInfo").find('ol.layui-code-ol');
         if(mode==='cmd'){
             terminalPrefix = "> ";
