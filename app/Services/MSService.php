@@ -206,7 +206,7 @@ class MSService
                     'version'=>$value['release']['version'],
                     'releases'=>$value['release']['releasedate']
                 );
-                $service['actions'] = '<a class="layui-btn layui-btn-sm layui-btn-normal confirm" data-text="确定要安装该服务？" href="'.wurl('server', array("op"=>"cloudinst", "nid"=>$identity)).'">安装</a>';
+                $service['actions'] = '<a class="layui-btn layui-btn-sm layui-btn-normal js-terminal" data-text="确定要安装该服务？" href="'.wurl('server', array("op"=>"cloudinst", "nid"=>$identity)).'">安装</a>';
                 $servers[] = $service;
             }
         }
@@ -214,7 +214,7 @@ class MSService
     }
 
     public static function isexist($identity){
-        return (int)pdo_getcolumn(self::$tableName, array('identity'=>trim($identity)),'id') > 0;
+        return DB::table(self::$tableName)->where('identity', trim($identity))->count() > 0;
     }
 
     public static function localexist($identity, $manifest=true){
@@ -335,11 +335,13 @@ class MSService
     }
 
     public function autoinstall(){
-        $servers = $this->InitService(1);
+        $servers = $this->InitService();
         $return = array("upgrade"=>0, "install"=>0, "faild"=>0, "servers"=>0);
+        $installed = [];
         if (!empty($servers)){
             $return['servers'] = count($servers);
             foreach ($servers as $value){
+                $installed[] = $value['identity'];
                 if (!empty($value['upgrade'])){
                     try {
                         $res = $this->upgrade($value['identity']);
@@ -348,6 +350,7 @@ class MSService
                             continue;
                         }
                     }catch (\Exception $exception){
+                        //Todo something
                     }
                     $return['faild'] += 1;
                 }
@@ -360,13 +363,35 @@ class MSService
                 try {
                     $res = $this->install($value['identity']);
                     if (!is_error($res)){
+                        $installed[] = $value['identity'];
                         $return['install'] += 1;
                         continue;
                     }
                 }catch (\Exception $exception){
+                    //Todo something
                 }
                 $return['faild'] += 1;
             }
+        }
+        $requires = array("websocket");
+        foreach ($requires as $serve){
+            try {
+                if (in_array($serve, $installed) || self::isexist($serve)){
+                    continue;
+                }
+                if (self::localexist($serve)){
+                    $res = $this->install($serve);
+                }else{
+                    $res = $this->cloudInstall($serve);
+                }
+                if (!is_error($res)){
+                    $return['install'] += 1;
+                    continue;
+                }
+            }catch (\Exception $exception){
+                //Todo something
+            }
+            $return['faild'] += 1;
         }
         return $return;
     }
@@ -627,7 +652,6 @@ class MSService
                 return true;
             }else{
                 self::ComposerFail($name, $process->getOutput());
-                self::TerminalSend(["mode"=>"err", "message"=>"Composer依赖【{$name}】安装失败，请手动安装。Composer相关操作请参考：https://www.yuque.com/shenwa/qingru/ze9hby#qUvo3"]);
             }
         }catch (\Exception $exception){
             //Todo something
@@ -677,7 +701,6 @@ class MSService
                 return true;
             }else{
                 self::ComposerFail($name, $process->getOutput(), $command);
-                self::TerminalSend(["mode"=>"err", "message"=>"Composer依赖【{$name}】更新失败，请手动安装。Composer相关操作请参考：https://www.yuque.com/shenwa/qingru/ze9hby#qUvo3"]);
             }
         }catch (\Exception $exception){
             //Todo something
@@ -718,6 +741,8 @@ class MSService
         self::TerminalSend(["mode"=>"err", "message"=>"Composer依赖卸载失败，请使用宝塔终端或其它ssh依次运行如下指令（执行完后请刷新此页面）"]);
         self::TerminalSend(["mode"=>"cmd", "message"=>"cd ".$WorkingDirectory]);
         self::TerminalSend(["mode"=>"cmd", "message"=>"composer remove $require"]);
+        $path = str_replace(array('addons', 'microserver'), array('public/addons', 'servers'), $require);
+        self::TerminalSend(["mode"=>"cmd", "message"=>"rm -r ".str_replace('\\', "/", base_path($path))]);
         return error(-1, "Composer依赖【{$require}】卸载失败");
     }
 
