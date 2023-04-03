@@ -62,6 +62,9 @@ if (empty($socket)){
     function terminalShow(message, mode='info'){
         if(!terminalState) return terminalInit("", {message:message, mode:mode});
         let TerminalOl = $("#TerminalInfo").find('ol.layui-code-ol');
+        if(mode==='cmd'){
+            terminalPrefix = "> ";
+        }
         TerminalOl.append('<li class="'+mode+'">'+terminalPrefix+message+'</li>');
         $('.fui-terminal .layui-layer-content').scrollTop(TerminalOl.height());
     }

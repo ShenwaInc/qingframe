@@ -652,7 +652,6 @@ class MSService
                 return true;
             }else{
                 self::ComposerFail($name, $process->getOutput());
-                self::TerminalSend(["mode"=>"err", "message"=>"Composer依赖【{$name}】安装失败，请手动安装。Composer相关操作请参考：https://www.yuque.com/shenwa/qingru/ze9hby#qUvo3"]);
             }
         }catch (\Exception $exception){
             //Todo something
@@ -702,7 +701,6 @@ class MSService
                 return true;
             }else{
                 self::ComposerFail($name, $process->getOutput(), $command);
-                self::TerminalSend(["mode"=>"err", "message"=>"Composer依赖【{$name}】更新失败，请手动安装。Composer相关操作请参考：https://www.yuque.com/shenwa/qingru/ze9hby#qUvo3"]);
             }
         }catch (\Exception $exception){
             //Todo something
@@ -743,6 +741,8 @@ class MSService
         self::TerminalSend(["mode"=>"err", "message"=>"Composer依赖卸载失败，请使用宝塔终端或其它ssh依次运行如下指令（执行完后请刷新此页面）"]);
         self::TerminalSend(["mode"=>"cmd", "message"=>"cd ".$WorkingDirectory]);
         self::TerminalSend(["mode"=>"cmd", "message"=>"composer remove $require"]);
+        $path = str_replace(array('addons', 'microserver'), array('public/addons', 'servers'), $require);
+        self::TerminalSend(["mode"=>"cmd", "message"=>"rm -r ".str_replace('\\', "/", base_path($path))]);
         return error(-1, "Composer依赖【{$require}】卸载失败");
     }
 
