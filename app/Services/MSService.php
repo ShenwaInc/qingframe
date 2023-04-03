@@ -214,7 +214,7 @@ class MSService
     }
 
     public static function isexist($identity){
-        return (int)pdo_getcolumn(self::$tableName, array('identity'=>trim($identity)),'id') > 0;
+        return DB::table(self::$tableName)->where('identity', trim($identity))->count() > 0;
     }
 
     public static function localexist($identity, $manifest=true){
