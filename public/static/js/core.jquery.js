@@ -45,7 +45,7 @@ if(typeof Basetoken == 'undefined'){
                 }
             });
         },
-        request: function (u, m, d, t, c, l) {
+        request: function (u, m, d, t, c, l, f=null) {
             var url = this.url(u);
             var method = m ? m : 'GET';
             var data = d ? d : {};
@@ -74,13 +74,17 @@ if(typeof Basetoken == 'undefined'){
                     hreq.report(res);
                 },
                 fail: function (e) {
+                    console.log('请求失败', e);
                     if (hreq.loading !== 0) {
                         layer.close(hreq.loading);
                         hreq.loading = 0;
                     }
                     if (Loadajax) Loadajax = false;
-                    layer.msg('操作失败', {icon: 2});
-                    console.log(e);
+                    if(typeof(f)=='function'){
+                        f(e);
+                    }else{
+                        layer.msg('操作失败', {icon: 2});
+                    }
                 }
             }
             if (method === 'POST') {

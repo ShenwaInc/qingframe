@@ -32,8 +32,9 @@ if (empty($socket)){
         layer.open({
             type: 1,
             skin: 'fui-layer fui-terminal', //样式类名
+            id:"TerminalPopup",
             anim: 2,
-            title:"轻如云终端",
+            title:'轻如云终端<span class="layui-icon layui-icon-loading layui-anim layui-anim-rotate layui-anim-loop margin-left-sm"></span>',
             shadeClose: false, //开启遮罩关闭
             content: html,
             success:function (layero, index){
@@ -45,10 +46,15 @@ if (empty($socket)){
                     terminalShow("请不要关闭或刷新浏览器，否则可能会造成进程中断。如果因超时而失去响应，请增大程序最大运行时间（当前设置：{{ ini_get('max_execution_time') }}秒）", "warm");
                 }
                 if(url){
-                    Core.get(url, function (res){
+                    Core.request(url, 'GET', {inajax:1, _token:"{{ $_W['token'] }}"}, 'json', function (res){
                         terminalRunning = false;
-                        Core.report(res, 2000);
-                    }, {inajax:1, _token:"{{ $_W['token'] }}"});
+                        $("#TerminalPopup").find('span.layui-icon-loading').addClass('layui-hide');
+                        Core.report(res, 2500);
+                    }, false, function (e){
+                        terminalRunning = false;
+                        $("#TerminalPopup").find('span.layui-icon-loading').addClass('layui-hide');
+                        layer.msg('操作失败', {icon: 2});
+                    });
                 }
             },
             cancel:function (index, layero){

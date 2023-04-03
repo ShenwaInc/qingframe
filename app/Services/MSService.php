@@ -727,7 +727,7 @@ class MSService
             $process->setEnv(['COMPOSER_HOME'=>self::ComposerHome()]);
             $process->setTimeout(ini_get('max_execution_time'));
             $process->run(function ($type, $buffer) {
-                self::TerminalSend(["mode"=>$type, "message"=>$buffer]);
+                self::TerminalSend(["mode"=>str_replace('err', 'warm', $type), "message"=>$buffer]);
             });
             $process->wait();
             if ($process->isSuccessful()) {
@@ -738,11 +738,11 @@ class MSService
         }catch (\Exception $exception){
             //Todo something
         }
-        self::TerminalSend(["mode"=>"err", "message"=>"Composer依赖卸载失败，请使用宝塔终端或其它ssh依次运行如下指令（执行完后请刷新此页面）"]);
+        self::TerminalSend(["mode"=>"warm", "message"=>"Composer依赖卸载失败，请使用宝塔终端或其它ssh依次运行如下指令（执行完后请刷新此页面）"]);
         self::TerminalSend(["mode"=>"cmd", "message"=>"cd ".$WorkingDirectory]);
         self::TerminalSend(["mode"=>"cmd", "message"=>"composer remove $require"]);
         $path = str_replace(array('addons', 'microserver'), array('public/addons', 'servers'), $require);
-        self::TerminalSend(["mode"=>"cmd", "message"=>"rm -r ".str_replace('\\', "/", base_path($path))]);
+        self::TerminalSend(["mode"=>"cmd", "message"=>"rm -rf ".str_replace('\\', "/", base_path($path))]);
         return error(-1, "Composer依赖【{$require}】卸载失败");
     }
 
