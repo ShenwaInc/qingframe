@@ -52,7 +52,9 @@ class selfmigrate extends Command
             if (!Schema::hasColumn('uni_account_users', 'entrance')){
                 DB::statement("ALTER TABLE ".tablename('uni_account_users')." ADD `entrance` VARCHAR(100) NOT NULL DEFAULT '' AFTER `rank`;");
             }
-            MSService::setup();
+            $MSS = new MSService();
+            $MSS->setup();
+            $MSS->autoinstall();
             if(is_dir(base_path('socket'))){
                 FileService::rmdirs(base_path('socket'));
                 DB::table('gxswa_cloud')->where(array('identity'=>'laravel_whotalk_socket'))->update(array('rootpath'=>'swasocket/'));

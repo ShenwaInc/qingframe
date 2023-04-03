@@ -206,7 +206,7 @@ class MSService
                     'version'=>$value['release']['version'],
                     'releases'=>$value['release']['releasedate']
                 );
-                $service['actions'] = '<a class="layui-btn layui-btn-sm layui-btn-normal confirm" data-text="确定要安装该服务？" href="'.wurl('server', array("op"=>"cloudinst", "nid"=>$identity)).'">安装</a>';
+                $service['actions'] = '<a class="layui-btn layui-btn-sm layui-btn-normal js-terminal" data-text="确定要安装该服务？" href="'.wurl('server', array("op"=>"cloudinst", "nid"=>$identity)).'">安装</a>';
                 $servers[] = $service;
             }
         }
@@ -335,11 +335,13 @@ class MSService
     }
 
     public function autoinstall(){
-        $servers = $this->InitService(1);
+        $servers = $this->InitService();
         $return = array("upgrade"=>0, "install"=>0, "faild"=>0, "servers"=>0);
+        $installed = [];
         if (!empty($servers)){
             $return['servers'] = count($servers);
             foreach ($servers as $value){
+                $installed[] = $value['identity'];
                 if (!empty($value['upgrade'])){
                     try {
                         $res = $this->upgrade($value['identity']);
@@ -348,6 +350,7 @@ class MSService
                             continue;
                         }
                     }catch (\Exception $exception){
+                        //Todo something
                     }
                     $return['faild'] += 1;
                 }
@@ -360,13 +363,35 @@ class MSService
                 try {
                     $res = $this->install($value['identity']);
                     if (!is_error($res)){
+                        $installed[] = $value['identity'];
                         $return['install'] += 1;
                         continue;
                     }
                 }catch (\Exception $exception){
+                    //Todo something
                 }
                 $return['faild'] += 1;
             }
+        }
+        $requires = array("websocket");
+        foreach ($requires as $serve){
+            try {
+                if (in_array($serve, $installed) || self::isexist($serve)){
+                    continue;
+                }
+                if (self::localexist($serve)){
+                    $res = $this->install($serve);
+                }else{
+                    $res = $this->cloudInstall($serve);
+                }
+                if (!is_error($res)){
+                    $return['install'] += 1;
+                    continue;
+                }
+            }catch (\Exception $exception){
+                //Todo something
+            }
+            $return['faild'] += 1;
         }
         return $return;
     }
