@@ -63,7 +63,7 @@ if (empty($socket)){
     function terminalShow(message, mode='info', finish=false){
         if(!terminalState) return terminalInit("", {message:message, mode:mode});
         terminalRunning = !finish;
-        if(!terminalRunning){
+        if(terminalRunning){
             $(".fui-layer.fui-terminal").find('span.layui-icon-loading').removeClass('layui-hide');
         }else{
             $(".fui-layer.fui-terminal").find('span.layui-icon-loading').addClass('layui-hide');
