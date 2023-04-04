@@ -24,3 +24,4 @@ yarn-error.log
 /swasocket
 /composer.lock
 /composer.json
+/storage/dist/

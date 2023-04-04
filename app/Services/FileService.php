@@ -46,15 +46,6 @@ class FileService
         return is_file($uri);
     }
 
-    function file_read($filename) {
-        $filename = ATTACHMENT_ROOT . '/' . $filename;
-        if (!is_file($filename)) {
-            return false;
-        }
-
-        return file_get_contents($filename);
-    }
-
     public static function file_move($filename, $dest) {
         global $_W;
         self::mkdirs(dirname($dest));
@@ -94,114 +85,28 @@ class FileService
     }
 
 
-    function file_tree_limit($path, $limit = 0, $acquired_files_count = 0) {
-        $files = array();
-        if (is_dir($path)) {
-            if ($dir = opendir($path)) {
-                while (false !== ($file = readdir($dir))) {
-                    if (in_array($file, array('.', '..'))) {
-                        continue;
-                    }
-                    if (is_file($path . '/' . $file)) {
-                        $files[] = $path . '/' . $file;
-                        ++$acquired_files_count;
-                        if ($limit > 0 && $acquired_files_count >= $limit) {
-                            closedir($dir);
-
-                            return $files;
-                        }
-                    }
-                    if (is_dir($path . '/' . $file)) {
-                        $rs = $this->file_tree_limit($path . '/' . $file, $limit, $acquired_files_count);
-                        foreach ($rs as $f) {
-                            $files[] = $f;
-                            ++$acquired_files_count;
-                            if ($limit > 0 && $acquired_files_count >= $limit) {
-                                closedir($dir);
-
-                                return $files;
-                            }
-                        }
-                    }
-                }
-                closedir($dir);
-            }
-        }
-
-        return $files;
-    }
-
-
-    function file_dir_exist_image($path) {
-        if (is_dir($path)) {
-            if ($dir = opendir($path)) {
-                while (false !== ($file = readdir($dir))) {
-                    if (in_array($file, array('.', '..'))) {
-                        continue;
-                    }
-                    if (is_file($path . '/' . $file) && $path != (ATTACHMENT_ROOT . 'images') && $this->file_is_image($path . '/' . $file)) {
-                        if (0 === strpos($path, ATTACHMENT_ROOT)) {
-                            $attachment = str_replace(ATTACHMENT_ROOT . 'images/', '', $path . '/' . $file);
-                            list($file_account) = explode('/', $attachment);
-                            if ('global' == $file_account) {
-                                continue;
-                            }
-                        }
-                        closedir($dir);
-
-                        return true;
-                    }
-                    if (is_dir($path . '/' . $file) && $this->file_dir_exist_image($path . '/' . $file)) {
-                        closedir($dir);
-
-                        return true;
-                    }
-                }
-                closedir($dir);
-            }
-        }
-
-        return false;
-    }
-
-
     public static function mkdirs($path, $perm=0777, $rec=false) {
-        return Storage::makeDirectory($path);
-    }
-
-
-    function file_copy($src, $des, $filter) {
-        $dir = opendir($src);
-        @mkdir($des);
-        while (false !== ($file = readdir($dir))) {
-            if (('.' != $file) && ('..' != $file)) {
-                if (is_dir($src . '/' . $file)) {
-                    $this->file_copy($src . '/' . $file, $des . '/' . $file, $filter);
-                } elseif (!in_array(substr($file, strrpos($file, '.') + 1), $filter)) {
-                    copy($src . '/' . $file, $des . '/' . $file);
-                }
-            }
+        if (!is_dir($path)) {
+            self::mkdirs(dirname($path));
+            mkdir($path, $perm, $rec);
         }
-        closedir($dir);
+
+        return is_dir($path);
     }
 
 
     public static function rmdirs($path, $clean = false) {
-        $res = Storage::deleteDirectory($path);
-        if ($res && $clean){
-            Storage::makeDirectory($path);
+        if (!is_dir($path)) {
+            return true;
         }
-        return $res;
-    }
+        $files = glob($path . '/*');
+        if ($files) {
+            foreach ($files as $file) {
+                is_dir($file) ? self::rmdirs($file) : @unlink($file);
+            }
+        }
 
-    static function file_upload_path($type='image'){
-        global $_W;
-        $uniacid = intval($_W['uniacid']);
-        $path = "{$type}s/{$uniacid}/" . date('Y/m/');
-        if (!is_dir(ATTACHMENT_ROOT.$path)){
-            self::mkdirs(ATTACHMENT_ROOT.$path);
-        }
-        return $path;
+        return $clean || @rmdir($path);
     }
 
     static function Upload(Request $request,$type='image',$field='file'){
@@ -356,82 +261,12 @@ class FileService
         return $result;
     }
 
-    function file_wechat_upload($file, $type = 'image', $name = '') {
-        $harmtype = array('asp', 'php', 'jsp', 'js', 'css', 'php3', 'php4', 'php5', 'ashx', 'aspx', 'exe', 'cgi');
-        if (empty($file)) {
-            return error(-1, '没有上传内容');
-        }
-        if (!in_array($type, array('image', 'thumb', 'voice', 'video', 'audio'))) {
-            return error(-2, '未知的上传类型');
-        }
-
-        global $_W;
-        $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
-        $ext = strtolower($ext);
-        if (in_array(strtolower($ext), $harmtype)) {
-            return error(-3, '不允许上传此类文件');
-        }
-
-        $result = array();
-        if (empty($name) || 'auto' == $name) {
-            $uniacid = intval($_W['uniacid']);
-            $path = "{$type}s/{$uniacid}/" . date('Y/m/');
-            $this->mkdirs(ATTACHMENT_ROOT . '/' . $path);
-            $filename = $this->file_random_name(ATTACHMENT_ROOT . '/' . $path, $ext);
-            $result['path'] = $path . $filename;
-        } else {
-            $this->mkdirs(dirname(ATTACHMENT_ROOT . '/' . $name));
-            if (!strexists($name, $ext)) {
-                $name .= '.' . $ext;
-            }
-            $result['path'] = $name;
-        }
-        $save_path = ATTACHMENT_ROOT . '/' . $result['path'];
-        if (!$this->file_move($file['tmp_name'], $save_path)) {
-            return error(-1, '保存上传文件失败');
-        }
-
-        if ('image' == $type) {
-            $this->file_image_quality($save_path, $save_path, $ext);
-        }
-        $result['success'] = true;
-
-        return $result;
-    }
-
     public static function file_remote_upload($filename, $auto_delete_local = true) {
         $result = serv('storage')->remoteUpload($filename);
         if (is_error($result)) return $result;
         if ($auto_delete_local) {
             self::file_delete($filename);
         }
-        return true;
-    }
-
-    function file_dir_remote_upload($dir_path, $limit = 200) {
-        global $_W;
-        if (empty($_W['setting']['remote']['type'])) {
-            return error(1, '未开启远程附件');
-        }
-        if (!empty($dir_path)) {
-            $local_attachment = $this->file_tree_limit($dir_path, $limit);
-        } else {
-            $local_attachment = array();
-        }
-        if (is_array($local_attachment) && !empty($local_attachment)) {
-            foreach ($local_attachment as $attachment) {
-                $filename = str_replace(ATTACHMENT_ROOT, '', $attachment);
-                list($image_dir, $file_account) = explode('/', $filename);
-                if ('global' == $file_account || !$this->file_is_image($attachment)) {
-                    continue;
-                }
-                $result = $this->file_remote_upload($filename);
-                if (is_error($result)) {
-                    return $result;
-                }
-            }
-        }
-
         return true;
     }
 
@@ -464,246 +299,6 @@ class FileService
         }
         if (file_exists(ATTACHMENT_ROOT . '/' . $file)) {
             @unlink(ATTACHMENT_ROOT . '/' . $file);
-        }
-
-        return true;
-    }
-
-    function file_image_thumb($srcfile, $desfile = '', $width = 0) {
-        global $_W;
-
-        if (0 == intval($width)) {
-            $width = intval($_W['setting']['upload']['image']['width']);
-        }
-        if (empty($desfile)) {
-            $ext = pathinfo($srcfile, PATHINFO_EXTENSION);
-            $srcdir = dirname($srcfile);
-            do {
-                $desfile = $srcdir . '/' . random(30) . ".{$ext}";
-            } while (file_exists($desfile));
-        }
-
-        $des = dirname($desfile);
-        if (!file_exists($des)) {
-            if (!$this->mkdirs($des)) {
-                return error('-1', '创建目录失败');
-            }
-        } elseif (!is_writable($des)) {
-            return error('-1', '目录无法写入');
-        }
-        $org_info = @getimagesize($srcfile);
-        if ($org_info) {
-            if (0 == $width || $width > $org_info[0]) {
-                copy($srcfile, $desfile);
-
-                return str_replace(ATTACHMENT_ROOT . '/', '', $desfile);
-            }
-        }
-        $scale_org = $org_info[0] / $org_info[1];
-        $height = $width / $scale_org;
-        $desfile = Image::create($srcfile)->resize($width, $height)->saveTo($desfile);
-        if (!$desfile) {
-            return false;
-        }
-
-        return str_replace(ATTACHMENT_ROOT . '/', '', $desfile);
-    }
-
-    function file_image_crop($src, $desfile, $width = 400, $height = 300, $position = 1) {
-        $des = dirname($desfile);
-        if (!file_exists($des)) {
-            if (!$this->mkdirs($des)) {
-                return error('-1', '创建目录失败');
-            }
-        } elseif (!is_writable($des)) {
-            return error('-1', '目录无法写入');
-        }
-
-        return Image::create($src)
-            ->crop($width, $height, $position)
-            ->saveTo($desfile);
-    }
-
-    function file_lists($filepath, $subdir = 1, $ex = '', $isdir = 0, $md5 = 0, $enforcement = 0) {
-        static $file_list = array();
-        if ($enforcement) {
-            $file_list = array();
-        }
-        $flags = $isdir ? GLOB_ONLYDIR : 0;
-        $list = glob($filepath . '*' . (!empty($ex) && empty($subdir) ? '.' . $ex : ''), $flags);
-        if (!empty($ex)) {
-            $ex_num = strlen($ex);
-        }
-        foreach ($list as $k => $v) {
-            $v = str_replace('\\', '/', $v);
-            $v1 = str_replace(IA_ROOT . '/', '', $v);
-            if ($subdir && is_dir($v)) {
-                $this->file_lists($v . '/', $subdir, $ex, $isdir, $md5);
-                continue;
-            }
-            if (!empty($ex) && strtolower(substr($v, -$ex_num, $ex_num)) == $ex) {
-                if ($md5) {
-                    $file_list[$v1] = md5_file($v);
-                } else {
-                    $file_list[] = $v1;
-                }
-                continue;
-            } elseif (!empty($ex) && strtolower(substr($v, -$ex_num, $ex_num)) != $ex) {
-                unset($list[$k]);
-                continue;
-            }
-        }
-
-        return $file_list;
-    }
-
-    function file_remote_attach_fetch($url, $limit = 0, $path = '') {
-        global $_W;
-        $url = trim($url);
-        if (empty($url)) {
-            return error(-1, '文件地址不存在');
-        }
-        $resp = HttpService::ihttp_get($url);
-
-        if (is_error($resp)) {
-            return error(-1, '提取文件失败, 错误信息: ' . $resp['message']);
-        }
-        if (200 != intval($resp['code'])) {
-            return error(-1, '提取文件失败: 未找到该资源文件.');
-        }
-        $get_headers = $this->file_media_content_type($url);
-        if (empty($get_headers)) {
-            return error(-1, '提取资源失败, 资源文件类型错误.');
-        } else {
-            $ext = $get_headers['ext'];
-            $type = $get_headers['type'];
-        }
-
-        if (empty($path)) {
-            $path = $type . "/{$_W['uniacid']}/" . date('Y/m/');
-        } else {
-            $path = parse_path($path);
-        }
-        if (!$path) {
-            return error(-1, '提取文件失败: 上传路径配置有误.');
-        }
-
-        if (!is_dir(ATTACHMENT_ROOT . $path)) {
-            if (!$this->mkdirs(ATTACHMENT_ROOT . $path, 0755, true)) {
-                return error(-1, '提取文件失败: 权限不足.');
-            }
-        }
-
-
-        if (!$limit) {
-            if ('images' == $type) {
-                $limit = $_W['setting']['upload']['image']['limit'] * 1024;
-            } else {
-                $limit = $_W['setting']['upload']['audio']['limit'] * 1024;
-            }
-        } else {
-            $limit = $limit * 1024;
-        }
-        if (intval($resp['headers']['Content-Length']) > $limit) {
-            return error(-1, '上传的媒体文件过大(' . sizecount($resp['headers']['Content-Length']) . ' > ' . sizecount($limit));
-        }
-        $filename = $this->file_random_name(ATTACHMENT_ROOT . $path, $ext);
-        $pathname = $path . $filename;
-        $fullname = ATTACHMENT_ROOT . $pathname;
-        if (false == file_put_contents($fullname, $resp['content'])) {
-            return error(-1, '提取失败.');
-        }
-
-        return $pathname;
-    }
-
-    public static function file_media_content_type($url) {
-        $file_header = iget_headers($url, 1);
-        if (empty($url) || !is_array($file_header)) {
-            return false;
-        }
-        switch ($file_header['Content-Type']) {
-            case 'application/x-jpg':
-            case 'image/jpg':
-            case 'image/jpeg':
-                $ext = 'jpg';
-                $type = 'images';
-                break;
-            case 'image/png':
-                $ext = 'png';
-                $type = 'images';
-                break;
-            case 'image/gif':
-                $ext = 'gif';
-                $type = 'images';
-                break;
-            case 'video/mp4':
-            case 'video/mpeg4':
-                $ext = 'mp4';
-                $type = 'videos';
-                break;
-            case 'video/x-ms-wmv':
-                $ext = 'wmv';
-                $type = 'videos';
-                break;
-            case 'audio/mpeg':
-                $ext = 'mp3';
-                $type = 'audios';
-                break;
-            case 'audio/mp4':
-                $ext = 'mp4';
-                $type = 'audios';
-                break;
-            case 'audio/x-ms-wma':
-                $ext = 'wma';
-                $type = 'audios';
-                break;
-            default:
-                return false;
-                break;
-        }
-
-        return array('ext' => $ext, 'type' => $type);
-    }
-
-    function file_allowed_media($type) {
-        global $_W;
-        if (!in_array($type, array('image', 'audio'))) {
-            return array();
-        }
-        if (empty($_W['setting']['upload'][$type]['extention']) || !is_array($_W['setting']['upload'][$type]['extention'])) {
-            return $_W['config']['upload'][$type]['extentions'];
-        }
-
-        return $_W['setting']['upload'][$type]['extention'];
-    }
-
-    function file_is_image($url) {
-        global $_W;
-        $allowed_media = $this->file_allowed_media('image');
-
-        if ('//' == substr($url, 0, 2)) {
-            $url = 'http:' . $url;
-        }
-        if (0 == strpos($url, $_W['siteroot'] . 'attachment/')) {
-            $url = str_replace($_W['siteroot'] . 'attachment/', ATTACHMENT_ROOT, $url);
-        }
-        $lower_url = strtolower($url);
-        if (('http://' == substr($lower_url, 0, 7)) || ('https://' == substr($lower_url, 0, 8))) {
-            $analysis_url = parse_url($lower_url);
-            $preg_str = '/.*(\.' . implode('|\.', $allowed_media) . ')$/';
-            if (!empty($analysis_url['query']) || !preg_match($preg_str, $lower_url) || !preg_match($preg_str, $analysis_url['path'])) {
-                return false;
-            }
-            $img_headers = $this->file_media_content_type($url);
-            if (empty($img_headers) || !in_array($img_headers['ext'], $allowed_media)) {
-                return false;
-            }
-        }
-
-        $info = igetimagesize($url);
-        if (!is_array($info)) {
-            return false;
         }
 
         return true;

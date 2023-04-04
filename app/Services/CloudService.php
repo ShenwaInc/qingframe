@@ -367,7 +367,7 @@ class CloudService
                 $new = $source.$entry;
                 if(is_dir($new)) {
                     if (!is_dir($target.$entry)){
-                        Storage::makeDirectory($target.$entry.'/');
+                        FileService::mkdirs($target.$entry.'/');
                     }
                     self::CloudPatch($target.$entry.'/',$source.$entry.'/',$overwrite);
                 }else{
