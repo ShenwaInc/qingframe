@@ -585,7 +585,7 @@ class MSService
         $data['finish'] = $finish;
         $userIds = md5($_W['config']['setting']['authkey'].":terminal:{$_W['uid']}");
         $swaSocket = serv('websocket');
-        if ($swaSocket->enabled){
+        if ($swaSocket->enabled && method_exists($swaSocket, 'Send')){
             return $swaSocket->Send($data, $userIds, 0);
         }
         $sendData = array(

@@ -69,10 +69,11 @@ if (empty($socket)){
             $(".fui-layer.fui-terminal").find('span.layui-icon-loading').addClass('layui-hide');
         }
         let TerminalOl = $("#TerminalInfo").find('ol.layui-code-ol');
+        let terminalText = terminalPrefix+message;
         if(mode==='cmd'){
-            terminalPrefix = "> ";
+            terminalText = "> " + message;
         }
-        TerminalOl.append('<li class="'+mode+'">'+terminalPrefix+message+'</li>');
+        TerminalOl.append('<li class="'+mode+'">'+terminalText+'</li>');
         $('.fui-terminal .layui-layer-content').scrollTop(TerminalOl.height());
     }
     $(function (){

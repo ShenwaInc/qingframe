@@ -123,7 +123,7 @@
                             </td>
                             <td class="text-right soild-after">
                                 @if($cloudinfo['isnew'])
-                                    <a href="{{ wurl('setting/selfupgrade') }}" class="text-red confirm"
+                                    <a href="{{ wurl('setting/selfupgrade') }}" class="text-red js-terminal"
                                        data-text="升级前请做好源码和数据备份，避免升级故障导致系统无法正常运行">一键升级</a>&nbsp;&nbsp;
                                     <a href="{{ wurl('setting/updateLog') }}" class="text-blue ajaxshow">更新说明</a>
                                     &nbsp;&nbsp;
