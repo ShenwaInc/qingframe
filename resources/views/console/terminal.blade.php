@@ -57,6 +57,12 @@ if (empty($socket)){
                         layer.msg('操作失败', {icon: 2});
                     });
                 }
+            },
+            cancel:function (index, layero) {
+                terminalState = false;
+                if(terminalRunning){
+                    layer.msg("程序仍在后台运行", {icon:3});
+                }
             }
         });
     }

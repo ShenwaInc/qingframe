@@ -285,7 +285,7 @@ class MicroService
      * @return bool
      */
     public function View($data, $template=''){
-        global $_W,$_GPC;
+        global $_W;
         if (is_error($data)){
             $this->message($data['message']);
         }
@@ -318,6 +318,7 @@ class MicroService
             include $compile;
             session_exit();
         }elseif ($this->CompileDrive=='blade'){
+
             return false;
         }
         return true;
