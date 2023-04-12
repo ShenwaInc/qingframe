@@ -285,7 +285,7 @@ class MicroService
      * @return bool
      */
     public function View($data, $template=''){
-        global $_W;
+        global $_W, $_GPC;
         if (is_error($data)){
             $this->message($data['message']);
         }

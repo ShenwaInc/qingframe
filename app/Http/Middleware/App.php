@@ -34,8 +34,7 @@ class App
         global $_W,$_GPC;
         $_GPC = $request->all();
         $_W['config'] = config('system');
-        $dbconfig = config('database');
-        $_W['config']['db'] = $dbconfig['connections'][$dbconfig['default']];
+        $_W['framework'] = ['version'=>QingVersion, 'release'=>QingRelease];
         $_W['timestamp'] = TIMESTAMP;
         $_W['charset'] = $_W['config']['setting']['charset'];
         $_W['clientip'] = $request->getClientIp();

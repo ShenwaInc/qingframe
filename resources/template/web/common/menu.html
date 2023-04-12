@@ -19,9 +19,12 @@
                     </a>
                     <dl class="layui-nav-child layui-anim layui-anim-upbit" style="padding: 0;">
                         <dd><a href="{php echo wurl('user/profile')}" target="_blank"><span class="layui-icon layui-icon-username"></span>&nbsp;账户信息</a></dd>
+                        {if $service->Unique}
+                        <dd><a href="{php echo wurl('account/profile', ['uniacid'=>$_W['uniacid']])}"><span class="layui-icon layui-icon-website"></span>&nbsp;平台管理</a></dd>
+                        {/if}
                         <hr style="margin: 5px 0;">
                         <dd><a href="javascript:;" layadmin-event="updateCache"><span class="layui-icon layui-icon-refresh"></span>&nbsp;更新缓存</a></dd>
-                        <dd><a href="{php echo wurl('')}"><span class="layui-icon layui-icon-website"></span>&nbsp;返回系统</a></dd>
+                        <dd><a href="{php echo wurl('')}"><span class="layui-icon layui-icon-console"></span>&nbsp;返回系统</a></dd>
                     </dl>
                 </li>
                 <li class="layui-nav-item layui-hide-xs js-fullscreen" lay-unselect>

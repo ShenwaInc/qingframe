@@ -64,7 +64,7 @@
             $(this).dropdown();
             return false;
         });
-        Obj.find('a.confirm').click(function(){
+        Obj.find('a.confirm').not('.ajaxshow').click(function(){
             var comfirmText = $(this).data('text');
             var redirect = $(this).attr('href');
             layer.confirm(comfirmText, {icon: 3, title:'提示'}, function(index){
@@ -153,27 +153,39 @@
             return false;
         });
         Obj.find('.ajaxshow').click(function(){
+            if($(this).hasClass('layui-disabled')) return false;
             let geturl = $(this).attr('href');
             let title = typeof($(this).attr('title'))!='undefined' ? $(this).attr('title') : $(this).text();
             let width = typeof($(this).attr('data-width'))!='undefined' ? $(this).attr('data-width') + 'px' : '990px';
-            Core.get(geturl,function(Html){
-                if(Core.isJsonString(Html)){
-                    var obj = jQuery.parseJSON(Html);
-                    return Core.report(obj);
-                }else{
-                    let WindowId = 'ajaxwindow' + Wrandom(6);
-                    layer.open({type:1,content:Html,id:WindowId,title:title,shade:0.3,area:width,shadeClose:true,skin:'fui-layer'});
-                    let Ajaxwindow = $('#'+WindowId);
-                    if(Ajaxwindow.find('form.layui-form').length>0){
-                        var filter = Ajaxwindow.find('form.layui-form').attr('lay-filter');
-                        FormInit(filter);
+            let confirmText = typeof($(this).attr('data-text'))=='undefined' ? '' : $(this).attr('data-text');
+            let callBack = function (){
+                Core.get(geturl,function(Html){
+                    if(Core.isJsonString(Html)){
+                        var obj = jQuery.parseJSON(Html);
+                        return Core.report(obj);
+                    }else{
+                        let WindowId = 'ajaxwindow' + Wrandom(6);
+                        layer.open({type:1,content:Html,id:WindowId,title:title,shade:0.3,area:width,shadeClose:true,skin:'fui-layer'});
+                        let Ajaxwindow = $('#'+WindowId);
+                        if(Ajaxwindow.find('form.layui-form').length>0){
+                            var filter = Ajaxwindow.find('form.layui-form').attr('lay-filter');
+                            FormInit(filter);
+                        }
+                        if(Ajaxwindow.find('.layui-code').length>0){
+                            layui.code();
+                        }
+                        EventInit(Ajaxwindow);
                     }
-                    if(Ajaxwindow.find('.layui-code').length>0){
-                        layui.code();
-                    }
-                    EventInit(Ajaxwindow);
-                }
-            },{inajax:1},'html',true);
+                },{inajax:1},'html',true);
+            }
+            if(confirmText!==''){
+                layer.confirm(confirmText, {icon: 3, title:'提示'}, function(index){
+                    layer.close(index);
+                    callBack();
+                });
+                return false;
+            }
+            callBack();
             return false;
         });
         Obj.find(".js-clip").each(function () {

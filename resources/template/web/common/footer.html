@@ -20,7 +20,8 @@
     require.config({
         baseUrl: '/static/js',
         paths:{
-            'clipboard':'clipboard.min'
+            'clipboard':'clipboard.min',
+            'hljs':'highlight.min'
         }
     });
 	layui.use(['element', 'dropdown', 'form','laydate','upload','code'],function (){
@@ -41,7 +42,7 @@
 		$('.showmenu').on('click',this,function(){
 			$(this).dropdown();
 		});
-		$('a.confirm').on('click',this,function(){
+		$('a.confirm').not('.ajaxshow').on('click',this,function(){
 			var comfirmText = $(this).data('text');
 			var redirect = $(this).attr('href');
 			layer.confirm(comfirmText, {icon: 3, title:'提示'}, function(index){
@@ -160,10 +161,12 @@
 			return false;
 		});
 		Obj.find('.ajaxshow').click(function(){
+            if($(this).hasClass('layui-disabled')) return false;
 			let Elem = $(this);
 			let geturl = Elem.attr('href');
 			let title = typeof(Elem.attr('title'))!='undefined' ? Elem.attr('title') : Elem.text();
 			let width = typeof(Elem.attr('data-width'))!='undefined' ? Elem.attr('data-width') + 'px' : '990px';
+            let confirmText = typeof(Elem.attr('data-text'))=='undefined' ? '' : Elem.attr('data-text');
 			if(typeof(Elem.attr('data-height'))!='undefined'){
 				let height = Elem.attr('data-height') + 'px';
 				options.area = [width, height];
@@ -173,6 +176,13 @@
 			if(typeof(Elem.attr('ajaxhash'))!='undefined'){
 				options.id = Elem.attr('ajaxhash');
 			}
+            if(confirmText!==''){
+                layer.confirm(confirmText, {icon: 3, title:'提示'}, function(index){
+                    layer.close(index);
+                    Ajaxget(geturl, title, options);
+                });
+                return false;
+            }
 			Ajaxget(geturl, title, options);
 			return false;
 		});

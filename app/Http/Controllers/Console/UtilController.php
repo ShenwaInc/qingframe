@@ -39,17 +39,13 @@ class UtilController extends Controller
     }
 
     public function doCache(Request $request){
-        $do = (string)$request->input('do','');
-        if($do=='clear'){
-            //清理系统缓存
-            try {
-                CacheService::flush();
-            }catch (\Exception $exception){
-                return $this->message($exception->getMessage());
-            }
-            return $this->message('清理完成！','','success');
+        //清理系统缓存
+        try {
+            CacheService::flush();
+        }catch (\Exception $exception){
+            return $this->message($exception->getMessage());
         }
-        return $this->message();
+        return $this->message('清理完成！','','success');
     }
 
     public function doFile(Request $request){

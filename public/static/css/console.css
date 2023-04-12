@@ -225,6 +225,8 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 .fui-layer .layui-layer-content .unpadding{margin: -15px !important; padding: 0}
 .fui-layer .main-content{width: 100%;}
 .fui-layer .fui-card{box-shadow: none;}
+.fui-layer .unpadding .main-content{padding-bottom: 0;}
+.fui-layer .unpadding > .layui-table{margin: 0}
 
 .layui-layout-admin .fui-side-menu{width: 225px;box-sizing: border-box; transition: padding-top .3s ease-in-out; padding-top: 28px;}
 .fui-side-menu .layui-nav-tree{margin-left: 48px; width: auto; background-color: unset;}

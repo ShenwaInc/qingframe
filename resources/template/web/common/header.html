@@ -9,9 +9,9 @@
     <meta name="csrf-token" content="{$_W['token']}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <link rel="shortcut icon" href="{php echo tomedia($_W['page']['icon'])}" />
-    <link rel="stylesheet" href="/static/css/font-awesome.min.css?v={QingRelease}" />
+    <link rel="stylesheet" href="/static/css/font-awesome.min.css?v={$_W['framework']['release']}" />
     <link rel="stylesheet" href="/static/layui/css/layui.css" />
-    <link rel="stylesheet" href="/static/css/console.css?v={QingRelease}" />
+    <link rel="stylesheet" href="/static/css/console.css?v={$_W['framework']['release']}" />
 	<script type="text/javascript">var BaseApiUrl = '{php echo url("site/entry", array("do"=>"index","m"=>"swa_microserver"))}',BaseController="{$_W['controller']}",BaseAction="{$_W['action']}",BaseRoute="{$_GPC['r']}";</script>
 	<script type="text/javascript">
 	if(navigator.appName == 'Microsoft Internet Explorer'){
@@ -39,10 +39,10 @@
 	};
 	var require = { urlArgs: 'v={$GLOBALS["_W"]["config"]["release"]}' };
 	</script>
-	<script type="text/javascript" src="/static/layui/layui.js?v={QingRelease}"></script>
-    <script type="text/javascript" src="/static/js/jquery-1.11.1.min.js?v={QingRelease}"></script>
-    <script type="text/javascript" src="/static/js/core.jquery.js?v={QingRelease}"></script>
-    <script type="text/javascript" src="/static/js/require.js?v={QingRelease}"></script>
+	<script type="text/javascript" src="/static/layui/layui.js?v={$_W['framework']['release']}"></script>
+    <script type="text/javascript" src="/static/js/jquery-1.11.1.min.js?v={$_W['framework']['release']}"></script>
+    <script type="text/javascript" src="/static/js/core.jquery.js?v={$_W['framework']['release']}"></script>
+    <script type="text/javascript" src="/static/js/require.js?v={$_W['framework']['release']}"></script>
 </head>
 <body layadmin-themealias="ocean-header" class="layui-layout-body" style="position:inherit !important;">
     <div class="layui-layout layui-layout-admin">
