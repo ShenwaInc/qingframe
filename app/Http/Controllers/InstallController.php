@@ -167,7 +167,7 @@ class InstallController extends Controller
             //initializer laravel framework
             DB::table('gxswa_cloud')->insert(array(
                 'identity'=>'swa_framework_laravel',
-                'name'=>'轻如云微服务管理系统V1',
+                'name'=>'轻如云系统V1',
                 'modulename'=>'',
                 'type'=>0,
                 'logo'=>'//shenwahuanan.oss-cn-shenzhen.aliyuncs.com/images/4/2021/08/pK8iHw0eQg5hHgg4Kqe5E1E1hSBpZS.png',
@@ -201,13 +201,6 @@ class InstallController extends Controller
             $uid = (int)$dbconnect->table('users')->where('founder_groupid',1)->orderBy('uid','asc')->value('uid');
             //数据表检测，待完善
         }
-        //创建文件符号链接
-        try {
-            Artisan::call('storage:link');
-        }catch (\Exception $exception){
-            //创建文件映射失败
-            Log::error('storage_link_fail',array('errno'=>-1,'message'=>$exception->getMessage()));
-        }
         //写入配置文件
         $envfile_tmp = resource_path('stub/env.stub');
         $reader = fopen($envfile_tmp,'r');
@@ -215,10 +208,19 @@ class InstallController extends Controller
         fclose($reader);
         $baseurl = str_replace('/installer/render','',url()->current());
         $database = $installer['database'];
-        $envdata = str_replace(array('{APP_NAME}','{AUTHKEY}','{BASEURL}','{FOUNDER}','{DB_HOST}','{DB_PORT}','{DB_DATABASE}','{DB_USERNAME}','{DB_PASSWORD}','{DB_PREFIX}'),array(
-            $appname,$authkey,$baseurl,$uid,$database['host'],$database['port'],$database['database'],$database['username'],$database['password'],$database['prefix']
-        ),$envdata);
-        $envdata = str_replace(array('{APP_VERSION}', '{APP_RELEASE}'), array(QingVersion, QingRelease), $envdata);
+        $search = array('{APP_DEBUG}', '{BASEURL}','{FOUNDER}','{DB_HOST}','{DB_PORT}','{DB_DATABASE}','{DB_USERNAME}','{DB_PASSWORD}','{DB_PREFIX}');
+        $replace = array(\config('app.debug', 'false'), $baseurl, $uid, $database['host'], $database['port'],$database['database'],$database['username'],$database['password'],$database['prefix']);
+        $envdata = str_replace($search, $replace, $envdata);
+        $replace2 = array(
+            QingVersion,
+            QingRelease,
+            \config('cache.default', 'file'),
+            env('REDIS_HOST','127.0.0.1'),
+            env('REDIS_PASSWORD', 'null'),
+            env('REDIS_PORT','6379'),
+            $authkey
+        );
+        $envdata = str_replace(array('{APP_VERSION}', '{APP_RELEASE}', '{SESSION_DRIVER}', '{REDIS_HOST}', '{REDIS_PASSWORD}', '{REDIS_PORT}', '{AUTHKEY}'), $replace2, $envdata);
         $envfile = base_path(".env");
         if (file_exists($envfile)){
             @unlink($envfile);
@@ -237,6 +239,14 @@ class InstallController extends Controller
         fclose($writer);
         if(!$complete){
             return $this->message('文件写入失败，请检查storage目录权限');
+        }
+        try {
+            //创建文件符号链接
+            Artisan::call('storage:link');
+            Artisan::call('key:generate');
+        }catch (\Exception $exception){
+            //创建文件映射失败
+            Log::error('storage_link_fail',array('errno'=>-1,'message'=>$exception->getMessage()));
         }
         Cache::forget('installer');
         return $this->message('恭喜您，安装成功！','','success');

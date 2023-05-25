@@ -49,7 +49,7 @@ class PlatformController extends Controller
             }
         }
 
-        return $this->globalview('console.platform', $data);
+        return $this->globalView('console.platform', $data);
     }
 
     public function checkout($uniacid){

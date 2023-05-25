@@ -28,8 +28,7 @@ class HttpController extends Controller
         if (isset($data['message']) && isset($data['type'])){
             return $this->message($data["message"], trim($data['redirect']), $data['type']);
         }
-        session_exit(json_encode($data, JSON_NUMERIC_CHECK));
-        return true;
+        return response()->json($data);
     }
 
     public function ServerApp($server, $segment1='index', $segment2=''){

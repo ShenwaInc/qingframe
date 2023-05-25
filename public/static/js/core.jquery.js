@@ -144,9 +144,9 @@ if(typeof Basetoken == 'undefined'){
         },
         loading: 0,
         debug: false,
-        StoragePicker(Elem, multi=false) {
+        StoragePicker(Elem, multi=false, CallBack=false) {
             let WindowId = 'storagepicker' + Wrandom(6);
-            let PickerUrl = this.url("serv/storage/picker");
+            let PickerUrl = this.url("server/storage/picker");
             let PickerTitle = $(Elem).data("title")
             if(Elem.hasAttribute("data-url")){
                 PickerUrl = $(Elem).attr("data-url");
@@ -224,7 +224,7 @@ if(typeof Basetoken == 'undefined'){
                             UploadBtn.removeClass("uploading").addClass('uploaderr');
                             return self.report(res);
                         }
-                        let attach = res.message;
+                        let attach = res.data;
                         let Html = '<div class="layui-col-md2 layui-xs-4 attach-item" data-aid="'+attach.id+'" data-path="'+attach.attachment+'" data-url="'+attach.cover+'">' +
                             '<div class="attach-thumb" style="background-image: url('+attach.cover+')"></div>' +
                             '<div title="'+attach.filename+'" class="attach-name text-center">'+attach.filename+'</div>' +
@@ -285,9 +285,12 @@ if(typeof Basetoken == 'undefined'){
                     },
                     btnAlign:"c",
                     btn:["确定","取消"],
-                    yes:function (){
+                    yes:function (index){
                         if (self.storagedata.storage.items.length>0){
                             if (multi){
+                                if(typeof(CallBack)=='function'){
+                                    return CallBack(self.storagedata.storage.items, index);
+                                }
                                 let inputname = $(Elem).next().val();
                                 let items = self.storagedata.storage.items;
                                 for(let i in items){
@@ -300,6 +303,9 @@ if(typeof Basetoken == 'undefined'){
                                 }
                             }else {
                                 let item = self.storagedata.storage.items[0];
+                                if(typeof(CallBack)=='function'){
+                                    return CallBack(item, index);
+                                }
                                 $(Elem).prev().find('input.layui-input').val(item.path);
                                 $(Elem).parent().next().find('img.img-responsive').attr("src", item.url).removeClass('nopic');
                             }
@@ -319,7 +325,7 @@ if(typeof Basetoken == 'undefined'){
             $('.member-picker').each(function (index,element) {
                 let Elem = $(element);
                 let PickerId = Elem.attr("data-pid");
-                let PickerUrl = self.url("serv/ucenter/picker");
+                let PickerUrl = self.url("server/ucenter/picker");
                 if(element.hasAttribute("data-url")){
                     PickerUrl = Elem.attr("data-url");
                 }

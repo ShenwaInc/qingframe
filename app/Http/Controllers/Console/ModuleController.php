@@ -56,7 +56,7 @@ class ModuleController extends Controller
         if ($swaSocket->enabled){
             $return['socket']['server'] = $swaSocket->settings['server'];
         }
-        return $this->globalview('console.module', $return);
+        return $this->globalView('console.module', $return);
     }
 
     /**

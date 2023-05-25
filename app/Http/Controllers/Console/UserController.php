@@ -14,11 +14,11 @@ class UserController extends Controller
 {
     //
     public function index(Request $request,$op='profile'){
-        global $_W;
         $method = "do".ucfirst($op);
-        if (method_exists($this,$method)){
-            return $this->$method($request);
+        if (!method_exists($this,$method)){
+            return $this->message();
         }
+        return $this->$method($request);
     }
 
     public function doCreate(Request $request){
@@ -92,7 +92,7 @@ class UserController extends Controller
             if ($complete) return $this->message('保存成功！', referer(), 'success');
             return $this->message();
         }
-        return $this->globalview('console.user.create',$return);
+        return $this->globalView('console.user.create',$return);
     }
 
     public function doRemove(Request $request){
@@ -148,7 +148,7 @@ class UserController extends Controller
             }
             $data['users'] = $users;
         }
-        return $this->globalview('console.user.sub',$data);
+        return $this->globalView('console.user.sub',$data);
     }
 
     public function doAvatar(Request $request){
@@ -168,6 +168,20 @@ class UserController extends Controller
         return $this->message();
     }
 
+    public function doSetAvatar(Request $request){
+        if ($request->isMethod('post')){
+            global $_W;
+            $avatar = $request->input('path', '');
+            if (empty($avatar)){
+                return $this->message("无效的图片路径");
+            }
+            if (DB::table('users_profile')->where('uid',$_W['uid'])->update(['avatar'=>$avatar,'edittime'=>TIMESTAMP])){
+                return $this->message("更新成功！",wurl('user/profile'),'success');
+            }
+        }
+        return $this->message();
+    }
+
     public function doProfile(Request $request){
         global $_W;
         $return = array('title'=>'账户管理');
@@ -175,7 +189,7 @@ class UserController extends Controller
         $return['profile'] = !empty($profile) ? $profile : array(
             'avatar' => $_W['setting']['page']['logo']
         );
-        return $this->globalview('console.user.profile',$return);
+        return $this->globalView('console.user.profile',$return);
     }
 
     public function doPassport(Request $request){
@@ -210,7 +224,7 @@ class UserController extends Controller
             }
             return $this->message();
         }
-        return $this->globalview('console.user.passport',$return);
+        return $this->globalView('console.user.passport',$return);
     }
 
 }

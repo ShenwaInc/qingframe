@@ -86,13 +86,13 @@
             let data = {inajax:1,mobile:mobile,_token:"{{ $_W['token'] }}",sendcode:"true"};
             Core.post("console/util/cloudcode", function (res) {
                 if(res.type==='success'){
-                    if(res.message.memberexists===1){
+                    if(res.data.memberexists===1){
                         $('.js-password').addClass('layui-hide').find('input[type="password"]').removeAttr('lay-verify').removeAttr('required');
                     }else{
                         $('.js-password').removeClass('layui-hide').find('input[type="password"]').attr('lay-verify','required').attr('required',true);
                     }
-                    if(typeof(res.message.uid)!='undefined'){
-                        $('#userId').val(parseInt(res.message.uid));
+                    if(typeof(res.data.uid)!='undefined'){
+                        $('#userId').val(parseInt(res.data.uid));
                     }
                     layer.msg('验证码已发送',{icon:1});
                     codeInterval = setInterval(function(){

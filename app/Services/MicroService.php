@@ -98,6 +98,7 @@ class MicroService
         }
         if (strpos($entrance,'http')===0) return $entrance;
         if ($this->service['drive']=='php'){
+            //获取默认入口
             if ($entrance=='' && file_exists($this->serverPath.$this->identity."/web/IndexController.php")){
                 $entrance = 'index';
             }
@@ -303,10 +304,10 @@ class MicroService
                 }
             }
             if (empty($template)){
-                $template = tpl_build($_W['controller'], $_W['action'], MICRO_SERVER.$this->identity."/template/$platform");
+                $template = tpl_build($_W['controller'], $_W['action'], $this->serverPath.$this->identity."/template/$platform");
             }
             $template = str_replace(".","/", $template);
-            $source = MICRO_SERVER.$this->identity."/template/$platform/$template.html";
+            $source = $this->serverPath.$this->identity."/template/$platform/$template.html";
             if (!file_exists($source)){
                 $this->message("Error: template source '$template' is not exist!", "", "error");
             }
@@ -344,31 +345,31 @@ class MicroService
      * @return bool|void
      */
     public function Composer(){
-        $composer = MICRO_SERVER.$this->identity."/composer.json";
+        $composer = $this->serverPath.$this->identity."/composer.json";
         $requireName = "microserver/".$this->identity;
         $composerErr = "";
         if (!file_exists($composer)) return true;
         if (DEVELOPMENT){
             //开发者模式
-            $autoloader = MICRO_SERVER.$this->identity."/vendor/autoload.php";
+            $autoloader = $this->serverPath.$this->identity."/vendor/autoload.php";
             if (file_exists($autoloader)){
                 require_once $autoloader;
             }else{
-                if (!file_exists(MICRO_SERVER.$this->identity."/composer.lock")){
-                    $res = MSService::ComposerRequire(MICRO_SERVER.$this->identity."/", $requireName);
+                if (!file_exists($this->serverPath.$this->identity."/composer.lock")){
+                    $res = MSService::ComposerRequire($this->serverPath.$this->identity."/", $requireName);
                     if ($res){
                         require_once $autoloader;
                         return true;
                     }
                 }
-                $WorkingDirectory = str_replace("\\", "/", MICRO_SERVER.$this->identity."/");
+                $WorkingDirectory = str_replace("\\", "/", $this->serverPath.$this->identity."/");
             }
         }else{
-            if (file_exists(MICRO_SERVER.$this->identity."/composer.error")){
+            if (file_exists($this->serverPath.$this->identity."/composer.error")){
                 $WorkingDirectory = base_path() . "/";
                 $composerObj = json_decode(file_get_contents($composer), true);
                 $composerVer = $composerObj['version'] ?? "";
-                $composerErr = MICRO_SERVER.$this->identity."/composer.error";
+                $composerErr = $this->serverPath.$this->identity."/composer.error";
             }
         }
         if (!empty($WorkingDirectory)){

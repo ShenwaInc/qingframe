@@ -26,7 +26,7 @@ return [
     'site'=>array(
         'id'=>env('APP_SITEID',0),
         'key'=>env('APP_AUTHKEY',''),
-        'name'=>env('APP_NAME', 'Whotalk')
+        'name'=>env('APP_NAME', 'qingwork')
     ),
     'upload'=>array(
         'image'=>array('extentions'=>['gif', 'jpg', 'jpeg', 'png'],'limit'=>5000),

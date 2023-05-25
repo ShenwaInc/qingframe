@@ -1,4 +1,14 @@
 @include('common.header')
+<script type="text/javascript">
+    function setAvatar(attach, layIndex){
+        $('.user-avatar').attr('src',attach.url);
+        layer.close(layIndex);
+        Core.post('{{ wurl("user/setAvatar") }}', function (res) {
+            if(res.type!=='success') return Core.report(res);
+            layer.msg('修改成功！',{icon:1});
+        }, {path:attach.path});
+    }
+</script>
 
 <div class="main-content">
 
@@ -39,7 +49,7 @@
                                 <img class="radius user-avatar" src="{{ tomedia($profile['avatar']) }}" width="72" />
                             </td>
                             <td class="text-right soild-after">
-                                <a href="javascript:" class="text-blue js-avatar" data-prev=".user-avatar" title="修改头像">修改</a>
+                                <a href="javascript:" class="text-blue" onclick="Core.StoragePicker(this, false, setAvatar)" title="修改头像">修改</a>
                             </td>
                         </tr>
                         <tr>
@@ -58,26 +68,3 @@
 </div>
 
 @include('common.footer')
-
-<script type="text/javascript">
-    layer.ready(function (){
-        $('.js-avatar').each(function (index,element){
-            let preview = $(this).data('prev');
-            layui.upload.render({
-                elem: element
-                ,url: '{{ wurl("user/avatar") }}' //必填项
-                ,accept:'images'
-                ,acceptMime:'images/*'
-                ,exts:"{{ implode('|',$_W['setting']['upload']['image']['extentions']) }}"
-                ,data:{_token:"{{ csrf_token() }}"}
-                ,done:function (res, index, upload){
-                    if(res.type!=='success') return Core.report(res);
-                    layer.msg('修改成功！',{icon:1});
-                    if (typeof(preview)!='undefined'){
-                        $(preview).attr('src',res.message.url);
-                    }
-                }
-            });
-        });
-    });
-</script>

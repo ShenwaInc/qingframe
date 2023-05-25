@@ -51,7 +51,7 @@ class servermake extends Command
                 $this->error("MicroServer $identity already exists!");
                 return false;
             }
-            if ($MMS::localexist($identity)){
+            if ($MMS::localExist($identity)){
                 $this->error("Package $identity already exists!");
                 return false;
             }

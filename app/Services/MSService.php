@@ -165,14 +165,10 @@ class MSService
             $data['frompage'] = 'local';
         }
         $res = CloudService::CloudApi("", $data);
-        if(is_error($res) || !isset($res['application'])){
-            if (!is_error($res)){
-                $res = error(-1, "应用解析失败");
-            }
-            Cache::put("microserver".$identity, $res, 600);
-            return $res;
+        if(!is_error($res) && !isset($res['application'])){
+            $res = error(-1, "应用解析失败");
         }
-        Cache::put("microserver".$identity, $res);
+        Cache::put("microserver".$identity, $res, 86400);
         return $res;
     }
 
@@ -194,7 +190,7 @@ class MSService
         if (!empty($res['servers'])){
             foreach ($res['servers'] as $value){
                 $identity = str_replace("microserver_","",$value['identity']);
-                if (self::localexist($identity, DEVELOPMENT)) continue;
+                if (self::localExist($identity, DEVELOPMENT)) continue;
                 $service = array(
                     'cover'=>$value['icon'],
                     'identity'=>$identity,
@@ -217,11 +213,13 @@ class MSService
         return DB::table(self::$tableName)->where('identity', trim($identity))->count() > 0;
     }
 
-    public static function localexist($identity, $manifest=true){
-        $service = MICRO_SERVER.$identity."/".ucfirst($identity)."Service.php";
+    public static function localExist($identity, $manifest=true){
+        $localPath = MICRO_SERVER.$identity."/";
+        $service = $localPath.ucfirst($identity)."Service.php";
         if (!file_exists($service)){
             if(!defined('MSERVER_EXTRA')) return false;
-            $extraServer = dirname(MSERVER_EXTRA.$identity."/".ucfirst($identity)."Service.php");
+            $localPath = MSERVER_EXTRA.$identity."/";
+            $extraServer = dirname($localPath.ucfirst($identity)."Service.php");
             if (!file_exists($extraServer)) return false;
         }
         if (!$manifest){
@@ -233,7 +231,7 @@ class MSService
             $extraPath = dirname(MSERVER_EXTRA.$identity."/manifest.json");
             if (!file_exists($extraPath)) return false;
         }
-        return true;
+        return $localPath;
     }
 
     public static function InitService($status=1){
@@ -247,6 +245,8 @@ class MSService
             if (!empty($server['entry']) && !is_error($server['entry'])){
                 $server['actions'] .= '<a class="layui-btn layui-btn-sm layui-btn-normal" target="_blank" href="'.$server['entry'].'">管理</a>';
             }
+            $server['upgrade'] = array();
+            $upgradeAction = '<a class="layui-btn layui-btn-sm layui-btn-danger js-upgrade js-terminal layui-hide" data-text="升级前请做好数据备份" lay-tips="该服务可升级至最新版本" data-nid="'.$server['identity'].'" href="'.wurl('server', array('op'=>'cloudup', 'nid'=>$server['identity'])).'">升级</a>';
             if (DEVELOPMENT){
                 if (!empty(serv($server['identity'])->getMethods())){
                     $server['actions'] .= '<a class="layui-btn layui-btn-sm" target="_blank" href="'.wurl("server/methods/{$server['identity']}").'">调用方法</a>';
@@ -255,28 +255,39 @@ class MSService
                 if (!empty($apis['wiki']) || !empty($apis['schemas'])){
                     $server['actions'] .= '<a class="layui-btn layui-btn-sm" href="'.wurl("server/apis/{$server['identity']}").'" target="_blank">接口</a>';
                 }
-            }
-            $server['upgrade'] = array();
-            $server['isdelete'] = false;
-            $server['islocal'] = true;
-            if (!self::localexist($server['identity'], DEVELOPMENT)){
-                $server['isdelete'] = true;
-            }
-            $manifest = self::getmanifest($server['identity'], true);
-            if (!is_error($manifest)){
-                if(version_compare($manifest['version'], $server['version'], '>')){
-                    $server['upgrade'] = array('version'=>$manifest['version'],'canup'=>true);
+                $manifest = self::getmanifest($server['identity'], true);
+                if (!is_error($manifest)){
+                    if(version_compare($manifest['version'], $server['version'], '>')){
+                        //本地可升级
+                        $server['upgrade'] = array('version'=>$manifest['version'],'canup'=>true);
+                        $upgradeAction = '<a class="layui-btn layui-btn-sm layui-btn-danger js-terminal" data-text="升级前请做好数据备份" lay-tips="该服务可升级至V'.$manifest['version'].'版本" href="'.wurl('server', array("op"=>"upgrade", "nid"=>$server['identity'])).'">升级</a>';
+                    }
+                }
+                if (mb_strlen($server['summary'],'utf8')>30){
+                    $server['summary'] = mb_substr($server['summary'], 0, 30, 'utf8') . '...';
                 }
             }
             if (empty($server['upgrade'])){
-                $cloudServer = Cache::get("microserver".$server['identity'], error(-1, "Has no cache"));
-                if (!is_error($cloudServer) && !empty($cloudServer)){
+                $cloudServer = Cache::get("microserver".$server['identity'], array());
+                if (is_error($cloudServer)){
+                    $upgradeAction = "";
+                }elseif (!empty($cloudServer)){
                     $release = $cloudServer['release'];
                     if (version_compare($release['version'], $server['version'], '>') || $release['releasedate']>$server['releases']){
-                        $server['actions'] .= '<a class="layui-btn layui-btn-sm layui-btn-danger js-upgrade js-terminal" data-text="升级前请做好数据备份" lay-tips="该服务可升级至V'.$release['version'].'Release'.$release['releasedate'].'" href="'.wurl('server', array('op'=>'cloudup', 'nid'=>$server['identity'])).'">升级</a>';
-                        $server['upgrade'] = array('version'=>$release['version'],'canup'=>false);
+                        $upgradeAction = '<a class="layui-btn layui-btn-sm layui-btn-danger js-terminal" data-text="升级前请做好数据备份" lay-tips="该服务可升级至V'.$release['version'].'Release'.$release['releasedate'].'" href="'.wurl('server', array('op'=>'cloudup', 'nid'=>$server['identity'])).'">升级</a>';
+                        $server['upgrade'] = array('version'=>$release['version'],'canup'=>true);
+                    }else{
+                        $upgradeAction = "";
                     }
                 }
+            }
+            $server['actions'] .= $upgradeAction;
+            $server['isdelete'] = false;
+            $serverPath = self::localExist($server['identity'], DEVELOPMENT);
+            if (!$serverPath){
+                $server['isdelete'] = true;
+            }elseif(file_exists($serverPath . "composer.error")){
+                $server['actions'] .= '<a class="layui-btn layui-btn-sm layui-btn-danger js-terminal" href="'.wurl('server', array('op'=>'composer', 'nid'=>$server['identity'])).'">修复</a>';
             }
         }
         return $servers;
@@ -299,7 +310,7 @@ class MSService
                 }
                 continue;
             }
-            if ($this->localexist($identity)){
+            if ($this->localExist($identity)){
                 //未安装，但是本地存在则直接安装
                 $install = $this->install($identity);
                 if (is_error($install)) return error(-1, "安装依赖的服务({$identity})时发生异常：{$install['message']}");
@@ -379,7 +390,7 @@ class MSService
                 if (in_array($serve, $installed) || self::isexist($serve)){
                     continue;
                 }
-                if (self::localexist($serve)){
+                if (self::localExist($serve)){
                     $res = $this->install($serve);
                 }else{
                     $res = $this->cloudInstall($serve);

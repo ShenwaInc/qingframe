@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\AccountService;
 use App\Services\MSService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class ServerController extends Controller
 {
@@ -53,7 +54,7 @@ class ServerController extends Controller
         if (isset($data['message']) && isset($data['type'])){
             return $this->message($data["message"], $data['redirect'], $data['type']);
         }
-        return $this->globalview("server.".str_replace("/",".", $ctrl),$data);
+        return $this->globalView("server.".str_replace("/",".", $ctrl),$data);
     }
 
     public function checkout($refresh=''){
@@ -72,7 +73,7 @@ class ServerController extends Controller
             'uniacid'=>intval($_W['uniacid']),
             'platforms'=>AccountService::OwnerAccounts(array(), -1, true)
         );
-        return $this->globalview("console.server.platform",$data);
+        return $this->globalView("console.server.platform",$data);
     }
 
     public function TerminalError($message){
@@ -198,7 +199,7 @@ class ServerController extends Controller
                     $service = $MSS::getone($identity);
                     $release = $cloudServer['release'];
                     if (version_compare($release['version'], $service['version'], '>') || $release['releasedate']>$service['releases']){
-                        return '<a class="layui-btn layui-btn-sm layui-btn-danger confirm" data-text="升级前请做好数据备份" lay-tips="该服务可升级至V'.$release['version'].'Release'.$release['releasedate'].'" href="'.wurl('server', array('op'=>'cloudup', 'nid'=>$service['identity'])).'">升级</a>';
+                        return $this->message(['release'=>$release], "", "success");
                     }
                 }
                 return $this->message();
@@ -218,7 +219,7 @@ class ServerController extends Controller
         if ($swaSocket->enabled){
             $return['socket']['server'] = $swaSocket->settings['server'];
         }
-        return $this->globalview("console.server", $return);
+        return $this->globalView("console.server", $return);
     }
 
     public function Methods($server=""){
@@ -232,7 +233,7 @@ class ServerController extends Controller
         $wiki = $methods['wiki'];
         unset($methods['wiki']);
         $service = $server->service;
-        return $this->globalview("console.server.method", array(
+        return $this->globalView("console.server.method", array(
             'title'=>$service['name'],
             'service'=>$service,
             'classname' => ucfirst($service['identity']),
@@ -252,7 +253,7 @@ class ServerController extends Controller
                 message("该服务未提供任何接口");
             }
         }
-        return $this->globalview("console.server.api", array(
+        return $this->globalView("console.server.api", array(
             'title'=>$service->service['name'],
             'schemas'=>$apis['schemas']
         ));

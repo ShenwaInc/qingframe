@@ -181,7 +181,7 @@
                                     @endif
                                 </td>
                                 <td class="text-right soild-after">
-                                    <a href="{{ url('console/active') }}" class="text-blue">重新激活</a>
+                                    <a href="{{ url('console/active') }}" class="text-blue">重置云服务</a>
                                 </td>
                             </tr>
                             <tr>

@@ -57,7 +57,7 @@ class SettingController extends Controller
             }
             return $this->message($res['message'], $redirect, $res["type"]);
         }
-        return $this->globalview("console.active", ["siteinfo"=>$activestate, "title"=>"云服务激活"]);
+        return $this->globalView("console.active", ["siteinfo"=>$activestate, "title"=>"云服务激活"]);
     }
 
     public function detection(){
@@ -76,7 +76,7 @@ class SettingController extends Controller
         $cloudinfo = $this->checkcloud($component,1,true);
         if (empty($cloudinfo['difference'])) return $this->message('当前系统已经是最新版本');
         $structures = $this->makeStructure($cloudinfo['difference']);
-        return $this->globalview("console.structure", array(
+        return $this->globalView("console.structure", array(
             'structures'=>$structures,
             'total'=>count($structures)
         ));
@@ -220,7 +220,7 @@ class SettingController extends Controller
             }
         }
         serv("weengine")->func("web");
-        return $this->globalview('console.market', array(
+        return $this->globalView('console.market', array(
             'title'=>"应用市场",
             'components'=>$plugins,
             'pager'=>pagination($res['total'], $page)
@@ -251,7 +251,7 @@ class SettingController extends Controller
             $_W['setting']['remote'] = array('type'=>0);
         }
         if ($op=='pageset'){
-            return $this->globalview("console.pageset",$return);
+            return $this->globalView("console.pageset",$return);
         }
         if ($op=='envdebug'){
             $debug = env('APP_DEBUG',false);
@@ -274,7 +274,7 @@ class SettingController extends Controller
             }
             if (empty($cloudinfo['difference'])) return $this->message('该应用已升级到最新版本', "", "success");
             $structures = $this->makeStructure($cloudinfo['difference']);
-            return $this->globalview("console.structure", array(
+            return $this->globalView("console.structure", array(
                 'structures'=>$structures,
                 'total'=>count($structures)
             ));
@@ -284,7 +284,7 @@ class SettingController extends Controller
             $return['cloudinfo'] = !empty($framework['online']) ? unserialize($framework['online']) : array('isnew'=>false);
         }
         $return['activeState'] = CloudService::CloudActive();
-        return $this->globalview('console.setting', $return);
+        return $this->globalView('console.setting', $return);
     }
 
     public function checkcloud($component,$compare=1,$nocache=false){

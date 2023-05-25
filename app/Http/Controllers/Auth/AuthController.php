@@ -91,7 +91,7 @@ class AuthController extends Controller
             return $this->message("该平台服务已到期，请联系管理员处理");
         }
         SettingService::Load();
-        return $this->globalview('auth.login', array('account'=>$account));
+        return $this->globalView('auth.login', array('account'=>$account));
     }
 
     public function failed_login($msg='用户名或密码不正确'){

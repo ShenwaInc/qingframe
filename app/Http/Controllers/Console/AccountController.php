@@ -101,7 +101,7 @@ class AccountController extends Controller
         if ($op=='add'){
             $return['subusers'] = $subs;
             $return['owner'] = (int)DB::table('uni_account_users')->where(array('uniacid'=>$this->uniacid,'role'=>'owner'))->value('uid');
-            return $this->globalview('console.account.roleadd',$return);
+            return $this->globalView('console.account.roleadd',$return);
         }elseif ($op=='remove'){
             $uid = (int)$request->input('uid',0);
             if ($uid==0) return $this->message('找不到该用户，可能已被删除');
@@ -140,7 +140,7 @@ class AccountController extends Controller
         $return['subusers'] = $subs;
         $return['account'] = $this->account;
         $return['colors'] = array('owner'=>'orange','manager'=>'green','operator'=>'blue');
-        return $this->globalview('console.account.role',$return);
+        return $this->globalView('console.account.role',$return);
     }
 
     public function doApiverify(Request $request){
@@ -173,7 +173,7 @@ class AccountController extends Controller
             if (!$complete) return $this->message('保存失败，请重试');
             return $this->message('保存成功！',wurl('account/profile',array('uniacid'=>$this->uniacid),true), 'success');
         }
-        return $this->globalview('console.account.edit',array('title'=>'编辑平台信息','account'=>$this->account));
+        return $this->globalView('console.account.edit',array('title'=>'编辑平台信息','account'=>$this->account));
     }
 
     public function doFunctions(){
@@ -229,7 +229,7 @@ class AccountController extends Controller
                 }
             }
         }
-        return $this->globalview('console.account.functions',$return);
+        return $this->globalView('console.account.functions',$return);
     }
 
     public function doModules(Request $request){
@@ -264,7 +264,7 @@ class AccountController extends Controller
                 $return['modules'][$key] = $value;
             }
         }
-        return $this->globalview('console.account.modules',$return);
+        return $this->globalView('console.account.modules',$return);
     }
 
     public function doEntry(){
@@ -293,7 +293,7 @@ class AccountController extends Controller
         }
         list($controller, $method) = AccountService::GetEntrance($_W['uid'], $this->uniacid);
         $entrances = AccountService::GetAllEntrances($this->uniacid);
-        return $this->globalview('console.account.entry',array(
+        return $this->globalView('console.account.entry',array(
             'title'=>'默认入口设置',
             'uniacid'=>$this->uniacid,
             'ctrl'=>$controller,
@@ -330,7 +330,7 @@ class AccountController extends Controller
         $entrances = AccountService::GetAllEntrances($this->uniacid);
         $return['entrance'] = $this->entrys[$entry]. "&nbsp;&gt;&nbsp;";
         $return['entrance'] .= $entrances[$entry][$method];
-        return $this->globalview('console.account.profile',$return);
+        return $this->globalView('console.account.profile',$return);
     }
 
     public function doRemove(Request $request){
@@ -390,7 +390,7 @@ class AccountController extends Controller
             return $this->message('创建失败，请重试');
         }
         $return = array('title'=>'创建平台');
-        return $this->globalview('console.account.create', $return);
+        return $this->globalView('console.account.create', $return);
     }
     public function doPermission(Request $request){
         $uid=$request->input('uid');
@@ -473,7 +473,7 @@ class AccountController extends Controller
             unset($val);
         }
         unset($value);
-        return $this->globalview('console.account.permission',[
+        return $this->globalView('console.account.permission',[
             'uid'         => $uid,
             'uniacid'     => $uniacid,
             'modulesList' => $modulesList,
