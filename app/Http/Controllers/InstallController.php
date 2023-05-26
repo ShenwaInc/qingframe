@@ -18,7 +18,12 @@ use Illuminate\Support\Facades\Log;
 class InstallController extends Controller
 {
 
-    public $installer = ['isagree'=>0,'database'=>array(),'dbconnect'=>0,'authkey'=>''];
+    public $installer = [
+        'isagree'=>0,
+        'database'=>array(),
+        'dbconnect'=>0,
+        'authkey'=>''
+    ];
 
     public function checkInstalled(){
         $installedfile = base_path('storage/installed.bin');
@@ -69,10 +74,11 @@ class InstallController extends Controller
             return $this->message('数据库连接失败，请检查配置信息是否正确');
         }
         $installer = $this->installer;
-        $authkey = $installer['authkey'];
         $config = \config('system');
+        $authkey = \Str::random(12);
+        $uid = 0;
         if ($installer['dbconnect']==0){
-            $authkey = \Str::random(8);
+            //全新安装
             $manager = $request->input('render');
             $appname = !empty($manager['appname']) ? trim($manager['appname']) : $config['name'];
             if (!isset($manager['username']) || trim($manager['username'])==''){
@@ -194,12 +200,8 @@ class InstallController extends Controller
                     ))
                 )
             ]);
-
         }else{
-            if (empty($authkey)) return $this->message('站点安全码不能为空');
-            $installer['database']['prefix'] = 'ims_';
-            $uid = (int)$dbconnect->table('users')->where('founder_groupid',1)->orderBy('uid','asc')->value('uid');
-            //数据表检测，待完善
+            //安装到现有微擎，待完善
         }
         //写入配置文件
         $envfile_tmp = resource_path('stub/env.stub');
@@ -208,19 +210,43 @@ class InstallController extends Controller
         fclose($reader);
         $baseurl = str_replace('/installer/render','',url()->current());
         $database = $installer['database'];
-        $search = array('{APP_DEBUG}', '{BASEURL}','{FOUNDER}','{DB_HOST}','{DB_PORT}','{DB_DATABASE}','{DB_USERNAME}','{DB_PASSWORD}','{DB_PREFIX}');
-        $replace = array(\config('app.debug', 'false'), $baseurl, $uid, $database['host'], $database['port'],$database['database'],$database['username'],$database['password'],$database['prefix']);
-        $envdata = str_replace($search, $replace, $envdata);
-        $replace2 = array(
+        $searchs = array(
+            '{AUTHKEY}',
+            '{APP_DEBUG}',
+            '{BASEURL}',
+            '{FOUNDER}',
+            '{APP_VERSION}',
+            '{APP_RELEASE}',
+            '{DB_HOST}',
+            '{DB_PORT}',
+            '{DB_DATABASE}',
+            '{DB_USERNAME}',
+            '{DB_PASSWORD}',
+            '{DB_PREFIX}',
+            '{SESSION_DRIVER}',
+            '{REDIS_HOST}',
+            '{REDIS_PASSWORD}',
+            '{REDIS_PORT}'
+        );
+        $replaces = array(
+            $authkey,
+            \config('app.debug', false) ? 'true' : 'false',
+            $baseurl,
+            $uid,
             QingVersion,
             QingRelease,
-            \config('cache.default', 'file'),
+            $database['host'],
+            $database['port'],
+            $database['database'],
+            $database['username'],
+            $database['password'],
+            $database['prefix'],
+            \config('session.driver', 'file'),
             env('REDIS_HOST','127.0.0.1'),
             env('REDIS_PASSWORD', 'null'),
-            env('REDIS_PORT','6379'),
-            $authkey
+            env('REDIS_PORT','6379')
         );
-        $envdata = str_replace(array('{APP_VERSION}', '{APP_RELEASE}', '{SESSION_DRIVER}', '{REDIS_HOST}', '{REDIS_PASSWORD}', '{REDIS_PORT}', '{AUTHKEY}'), $replace2, $envdata);
+        $envdata = str_replace($searchs, $replaces, $envdata);
         $envfile = base_path(".env");
         if (file_exists($envfile)){
             @unlink($envfile);
@@ -235,7 +261,9 @@ class InstallController extends Controller
         $instlock = base_path('storage/installed.bin');
         $writer = fopen($instlock,'w');
         $installer['baseurl'] = $baseurl;
-        $complete = fwrite($writer,base64_encode(json_encode($installer)));
+        $installer['authkey'] = $authkey;
+        unset($installer['database']);
+        $complete = fwrite($writer,base64_encode(json_encode($installer, 320)));
         fclose($writer);
         if(!$complete){
             return $this->message('文件写入失败，请检查storage目录权限');

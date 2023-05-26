@@ -458,7 +458,7 @@ class CloudService
         $reader = fopen($envfile,'r');
         $envdata = fread($reader,filesize($envfile));
         fclose($reader);
-        $envdata = str_replace($search, $replace,$envdata);
+        $envdata = str_replace($search, $replace, $envdata);
         $writer = fopen($envfile,'w');
         $complete = fwrite($writer,$envdata);
         fclose($writer);

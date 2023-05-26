@@ -44,7 +44,7 @@ class moduleup extends Command
         $modulename = $this->argument('module');
         $complete = ModuleService::upgrade($modulename);
         if (is_error($complete)){
-            return $this->error($complete['message']) || false;
+            return $this->error($complete['message']);
         }
         $this->info("Module {$modulename} upgrade successfully.");
     }
