@@ -228,6 +228,12 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 .fui-layer .unpadding .main-content{padding-bottom: 0;}
 .fui-layer .unpadding > .layui-table{margin: 0}
 
+.fui-terminal .layui-code-h3{display: none;}
+.fui-terminal .layui-code-ol li{color: #FFFFFF !important; background: #000000 !important; list-style: none; margin-left: 0;}
+.fui-terminal .layui-code-ol .err{color: #e54d42 !important;}
+.fui-terminal .layui-code-ol .warm{color: #fbbd08 !important;}
+.fui-terminal .layui-code-ol .success{color: #39b54a !important; font-weight: bold;}
+
 .layui-layout-admin .fui-side-menu{width: 225px;box-sizing: border-box; transition: padding-top .3s ease-in-out; padding-top: 28px;}
 .fui-side-menu .layui-nav-tree{margin-left: 48px; width: auto; background-color: unset;}
 .fui-side-menu .layui-nav-tree .layui-nav-item>a{padding-top: 11px; padding-bottom: 11px; text-align: left;padding-left: 48px;}

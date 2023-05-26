@@ -173,9 +173,7 @@
                                 <td><span class="fui-table-lable">云服务</span></td>
                                 <td class="soild-after">
                                     @if($activeState['status']==1)
-                                        {{$activeState['name']}}（站点ID：<span class="text-blue js-clip"
-                                                                            data-url="{{ $activeState['siteid'] }}">{{ $activeState['siteid'] }}</span>
-                                        ）
+                                        {{$activeState['name']}}（站点ID：<span class="text-blue js-clip" data-url="{{ $activeState['siteid'] }}">{{ $activeState['siteid'] }}</span>）
                                     @else
                                         {{ $activeState['state'] }}
                                     @endif

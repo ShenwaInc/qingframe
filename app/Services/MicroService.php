@@ -375,7 +375,7 @@ class MicroService
         if (!empty($WorkingDirectory)){
             global $_W;
             if ($_W['isajax']){
-                $this->message("请先安装依赖组件包");
+                $this->message("依赖缺失：$requireName");
             }
             $title = "安装依赖组件包";
             include tpl_include("web/composer");
