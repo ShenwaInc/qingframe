@@ -5,6 +5,7 @@ namespace App\Utils;
 use App\Services\CacheService;
 use App\Services\FileService;
 use App\Services\ModuleService;
+use Exception;
 use Illuminate\Support\Facades\DB;
 
 !(defined('IN_IA')) && define('IN_IA', 2);
@@ -22,14 +23,17 @@ class WeModule
 
     public $__define;
 
+    /**
+     * @throws Exception
+     */
     public function create($name){
         global $_W;
         static $file;
         $classname = "{$name}ModuleSite";
         if (!class_exists($classname)) {
             $file = public_path("/addons/{$name}/site.php");
-            if (!is_file($file)) {
-                trigger_error('ModuleSite Definition File Not Found ' . $file, E_USER_WARNING);
+            if (!file_exists($file)) {
+                throw new Exception('ModuleSite Definition File Not Found ' . $name, E_USER_WARNING);
             }
             require $file;
         }

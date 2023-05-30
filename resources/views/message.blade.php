@@ -1,6 +1,5 @@
 @include('common.header')
 <style>
-    .js-fullscreen{display: none !important;}
     .message-card{width: 90%; max-width: 1600px; margin: 0 auto 0;}
     .message-main{box-shadow: 0 1px 5px 0 rgb(0 0 0 / 5%);  min-height: 450px; background: #FFFFFF;}
     .message-card .layui-card{border: none !important; padding-top: 150px; box-shadow: none;}
@@ -21,9 +20,7 @@
                     <i class="layui-icon layui-icon-{{$type=='success'?'ok-circle':'about'}}"></i>
                 </div>
                 <div class="message-text">
-                    @php
-                    echo $message;
-                    @endphp
+                    {{ $message }}
                 </div>
                 @if($redirect!='')
                 <div class="message-redirect">
@@ -35,32 +32,14 @@
     </div>
 </div>
 
-<div class="fui-footer">
-    <div class="fui-footer-info soild-after">
-        <div class="fui-footer-link">
-            @php
-                echo htmlspecialchars_decode($_W['page']['links'], ENT_QUOTES);
-            @endphp
-        </div>
-    </div>
-    <div class="fui-footer-extra">
-        <p class="fui-footer-copyright">{{ $_W['page']['copyright'] }}</p>
-    </div>
-</div>
+@if(!empty($redirect))
+    <script type="text/javascript">
+        $(function (){
+            setTimeout(function (){
+                window.location.href = "{{ $redirect }}";
+            },3*1e3);
+        });
+    </script>
+@endif
 
-<script type="text/javascript">
-    @php
-        echo "var Redirect = '{$redirect}';";
-    @endphp
-
-    layui.use(['element'],function (){
-        var element = layui.element;
-        @if($redirect!='')
-        setTimeout(function (){
-            window.location.href = Redirect;
-        },3*1e3);
-        @endif
-    });
-</script>
-
-@include('common.footerbase')
+@include('common.footer')

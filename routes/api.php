@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Middleware\AppRuntime;
 use Illuminate\Http\Request;
 
 /*
@@ -44,6 +43,10 @@ Route::group(['prefix' => 'm/', 'namespace' => 'App','middleware'=>['app','runti
 Route::group(['prefix'=>'payment', 'namespace' => 'App', 'middleware'=>['app']],function (){
     //支付接口路由
     Route::any('/{payment}', 'PaymentController@notify')->where('payment','[a-z]+');
+});
+
+Route::group(['prefix'=>'report', 'namespace' => 'App', 'middleware'=>['app']],function (){
+    Route::any('/{option?}', 'ReportController@httpReq')->where('payment','[a-z]+');
 });
 
 Route::group(['prefix' => 'member/', 'namespace' => 'Auth'], function () {

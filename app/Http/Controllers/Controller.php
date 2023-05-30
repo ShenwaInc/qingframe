@@ -31,6 +31,10 @@ class Controller extends BaseController
         }
     }
 
+    public function success($message="操作成功！", $redirect=""){
+        return $this->message($message, $redirect, "success");
+    }
+
     public function globalView($view, $data=array()){
         global $_W,$_GPC;
         View::share('_W',$_W);

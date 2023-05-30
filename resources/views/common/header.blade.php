@@ -36,6 +36,9 @@
                                 </dl>
                             @endif
                         </li>
+                        <li class="layui-nav-item{{ $_W['inReport']?' layui-this':'' }}">
+                            <a href="{{url('console/report')}}">工单</a>
+                        </li>
                     @endif
                     <li class="layui-nav-item layui-hide-xs js-fullscreen" lay-unselect>
                         <a href="javascript:;" layadmin-event="fullscreen">

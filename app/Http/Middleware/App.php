@@ -51,6 +51,7 @@ class App
         $_W['inconsole'] = $_W['inapp'] = false;
         $_W['token'] = csrf_token();
         $_W['os'] = Agent::getOs();
+        $_W['routePath'] = $request->path();
         if (function_exists('date_default_timezone_set')) {
             date_default_timezone_set($_W['config']['setting']['timezone']);
         }

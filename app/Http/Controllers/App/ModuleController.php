@@ -26,7 +26,10 @@ class ModuleController extends Controller
 
     public function Api(Request $request, $moduleName){
         define('IN_API', true);
+        global $_W;
+        $_W['isapi'] = true;
         $WeModule = new WeModule();
+        //判断模块权限，待完善
         try {
             $site = $WeModule->create($moduleName);
         }catch (\Exception $exception){
