@@ -182,6 +182,7 @@ class ReportController extends Controller {
             $data['name'] = mb_substr($data['content'], 0, 12, 'utf8') . "...";
             if (is_error($data['source'])) return $this->message($data['source']['message']);
             $res = $this->reportCloud("order/save", $data, false);
+            if (is_error($res)) return $this->message($res['message']);
             CacheService::flush();
             return $this->success(['response'=>$res, 'input'=>$data]);
         }
@@ -201,6 +202,26 @@ class ReportController extends Controller {
             'title'=>"提交工单",
             'cloudState'=>CloudService::CloudActive()
         ));
+    }
+
+    public function Complete(Request $request){
+        $res = $this->reportCloud("order/finish", array(
+            'id'=>(int)$request->input('id'),
+            'source'=>$this->getSource()
+        ), false);
+        if (is_error($res)) return $this->message($res['message']);
+        CacheService::flush();
+        return $this->success("操作成功！", wurl('report'));
+    }
+
+    public function closeOrder(Request $request){
+        $res = $this->reportCloud("order/close", array(
+            'id'=>(int)$request->input('id'),
+            'source'=>$this->getSource()
+        ), false);
+        if (is_error($res)) return $this->message($res['message']);
+        CacheService::flush();
+        return $this->success("操作成功！", wurl('report'));
     }
 
     /**

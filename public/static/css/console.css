@@ -115,8 +115,6 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 
 .layui-card .fui-table .layui-form-switch{margin-top: 0}
 
-.layui-btn:not(.layui-btn-sm) + .layui-btn{margin-right: 15px;}
-
 .fui-footer{width: 90%; margin: 0 auto; max-width: 1340px; min-width: 980px; padding-top: 64px; padding-bottom: 40px;}
 .fui-footer-info{padding-bottom: 10px; margin-bottom: 8px;}
 .fui-footer-link a{font-size: 12px; position: relative; margin: 0 14px; color: #9a9a9a;}
