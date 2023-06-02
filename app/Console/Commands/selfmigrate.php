@@ -67,20 +67,16 @@ class selfmigrate extends Command
             $composer = file_get_contents(base_path('composer.json'));
             if (strpos($composer, 'public/addons')===false){
                 $composerJson = json_decode($composer, true);
-                $Addonskey = "Addons\\\\";
+                $Addonskey = "Addons\\";
                 $composerJson["autoload"]["psr-4"][$Addonskey] = 'public/addons/';
-                if (file_put_contents(base_path('composer.json'), 320)){
+                if (file_put_contents(base_path('composer.json'), json_encode($composerJson, JSON_UNESCAPED_UNICODE+JSON_PRETTY_PRINT+JSON_UNESCAPED_SLASHES))){
                     $WorkingDirectory = base_path("/");
                     $process = new Process(['composer','update']);
                     $process->setWorkingDirectory($WorkingDirectory);
                     $process->setEnv(['COMPOSER_HOME'=>MSService::ComposerHome()]);
+                    $process->setTimeout(300);
                     $process->run(function ($type, $buffer) {
-                        $mode = str_replace('err', 'warm', $type);
-                        if ($mode=='warm'){
-                            $this->error($buffer);
-                        }else{
-                            $this->info($buffer);
-                        }
+                        $this->line($buffer);
                     });
                     $process->wait();
                     if ($process->isSuccessful()) {
