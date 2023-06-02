@@ -22,9 +22,9 @@
                 <div class="message-text">
                     {{ $message }}
                 </div>
-                @if($redirect!='')
+                @if(!empty($redirect))
                 <div class="message-redirect">
-                    <a href="javascript:location.href=Redirect;" class="message-light">即将自动跳转...</a>
+                    <a href="{{ $redirect }}" class="message-light">即将自动跳转...</a>
                 </div>
                 @endif
             </div>
