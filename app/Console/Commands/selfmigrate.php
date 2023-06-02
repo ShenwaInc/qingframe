@@ -2,12 +2,14 @@
 
 namespace App\Console\Commands;
 
+use App\Http\Middleware\App;
 use App\Services\FileService;
 use App\Services\MSService;
 use Illuminate\Console\Command;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Symfony\Component\Process\Process;
 
 class selfmigrate extends Command
 {
@@ -24,6 +26,7 @@ class selfmigrate extends Command
      * @var string
      */
     protected $description = 'Whotalk framework migrate';
+    protected $application;
 
     /**
      * Create a new command instance.
@@ -33,6 +36,7 @@ class selfmigrate extends Command
     public function __construct()
     {
         parent::__construct();
+        $this->application = new App();
     }
 
     /**
@@ -59,9 +63,40 @@ class selfmigrate extends Command
                 FileService::rmdirs(base_path('socket'));
                 DB::table('gxswa_cloud')->where(array('identity'=>'laravel_whotalk_socket'))->update(array('rootpath'=>'swasocket/'));
             }
-            $this->info('Whotalk framework migrate successfully.');
+            //更新composer.json
+            $composer = file_get_contents(base_path('composer.json'));
+            if (strpos($composer, 'public/addons')===false){
+                $composerJson = json_decode($composer, true);
+                $Addonskey = "Addons\\\\";
+                $composerJson["autoload"]["psr-4"][$Addonskey] = 'public/addons/';
+                if (file_put_contents(base_path('composer.json'), 320)){
+                    $WorkingDirectory = base_path("/");
+                    $process = new Process(['composer','update']);
+                    $process->setWorkingDirectory($WorkingDirectory);
+                    $process->setEnv(['COMPOSER_HOME'=>MSService::ComposerHome()]);
+                    $process->run(function ($type, $buffer) {
+                        $mode = str_replace('err', 'warm', $type);
+                        if ($mode=='warm'){
+                            $this->error($buffer);
+                        }else{
+                            $this->info($buffer);
+                        }
+                    });
+                    $process->wait();
+                    if ($process->isSuccessful()) {
+                        $this->info('composer.json migrate successfully.');
+                    }else{
+                        $this->error('composer.json migrate fail, try to run the following command to complete the migration：');
+                        $this->line("cd $WorkingDirectory");
+                        $this->line("composer update");
+                    }
+                }else{
+                    $this->error('composer.json migrate fail.');
+                }
+            }
+            $this->info('Qingwork framework migrate successfully.');
         } catch (\Exception $exception){
-            $this->error("Migrate fail:".$exception->getMessage());;
+            $this->error("Migrate fail:".$exception->getMessage());
         }
 
         return true;

@@ -33,7 +33,7 @@
                                     @if($value['status']<6)
                                         <a class="text-blue ajaxshow" href="{{ wurl('report/feedback', array('id'=>$value['id'])) }}">补充反馈</a>&nbsp;
                                         <a class="text-green confirm ajaxshow" data-text="确定此工单已完成验收吗？" href="{{ wurl('report/Complete', array('id'=>$value['id'])) }}">完成</a>&nbsp;
-                                        <a class="text-red confirm ajaxshow" data-text="确定要关闭该工单吗？" href="{{ wurl('report/closeOrder', array('id'=>$value['id'])) }}">关闭</a>
+                                        <a class="text-red confirm layui-hide ajaxshow" data-text="确定要关闭该工单吗？" href="{{ wurl('report/closeOrder', array('id'=>$value['id'])) }}">关闭</a>
                                     @endif
                                 </td>
                             </tr>

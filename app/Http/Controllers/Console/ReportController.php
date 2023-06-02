@@ -132,7 +132,7 @@ class ReportController extends Controller {
             $res = $this->reportCloud("orderFeedback/add", $data, false);
             if (is_error($res)) return $this->message($res['message']);
             if (!$request->ajax()){
-                return $this->success("已收到您的反馈，请耐心等待工作人员处理");
+                return $this->success("已收到您的反馈，请耐心等待工作人员处理", wurl('report'));
             }
             return $this->success(['response'=>$res, 'input'=>$data]);
         }
@@ -142,11 +142,13 @@ class ReportController extends Controller {
     }
 
     public function detail(Request $request){
-        $data = $this->reportCloud('order/details', array('id'=>$request->input('id'),'source'=>$this->getSource()));
+        $data = $this->reportCloud('order/details', array('id'=>$request->input('id'),'source'=>$this->getSource()), false);
         if (is_error($data)) return $this->message($data['message']);
         return $this->globalView('console.report.detail', array(
             'orderInfo'=>$data,
-            'title'=>$data['title']
+            'title'=>$data['title'],
+            'feedbacks' => empty($data['feedback']) ? [] : $data['feedback'],
+            'logs' => (array)$data['logs']
         ));
     }
 
@@ -179,14 +181,14 @@ class ReportController extends Controller {
             if (empty($data['mobile'])) return $this->message("联系方式不能为空");
             $data['fileList'] = $fileList;
             $data['source'] = $this->getSource();
-            $data['name'] = mb_substr($data['content'], 0, 12, 'utf8') . "...";
+            $data['name'] = mb_substr($data['content'], 0, 20, 'utf8') . "...";
             if (is_error($data['source'])) return $this->message($data['source']['message']);
             $res = $this->reportCloud("order/save", $data, false);
             if (is_error($res)) return $this->message($res['message']);
             CacheService::flush();
             return $this->success(['response'=>$res, 'input'=>$data]);
         }
-        $cates = $this->reportCloud("orderCategory/list");
+        $cates = $this->reportCloud("orderCategory/list", [], false);
         if (is_error($cates)) return $this->message($cates['message']);
         $subcates = [];
         if (!empty($cates)){
@@ -255,7 +257,7 @@ class ReportController extends Controller {
             return array('type'=>'success', 'message'=>$result['message'], 'redirect'=>'');
         }
         if ($isCache){
-            Cache::put($cacheKey, empty($result['data'])?error(-1, "Empty"):$result['data'], 3600);
+            Cache::put($cacheKey, empty($result['data'])?error(-1, "Empty"):$result['data'], 1800);
         }
         return $result['data'];
     }
