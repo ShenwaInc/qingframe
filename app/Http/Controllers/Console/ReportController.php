@@ -9,7 +9,7 @@ use App\Services\HttpService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
-define('REPORTAPI', env('APP_REPORT_API', 'https://v3.whotalk.com.cn/api/m/workorder'));
+define('REPORTAPI', env('APP_REPORT_API', 'https://beta.whotalk.com.cn/api/m/workorder'));
 define('REPORTSECRET', env('APP_REPORT_SECRET', 'G5M5RYtn7fb5rPagKxmXe5Rr2RDQ9nIJ'));
 
 class ReportController extends Controller {
