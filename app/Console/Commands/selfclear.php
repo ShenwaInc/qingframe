@@ -63,7 +63,9 @@ class selfclear extends Command
             resource_path('views/console/socket.blade.php'),
             resource_path('views/install/socket.blade.php'),
             resource_path('views/console/account/com.blade.php'),
-            resource_path('views/console/account/setting.blade.php')
+            resource_path('views/console/account/setting.blade.php'),
+            base_path('.docker.env'),
+            base_path('manifest.yaml')
         );
         foreach ($unused as $file){
             if (file_exists($file)){
