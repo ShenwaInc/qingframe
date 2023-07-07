@@ -78,7 +78,8 @@ class selfclear extends Command
             base_path('bootstrap/functions/'),
             base_path('bootstrap/wemod/'),
             resource_path('views/console/extra/'),
-            resource_path('views/console/set/')
+            resource_path('views/console/set/'),
+            storage_path('framework/testing/')
         );
         foreach ($undirs as $dir){
             if (is_dir($dir)){

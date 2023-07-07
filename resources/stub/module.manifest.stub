@@ -5,6 +5,7 @@
         "version": "1.0.1",
         "releasedate": "TIMESTAMP",
         "type": "business",
+        "module_type": "1",
         "ability": "Your Module",
         "description": "Your Module",
         "author": "神蛙科技",

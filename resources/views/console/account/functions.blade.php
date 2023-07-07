@@ -35,13 +35,18 @@
             @else
             <div class="layui-row layui-col-space15 fui-list card">
                 @foreach($components as $item)
-                    <div class="layui-col-md3 layui-col-sm4 layui-col-xs6 fui-item arrow">
+                    <div class="layui-col-lg3 layui-col-md4 layui-col-sm6 layui-col-xs12 fui-item arrow">
                         <a target="_blank" href="{{ wurl("m/".$item['identity']) }}" class="fui-content">
                             <div class="fui-info">
                                 <img alt="{{ $item['name'] }}" class="radius" src="{{ tomedia($item['logo']) }}" />
                                 <strong class="card-name">{{ $item['name'] }}</strong>
                             </div>
                         </a>
+                        @if($item['application_type']==2 && $_W['isfounder'])
+                            <a class="js-dropdown" target="_blank" href="{{ wurl("m/".$item['identity']."/setting") }}">
+                                <span class="layui-icon layui-icon-set text-blue"></span>
+                            </a>
+                        @endif
                     </div>
                 @endforeach
             </div>
@@ -56,7 +61,7 @@
         <div class="layui-card-body">
             <div class="layui-row layui-col-space15 fui-list card">
                 @foreach($servers as $value)
-                    <div class="layui-col-md3 layui-col-sm4 layui-col-xs6 fui-item fui-item-sm arrow">
+                    <div class="layui-col-lg3 layui-col-md4 layui-col-sm6 layui-col-xs12 fui-item fui-item-sm arrow">
                         <a target="_blank" href="{{ serv($value['name'])->url($value['entry']) }}" title="{{ $value['summary'] }}" class="fui-content">
                             <div class="fui-info">
                                 <img alt="{{ $value['title'] }}" class="radius" src="{{ asset($value['cover']) }}" />

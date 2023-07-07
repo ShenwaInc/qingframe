@@ -23,6 +23,7 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 .layui-side-menu .layui-nav .layui-nav-item .fa {position: absolute;top: 50%;left: 20px;margin-top: -19px;line-height: 40px;}
 .layui-nav .layui-nav-child a{line-height: 36px;}
 .layui-layout-admin .layui-body > .layui-fluid{min-height: calc(100vh - 150px);}
+.layui-form-checked + .layui-btn {margin-top: 3px; line-height: 28px; height: 28px;}
 
 /* bootstrap */
 .input-group {position: relative; display: table; border-collapse: separate; border-radius: 0;}
@@ -131,8 +132,8 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 .js-dropdown .js-dropdown-menu{top: 20px; left: auto; right: 0; border-radius: 2px 0 2px 2px; box-shadow: none;}
 .js-dropdown .js-dropdown-menu a{line-height: 28px; padding: 0 10px;}
 .js-dropdown:hover .js-dropdown-menu{display: block;}
-.js-dropdown:hover .layui-icon{border-color: #eee;}
-.js-dropdown:hover .layui-icon:before{content: "\e619"}
+.js-dropdown.layui-nav-item:hover .layui-icon{border-color: #eee;}
+.js-dropdown.layui-nav-item:hover .layui-icon:before{content: "\e619"}
 
 .fui-header{width: 90%; max-width: 1340px; margin: 0 auto; position: relative;}
 .fui-header .layui-logo{width: auto;}
@@ -233,6 +234,7 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 .fui-terminal .layui-code-ol .err{color: #e54d42 !important;}
 .fui-terminal .layui-code-ol .warm{color: #fbbd08 !important;}
 .fui-terminal .layui-code-ol .success{color: #39b54a !important; font-weight: bold;}
+.fui-terminal .layui-code-ol a{color: #0081ff !important;}
 
 .layui-layout-admin .fui-side-menu{width: 225px;box-sizing: border-box; transition: padding-top .3s ease-in-out; padding-top: 28px;}
 .fui-side-menu .layui-nav-tree{margin-left: 48px; width: auto; background-color: unset;}

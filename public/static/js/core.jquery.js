@@ -110,7 +110,7 @@ if(typeof Basetoken == 'undefined'){
             if (typeof (res) != 'object') return false;
             let act = '',redirect = '';
             if (typeof (res.url) != 'undefined') {
-                act = typeof (res.act) != 'undefined' ? res.act : '';
+                act = typeof (res.act) != 'undefined' ? res.act : 'redirect';
                 redirect = res.url;
             }
             if (typeof (res.message) != 'undefined' && typeof (res.type) != 'undefined') {
@@ -144,6 +144,10 @@ if(typeof Basetoken == 'undefined'){
         },
         loading: 0,
         debug: false,
+        storageData:{
+            items:[],
+            aids:[]
+        },
         StoragePicker(Elem, multi=false, CallBack=false) {
             let WindowId = 'storagepicker' + Wrandom(6);
             let PickerUrl = this.url("server/storage/picker");
@@ -155,110 +159,6 @@ if(typeof Basetoken == 'undefined'){
                 multi = true;
             }
             let self = this;
-            let PickerItem = function (PItem){
-                let attachid = PItem.data('aid');
-                if(PItem.hasClass("checked")){
-                    let index = self.storagedata.storage.aids.indexOf(attachid);
-                    PItem.removeClass("checked");
-                    if (index>=0){
-                        self.storagedata.storage.aids.splice(index, 1);
-                        self.storagedata.storage.items.splice(index, 1);
-                    }
-                }else{
-                    PItem.addClass("checked");
-                    let item = {
-                        aid:attachid,
-                        path:PItem.data('path'),
-                        url:PItem.data("url")
-                    }
-                    self.storagedata.storage.items.push(item);
-                    self.storagedata.storage.aids.push(attachid);
-                }
-            }
-            let PickerEvent = function (selector){
-                let Ajaxwindow = $(selector);
-                Ajaxwindow.find(".category").on("click","a[gitem]",function (){
-                    let url = $(this).attr('href');
-                    self.get(url, function (Html){
-                        if(self.isJsonString(Html)){
-                            var obj = jQuery.parseJSON(Html);
-                            return self.report(obj);
-                        }
-                        Ajaxwindow.html(Html);
-                        PickerEvent(selector);
-                    },{inajax:1,ajaxhash:WindowId},'html')
-                    return false;
-                });
-                Ajaxwindow.find('.pagination').on("click","a",function (){
-                    let url = $(this).attr('href');
-                    if (typeof(url)=="undefined" || url==="#" || url.indexOf("javascript:")===0){
-                        url = "";
-                    }
-                    if (url==="" && typeof($(this).attr('page'))!='undefined'){
-                        let page = $(this).attr('page');
-                        url = PickerUrl;
-                        url += (PickerUrl.indexOf("?")===-1 ? "?page=" : "&page=") + page;
-                    }
-                    if(url!==""){
-                        self.get(url, function (Html){
-                            if(self.isJsonString(Html)){
-                                var obj = jQuery.parseJSON(Html);
-                                return self.report(obj);
-                            }
-                            Ajaxwindow.html(Html);
-                            PickerEvent(selector);
-                        },{inajax:1,ajaxhash:WindowId},'html');
-                    }
-                    return false;
-                });
-                Ajaxwindow.find('.attachments').on("click",".attach-item",function (){
-                    PickerItem($(this));
-                    return false;
-                });
-                let UploadBtn = Ajaxwindow.find(".attach-uploader");
-                layupload.render({
-                    elem: UploadBtn.get()[0],
-                    url:UploadBtn.data('url'),
-                    done:function (res){
-                        if(res.type!=='success'){
-                            UploadBtn.removeClass("uploading").addClass('uploaderr');
-                            return self.report(res);
-                        }
-                        let attach = res.data;
-                        let Html = '<div class="layui-col-md2 layui-xs-4 attach-item" data-aid="'+attach.id+'" data-path="'+attach.attachment+'" data-url="'+attach.cover+'">' +
-                            '<div class="attach-thumb" style="background-image: url('+attach.cover+')"></div>' +
-                            '<div title="'+attach.filename+'" class="attach-name text-center">'+attach.filename+'</div>' +
-                            '<div class="action attach-check">' +
-                            '    <span class="layui-icon layui-icon-circle"></span>\n' +
-                            '</div></div>';
-                        if (Ajaxwindow.find('.attachments').find('.attach-item').length>=18){
-                            Ajaxwindow.find('.attachments').find('.attach-item:last').remove();
-                        }
-                        Ajaxwindow.find('.attachments').prepend(Html);
-                        UploadBtn.removeClass("uploading");
-                    },
-                    before:function (){
-                        layui.element.progress('uploadprogress', '0%');
-                        UploadBtn.addClass("uploading").removeClass('uploaderr');
-                    },
-                    data:{
-                        token:Basetoken,
-                        inputname:"file",
-                        frompage:"picker"
-                    },
-                    headers:{
-                        "X-CSRF-TOKEN":Basetoken
-                    },
-                    accept:UploadBtn.data('accept'),
-                    error:function (e){
-                        UploadBtn.removeClass("uploading");
-                        layer.msg("上传失败，请重试", {icon:2});
-                    },
-                    progress:function (n, elem, res, index){
-                        layui.element.progress('uploadprogress', n+'%');
-                    }
-                });
-            }
             this.get(PickerUrl, function (Html){
                 if(self.isJsonString(Html)){
                     var obj = jQuery.parseJSON(Html);
@@ -275,24 +175,18 @@ if(typeof Basetoken == 'undefined'){
                     shadeClose:true,
                     skin:'fui-layer filepicker',
                     success:function(layero, index){
-                        if(self.storagedata==null){
-                            self.storagedata = {};
-                        }
-                        if (typeof(self.storagedata.storage)=='undefined'){
-                            self.storagedata.storage = {items:[],aids:[]};
-                        }
-                        PickerEvent("#"+WindowId);
+                        self.PickerEvent(WindowId, PickerUrl);
                     },
                     btnAlign:"c",
                     btn:["确定","取消"],
                     yes:function (index){
-                        if (self.storagedata.storage.items.length>0){
+                        if (self.storageData.items.length>0){
                             if (multi){
                                 if(typeof(CallBack)=='function'){
-                                    return CallBack(self.storagedata.storage.items, index);
+                                    return CallBack(self.storageData.items, index);
                                 }
                                 let inputname = $(Elem).next().val();
-                                let items = self.storagedata.storage.items;
+                                let items = self.storageData.items;
                                 for(let i in items){
                                     let multiItem = '<div class="multi-item">\n' +
                                         '        <img src="'+items[i].url+'" class="img-responsive img-thumbnail">\n' +
@@ -302,7 +196,7 @@ if(typeof Basetoken == 'undefined'){
                                     $(Elem).parent().next().append(multiItem);
                                 }
                             }else {
-                                let item = self.storagedata.storage.items[0];
+                                let item = self.storageData.items[0];
                                 if(typeof(CallBack)=='function'){
                                     return CallBack(item, index);
                                 }
@@ -313,12 +207,122 @@ if(typeof Basetoken == 'undefined'){
                         layer.close(layer.index);
                     },
                     end:function (){
-                        self.storagedata.storage = {items:[],aids:[]};
+                        self.storageData = {items:[],aids:[]};
                     }
                 }
                 layer.open(params);
             },{inajax:1,ajaxhash:WindowId},'html',true);
             if (PickerTitle!=="图片选择器") return false;
+        },
+        PickerEvent(WindowId, PickerUrl=''){
+            let Ajaxwindow = $("#"+WindowId);
+            let self = this;
+            let PickerItem = function (PItem){
+                let attachId = PItem.data('aid');
+                if(PItem.hasClass("checked")){
+                    let index = self.storageData.aids.indexOf(attachId);
+                    PItem.removeClass("checked");
+                    if (index>=0){
+                        self.storageData.aids.splice(index, 1);
+                        self.storageData.items.splice(index, 1);
+                    }
+                }else{
+                    PItem.addClass("checked");
+                    let item = {
+                        aid:attachId,
+                        path:PItem.data('path'),
+                        url:PItem.data("url"),
+                        name:PItem.find(".attach-name").attr("title")
+                    }
+                    self.storageData.items.push(item);
+                    self.storageData.aids.push(attachId);
+                }
+            }
+            Ajaxwindow.find(".category").on("click","a[gitem]",function (){
+                let url = $(this).attr('href');
+                self.get(url, function (Html){
+                    if(self.isJsonString(Html)){
+                        var obj = jQuery.parseJSON(Html);
+                        return self.report(obj);
+                    }
+                    Ajaxwindow.html(Html);
+                    Core.PickerEvent(WindowId, PickerUrl);
+                },{inajax:1,ajaxhash:WindowId},'html')
+                return false;
+            });
+            Ajaxwindow.find('.pagination').on("click","a",function (){
+                let url = $(this).attr('href');
+                if (typeof(url)=="undefined" || url==="#" || url.indexOf("javascript:")===0){
+                    url = "";
+                }
+                if (url==="" && typeof($(this).attr('page'))!='undefined'){
+                    let page = $(this).attr('page');
+                    url = PickerUrl;
+                    url += (PickerUrl.indexOf("?")===-1 ? "?page=" : "&page=") + page;
+                }
+                if(url!==""){
+                    self.get(url, function (Html){
+                        if(self.isJsonString(Html)){
+                            var obj = jQuery.parseJSON(Html);
+                            return self.report(obj);
+                        }
+                        Ajaxwindow.html(Html);
+                        Core.PickerEvent(WindowId, PickerUrl);
+                    },{inajax:1,ajaxhash:WindowId},'html');
+                }
+                return false;
+            });
+            Ajaxwindow.find('.attachments').on("click",".attach-item",function (){
+                PickerItem($(this));
+                return false;
+            });
+            let UploadBtn = Ajaxwindow.find(".attach-uploader");
+            let UploadOptions = {
+                elem: UploadBtn.get()[0],
+                url:UploadBtn.data('url'),
+                done:function (res){
+                    if(res.type!=='success'){
+                        UploadBtn.removeClass("uploading").addClass('uploaderr');
+                        return self.report(res);
+                    }
+                    let attach = res.data;
+                    let Html = '<div class="layui-col-md2 layui-xs-4 attach-item" data-aid="'+attach.id+'" data-path="'+attach.attachment+'" data-url="'+attach.cover+'">' +
+                        '<div class="attach-thumb" style="background-image: url('+attach.cover+')"></div>' +
+                        '<div title="'+attach.filename+'" class="attach-name text-center">'+attach.filename+'</div>' +
+                        '<div class="action attach-check">' +
+                        '    <span class="layui-icon layui-icon-circle"></span>\n' +
+                        '</div></div>';
+                    if (Ajaxwindow.find('.attachments').find('.attach-item').length>=18){
+                        Ajaxwindow.find('.attachments').find('.attach-item:last').remove();
+                    }
+                    Ajaxwindow.find('.attachments').prepend(Html);
+                    UploadBtn.removeClass("uploading");
+                },
+                before:function (){
+                    layui.element.progress('uploadprogress', '0%');
+                    UploadBtn.addClass("uploading").removeClass('uploaderr');
+                },
+                data:{
+                    token:Basetoken,
+                    inputname:"file",
+                    frompage:"picker"
+                },
+                headers:{
+                    "X-CSRF-TOKEN":Basetoken
+                },
+                accept:UploadBtn.data('accept'),
+                error:function (e){
+                    UploadBtn.removeClass("uploading");
+                    layer.msg("上传失败，请重试", {icon:2});
+                },
+                progress:function (n, elem, res, index){
+                    layui.element.progress('uploadprogress', n+'%');
+                }
+            };
+            if(typeof(UploadBtn.attr("data-exts"))!='undefined' && UploadBtn.attr("data-exts")!==""){
+                UploadOptions.exts = UploadBtn.attr("data-exts");
+            }
+            layupload.render(UploadOptions);
         },
         MemberPicker(){
             let self = this;

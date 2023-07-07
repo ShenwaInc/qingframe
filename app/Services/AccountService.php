@@ -135,20 +135,20 @@ class AccountService {
 
     static function ExtraModules($uniacid){
         $cachekey = CacheService::system_key("unimodules", array('uniacid'=>$uniacid));
-        $modules = Cache::get($cachekey, array());
-        if (!empty($modules)) return $modules;
-        //数据由单条数据更变为多条数据
-        $module_array = DB::table('uni_account_extra_modules')->where('uniacid', $uniacid)->select(['modules'])->get()->toArray();
-        //循环赋值
-        foreach ($module_array ?? []  as $value){
-            $module = unserialize($value['modules']);
-            foreach ($module as $val){
-                $val['logo'] = asset($val['logo']);
-                $modules[$val['identity']] = $val;
+        $modules = Cache::get($cachekey, error(-1, 'nothing'));
+        if (is_error($modules)){
+            $modules = [];
+            $_modules = DB::table('uni_account_extra_modules')->where('uniacid', $uniacid)->value('modules');
+            $extra_modules = $_modules ? unserialize($_modules) : [];
+            if (!empty($extra_modules)){
+                foreach ($extra_modules as $val){
+                    $val['logo'] = asset($val['logo']);
+                    $modules[$val['identity']] = $val;
+                }
             }
+            Cache::put($cachekey, $modules, 7*86400);
+            return $modules;
         }
-        Cache::put($cachekey, $modules, 7*86400);
-
         return $modules;
     }
 

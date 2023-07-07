@@ -318,7 +318,7 @@ class ModuleService
     static function ModuleData($application,$subscribes=array(),$handles=array()){
         return array(
             'name'=>$application['identifie'],
-            'application_type'=>1,
+            'application_type'=>$application['module_type']??1,
             'type'=>$application['type'],
             'title'=>$application['name'],
             'version'=>$application['version'],

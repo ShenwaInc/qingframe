@@ -31,7 +31,7 @@ class UtilController extends Controller
         if ($type=='image'){
             $content = HttpService::ihttp_post($attach,"");
             if (is_error($content)){
-                throw new \Exception();
+                throw new \Exception($content['message']);
             }
             session_exit($content['content']);
         }

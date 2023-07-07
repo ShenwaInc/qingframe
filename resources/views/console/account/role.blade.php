@@ -28,13 +28,13 @@
                 <table class="layui-table fui-table lines" lay-skin="nob">
                     <colgroup>
                         <col width="250" />
-                        <col />
+                        <col class="layui-hide-xs" />
                         <col width="200" />
                     </colgroup>
                     <thead>
                     <tr>
                         <th>用户</th>
-                        <th>权限</th>
+                        <th class="layui-hide-xs">权限</th>
                         <th style="text-align: right">操作</th>
                     </tr>
                     </thead>
@@ -47,7 +47,7 @@
                     @foreach($users as $key=>$value)
                         <tr>
                             <td><span{{ $value['expired'] ? ' class=text-gray' : '' }}>{{ $value['username'] }}</span>&nbsp;<span class="layui-badge layui-bg-{{ $colors[$value['role']] }}">{{ $value['roler'] }}</span></td>
-                            <td>{{ empty($value['permission']) ? '所有权限' : '部分权限' }}</td>
+                            <td class="layui-hide-xs">{{ empty($value['permission']) ? '所有权限' : '部分权限' }}</td>
                             <td class="text-right">
                                 @if($value['role']=='owner')
                                     @if($_W['isfounder'])

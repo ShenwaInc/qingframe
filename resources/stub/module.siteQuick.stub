@@ -1,26 +1,22 @@
 <?php
 
-use App\Utils\WeModule;
+use App\Utils\QuickModule;
 
-class DummyModuleSite extends WeModule{
+class DummyModuleSite extends QuickModule{
 
-	public function doWebIndex(){
-        //后台默认入口
-        //Todo something
-        return "Hello World.";
-    }
+	public $WebIndex = ''; //默认入口链接，如https://example.com/,该链接需符合单点登录接口规范，具体请参考：
 
-    public function doMobileIndex(){
-        //前台默认入口
-        //Todo something
-        return "Hello World.";
+    public function construct(){
+        if (!empty($this->module['config']['WebIndex'])){
+            $this->WebIndex = $this->module['config']['WebIndex'];
+        }
     }
 
     /**
      * 处理模块支付结果
      * @param array $params 支付参数（result-结果, from-回调方式, type-支付方式, tid-内部订单号）
     */
-	public function payResult($params){
+    public function payResult($params){
         global $_W,$_S;
         if ('success' == $params['result'] && 'notify' == $params['from']) {
             //支付回调（异步）
@@ -39,9 +35,9 @@ class DummyModuleSite extends WeModule{
         }
 
         return $params;
-	}
+    }
 
-	/**
+    /**
      * 退款结果通知
      * @param array $params 退款结果数据（out_trade_no支付单号、tid内部订单号、total_amount支付金额、refund_amount退款金额）
      * @return bool

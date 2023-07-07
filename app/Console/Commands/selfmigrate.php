@@ -63,6 +63,11 @@ class selfmigrate extends Command
                 FileService::rmdirs(base_path('socket'));
                 DB::table('gxswa_cloud')->where(array('identity'=>'laravel_whotalk_socket'))->update(array('rootpath'=>'swasocket/'));
             }
+            //清除无用模块数据
+            $query = DB::table('modules')->where('type', 'system')->orWhere('application_type', '=', '0');
+            if ($query->exists()){
+                $query->delete();
+            }
             //更新composer.json
             $composer = file_get_contents(base_path('composer.json'));
             if (strpos($composer, 'public/addons')===false){

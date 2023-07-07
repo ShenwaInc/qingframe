@@ -53,6 +53,9 @@ class WeModule
         $o->__define = $file;
         self::defineConst($o);
         $o->inMobile = defined('IN_MOBILE');
+        if (method_exists($o, 'construct')){
+            $o->construct();
+        }
         return $o;
     }
 

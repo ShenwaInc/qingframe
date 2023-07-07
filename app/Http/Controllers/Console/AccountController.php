@@ -191,13 +191,10 @@ class AccountController extends Controller
         //读取可用模块
         $components = AccountService::ExtraModules($_W['uniacid']);
         if (empty($components) && !empty($_W['config']['defaultmodule'])){
-            $defaultModule = pdo_get("modules", array('name'=>$_W['config']['defaultmodule'], 'application_type'=>1));
+            $defaultModule = pdo_get("modules", array('name'=>$_W['config']['defaultmodule']));
             if (!empty($defaultModule)){
-                $components = [['name'=>$defaultModule['title'],'identity'=>$defaultModule['name'],'logo'=>$defaultModule['logo']]];
-                DB::table('uni_account_extra_modules')->insert(array(
-                    'uniacid'=>$this->uniacid,
-                    'modules'=>serialize($components)
-                ));
+                $components = [['name'=>$defaultModule['title'],'identity'=>$defaultModule['name'],'logo'=>$defaultModule['logo'],'application_type'=>$defaultModule['application_type']]];
+                DB::table('uni_account_extra_modules')->updateOrInsert(array('uniacid'=>$this->uniacid), array('modules'=>serialize($components)));
                 $return['components'] = $components;
             }
         }else{
@@ -205,6 +202,7 @@ class AccountController extends Controller
                 //判断模块是否可用
                 $module = ModuleService::fetch($component['identity']);
                 if (empty($module)) continue;
+                $component['application_type'] = $module['application_type'];
                 $return['components'][] = $component;
             }
         }
@@ -249,9 +247,7 @@ class AccountController extends Controller
                     );
                 }
             }
-            if (!DB::table('uni_account_extra_modules')->updateOrInsert(array('uniacid'=>$this->uniacid), array('modules'=>serialize($modules)))){
-                return $this->message('保存失败，请重试');
-            }
+            DB::table('uni_account_extra_modules')->updateOrInsert(array('uniacid'=>$this->uniacid), array('modules'=>serialize($modules)));
             CacheService::flush();
             return $this->message('操作成功！',wurl('account/functions',array('uniacid'=>$this->uniacid),true), 'success');
         }

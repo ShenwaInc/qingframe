@@ -14,7 +14,7 @@ class modulemake extends Command {
      *
      * @var string
      */
-    protected $signature = 'make:module {identity} {name?}';
+    protected $signature = 'make:module {identity} {name?} {type=1}';
     public $Application;
 
     /**
@@ -49,6 +49,8 @@ class modulemake extends Command {
     {
         //
         $arguments = $this->argument();
+        $arguments['type'] = intval($arguments['type']);
+        if (empty($arguments['type'])) $arguments['type'] = 1;
         $identity = trim($arguments['identity']);
         $moduleName = $arguments['name'] ? trim($arguments['name']) : ucfirst($identity);
         $this->info("Identity:$identity, moduleName:$moduleName");
@@ -68,7 +70,8 @@ class modulemake extends Command {
                 return $this->report("Create package faild: may not have permission.");
             }
         }
-        $site = file_get_contents(resource_path('stub/module.site.stub'));
+        $siteStub = $arguments['type']==2 ? 'stub/module.siteQuick.stub' : 'stub/module.site.stub';
+        $site = file_get_contents(resource_path($siteStub));
         $site = str_replace(array("Dummy","dummy"), array(ucfirst($identity), $identity), $site);
         $site_php = $package."site.php";
         if (!file_put_contents($site_php, $site)){
@@ -76,8 +79,11 @@ class modulemake extends Command {
         }
         $Manifest = file_get_contents(resource_path('stub/module.manifest.stub'));
         $Manifest = str_replace(array("Dummy","dummy","TIMESTAMP"), array($moduleName, $identity, date("YmdH01", TIMESTAMP)), $Manifest);
-        $manifile = $package."manifest.json";
-        if (!file_put_contents($manifile, $Manifest)){
+        if ($arguments['type']!=1){
+            $Manifest = str_replace('"module_type": "1"', '"module_type": "'.$arguments['type'].'"', $Manifest);
+        }
+        $maniFile = $package."manifest.json";
+        if (!file_put_contents($maniFile, $Manifest)){
             return $this->report("Create package faild: may not have permission.");
         }
         FileService::mkdirs($package."/template/");

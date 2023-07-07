@@ -15,7 +15,7 @@ class ModuleController extends Controller
 {
     //
 
-    public function entry(Request $request, $modulename,$do='index'){
+    public function entry(Request $request, $modulename, $do='index'){
         global $_W;
         $WeModule = new WeModule();
         try {

@@ -404,8 +404,8 @@ class CloudService
         $CloudApi = env('APP_CLOUD_API', self::$cloudapi);
         $res = HttpService::ihttp_post($CloudApi,$data);
         if (is_error($res)) return $res;
+        if($return) return $res['content'];
         $result = json_decode($res['content'],true);
-        if(empty($result) && $return) return $res['content'];
         if (isset($result['message']) && isset($result['type'])){
             if ($result['type']!='success' && !is_array($result['message'])){
                 $respone = error(-1,$result['message']);

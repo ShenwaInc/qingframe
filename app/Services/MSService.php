@@ -367,24 +367,28 @@ class MSService
                 }
             }
         }
-        $locals = $this->getlocal();
-        if (!empty($locals)){
-            $return['servers'] += count($locals);
-            foreach ($locals as $value){
-                try {
-                    $res = $this->install($value['identity']);
-                    if (!is_error($res)){
-                        $installed[] = $value['identity'];
-                        $return['install'] += 1;
-                        continue;
+        if (DEVELOPMENT){
+            //自动安装本地服务
+            $locals = $this->getlocal();
+            if (!empty($locals)){
+                $return['servers'] += count($locals);
+                foreach ($locals as $value){
+                    try {
+                        $res = $this->install($value['identity']);
+                        if (!is_error($res)){
+                            $installed[] = $value['identity'];
+                            $return['install'] += 1;
+                            continue;
+                        }
+                    }catch (\Exception $exception){
+                        //Todo something
                     }
-                }catch (\Exception $exception){
-                    //Todo something
+                    $return['faild'] += 1;
                 }
-                $return['faild'] += 1;
             }
         }
-        $requires = array("websocket");
+        //自动安装框架必须服务
+        $requires = array("websocket", "sso");
         foreach ($requires as $serve){
             try {
                 if (in_array($serve, $installed) || self::isexist($serve)){
@@ -472,7 +476,7 @@ class MSService
             if (is_error($res)) return $res;
             if (!$res){
                 $composerUrl = wurl("server", array('op'=>'composer', 'nid'=>$identity), true);
-                $this->TerminalSend(["mode"=>"err", "message"=>"Composer依赖安装失败，请打开该网址手动安装：$composerUrl"]);
+                $this->TerminalSend(["mode"=>"err", "message"=>"Composer依赖安装失败，<a href='$composerUrl' target='_blank'>请点击此处手动安装</a>"]);
                 return error(-102, "Composer依赖安装失败，请手动安装");
             }
         }
@@ -525,7 +529,7 @@ class MSService
                 if (is_error($res)) return $res;
                 if (!$res){
                     $composerUrl = wurl("server", array('op'=>'composer', 'nid'=>$identity), true);
-                    $this->TerminalSend(["mode"=>"err", "message"=>"Composer依赖安装失败，请打开该网址手动安装：$composerUrl"]);
+                    $this->TerminalSend(["mode"=>"err", "message"=>"Composer依赖安装失败，<a href='$composerUrl' target='_blank'>请点击此处手动安装</a>"]);
                     return error(-102, "Composer依赖安装失败，请手动安装");
                 }
             }
