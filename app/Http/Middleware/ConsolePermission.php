@@ -56,8 +56,6 @@ class ConsolePermission
             $_W['acid'] = $_W['account']['acid'];
         }
         $_W['attachurl'] = FileService::SetAttachUrl();
-        //验证是否有效应用模块
-        $this->checkModules($request,$uniacid);
         //路由权限判断
         if (!$_W['isfounder']) $this->checkPermission($request,$_W['uid'],$_W['uniacid']);
         return $next($request);

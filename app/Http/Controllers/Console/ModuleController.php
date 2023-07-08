@@ -28,9 +28,6 @@ class ModuleController extends Controller
             array('uid'=>$_W['uid'],'uniacid'=>$_W['uniacid'],'module_name'=>$modulename),
             array('createtime'=>TIMESTAMP,'type'=>2)
         );
-        if (!function_exists('message')){
-            include_once app_path("Helpers/web.php");
-        }
         return $site->$method($request);
     }
 

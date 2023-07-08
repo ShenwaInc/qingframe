@@ -3,14 +3,9 @@
 namespace App\Http\Controllers\Console;
 
 use App\Http\Controllers\Controller;
-use App\Models\Account;
 use App\Services\AccountService;
-use App\Services\CacheService;
 use App\Services\ModuleService;
-use App\Services\UserService;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class PlatformController extends Controller

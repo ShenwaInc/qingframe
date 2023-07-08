@@ -4,9 +4,13 @@ use Illuminate\Support\Facades\View;
 
 function message($msg, $redirect = '', $type = 'error') {
     global $_W, $_GPC;
-    $data = array('message'=>$msg,'redirect'=>$redirect,'type'=>$type);
+    $data = array('message'=>$msg,'redirect'=>$redirect,'type'=>$type, 'data'=>[]);
     ob_clean();
     if ($_W['isajax']){
+        if (is_array($msg)){
+            $data['data'] = $msg;
+            $data['message'] = 'OK';
+        }
         echo json_encode($data);
     }else{
         View::share('_W',$_W);

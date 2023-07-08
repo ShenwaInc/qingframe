@@ -134,8 +134,8 @@ class AccountService {
     }
 
     static function ExtraModules($uniacid){
-        $cachekey = CacheService::system_key("unimodules", array('uniacid'=>$uniacid));
-        $modules = Cache::get($cachekey, error(-1, 'nothing'));
+        $cacheKey = CacheService::system_key("unimodules", array('uniacid'=>$uniacid));
+        $modules = Cache::get($cacheKey, error(-1, 'nothing'));
         if (is_error($modules)){
             $modules = [];
             $_modules = DB::table('uni_account_extra_modules')->where('uniacid', $uniacid)->value('modules');
@@ -146,7 +146,7 @@ class AccountService {
                     $modules[$val['identity']] = $val;
                 }
             }
-            Cache::put($cachekey, $modules, 7*86400);
+            Cache::put($cacheKey, $modules, 7*86400);
             return $modules;
         }
         return $modules;

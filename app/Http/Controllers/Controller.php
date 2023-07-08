@@ -17,9 +17,11 @@ class Controller extends BaseController
         if ($redirect && isset($extra['light']) && $extra['light']!=''){
             $msg = str_replace($extra['light'],'<a href="'.$redirect.'" class="message-light">'.$extra['light'].'</a>',$msg);
         }
-        $return = array('redirect'=>$redirect,'type'=>$type, 'code'=>$extra['code']??0);
-        $return['message'] = is_array($msg) ? 'OK' : $msg;
-        $return['data'] = is_array($msg) ? $msg : [];
+        $return = array('redirect'=>$redirect,'type'=>$type, 'code'=>$extra['code']??0, 'message'=>$msg, 'data'=>[]);
+        if (is_array($msg)){
+            $return['message'] = 'OK';
+            $return['data'] = $msg;
+        }
         if(!isset($_W['isajax'])){
             $_W['isajax'] = \request()->ajax() || \request('inajax', 0);
         }

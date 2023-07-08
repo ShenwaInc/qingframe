@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Console;
 
 use App\Http\Controllers\Controller;
-use App\Services\FileService;
 use App\Services\UserService;
 use App\User;
 use Illuminate\Http\Request;

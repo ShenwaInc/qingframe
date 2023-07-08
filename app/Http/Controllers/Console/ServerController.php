@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Services\AccountService;
 use App\Services\MSService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 
 class ServerController extends Controller
 {
@@ -225,10 +224,9 @@ class ServerController extends Controller
     public function Methods($server=""){
         $server = serv($server);
         $methods = $server->getMethods();
-        if (is_error($methods)) message($methods['message'],"","error");
+        if (is_error($methods)) return $this->message($methods['message'],"","error");
         if (!empty($methods['wiki']) && count($methods)==1){
-            header("location:{$methods['wiki']}");
-            exit();
+            return redirect($methods['wiki']);
         }
         $wiki = $methods['wiki'];
         unset($methods['wiki']);
@@ -247,10 +245,9 @@ class ServerController extends Controller
         $apis = $service->getApis();
         if(empty($apis['schemas'])){
             if (!empty($apis['wiki'])){
-                header("location:{$apis['wiki']}");
-                exit();
+                return redirect($apis['wiki']);
             }else{
-                message("该服务未提供任何接口");
+                return $this->message("该服务未提供任何接口");
             }
         }
         return $this->globalView("console.server.api", array(

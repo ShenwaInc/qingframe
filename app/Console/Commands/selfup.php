@@ -63,13 +63,13 @@ class selfup extends Command
             'release'=>(int)env("APP_RELEASE")
         );
         if (empty($arguments['version'])){
-            $ugradeinfo = CloudService::CloudApi('structure',array('identity'=>$component['identity']));
-            if (is_error($ugradeinfo)){
+            $ugradeInfo = CloudService::CloudApi('structure',array('identity'=>$component['identity']));
+            if (is_error($ugradeInfo)){
                 $arguments['version'] = $system['version'];
                 $arguments['release'] = $system['release'] + 1;
             }else{
-                $arguments['version'] = $ugradeinfo['version'];
-                $arguments['release'] = $ugradeinfo['releasedate'];
+                $arguments['version'] = $ugradeInfo['version'];
+                $arguments['release'] = $ugradeInfo['releasedate'];
             }
         }
         DB::table('gxswa_cloud')->where('id',$component['id'])->update(array(

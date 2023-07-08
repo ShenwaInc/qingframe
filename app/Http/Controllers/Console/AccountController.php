@@ -4,19 +4,13 @@ namespace App\Http\Controllers\Console;
 
 use App\Http\Controllers\Controller;
 use App\Models\Account;
-use App\Models\CorePaylog;
-use App\Models\Setting;
 use App\Services\AccountService;
 use App\Services\CacheService;
 use App\Services\ModuleService;
-use App\Services\PayService;
-use App\Services\SettingService;
 use App\Services\UserService;
-use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use function GuzzleHttp\Psr7\str;
 
 class AccountController extends Controller
 {
@@ -189,7 +183,7 @@ class AccountController extends Controller
         $return['components'] = [];
 
         //读取可用模块
-        $components = AccountService::ExtraModules($_W['uniacid']);
+        $components = AccountService::ExtraModules($this->uniacid);
         if (empty($components) && !empty($_W['config']['defaultmodule'])){
             $defaultModule = pdo_get("modules", array('name'=>$_W['config']['defaultmodule']));
             if (!empty($defaultModule)){
@@ -388,6 +382,7 @@ class AccountController extends Controller
         $return = array('title'=>'创建平台');
         return $this->globalView('console.account.create', $return);
     }
+
     public function doPermission(Request $request){
         $uid=$request->input('uid');
         $uniacid=$request->input('uniacid');
