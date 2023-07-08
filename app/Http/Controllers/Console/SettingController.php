@@ -21,7 +21,7 @@ class SettingController extends Controller
         if(!$_W['isfounder']){
             return $this->message('暂无权限');
         }
-        $activestate = CloudService::CloudActive();
+        $activeState = CloudService::CloudActive();
         if (checksubmit()){
             $siteInfo = \request()->input('site');
             if (empty($siteInfo['mobile']) || !preg_match('/^(\+)?(86)?0?1\d{10}$/', $siteInfo['mobile'])){
@@ -34,8 +34,8 @@ class SettingController extends Controller
             if (!$userId && empty($siteInfo['password'])){
                 return $this->message("请设置一个云端密码");
             }
-            if (empty($siteInfo['name'])) $siteInfo['name'] = $activestate['name'];
-            $siteInfo['siteid'] = $activestate['siteid'];
+            if (empty($siteInfo['name'])) $siteInfo['name'] = $activeState['name'];
+            $siteInfo['siteid'] = $activeState['siteid'];
             $siteInfo['r'] = "cloud.active.save";
             $res = CloudService::CloudApi("", $siteInfo);
             if (is_error($res)){
@@ -44,8 +44,8 @@ class SettingController extends Controller
             $redirect = "";
             if ($res['type']=="success"){
                 if ($_W['config']['site']['id']==0){
-                    $_W['config']['site']['id'] = $activestate['siteid'];
-                    if (!CloudService::CloudEnv('APP_SITEID=0', "APP_SITEID={$activestate['siteid']}")){
+                    $_W['config']['site']['id'] = $activeState['siteid'];
+                    if (!CloudService::CloudEnv('APP_SITEID=0', "APP_SITEID={$activeState['siteid']}")){
                         return $this->message('文件写入失败，请检查根目录权限');
                     }
                     Artisan::call('server:update');
@@ -56,7 +56,7 @@ class SettingController extends Controller
             }
             return $this->message($res['message'], $redirect, $res["type"]);
         }
-        return $this->globalView("console.active", ["siteinfo"=>$activestate, "title"=>"云服务激活"]);
+        return $this->globalView("console.active", ["siteinfo"=>$activeState, "title"=>"云服务激活"]);
     }
 
     public function detection(){

@@ -420,9 +420,9 @@ class CloudService
 
     static function CloudActive(){
         global $_W;
-        $default = array('state'=>'未开始激活','siteid'=>0,'siteroot'=>$_W['siteroot'],'expiretime'=>0,'status'=>0,'uid'=>0,'mobile'=>"",'name'=>$_W['setting']['page']['title']);
-        $cachekey = CacheService::system_key('HingWork:Authorize:Active');
-        $authorize = Cache::get($cachekey,$default);
+        $default = array('state'=>'未开始激活', 'hasDomain'=>true,'siteid'=>0,'siteroot'=>$_W['siteroot'],'expiretime'=>0,'status'=>0,'uid'=>0,'mobile'=>"",'name'=>$_W['setting']['page']['title']);
+        $cacheKey = CacheService::system_key('HingWork:Authorize:Active');
+        $authorize = Cache::get($cacheKey,$default);
         $res = self::CloudApi('',array('r'=>'cloud.active.state', 'siteName'=>$authorize['name'],'identity'=>config('system.identity')));
         if (!empty($res['redirect'])){
             $authorize['redirect'] = trim($res['redirect']);
@@ -435,6 +435,10 @@ class CloudService
             $authorize['state'] = '激活状态查询失败';
             return $authorize;
         }
+        if (is_error($res['siteinfo'])){
+            $authorize['state'] = $res['siteinfo']['message'];
+            return $authorize;
+        }
         if ($res['siteinfo']['status']==1){
             $authorize['name'] = $res['siteinfo']['name'];
         }
@@ -443,11 +447,16 @@ class CloudService
         $authorize['uid'] = $res['siteinfo']['uid'];
         $authorize['mobile'] = $res['siteinfo']['mobile'];
         $authorize['status'] = $res['siteinfo']['status'];
+        $authorize['reDomain'] = (int)$res['authorizes'];
+        $authorize['hasDomain'] = (bool)$res['siteinfo']['hasDomain'];
+        if (!$authorize['hasDomain']){
+            $authorize['siteroot'] = $res['siteinfo']['url'];
+        }
         if ($res['siteinfo']['status']==1){
             $authorize['state'] = '已激活';
         }
 
-        Cache::put($cachekey, $authorize, 3600);
+        Cache::put($cacheKey, $authorize, 3600);
 
         return $authorize;
     }

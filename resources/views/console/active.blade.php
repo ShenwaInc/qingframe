@@ -12,13 +12,17 @@
                     <div class="layui-form-item">
                         <div class="layui-form-label">站点域名</div>
                         <div class="layui-input-block">
-                            <input type="text" name="siteroot" class="layui-input layui-bg-gray radius" readonly value="{{ $siteinfo['siteroot'] }}" />
+                            <input type="text" name="siteroot" id="siteRoot" class="layui-input layui-bg-gray radius" required lay-verify="required" readonly value="{{ $siteinfo['siteroot'] }}" />
+                            <div class="layui-word-aux">
+                                @if(!$siteinfo['hasDomain'])<strong class="text-red">当前的域名{{ $_W['siteroot'] }}与站点激活信息不符，云服务使用可能受限</strong>@endif
+                                <p>您还有<strong>{{ $siteinfo['reDomain'] }}</strong>次修改域名额度，<a href="javascript:;" class="text-blue js-reDomain">修改域名</a></p>
+                            </div>
                         </div>
                     </div>
-                    <div class="layui-form-item">
+                    <div class="layui-form-item must">
                         <div class="layui-form-label">站点名称</div>
                         <div class="layui-input-block">
-                            <input type="text" name="site[name]" class="layui-input radius" value="{{ $siteinfo['name'] }}" />
+                            <input type="text" name="site[name]" class="layui-input radius" required lay-verify="required" value="{{ $siteinfo['name'] }}" />
                         </div>
                     </div>
                     <div class="layui-form-item @if(empty($siteinfo['mobile'])) must @endif">
@@ -111,6 +115,19 @@
                     layer.msg(res.message,{icon:2});
                 }
             }, data, 'json', true)
+            return false;
+        });
+        $('.js-reDomain').click(function () {
+            @if(empty($siteinfo['reDomain']))
+                layer.msg("您的域名修改额度不足，请联系客服", {icon: 5});
+            @else
+                let siteRoot = $("#siteRoot");
+                siteRoot.removeAttr("readonly").removeClass("layui-bg-gray");
+                @if(!$siteinfo['hasDomain'])
+                    siteRoot.val("{{ $_W['siteroot'] }}");
+                @endif
+                siteRoot.focus();
+            @endif
             return false;
         });
     });
