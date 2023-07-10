@@ -3,9 +3,7 @@
 namespace App\Utils;
 
 use App\Services\CacheService;
-use App\Services\FileService;
 use App\Services\ModuleService;
-use Exception;
 use Illuminate\Support\Facades\DB;
 
 !(defined('IN_IA')) && define('IN_IA', 2);
@@ -24,7 +22,7 @@ class WeModule
     public $__define;
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function create($name){
         global $_W;
@@ -57,6 +55,29 @@ class WeModule
             $o->construct();
         }
         return $o;
+    }
+
+    public function pay($params){
+        $payment = serv("payment");
+        if (!$payment->enabled){
+            \App\Helpers\message("支付服务暂不可用");
+        }
+        global $_W;
+        $data = array(
+            'tid'=>$params['tid'],
+            'amount'=>$params['fee'],
+            'subject'=>$params['title'],
+            'openid'=>$_W['openid']
+        );
+        $payLog = $payment->orderBuild($data, $this->modulename);
+        if (is_error($payLog)){
+            if ($payLog['errno']==-1){
+                //已支付完成
+                \App\Helpers\message("支付成功", "", "success");
+            }
+            \App\Helpers\message($payLog['message']);
+        }
+        return $payment->View();
     }
 
     private static function defineConst($obj) {
@@ -111,11 +132,10 @@ class WeModule
     }
 
 
-    protected function template($filename, $extra='') {
+    public function template($filename, $extra='') {
         global $_W;
         $name = strtolower($this->modulename);
         $defineDir = dirname($this->__define);
-        serv("weengine")->func("template");
         if (defined('IN_SYS')) {
             $source = IA_ROOT . "/web/themes/{$_W['template']}/{$name}/{$extra}{$filename}.html";
             $compile = storage_path("framework/tpls/web/{$name}/{$extra}{$filename}.tpl.php");
@@ -152,7 +172,10 @@ class WeModule
         $paths = pathinfo($compile);
         $compile = str_replace($paths['filename'], $_W['uniacid'] . '_' . $paths['filename'], $compile);
         if (DEVELOPMENT || !is_file($compile) || filemtime($source) > filemtime($compile)) {
-            template_compile($source, $compile, true);
+            if (!function_exists("tpl_compile")){
+                include_once app_path("Helpers/smarty.php");
+            }
+            tpl_compile($source, $compile, $this->modulename);
         }
 
         return $compile;

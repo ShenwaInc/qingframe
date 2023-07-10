@@ -33,7 +33,6 @@ class PaymentController extends Controller
 
     //支付回调：同步
     public function response(Request $request, $payment){
-        serv("weengine")->func("app");
         $params = $request->all();
         $result =  serv("payment")->Notify($payment,$params, 'return');
         if (is_error($result)){

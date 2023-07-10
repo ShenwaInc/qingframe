@@ -4,7 +4,6 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\View;
-use Symfony\Component\Process\Process;
 
 class MicroService
 {
@@ -312,14 +311,18 @@ class MicroService
                 $this->message("Error: template source '$template' is not exist!", "", "error");
             }
             $compile = storage_path("framework/tpls/$platform") . "/severs/".$this->identity."/$template.tpl.php";
-            tpl_compile($source, $compile);
+            if (DEVELOPMENT || !file_exists($compile) || filemtime($source) > filemtime($compile)){
+                if (!function_exists('tpl_compile')){
+                    include_once app_path("Helpers/smarty.php");
+                }
+                tpl_compile($source, $compile);
+            }
             if (!file_exists($compile)){
                 $this->message("Warning: include_once(): Failed opening '$compile'","","error");
             }
             include $compile;
             session_exit();
         }elseif ($this->CompileDrive=='blade'){
-
             return false;
         }
         return true;

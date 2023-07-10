@@ -1,14 +1,8 @@
 <?php
-/**
- * HTML模板编译引擎
- *
- * @author 神蛙科技
- * @url
- */
 
 use App\Services\FileService;
 
-function tpl_compile($from, $to) {
+function tpl_compile($from, $to, $module="") {
     if (file_exists($to)){
         if(filemtime($to)>filemtime($from)) return true;
     }
@@ -16,7 +10,7 @@ function tpl_compile($from, $to) {
     if (!is_dir($path)) {
         FileService::mkdirs($path);
     }
-    $content = tpl_parse(file_get_contents($from));
+    $content = tpl_parse(file_get_contents($from), $module);
     return file_put_contents($to, $content);
 }
 
@@ -25,7 +19,7 @@ function tpl_token(){
     return '<input type="hidden" name="_token" value="'.$_W['token'].'" />';
 }
 
-function tpl_parse($str) {
+function tpl_parse($str, $module="") {
     $check_repeat_template = array(
         "'common\\/header'",
         "'common\\/footer'",
@@ -33,13 +27,21 @@ function tpl_parse($str) {
     foreach ($check_repeat_template as $template) {
         if (preg_match_all('/{template\s+'.$template.'}/', $str, $match) > 1) {
             $replace = stripslashes($template);
-            $str = preg_replace('/{template\s+'.$template.'}/i', '<?php (!empty($this) && $this instanceof WeModuleSite) ? (include $this->template('.$replace.', TEMPLATE_INCLUDEPATH)) : (include template('.$replace.', TEMPLATE_INCLUDEPATH));?>', $str, 1);
+            if (!empty($module)){
+                $str = preg_replace('/{template\s+'.$template.'}/i', '<?php include $this->template('.$replace.');?>', $str, 1);
+            }else{
+                $str = preg_replace('/{template\s+'.$template.'}/i', '<?php (!empty($this) && $this instanceof WeModuleSite) ? (include $this->template('.$replace.')) : (include tpl_include('.$replace.'));?>', $str, 1);
+            }
             $str = preg_replace('/{template\s+'.$template.'}/i', '', $str);
         }
     }
     $str = preg_replace('/<!--{(.+?)}-->/s', '{$1}', $str);
     $str = preg_replace('/{template\s+(["\'])+server\/(.+?):(.+?)(["\'])}/', '<?php include tpl_server("$3","$2");?>', $str);
-    $str = preg_replace('/{template\s+(.+?)}/', '<?php include tpl_include($1);?>', $str);
+    if (!empty($module)) {
+        $str = preg_replace('/{template\s+(.+?)}/', '<?php include $this->template($1);?>', $str);
+    }else{
+        $str = preg_replace('/{template\s+(.+?)}/', '<?php include tpl_include($1);?>', $str);
+    }
     $str = preg_replace('/{php\s+(.+?)}/', '<?php $1?>', $str);
     $str = preg_replace('/{if\s+(.+?)}/', '<?php if($1) { ?>', $str);
     $str = preg_replace('/{else}/', '<?php } else { ?>', $str);
@@ -74,7 +76,7 @@ function tpl_parse($str) {
  * @param string|null $template 路由名称
  * @param string|null $server 服务标识
  * @param string 返回编译后的PHP文件路径（绝对路径）
- * @throws Exception
+ * @throws \Exception
  */
 function tpl_server($template="", $server=''){
     global $_W;
@@ -87,7 +89,7 @@ function tpl_server($template="", $server=''){
     }
     $source = MICRO_SERVER.$server."/template/$platform/$template.html";
     if (!file_exists($source)){
-        throw new Exception("Error: template source '$template' is not exist!");
+        throw new \Exception("Error: template source '$template' is not exist!");
     }
     $compile = storage_path("framework/tpls/$platform") . "/severs/$server/$template.tpl.php";
     tpl_compile($source, $compile);
@@ -95,10 +97,10 @@ function tpl_server($template="", $server=''){
 }
 
 /**
- * @throws Exception
+ * @throws \Exception
  */
 function tpl_include($template){
-    $platform = defined('IN_SYS') ? '/' : 'mobile/';
+    $platform = defined('IN_SYS') ? '/' : 'app/';
     $source = resource_path("template$platform")."$template.html";
     if (defined("TPL_BASEPATH")){
         $_source = TPL_BASEPATH."$template.html";
@@ -107,7 +109,7 @@ function tpl_include($template){
         }
     }
     if (!file_exists($source)){
-        throw new Exception("Error: template source '$template' is not exist!");
+        throw new \Exception("Error: template source '$template' is not exist!");
     }
     $compile = storage_path("framework/tpls/$platform").$template.".tpl.php";
     tpl_compile($source, $compile);
