@@ -302,6 +302,9 @@ class MicroService
                     $$key = $value;
                 }
             }
+            if (!function_exists('tpl_build')){
+                include_once app_path("Helpers/smarty.php");
+            }
             if (empty($template)){
                 $template = tpl_build($_W['controller'], $_W['action'], $this->serverPath.$this->identity."/template/$platform");
             }
@@ -312,9 +315,6 @@ class MicroService
             }
             $compile = storage_path("framework/tpls/$platform") . "/severs/".$this->identity."/$template.tpl.php";
             if (DEVELOPMENT || !file_exists($compile) || filemtime($source) > filemtime($compile)){
-                if (!function_exists('tpl_compile')){
-                    include_once app_path("Helpers/smarty.php");
-                }
                 tpl_compile($source, $compile);
             }
             if (!file_exists($compile)){

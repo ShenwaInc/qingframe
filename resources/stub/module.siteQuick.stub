@@ -4,47 +4,20 @@ use App\Utils\QuickModule;
 
 class DummyModuleSite extends QuickModule{
 
-	public $WebIndex = ''; //默认入口链接，如https://example.com/,该链接需符合单点登录接口规范，具体请参考：
+	public $WebIndex = ''; //默认入口链接，如https://example.com/
+    //该链接需符合单点登录接口规范，如留空则首次访问需要超管后台设置
+    //更多说明请参考：https://www.yuque.com/shenwa/qingru/dae7wpppwv8lhzrz#lyQFY
 
+    //二次构造函数，非必须
     public function construct(){
+
+        //是否采用masterSecret进行验证
+        $this->SsoMaster = true;
+
+        //如果后台单独设置入口链接则自动填充
         if (!empty($this->module['config']['WebIndex'])){
             $this->WebIndex = $this->module['config']['WebIndex'];
         }
-    }
-
-    /**
-     * 处理模块支付结果
-     * @param array $params 支付参数（result-结果, from-回调方式, type-支付方式, tid-内部订单号）
-    */
-    public function payResult($params){
-        global $_W,$_S;
-        if ('success' == $params['result'] && 'notify' == $params['from']) {
-            //支付回调（异步）
-            //Todo something 处理支付结果
-        }
-
-        if ('return' == $params['from']) {
-            //支付回调（同步）
-            //Todo something 响应支付结果
-            $redirect = ""; //此处可根据订单号查询出支付成功后跳转地址，如订单详情等
-            if ('success' == $params['result']) {
-                message('成功支付', $redirect, 'success');
-            } else {
-                message('支付失败，请重试', referer(), 'error');
-            }
-        }
-
-        return $params;
-    }
-
-    /**
-     * 退款结果通知
-     * @param array $params 退款结果数据（out_trade_no支付单号、tid内部订单号、total_amount支付金额、refund_amount退款金额）
-     * @return bool
-    */
-    public function refundResult($params){
-        //Todo something 处理退款订单
-        return true;
     }
 
 }

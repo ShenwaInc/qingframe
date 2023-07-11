@@ -67,17 +67,10 @@ class WeModule
             'tid'=>$params['tid'],
             'amount'=>$params['fee'],
             'subject'=>$params['title'],
-            'openid'=>$_W['openid']
+            'openid'=>$_W['openid'],
+            'isRecharge'=>(bool)$params['isRecharge']
         );
-        $payLog = $payment->orderBuild($data, $this->modulename);
-        if (is_error($payLog)){
-            if ($payLog['errno']==-1){
-                //已支付完成
-                \App\Helpers\message("支付成功", "", "success");
-            }
-            \App\Helpers\message($payLog['message']);
-        }
-        return $payment->View();
+        return $payment->cashier($data, $this->modulename);
     }
 
     private static function defineConst($obj) {
@@ -107,7 +100,6 @@ class WeModule
         return $result;
     }
 
-
     protected function createMobileUrl($do, $query = array(), $noredirect = true, $addhost=false) {
         global $_W;
         $module_name = strtolower($this->modulename);
@@ -125,12 +117,10 @@ class WeModule
         return $url;
     }
 
-
     protected function createWebUrl($do, $query = array()) {
         $module_name = strtolower($this->modulename);
         return wurl("m/{$module_name}".($do?'/'.$do:''), $query);
     }
-
 
     public function template($filename, $extra='') {
         global $_W;
@@ -180,7 +170,6 @@ class WeModule
 
         return $compile;
     }
-
 
     protected function getFunctionFile($name) {
         $module_type = 0 === stripos($name, 'doWeb') ? 'web' : 'mobile';

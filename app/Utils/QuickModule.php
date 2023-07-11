@@ -18,6 +18,8 @@ class QuickModule
 
     public $__define;
 
+    public $SsoMaster = false;
+
     /**
      * @throws Exception
      */
@@ -29,14 +31,23 @@ class QuickModule
             }
             throw new Exception('Undefined WebIndex :' . $this->modulename, E_USER_WARNING);
         }
-        if (!serv('sso')->enabled){
+        $SsoService = serv('sso');
+        if (!$SsoService->enabled){
             throw new Exception('单点登录服务不可用', E_USER_WARNING);
         }
-        $code = serv('sso')->getCode();
+        $code = $this->SsoMaster ? $SsoService->getMasterCode() : $SsoService->getCode();
         if (is_error($code)){
             throw new Exception($code['message'], E_USER_WARNING);
         }
         $redirect = $this->WebIndex . (strpos($this->WebIndex,'?') ? '&' : '?') . "code=$code&uniacid=" . $this->uniacid;
+        /**
+         * 暂未支持iFrame模式，待完善
+        $openType = trim($this->module['config']['openType']);
+        if ($openType=='iframe'){
+            View::share('_W',$_W);
+            return view('console.module.iframe', ['configs'=>$this->module['config'], 'src'=>$redirect, 'title'=>$this->module['title']]);
+        }
+        */
         return redirect($redirect);
     }
 
