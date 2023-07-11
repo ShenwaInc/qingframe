@@ -18,13 +18,20 @@ class QuickModule
 
     public $__define;
 
-    public $SsoMaster = false;
+    public $SsoMaster = true;
+    /**
+     * @var mixed|string
+     */
+    public $WebIndex;
 
     /**
      * @throws Exception
      */
     public function doWebIndex(){
         global $_W;
+        if (!empty($this->module['config']['WebIndex'])){
+            $this->WebIndex = $this->module['config']['WebIndex'];
+        }
         if (empty($this->WebIndex)){
             if ($_W['isfounder']){
                 return redirect(wurl("m/".$this->modulename."/setting"));
@@ -38,6 +45,9 @@ class QuickModule
         $code = $this->SsoMaster ? $SsoService->getMasterCode() : $SsoService->getCode();
         if (is_error($code)){
             throw new Exception($code['message'], E_USER_WARNING);
+        }
+        if (strpos($this->WebIndex, '#')){
+            $this->WebIndex = explode("#", $this->WebIndex)[0];
         }
         $redirect = $this->WebIndex . (strpos($this->WebIndex,'?') ? '&' : '?') . "code=$code&uniacid=" . $this->uniacid;
         /**
