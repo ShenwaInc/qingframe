@@ -105,14 +105,6 @@ class InstallController extends Controller
                 return $this->message('数据库安装失败');
             }
 
-            //initialize modules
-            try {
-                //import database
-                ModuleService::Initializer();
-            }catch (\Exception $exception){
-                return $this->message('初始化数据失败');
-            }
-
             $salt = \Str::random(8);
             $founderpwd = trim($manager['password']);
             $pwdhash = sha1("{$founderpwd}-{$salt}-{$authkey}");

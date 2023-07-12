@@ -4,7 +4,6 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 
 class CloudService
 {
@@ -148,7 +147,7 @@ class CloudService
                     if (version_compare($local['version'], $value['release']['version'], '<') || $local['releasedate']<$releaseDate){
                         $cloudinfo['isnew'] = true;
                         if (empty($local['cloudinfo']) || !$local['cloudinfo']['isnew']){
-                            $local['action'] = '<a href="'.wurl('module/update', array('nid'=>$identity)).'" class="layui-btn layui-btn-sm layui-btn-danger js-terminal" data-text="升级前请做好源码和数据备份，避免升级故障导致系统无法正常运行">升级</a>'.$local['action'];
+                            $local['action'] = '<a href="'.wurl('module/update', array('nid'=>$identify)).'" class="layui-btn layui-btn-sm layui-btn-danger js-terminal" data-text="升级前请做好源码和数据备份，避免升级故障导致系统无法正常运行">升级</a>'.$local['action'];
                         }
                     }
                     $local['cloudinfo'] = $cloudinfo;

@@ -24,36 +24,37 @@ class WeModule
     /**
      * @throws \Exception
      */
-    public function create($name){
-        global $_W;
+    public static function create($name){
         static $file;
         $classname = "{$name}ModuleSite";
         if (!class_exists($classname)) {
             $file = public_path("/addons/{$name}/site.php");
             if (!file_exists($file)) {
-                throw new Exception('ModuleSite Definition File Not Found ' . $name, E_USER_WARNING);
+                throw new \Exception('ModuleSite Definition File Not Found ' . $name, E_USER_WARNING);
             }
             require $file;
         }
         if (!class_exists($classname)) {
-            list($namespace) = explode('_', $name);
-            if (class_exists("\\{$namespace}\\{$classname}")) {
-                $classname = "\\{$namespace}\\{$classname}";
+            if (class_exists("\\Addons\\{$name}\\site")) {
+                $classname = "\\Addons\\{$name}\\site";
             } else {
                 trigger_error('ModuleSite Definition Class Not Found', E_USER_WARNING);
                 return null;
             }
         }
+        $Instance = self::createModuleInstance($classname, $name);
+        $Instance->__define = $file;
+        return $Instance;
+    }
+
+    public static function createModuleInstance($classname, $module){
+        global $_W;
         $o = new $classname();
         $o->uniacid = $o->weid = $_W['uniacid'];
-        $o->modulename = $name;
-        $o->module = ModuleService::fetch($name);
-        $o->__define = $file;
+        $o->modulename = $module;
+        $o->module = ModuleService::fetch($module);
         self::defineConst($o);
         $o->inMobile = defined('IN_MOBILE');
-        if (method_exists($o, 'construct')){
-            $o->construct();
-        }
         return $o;
     }
 
