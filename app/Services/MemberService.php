@@ -18,7 +18,7 @@ class MemberService
         if (!empty($member) && !empty($member['uid'])) {
             $member = pdo_get('mc_members', array('uid' => $member['uid'], 'uniacid' => $_W['uniacid']), array('uid', 'nickname', 'realname', 'mobile', 'email', 'groupid', 'credit1', 'credit2', 'credit6'));
             if (!empty($member) && (!empty($member['mobile']) || !empty($member['email']))) {
-                if($_W['openid']!=$member['uid']){
+                if($_W['openid']!=$member['uid'] && serv("wechat")->enabled){
                     $openid = pdo_getcolumn('mc_mapping_fans', array('uid' => $member['uid'], 'uniacid' => $_W['uniacid']), 'openid');
                     $_W['openid'] = empty($openid) ? $member['uid'] : $openid;
                 }

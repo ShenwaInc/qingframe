@@ -24,7 +24,7 @@ class WeModule
     /**
      * @throws \Exception
      */
-    public static function create($name){
+    public function create($name){
         static $file;
         $classname = "{$name}ModuleSite";
         if (!class_exists($classname)) {
