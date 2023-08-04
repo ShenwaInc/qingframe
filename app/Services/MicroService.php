@@ -114,8 +114,8 @@ class MicroService
      * @param int|null $code 状态码
      * @param array 统一错误格式
      */
-    public function error($msg, $code=-1){
-        return error($code, $msg);
+    public function error($message, $code=-1){
+        return error($code, $message);
     }
 
     /**
@@ -125,7 +125,7 @@ class MicroService
      * @param string|null $type 状态码，success/error
      * @return array 返回成功输出
      */
-    public function success($msg, $redirect="", $type="success"){
+    public function success($msg, $redirect="", $type="success", $code=0){
         if(defined("IN_SYS")){
             if ($redirect=="refresh"){
                 $redirect = referer();
@@ -138,7 +138,7 @@ class MicroService
             'message'=>$msg,
             'redirect'=>trim($redirect),
             'type'=>$type,
-            'code'=>0
+            'code'=>$code
         );
     }
 
@@ -282,9 +282,9 @@ class MicroService
      * 视图编译
      * @param array $data 模板数据
      * @param string $template 模板名称
-     * @return bool
+     * @return bool|\Illuminate\Contracts\View\View
      */
-    public function View($data, $template=''){
+    public function View($data, $template='', $drive=""){
         global $_W, $_GPC;
         if (is_error($data)){
             $this->message($data['message']);
@@ -296,19 +296,22 @@ class MicroService
             $this->message($data['message'], $data['redirect'], $data['type']);
         }
         $platform = defined('IN_SYS') ? 'web' : 'app';
+        if (!function_exists('tpl_build')){
+            include_once app_path("Helpers/smarty.php");
+        }
+        $template = str_replace(".","/", $template);
+        if (!empty($drive)){
+            $this->CompileDrive = $drive;
+        }
         if ($this->CompileDrive=='smarty'){
+            if (empty($template)){
+                $template = tpl_build($_W['controller'], $_W['action'], $this->serverPath.$this->identity."/template/$platform");
+            }
             if (!empty($data)){
                 foreach ($data as $key=>$value){
                     $$key = $value;
                 }
             }
-            if (!function_exists('tpl_build')){
-                include_once app_path("Helpers/smarty.php");
-            }
-            if (empty($template)){
-                $template = tpl_build($_W['controller'], $_W['action'], $this->serverPath.$this->identity."/template/$platform");
-            }
-            $template = str_replace(".","/", $template);
             $source = $this->serverPath.$this->identity."/template/$platform/$template.html";
             if (!file_exists($source)){
                 $this->message("Error: template source '$template' is not exist!", "", "error");
@@ -323,7 +326,16 @@ class MicroService
             include $compile;
             session_exit();
         }elseif ($this->CompileDrive=='blade'){
-            return false;
+            if (empty($template)){
+                $template = tpl_build($_W['controller'], $_W['action'], $this->serverPath.$this->identity."/views/$platform");
+            }
+            if (!empty($data)){
+                $data['_W'] = $_W;
+                $data['_GPC'] = $_GPC;
+                View::share($data);
+            }
+            $source = $this->serverPath.$this->identity."/views/$platform/$template.blade.php";
+            return View::file($source);
         }
         return true;
     }

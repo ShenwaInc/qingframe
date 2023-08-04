@@ -39,9 +39,10 @@ class Controller extends BaseController
 
     public function globalView($view, $data=array()){
         global $_W,$_GPC;
-        View::share('_W',$_W);
-        View::share('_GPC',$_GPC);
-        return view($view,$data);
+        return View::make($view,$data, array(
+            '_W'=>$_W,
+            '_GPC'=>$_GPC
+        ));
     }
 
 }

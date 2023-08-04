@@ -40,7 +40,8 @@ class App
         $_W['clientip'] = $request->getClientIp();
         $_W['isajax'] = $request->ajax() || !empty($_GPC['inajax']);
         $_W['ispost'] = $request->isMethod('post');
-        $_W['siteurl'] = url()->full();
+        $query = http_build_query($_GET, '', '&');
+        $_W['siteurl'] = url()->current() . ($query ? "?".$query : "");
         $_W['ishttps'] = \Str::startsWith($_W['siteurl'],'https');
         $_W['sitescheme'] = $_W['ishttps'] ? 'https://' : 'http://';
         $_W['siteroot'] = $_W['sitescheme'] . $_SERVER['HTTP_HOST'] .'/';

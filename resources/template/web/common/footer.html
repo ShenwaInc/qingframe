@@ -79,9 +79,15 @@
 	function DateInit(Obj){
 		if (Obj.find('.layui-input-laydate').length>0){
 			Obj.find('.layui-input-laydate').each(function(index, element) {
+                let type = 'date', format = 'yyyy-MM-dd';
+                if (typeof($(element).attr('data-format')) != 'undefined'){
+                    type = 'datetime';
+                    format = $(element).attr('data-format');
+                }
 				layui.laydate.render({
 					elem: element //指定元素
-					,format:'yyyy-MM-dd'
+                    ,type: type
+					,format:format
 				});
 			});
 		}

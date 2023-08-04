@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -24,5 +25,17 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
         //
+        Blade::directive("serverView", function ($template=''){
+            $realname = str_replace(array(":", ".","'", '"'), array("/views/", "/"), $template);
+            $path = base_path("servers/" . $realname . ".blade.php");
+            if (!file_exists($path)){
+                $platform = defined("IN_SYS") ? "web" : "app";
+                $path = str_replace("/views/", "/views/$platform/", $path);
+                if (!file_exists($path)){
+                    throw new \Exception("View [$template] not found.(Path: $path)");
+                }
+            }
+            return "<?php echo Illuminate\Support\Facades\View::file('$path')->render() ?>";
+        });
     }
 }

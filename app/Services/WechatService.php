@@ -747,7 +747,7 @@ class WechatService extends WeAccount
 
 
     public function getJssdkConfig($url = '') {
-        global $_W, $urls;
+        global $urls;
         $jsapiTicket = $this->getJsApiTicket();
         if (is_error($jsapiTicket)) {
             $jsapiTicket = $jsapiTicket['message'];

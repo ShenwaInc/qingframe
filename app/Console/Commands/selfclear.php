@@ -77,8 +77,7 @@ class selfclear extends Command
             base_path('bootstrap/functions/'),
             base_path('bootstrap/wemod/'),
             resource_path('views/console/extra/'),
-            resource_path('views/console/set/'),
-            storage_path('framework/testing/')
+            resource_path('views/console/set/')
         );
         foreach ($undirs as $dir){
             if (is_dir($dir)){
@@ -93,6 +92,9 @@ class selfclear extends Command
                     if (!file_exists($file)) continue;
                     @unlink($file);
                 }
+            }
+            if (!FileService::rmdirs(storage_path('framework/testing/'))){
+                $this->error("Remove dir failed: ".storage_path('framework/testing/'));
             }
             $this->info("Clean ".count($gitIgnores)." files.");
         }
