@@ -38,12 +38,12 @@
                     <div class="layui-col-lg3 layui-col-md4 layui-col-sm6 layui-col-xs12 fui-item arrow">
                         <a target="_blank" href="{{ wurl("m/".$item['identity']) }}" class="fui-content">
                             <div class="fui-info">
-                                <img alt="{{ $item['name'] }}" class="radius" src="{{ tomedia($item['logo']) }}" />
+                                <img alt="{{ $item['name'] }}" class="radius" src="{{ $item['logo'] }}" />
                                 <strong class="card-name">{{ $item['name'] }}</strong>
                             </div>
                         </a>
-                        @if($item['application_type']==2 && $_W['isfounder'])
-                            <a class="js-dropdown" target="_blank" href="{{ wurl("m/".$item['identity']."/setting") }}">
+                        @if($_W['isfounder'])
+                            <a class="js-dropdown" target="_blank" href="{{ wurl("m/".$item['identity']."/system_setting") }}">
                                 <span class="layui-icon layui-icon-set text-blue"></span>
                             </a>
                         @endif

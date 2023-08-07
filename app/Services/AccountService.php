@@ -133,16 +133,45 @@ class AccountService {
         return $uni_modules;
     }
 
-    static function ExtraModules($uniacid){
+    static function UpdateModules($uniacid, $name, $data=[]){
+        $modules = self::ExtraModules($uniacid, false);
+        $module = $modules[$name];
+        if (!empty($module)){
+            $modify = false;
+            unset($data['identity']);
+            foreach ($module as $key=>$value){
+                if (!empty($data[$key])){
+                    $module[$key] = $data[$key];
+                    if ($data[$key]!=$value) $modify = true;
+                }
+            }
+            if (!$modify) return true;
+        }else{
+            if (empty($data['name']) || empty($data['logo'])){
+                return false;
+            }
+            $module = $data;
+            $module['identity'] = $name;
+        }
+        $module['profile'] = 'custom';
+        $modules[$name] = $module;
+        if (DB::table('uni_account_extra_modules')->updateOrInsert(array('uniacid'=>$uniacid), array('modules'=>serialize($modules)))){
+            CacheService::flush();
+            return true;
+        }
+        return false;
+    }
+
+    static function ExtraModules($uniacid, $cache=true){
         $cacheKey = CacheService::system_key("unimodules", array('uniacid'=>$uniacid));
-        $modules = Cache::get($cacheKey, error(-1, 'nothing'));
+        $default = error(-1, 'nothing');
+        $modules = $cache ? Cache::get($cacheKey, $default) : $default;
         if (is_error($modules)){
             $modules = [];
             $_modules = DB::table('uni_account_extra_modules')->where('uniacid', $uniacid)->value('modules');
             $extra_modules = $_modules ? unserialize($_modules) : [];
             if (!empty($extra_modules)){
                 foreach ($extra_modules as $val){
-                    $val['logo'] = asset($val['logo']);
                     $modules[$val['identity']] = $val;
                 }
             }

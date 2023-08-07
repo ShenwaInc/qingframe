@@ -38,7 +38,7 @@
                     <tbody>
                     <tr>
                         <td><span class="fui-table-lable">平台ID</span></td>
-                        <td class="soild-after">{{ $uniacid }}&nbsp;&nbsp;<a href="javascript:;" data-url="{$uniacid}" class="text-blue js-clip"><i class="fa fa-copy"></i></a></td>
+                        <td class="soild-after">{{ $uniacid }}&nbsp;&nbsp;<a href="javascript:;" data-url="{{ $uniacid }}" class="text-blue js-clip"><i class="fa fa-copy"></i></a></td>
                         <td class="text-right soild-after">
                             <a href="javascript:;" data-url="{{ url("login/".$account['uniacid']) }}" class="text-blue js-clip">登录入口</a>
                         </td>

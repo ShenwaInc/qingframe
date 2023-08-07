@@ -2,7 +2,10 @@
 
 namespace App\Utils;
 
+use App\Services\AccountService;
+use App\Services\CacheService;
 use Exception;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\View;
 
 class QuickModule
@@ -61,22 +64,33 @@ class QuickModule
         return redirect($redirect);
     }
 
-    public function doWebSetting(){
+    public function doWebSystem_setting(){
         global $_W;
         if (checksubmit()){
             $data = request()->input('data');
             if (empty($data['WebIndex'])){
-                message("无效的第三方应用入口链接");
+                message("无效的应用入口链接");
+            }
+            $moduleInfo = request()->input('module', []);
+            if (!empty($moduleInfo)){
+                AccountService::UpdateModules($this->uniacid, $this->modulename, array(
+                    'name'=>trim($moduleInfo['name']),
+                    'logo'=>trim($moduleInfo['logo'])
+                ));
             }
             $WeModule = new WeModule();
             $WeModule->modulename = $this->modulename;
-            if (!$WeModule->saveSettings($data)){
-                message("保存失败，请重试");
-            }
+            $WeModule->saveSettings($data);
             return redirect(wurl("m/".$this->modulename));
         }
+        $modules = AccountService::ExtraModules($this->uniacid);
         View::share('_W',$_W);
-        return view('console.module.quickSetting', ['configs'=>$this->module['config'], 'title'=>'应用配置']);
+        return view('console.module.quickSetting', [
+            'configs'=>$this->module['config'],
+            'title'=>'应用配置',
+            'moduleInfo'=>$modules[$this->modulename],
+            'application_type'=>$this->module['application_type']
+        ]);
     }
 
 }

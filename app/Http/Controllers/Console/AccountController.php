@@ -196,6 +196,7 @@ class AccountController extends Controller
                 //判断模块是否可用
                 $module = ModuleService::fetch($component['identity']);
                 if (empty($module)) continue;
+                $component['logo'] = tomedia($component['logo']);
                 $component['application_type'] = $module['application_type'];
                 $return['components'][] = $component;
             }
@@ -229,16 +230,25 @@ class AccountController extends Controller
         $enabled_modules = ModuleService::moduleList();
         if ($request->isMethod('post')){
             $extraModules = $request->input('extras_modules');
+            $nowModules = AccountService::ExtraModules($this->uniacid, false);
             $modules = [];
             if (!empty($extraModules)){
                 foreach ($extraModules as $key=>$extra){
                     if (empty($enabled_modules[$key])) continue;
                     if (empty($extra)) continue;
-                    $modules[] = array(
+                    $moduleExists = $nowModules[$key];
+                    $moduleInfo = array(
                         'name'=>$enabled_modules[$key]['title'],
                         'identity'=>$key,
-                        'logo'=>$enabled_modules[$key]['logo']
+                        'logo'=>$enabled_modules[$key]['logo'],
+                        'profile'=>'default'
                     );
+                    if($moduleExists['profile']=='custom'){
+                        $moduleInfo['name'] = $moduleExists['name'];
+                        $moduleInfo['logo'] = $moduleExists['logo'];
+                        $moduleInfo['profile'] = 'custom';
+                    }
+                    $modules[] = $moduleInfo;
                 }
             }
             DB::table('uni_account_extra_modules')->updateOrInsert(array('uniacid'=>$this->uniacid), array('modules'=>serialize($modules)));
@@ -251,6 +261,7 @@ class AccountController extends Controller
             foreach ($enabled_modules as $key=>$value){
                 $module = ModuleService::fetch($key);
                 if (empty($module)) continue;
+                $value['logo'] = tomedia($value['logo']);
                 $return['modules'][$key] = $value;
             }
         }

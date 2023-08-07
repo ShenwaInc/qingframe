@@ -2,9 +2,11 @@
 
 namespace App\Utils;
 
+use App\Services\AccountService;
 use App\Services\CacheService;
 use App\Services\ModuleService;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\View;
 
 !(defined('IN_IA')) && define('IN_IA', 2);
 
@@ -56,6 +58,28 @@ class WeModule
         self::defineConst($o);
         $o->inMobile = defined('IN_MOBILE');
         return $o;
+    }
+
+    public function doWebSystem_setting(){
+        global $_W;
+        if (checksubmit()){
+            $moduleInfo = request()->input('module', []);
+            if (!empty($moduleInfo)){
+                AccountService::UpdateModules($this->uniacid, $this->modulename, array(
+                    'name'=>trim($moduleInfo['name']),
+                    'logo'=>trim($moduleInfo['logo'])
+                ));
+            }
+            return redirect($this->createWebUrl());
+        }
+        $modules = AccountService::ExtraModules($this->uniacid);
+        View::share('_W',$_W);
+        return view('console.module.quickSetting', [
+            'configs'=>$this->module['config'],
+            'title'=>'应用配置',
+            'moduleInfo'=>$modules[$this->modulename],
+            'application_type'=>1
+        ]);
     }
 
     public function pay($params){
@@ -118,9 +142,9 @@ class WeModule
         return $url;
     }
 
-    protected function createWebUrl($do, $query = array()) {
+    protected function createWebUrl($do="", $query = array()) {
         $module_name = strtolower($this->modulename);
-        return wurl("m/{$module_name}".($do?'/'.$do:''), $query);
+        return wurl("m/$module_name".($do?"/$do":''), $query);
     }
 
     public function template($filename, $extra='') {
