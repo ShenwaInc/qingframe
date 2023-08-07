@@ -30,6 +30,13 @@ class AuthController extends Controller
     }
 
     public function Login(Request $request){
+        $appSecurityEntrance = env("APP_SECURITY_ENTRANCE", "/");
+        if (!empty($appSecurityEntrance) && $appSecurityEntrance!="/"){
+            $securityEntrance = session()->get("securityEntrance");
+            if (empty($securityEntrance)){
+                abort(413, "Please log in through the secure entrance");
+            }
+        }
         $username = trim((string)$request->input('username'));
         $password = trim((string)$request->input('password'));
         if (empty($username) || empty($password)) return $this->message('您输入的用户名或密码不正确');

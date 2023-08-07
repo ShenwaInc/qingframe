@@ -15,6 +15,14 @@ use App\Http\Middleware\ConsolePermission;
 use App\Http\Middleware\ModulePermission;
 use Illuminate\Http\Request;
 
+$appSecurityEntrance = env("APP_SECURITY_ENTRANCE", "/");
+if (!empty($appSecurityEntrance) && $appSecurityEntrance!="/"){
+    Route::get("/$appSecurityEntrance", function (Request $request){
+        $request->session()->put("securityEntrance", random(12));
+        return redirect("/login");
+    });
+}
+
 Route::group(['prefix' => 'auth','namespace'=>'Auth', 'middleware'=>['app']],function (){
     Route::post('/login', 'AuthController@Login');
     Route::post('/logout', 'AuthController@Logout');
@@ -75,11 +83,11 @@ Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
 
-Route::get('/admin/{modulename}', function (Request $request, $modulename){
+Route::get('/admin/{modulename}', function (Request $request, $moduleName){
     $user = $request->user();
     if (empty($user)){
-        $referer = url('login') ."?referer=console/m/{$modulename}";
+        $referer = url('login') ."?referer=console/m/$moduleName";
         return response()->redirectTo($referer);
     }
-    return response()->redirectTo("console/m/{$modulename}");
+    return response()->redirectTo("console/m/$moduleName");
 });

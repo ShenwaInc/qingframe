@@ -104,12 +104,22 @@
                             <td class="soild-after">{{ env('APP_DEBUG') ? '开启' : '关闭' }}</td>
                             <td class="text-right soild-after">
                                 @if(env('APP_DEBUG'))
-                                    <a href="{{ url("console/setting/envdebug") }}?state=off"
-                                       class="text-blue confirm" data-text="确定要关闭调试模式吗？">关闭调试</a>
+                                    <a href="{{ url("console/setting/envdebug") }}?state=off" class="text-blue confirm" data-text="确定要关闭调试模式吗？">关闭调试</a>
                                 @else
-                                    <a href="{{ url("console/setting/envdebug") }}?state=on"
-                                       class="text-blue confirm" data-text="确定要开启调试模式吗？">开启调试</a>
+                                    <a href="{{ url("console/setting/envdebug") }}?state=on" class="text-blue confirm" data-text="确定要开启调试模式吗？">开启调试</a>
                                 @endif
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><span class="fui-table-lable">安全入口</span></td>
+                            <td class="soild-after">
+                                @if(!empty($appSecurityEntrance))
+                                    {{ $_W['siteroot'].$appSecurityEntrance }}&nbsp;&nbsp;<span class="js-clip text-blue" data-url="{{ $_W['siteroot'].$appSecurityEntrance }}">复制</span>
+                                @else
+                                    未设置
+                                @endif
+                            <td class="text-right soild-after">
+                                <a href="javascript:;" class="text-blue js-SecurityEntrance">{{ $appSecurityEntrance?'修改':'设置' }}</a>
                             </td>
                         </tr>
                         <tr>
@@ -117,14 +127,12 @@
                             <td class="soild-after">
                                 V{{ QingVersion }} Release{{ QingRelease }}
                                 @if($cloudinfo['isnew'])
-                                    &nbsp;&nbsp;<span class="layui-badge layui-bg-red"
-                                                      title="V{{ $cloudinfo['version'] }} Release{{ $cloudinfo['releasedate'] }}">{{ $cloudinfo['releasedate']==QingRelease ? '文件有改动' : '发现新版本' }}</span>
+                                    &nbsp;&nbsp;<span class="layui-badge layui-bg-red" title="V{{ $cloudinfo['version'] }} Release{{ $cloudinfo['releasedate'] }}">{{ $cloudinfo['releasedate']==QingRelease ? '文件有改动' : '发现新版本' }}</span>
                                 @endif
                             </td>
                             <td class="text-right soild-after">
                                 @if($cloudinfo['isnew'])
-                                    <a href="{{ wurl('setting/selfupgrade') }}" class="text-red js-terminal"
-                                       data-text="升级前请做好源码和数据备份，避免升级故障导致系统无法正常运行">一键升级</a>&nbsp;&nbsp;
+                                    <a href="{{ wurl('setting/selfupgrade') }}" class="text-red js-terminal" data-text="升级前请做好源码和数据备份，避免升级故障导致系统无法正常运行">一键升级</a>&nbsp;&nbsp;
                                     <a href="{{ wurl('setting/updateLog') }}" class="text-blue ajaxshow">更新说明</a>
                                     &nbsp;&nbsp;
                                 @endif
@@ -201,5 +209,33 @@
 
     </div>
 </div>
+<script type="text/javascript">
+    $(function () {
+        $('.js-SecurityEntrance').click(function () {
+            SecurityEntrance('{{ $appSecurityEntrance }}');
+            return false;
+        });
+    })
+    function SecurityEntrance(code="") {
+        if(code===""){
+            code = Wrandom(8);
+        }
+        layer.prompt({title: '请输入安全入口（不能含/）', value:code, btn:['确定', '随机生成', '取消'], btn2:function (index) {
+            layer.close(index);
+            SecurityEntrance();
+        }, yes:function (index, elem) {
+            let value = $(elem).find('input.layui-layer-input').val();
+            if(value.indexOf('/')>=0){
+                layer.msg("安全入口不能包含字符/");
+            }
+            Core.post("{{ wurl("setting") }}", function (res) {
+                Core.report(res);
+            }, {
+                'op':"appSecurity",
+                'SecurityCode':value
+            });
+        }});
+    }
+</script>
 @include('console.terminal')
 @include('common.footer')

@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\View;
 
 class LoginController extends Controller
 {
@@ -34,17 +33,26 @@ class LoginController extends Controller
      *
      * @return void
      */
-    public function __construct(Request $request)
+    public function __construct()
     {
-        global $_GPC, $_W;
+        $appSecurityEntrance = env("APP_SECURITY_ENTRANCE", "/");
+        if (!empty($appSecurityEntrance) && $appSecurityEntrance!="/"){
+            $securityEntrance = session()->get("securityEntrance");
+            if (empty($securityEntrance)){
+                abort(413, "Please log in through the secure entrance");
+            }
+        }
         $this->middleware('app')->except('handle');
         $this->middleware('guest')->except('logout');
-        $_GPC = $request->all();
+    }
+
+
+    public function showLoginForm(Request $request){
+        global $_GPC;
         if (empty($_GPC['referer'])){
             $_GPC['referer'] = 'console';
         }
-        View::share('_GPC',$_GPC);
-        View::share('_W',$_W);
+        return $this->globalView(['auth/loginCustom', 'auth.login']);
     }
 
     /**

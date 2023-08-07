@@ -39,10 +39,13 @@ class Controller extends BaseController
 
     public function globalView($view, $data=array()){
         global $_W,$_GPC;
-        return View::make($view,$data, array(
-            '_W'=>$_W,
-            '_GPC'=>$_GPC
-        ));
+        if (empty($data)) $data = [];
+        $data['_W'] = $_W;
+        $data['_GPC'] = $_GPC;
+        if (is_array($view)){
+            return view()->first($view, $data);
+        }
+        return \view($view, $data);
     }
 
 }

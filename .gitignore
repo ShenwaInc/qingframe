@@ -25,3 +25,4 @@ yarn-error.log
 /composer.lock
 /composer.json
 /storage/dist/
+/resources/views/auth/loginCustom.blade.php

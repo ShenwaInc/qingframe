@@ -283,6 +283,7 @@ class SettingController extends Controller
             $return['cloudinfo'] = !empty($framework['online']) ? unserialize($framework['online']) : array('isnew'=>false);
         }
         $return['activeState'] = CloudService::CloudActive();
+        $return['appSecurityEntrance'] = env("APP_SECURITY_ENTRANCE");
         return $this->globalView('console.setting', $return);
     }
 
@@ -369,6 +370,27 @@ class SettingController extends Controller
             if ($complete){
                 return $this->message('保存成功',url('console/setting'),'success');
             }
+        }elseif ($op=='appSecurity'){
+            $appSecurityEntrance = env("APP_SECURITY_ENTRANCE");
+            $SecurityCode = $request->input('SecurityCode', "");
+            if ($appSecurityEntrance!=$SecurityCode){
+                if (is_null($appSecurityEntrance)){
+                    $TIMEZONE = env("APP_TIMEZONE");
+                    $replace = <<<EOF
+APP_TIMEZONE=$TIMEZONE
+APP_SECURITY_ENTRANCE=$SecurityCode
+
+EOF;
+                    if (!CloudService::CloudEnv("APP_TIMEZONE=$TIMEZONE",$replace)){
+                        return $this->message("设置失败，请检查文件权限");
+                    }
+                }else{
+                    if (!CloudService::CloudEnv("APP_SECURITY_ENTRANCE=$appSecurityEntrance","APP_SECURITY_ENTRANCE=".trim($SecurityCode))){
+                        return $this->message("设置失败，请检查文件权限");
+                    }
+                }
+            }
+            return $this->message('设置成功！',url('console/setting'),'success');
         }
         return $this->message();
     }
