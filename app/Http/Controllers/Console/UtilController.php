@@ -43,7 +43,7 @@ class UtilController extends Controller
         }catch (\Exception $exception){
             return $this->message($exception->getMessage());
         }
-        return $this->message('清理完成！','','success');
+        return $this->message('updateCompleted','','success');
     }
 
     public function doFile(Request $request){
@@ -174,7 +174,7 @@ class UtilController extends Controller
             return $this->message(error(0,$result),'','ajax');
         }
 
-        return $this->message(error(-1,'操作失败，请重试'));
+        return $this->message(error(-1,__('operationFailed')));
     }
 
     //
@@ -183,7 +183,7 @@ class UtilController extends Controller
         if ($op=='cloudcode'){
             if (checksubmit('sendcode')){
                 $mobile = $request->input('mobile');
-                if (empty($mobile) || !preg_match('/^(\+)?(86)?0?1\d{10}$/', $mobile)) return $this->message("请输入正确的手机号");
+                if (empty($mobile) || !preg_match('/^(\+)?(86)?0?1\d{10}$/', $mobile)) return $this->message("typeAValidPhoneNumber");
                 $data = array('r'=>'util.code', 'token'=>1,'mobile'=>$mobile,"sendcode"=>"1","from"=>"autocheck");
                 $res = CloudService::CloudApi("", $data);
                 if (is_error($res)){
@@ -211,7 +211,7 @@ class UtilController extends Controller
                     }
                     $query->where($condition)->delete();
                 }
-                return $this->message(error(0,"删除成功！"),'','success');
+                return $this->message(error(0,__('deleteSuccessfully')),'','success');
             }
             if ($do=='wechat_upload'){
                 $type = trim($_GPC['upload_type']);

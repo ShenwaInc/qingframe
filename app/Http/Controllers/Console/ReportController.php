@@ -26,21 +26,21 @@ class ReportController extends Controller {
         if (!empty($this->sourceName)) return $this->sourceName;
         $cloudState = CloudService::CloudActive();
         if ($cloudState['status']!=1){
-            return $this->message("请先激活云服务", url('console/active'));
+            return $this->message("Activate cloud service first", url('console/active'));
         }
-        $this->sourceName = $cloudState['name']."（站点ID：{$cloudState['siteid']}）";
+        $this->sourceName = $cloudState['name']."（ID：{$cloudState['siteid']}）";
         return $this->sourceName;
     }
 
     public function attach(Request $request){
-        if (!$request->hasFile('file')) return error(-1,'请选择要上传的文件');
+        if (!$request->hasFile('file')) return $this->message('attachFileInvalid');
         $service = serv('storage');
         $settings = $service->settings['upload'];
         $Upload = $request->file('file');
         $ext = strtolower($Upload->getClientOriginalExtension());
         $harmtype = array('asp', 'php', 'jsp', 'js', 'css', 'php3', 'php4', 'php5', 'ashx', 'aspx', 'exe', 'cgi');
         if (in_array($ext, $harmtype)){
-            return $this->message("不允许上传此类文件($ext)");
+            return $this->message(__('attachExtInvalid', array('ext'=>$ext)));
         }
         $fileType = "";
         foreach ($settings as $key=>$item){
@@ -50,16 +50,16 @@ class ReportController extends Controller {
             }
         }
         if (empty($fileType)){
-            return $this->message("不允许上传此类文件($ext)");
+            return $this->message(__('attachExtInvalid', array('ext'=>$ext)));
         }
         $size = $Upload->getSize();
         $fileLimit = $settings[$fileType]['limit'] * 1024;
         if ($fileLimit>0 && $size>$fileLimit){
-            return $this->message("超出文件大小限制({$size}byte)");
+            return $this->message(__('attachSizeInvalid', ['size'=>$size]));
         }
         $type = $fileType=='media' ? 'audio' : $fileType;
         $path = $Upload->store("{$type}s/".$service->uniacid."/".date('Y/m'));
-        if (!$path) return error(-1,'上传失败，请重试');
+        if (!$path) return $this->message('uploadFailed');
         if ($size>1048576){
             $resize = sprintf("%.1f", ($size / 1048576)) . 'Mb';
         }else{
@@ -75,7 +75,7 @@ class ReportController extends Controller {
         if (!empty($service->settings['remote']['type'])) {
             $remoteState = $service->remoteUpload($result['path']);
             if (is_error($remoteState)) {
-                $result['message'] = '远程附件上传失败，请检查配置并重新上传';
+                $result['message'] = __('uploadRemoteFailed');
             }else{
                 $result['isremote'] = true;
                 if (file_exists(ATTACHMENT_ROOT . $result['path'])) {
@@ -105,13 +105,13 @@ class ReportController extends Controller {
             'total'=> $res['total'],
             'pager'=>$pager,
             'badges'=>['orange', 'orange', 'blue', 'red', 'blue','black', 'green', 'gray'],
-            'title'=> '工单服务中心'
+            'title'=> __('workOrderCenter')
         ));
     }
 
     public function feedback(Request $request){
         $orderId = (int)$request->input('id');
-        if (empty($orderId)) return $this->message('无效的工单信息');
+        if (empty($orderId)) return $this->message('workOrderInvalid');
         if ($request->isMethod('post')){
             $data = $request->post('data');
             $fileList = [];
@@ -124,7 +124,7 @@ class ReportController extends Controller {
                     );
                 }
             }
-            if (empty($data['content']) && empty($fileList)) return $this->message("请简单描述您遇到的问题");
+            if (empty($data['content']) && empty($fileList)) return $this->message("workOrderDescriptionEmpty");
             $data['fileList'] = $fileList;
             $data['source'] = $this->getSource();
             $data['order_id'] = $orderId;
@@ -132,7 +132,7 @@ class ReportController extends Controller {
             $res = $this->reportCloud("orderFeedback/add", $data, false);
             if (is_error($res)) return $this->message($res['message']);
             if (!$request->ajax()){
-                return $this->success("已收到您的反馈，请耐心等待工作人员处理", wurl('report'));
+                return $this->success("workOrderSubmitted", wurl('report'));
             }
             return $this->success(['response'=>$res, 'input'=>$data]);
         }
@@ -155,7 +155,7 @@ class ReportController extends Controller {
     public function rmAttach(Request $request){
         $res = serv('storage')->removeFile($request->input('file'));
         if (is_error($res)) return $this->message($res['message']);
-        return $this->message("操作成功！", "", "success");
+        return $this->success();
     }
 
     public function post(Request $request){
@@ -176,9 +176,9 @@ class ReportController extends Controller {
             if (empty($data['category_id'])){
                 $data['category_id'] = $cateId;
             }
-            if (empty($data['category_id'])) return $this->message("无效的工单分类");
-            if (empty($data['content'])) return $this->message("请简单描述您遇到的问题");
-            if (empty($data['mobile'])) return $this->message("联系方式不能为空");
+            if (empty($data['category_id'])) return $this->message("workOrderInvalidCategory");
+            if (empty($data['content'])) return $this->message("workOrderDescriptionEmpty");
+            if (empty($data['mobile'])) return $this->message(__("typeSomething", array('data'=>__('contact'))));
             $data['fileList'] = $fileList;
             $data['source'] = $this->getSource();
             $data['name'] = mb_substr($data['content'], 0, 20, 'utf8') . "...";
@@ -190,18 +190,18 @@ class ReportController extends Controller {
         }
         $cates = $this->reportCloud("orderCategory/list", [], false);
         if (is_error($cates)) return $this->message($cates['message']);
-        $subcates = [];
+        $subCate = [];
         if (!empty($cates)){
             foreach ($cates as $cate){
                 if (!empty($cate['children'])){
-                    $subcates[$cate['id']] = $cate['children'];
+                    $subCate[$cate['id']] = $cate['children'];
                 }
             }
         }
         return $this->globalView('console.report.post', array(
             'cates'=>$cates,
-            'subcates'=>$subcates,
-            'title'=>"提交工单",
+            'subcates'=>$subCate,
+            'title'=>__('newData', array('data'=>__('workOrder'))),
             'cloudState'=>CloudService::CloudActive()
         ));
     }
@@ -213,7 +213,7 @@ class ReportController extends Controller {
         ), false);
         if (is_error($res)) return $this->message($res['message']);
         CacheService::flush();
-        return $this->success("操作成功！", wurl('report'));
+        return $this->success("successful", wurl('report'));
     }
 
     public function closeOrder(Request $request){
@@ -223,7 +223,7 @@ class ReportController extends Controller {
         ), false);
         if (is_error($res)) return $this->message($res['message']);
         CacheService::flush();
-        return $this->success("操作成功！", wurl('report'));
+        return $this->success("successful", wurl('report'));
     }
 
     /**
@@ -234,8 +234,6 @@ class ReportController extends Controller {
     */
     public function reportCloud($api, $data='', $isCache=true){
         global $_W;
-        $demoData = $this->demoCloud($api);
-        if (!empty($demoData)) return $demoData;
         $postData = is_array($data) ? $data : [];
         $cacheKey = "QingFrameworkReport$api{$postData['id']}{$postData['page']}";
         if ($isCache){
@@ -251,7 +249,7 @@ class ReportController extends Controller {
         $res = HttpService::ihttp_request(REPORTAPI, $postData);
         if (is_error($res)) return $res;
         $result = json_decode($res['content'], true);
-        if (empty($result) || !isset($result['status'])) return error(-1, "请求失败，请重试");
+        if (empty($result) || !isset($result['status'])) return error(-1, __('requestFailed'));
         if ($result['status']!='success') return error(-1, $result['message']);
         if (!isset($result['data'])){
             return array('type'=>'success', 'message'=>$result['message'], 'redirect'=>'');
@@ -269,25 +267,6 @@ class ReportController extends Controller {
         $dataString = http_build_query($data, '', '&');
         // 使用HMAC-SHA256算法生成签名
         return hash_hmac('sha256', $dataString, REPORTSECRET, false);
-    }
-
-    public function demoCloud($api){
-        $result = [];
-        switch ($api){
-            case "order/listsss" :
-                $result = array(
-                    'list'=>json_decode('{"0":{"id":1,"title":"智慧社区-名称-202304141050","ordersn":"OW20230414105034473","category_id":"1","content":"","secret":"","status":"0","executor_id":"0","create_id":"0","created_at":"2023-04-14 10:50","executorPerson":"","statusName":"待验证","categoryName":"智慧社区"}}', true),
-                    'total'=>1
-                );
-                break;
-            case "order/detailssss" :
-                $result = json_decode('{"id":1,"uniacid":"1","title":"智慧社区-名称-202304141050","ordersn":"OW20230414105034473","source":"UN7852125","category_id":"1","content":"","secret":"","status":"0","create_id":"0","executor_id":"0","created_at":"2023-04-14 10:50","updated_at":"2023-04-14 10:53:46","categoryName":"智慧社区","fileList":[{"path":"/file/45d5adad.jpg","name":"附件名称","url":"http://local.lingchen.com/storage//file/45d5adad.jpg"}],"executorName":"","statusName":"待验证","name":"名称"}', true);
-                break;
-            case "orderCategory/listsss":
-                $result = json_decode('[{"id":1,"name":"智慧社区","pid":"","created_at":"2023-04-14 09:56","children":[{"id":2,"name":"停车场子模块","pid":1,"created_at":"2023-04-14 09:56"}]}]', true);
-                break;
-        }
-        return $result;
     }
 
 }

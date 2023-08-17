@@ -2,7 +2,7 @@
 
 @if(!$_W['isajax'])
     <div class="main-content">
-        <h2 class="padding-bottom-xl">修改密码</h2>
+        <h2 class="padding-bottom-xl">{{ __('modifyData', array('data'=>__('password'))) }}</h2>
         <div class="fui-card layui-card">
             <div class="layui-card-body">
 @endif
@@ -11,27 +11,27 @@
                     <form action="{{ url('console/user/passport') }}" method="post" class="layui-form ajaxpost">
                         @csrf
                         <div class="layui-form-item must">
-                            <label class="layui-form-label">旧密码</label>
+                            <label class="layui-form-label">@lang('oldPassword')</label>
                             <div class="layui-input-block">
-                                <input type="password" required lay-verify="required" name="oldpassword" value="" placeholder="请输入您的旧登录密码" autocomplete="off" class="layui-input">
+                                <input type="password" required lay-verify="required" name="oldpassword" value="" placeholder="@lang('typeOldPassword')" autocomplete="off" class="layui-input">
                             </div>
                         </div>
                         <div class="layui-form-item must">
-                            <label class="layui-form-label">新密码</label>
+                            <label class="layui-form-label">@lang('newPassword')</label>
                             <div class="layui-input-block">
-                                <input type="password" required lay-verify="required" name="newpassword" value="" placeholder="请设置一个登录登录密码" autocomplete="off" class="layui-input">
+                                <input type="password" required lay-verify="required" name="newpassword" value="" placeholder="@lang('typeNewPassword')" autocomplete="off" class="layui-input">
                             </div>
                         </div>
                         <div class="layui-form-item must">
-                            <label class="layui-form-label">确认密码</label>
+                            <label class="layui-form-label">@lang('rePassword')</label>
                             <div class="layui-input-block">
-                                <input type="password" required lay-verify="required" name="repassword" value="" placeholder="请重复您的登录密码" autocomplete="off" class="layui-input">
+                                <input type="password" required lay-verify="required" name="repassword" value="" placeholder="@lang('reTypePassword')" autocomplete="off" class="layui-input">
                             </div>
                         </div>
                         <div class="layui-form-item">
                             <div class="layui-input-block">
-                                <button class="layui-btn layui-btn-normal" lay-submit type="submit" value="true" name="savedata">保存</button>
-                                <button type="reset" class="layui-btn layui-btn-primary">重填</button>
+                                <button class="layui-btn layui-btn-normal" lay-submit type="submit" value="true" name="savedata">@lang('save')</button>
+                                <button type="reset" class="layui-btn layui-btn-primary">@lang('reset')</button>
                             </div>
                         </div>
                     </form>

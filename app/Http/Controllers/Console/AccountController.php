@@ -18,11 +18,15 @@ class AccountController extends Controller
     public $uniacid = 0;
     public $role = 'operator';
     public $account = null;
-    public $entrys = array(
-        'account'=>'平台管理',
-        'module'=>'应用模块',
-        'server'=>'功能服务'
-    );
+    public $entrance;
+
+    function __construct(){
+        $this->entrance = array(
+            'account'=>__('manageData', array('data'=>__('platform'))),
+            'module'=>__('application'),
+            'server'=>__('Functions&Services')
+        );
+    }
 
     function accInit($check=false){
         global $_W,$_GPC;
@@ -34,12 +38,12 @@ class AccountController extends Controller
         }
         if (empty($this->role)){
             //暂无权限
-            return error(-1, "暂无权限");
+            return error(-1, __('Access Denied'));
         }
         if ($check){
-            if ($this->uniacid==0 || $this->account['isdeleted']==1) return error(-1, "找不到该平台，可能已被删除");
+            if ($this->uniacid==0 || $this->account['isdeleted']==1) return error(-1, __('platformNotFound'));
             if ($this->account['endtime']>0 && $this->account['endtime']<TIMESTAMP && !$_W['isfounder']){
-                return error(-1, "该平台服务已到期，请联系管理员处理");
+                return error(-1, __('platformExpired'));
             }
         }
         $_W['account'] = $this->account;
@@ -58,37 +62,37 @@ class AccountController extends Controller
         if (method_exists($this, $method)){
             return $this->$method($request);
         }
-        return $this->message('敬请期待');
+        return $this->message('stayTuned');
     }
 
     public function doRole(Request $request){
         global $_W;
-        if ($this->role!='owner' && !$_W['isfounder'])return $this->message('您暂无权限操作');
-        $return = array('title'=>'管理权限','users'=>array(),'uniacid'=>$this->uniacid,'role'=>$this->role);
+        if ($this->role!='owner' && !$_W['isfounder'])return $this->message('Access Denied');
+        $return = array('title'=>__('operatingAuthority'),'users'=>array(),'uniacid'=>$this->uniacid,'role'=>$this->role);
         $subs = UserService::GetSubs($_W['uid']);
         $op = $request->input('op','');
         if ($request->isMethod('post')){
             if ($op=='add') {
                 $uid = (int)$request->input('uid', 0);
-                if ($uid == 0) return $this->message('找不到该用户，可能已被删除');
+                if ($uid == 0) return $this->message('userNotfound');
                 if (!isset($subs[$uid]) && !$_W['isfounder']) {
-                    return $this->message('您暂时无权操作该用户');
+                    return $this->message('userNotAuthorized');
                 }
                 $role = (string)$request->input('role', '');
                 if (!in_array($role, array('manager', 'operator'))) {
-                    return $this->message('权限角色不正确');
+                    return $this->message('roleValid');
                 }
                 $complete = UserService::AccountRoleUpdate($this->uniacid, $uid, $role);
-                if ($complete) return $this->message('保存成功！', wurl('account/role', array('uniacid' => $this->uniacid)), 'success');
+                if ($complete) return $this->message('savedSuccessfully', wurl('account/role', array('uniacid' => $this->uniacid)), 'success');
             }elseif ($op=='setowner'){
                 if (!$_W['isfounder']){
-                    return $this->message('您暂无权限操作');
+                    return $this->message('Access Denied');
                 }
                 $uid = (int)$request->input('uid',0);
-                if ($uid==0) return $this->message('找不到该用户，可能已被删除');
+                if ($uid==0) return $this->message('userNotfound');
                 DB::table('uni_account_users')->where(array('role'=>'owner','uniacid'=>$this->uniacid))->delete();
                 $complete = UserService::AccountRoleUpdate($this->uniacid, $uid);
-                if ($complete) return $this->message('保存成功！', wurl('account/role', array('uniacid' => $this->uniacid)), 'success');
+                if ($complete) return $this->message('savedSuccessfully', wurl('account/role', array('uniacid' => $this->uniacid)), 'success');
             }
             return $this->message();
         }
@@ -98,11 +102,11 @@ class AccountController extends Controller
             return $this->globalView('console.account.roleadd',$return);
         }elseif ($op=='remove'){
             $uid = (int)$request->input('uid',0);
-            if ($uid==0) return $this->message('找不到该用户，可能已被删除');
+            if ($uid==0) return $this->message('userNotfound');
             $complete = DB::table('uni_account_users')->where(array('uid'=>$uid,'uniacid'=>$this->uniacid))->delete();
             if ($complete){
                 //删除操作痕迹，待完善
-                return $this->message('操作成功！',wurl('account/role',array('uniacid'=>$this->uniacid)),'success');
+                return $this->message('successful',wurl('account/role',array('uniacid'=>$this->uniacid)),'success');
             }
             return $this->message();
         }
@@ -110,7 +114,7 @@ class AccountController extends Controller
             ->where('uni_account_users.uniacid',$this->uniacid)
             ->whereIn('uni_account_users.role',array('owner','manager','operator'))->get()->toArray();
         if (!empty($users)){
-            $roles = array('owner'=>'所有者','manager'=>'管理员','operator'=>'操作员');
+            $roles = array('owner'=>__('owner'),'manager'=>__('manager'),'operator'=>__('operator'));
             foreach ($users as &$user){
                 $user['roler'] = $roles[$user['role']];
                 $user['permission'] = array();
@@ -142,38 +146,38 @@ class AccountController extends Controller
         if ($request->hasFile($field)){
             $Upload = $request->file($field);
             $ext = $Upload->getClientOriginalExtension();
-            if ($ext!='txt') return $this->message('仅限上传TXT格式文件');
+            if ($ext!='txt') return $this->message(__("attachExtInvalid", ['ext'=>$ext]));
             $filename = htmlspecialchars_decode($Upload->getClientOriginalName(), ENT_QUOTES);
             $content = file_get_contents($Upload);
             $filepath = public_path($filename);
             $writer = fopen($filepath,'w');
             $complete = fwrite($writer, $content);
             fclose($writer);
-            if ($complete) return $this->message('上传成功！','' ,'success');
+            if ($complete) return $this->success('savedSuccessfully');
         }
         return $this->message();
     }
 
     public function doEdit(Request $request){
         if (empty($this->account)){
-            return $this->message('找不到该平台，可能已被删除');
+            return $this->message('platformNotFound');
         }
         if ($request->isMethod('post')){
             $post = $request->input('data');
-            if (empty($post['name'])) return $this->message('平台名称不能为空');
-            if (empty($post['logo'])) return $this->message('请上传平台LOGO');
+            if (empty($post['name'])) return $this->message('platformNameEmpty');
+            if (empty($post['logo'])) return $this->message('platformLogoEmpty');
             $post['description'] = trim($post['description']);
             $complete = Account::where('uniacid',$this->uniacid)->update($post);
-            if (!$complete) return $this->message('保存失败，请重试');
-            return $this->message('保存成功！',wurl('account/profile',array('uniacid'=>$this->uniacid),true), 'success');
+            if (!$complete) return $this->message('saveFailed');
+            return $this->message('savedSuccessfully',wurl('account/profile',array('uniacid'=>$this->uniacid),true), 'success');
         }
-        return $this->globalView('console.account.edit',array('title'=>'编辑平台信息','account'=>$this->account));
+        return $this->globalView('console.account.edit',array('title'=>__('EditPlatformInformation'),'account'=>$this->account));
     }
 
     public function doFunctions(){
         global $_W;
         $account = $this->account;
-        $return = array('title'=>'平台管理','account'=>$account,'uniacid'=>$this->uniacid);
+        $return = array('title'=>__('manageData', array('data'=>__('platform'))),'account'=>$account,'uniacid'=>$this->uniacid);
         $return['role'] = $this->role;
         session()->put('uniacid', $account['uniacid']);
         //读取可用服务
@@ -184,8 +188,8 @@ class AccountController extends Controller
 
         //读取可用模块
         $components = AccountService::ExtraModules($this->uniacid);
-        if (empty($components) && !empty($_W['config']['defaultmodule'])){
-            $defaultModule = pdo_get("modules", array('name'=>$_W['config']['defaultmodule']));
+        if (empty($components) && !empty($_W['config']['defaultModule'])){
+            $defaultModule = pdo_get("modules", array('name'=>$_W['config']['defaultModule']));
             if (!empty($defaultModule)){
                 $components = [['name'=>$defaultModule['title'],'identity'=>$defaultModule['name'],'logo'=>$defaultModule['logo'],'application_type'=>$defaultModule['application_type']]];
                 DB::table('uni_account_extra_modules')->updateOrInsert(array('uniacid'=>$this->uniacid), array('modules'=>serialize($components)));
@@ -253,9 +257,9 @@ class AccountController extends Controller
             }
             DB::table('uni_account_extra_modules')->updateOrInsert(array('uniacid'=>$this->uniacid), array('modules'=>serialize($modules)));
             CacheService::flush();
-            return $this->message('操作成功！',wurl('account/functions',array('uniacid'=>$this->uniacid),true), 'success');
+            return $this->message('successful',wurl('account/functions',array('uniacid'=>$this->uniacid),true), 'success');
         }
-        $return = array('title'=>'编辑平台模块权限', 'modules'=>[]);
+        $return = array('title'=>__('manageData', array('data'=>__('application'))), 'modules'=>[]);
         $return['extras'] = AccountService::ExtraModules($_W['uniacid']);
         if (!empty($enabled_modules)){
             foreach ($enabled_modules as $key=>$value){
@@ -272,9 +276,9 @@ class AccountController extends Controller
         global $_W, $_GPC;
         if (checksubmit()){
             $controller = trim($_GPC['ctrl']);
-            if (empty($controller)) return $this->message("入口分类不能为空");
+            if (empty($controller)) return $this->message("defaultEntryValid");
             $method = trim($_GPC['methods'][$controller]);
-            if (empty($method)) return $this->message("默认入口不能为空");
+            if (empty($method)) return $this->message("defaultEntryValid");
             $condition = array(
                 'uid'=>$_W['uid'],
                 'uniacid'=>$this->uniacid
@@ -290,26 +294,26 @@ class AccountController extends Controller
             if (!$complete){
                 return $this->message();
             }
-            return $this->message("保存成功！", referer(), 'success');
+            return $this->message('savedSuccessfully', referer(), 'success');
         }
         list($controller, $method) = AccountService::GetEntrance($_W['uid'], $this->uniacid);
         $entrances = AccountService::GetAllEntrances($this->uniacid);
         return $this->globalView('console.account.entry',array(
-            'title'=>'默认入口设置',
+            'title'=>__('defaultEntry'),
             'uniacid'=>$this->uniacid,
             'ctrl'=>$controller,
             'method'=>$method,
             'entrances'=>$entrances,
-            'titles'=>$this->entrys
+            'titles'=>$this->entrance
         ));
     }
 
     public function doProfile(Request $request){
         global $_W;
         $account = $this->account;
-        if (empty($account) || $account['isdeleted']==1) return $this->message('找不到该平台，可能已被删除');
+        if (empty($account) || $account['isdeleted']==1) return $this->message('platformNotFound');
         if ($account['endtime']>0 && $account['endtime']<TIMESTAMP && !$_W['isfounder']){
-            return $this->message('该平台服务已到期，请联系管理员处理');
+            return $this->message('platformExpired');
         }
         if ($request->isMethod('post')){
             $op = $request->input('op');
@@ -320,16 +324,16 @@ class AccountController extends Controller
                     $data['endtime'] = strtotime($expire);
                 }
                 $complete = DB::table('account')->where('acid',$account['acid'])->update($data);
-                if (!$complete) return $this->message('保存失败，请重试');
-                return $this->message('保存成功！',wurl('account/profile',array('uniacid'=>$account['uniacid']),true), 'success');
+                if (!$complete) return $this->message('saveFailed');
+                return $this->message('savedSuccessfully',wurl('account/profile',array('uniacid'=>$account['uniacid']),true), 'success');
             }
         }
-        $account['expirdate'] = $account['endtime']>0 ? date('Y-m-d',$account['endtime']) : '永久';
-        $return = array('title'=>'平台管理','account'=>$account,'uniacid'=>$this->uniacid);
+        $account['expirdate'] = $account['endtime']>0 ? date('Y-m-d',$account['endtime']) : __('longtime');
+        $return = array('title'=>__('manageData', array('data'=>__('platform'))),'account'=>$account,'uniacid'=>$this->uniacid);
         $return['role'] = $this->role;
         list($entry, $method) = AccountService::GetEntrance($_W['uid'], $this->uniacid);
         $entrances = AccountService::GetAllEntrances($this->uniacid);
-        $return['entrance'] = $this->entrys[$entry]. "&nbsp;&gt;&nbsp;";
+        $return['entrance'] = $this->entrance[$entry]. "&nbsp;&gt;&nbsp;";
         $return['entrance'] .= $entrances[$entry][$method];
         return $this->globalView('console.account.profile',$return);
     }
@@ -337,11 +341,11 @@ class AccountController extends Controller
     public function doRemove(Request $request){
         //查询权限
         $uniacid = (int)$request->input('uniacid',0);
-        if ($uniacid==0) return $this->message('请选择要删除的平台');
+        if ($uniacid==0) return $this->message('selectPlatformToDelete');
         global $_W;
         $role = UserService::AccountRole($_W['uid'],$uniacid);
         if (!in_array($role,array('founder','owner')) && !$_W['isfounder']){
-            return $this->message('暂无权限，请勿乱操作');
+            return $this->message('Access Denied');
         }
         //删除平台
         DB::table('account')->where('uniacid',$uniacid)->update(array('isdeleted'=>1));
@@ -352,15 +356,15 @@ class AccountController extends Controller
         Cache::forget($cachekey);
         $cachekey = CacheService::system_key('uniaccount', array('uniacid' => $uniacid));
         Cache::forget($cachekey);
-        return $this->message('删除成功！',url('console'),'success');
+        return $this->message('deleteSuccessfully',url('console'),'success');
     }
 
     public function doCreate(Request $request){
         if ($request->isMethod('post')){
             global $_W;
             $post = $request->input('data');
-            if (empty($post['name'])) return $this->message('平台名称不能为空');
-            if (empty($post['logo'])) return $this->message('请上传平台LOGO');
+            if (empty($post['name'])) return $this->message('platformNameEmpty');
+            if (empty($post['logo'])) return $this->message('platformLogoEmpty');
             $uni_account = DB::table('uni_account');
             $uniacid = $uni_account->insertGetId(array(
                 'groupid' => 0,
@@ -377,21 +381,11 @@ class AccountController extends Controller
                 $uni_account->where('uniacid',$uniacid)->update(array('default_acid' => $acid));
                 UserService::AccountRoleUpdate($uniacid,$_W['uid']);
 
-                DB::table('mc_groups')->insert(array('uniacid' => $uniacid, 'title' => '默认会员组', 'isdefault' => 1));
-                DB::table('uni_settings')->insert(array(
-                    'creditnames' => serialize(array('credit1' => array('title' => '积分', 'enabled' => 1), 'credit2' => array('title' => '余额', 'enabled' => 1))),
-                    'creditbehaviors' => serialize(array('activity' => 'credit1', 'currency' => 'credit2')),
-                    'uniacid' => $uniacid,
-                    'default_site' => 0,
-                    'sync' => serialize(array('switch' => 0, 'acid' => '')),
-                ));
-
-                return $this->message('恭喜您，创建成功！',wurl('account/profile',array('uniacid'=>$uniacid)),'success');
+                return $this->message('createSuccessfully',wurl('account/profile',array('uniacid'=>$uniacid)),'success');
             }
-            return $this->message('创建失败，请重试');
+            return $this->message('saveFailed');
         }
-        $return = array('title'=>'创建平台');
-        return $this->globalView('console.account.create', $return);
+        return $this->globalView('console.account.create', array('title'=>__('platformCreate')));
     }
 
     public function doPermission(Request $request){
@@ -416,9 +410,9 @@ class AccountController extends Controller
                 $res=DB::table('users_permission')->insert($data);
             }
 
-            if($res) return $this->message('保存成功',wurl('account/role',array('uniacid'=>$uniacid)),'success');
+            if($res) return $this->message('savedSuccessfully',wurl('account/role',array('uniacid'=>$uniacid)),'success');
 
-            return $this->message('保存失败，请重试');
+            return $this->message('saveFailed');
         }
         //获取已安装应用
         $modulesList = ModuleService::moduleList();
@@ -440,11 +434,11 @@ class AccountController extends Controller
 
             //比较是否已设置权限
             foreach ($value['permissions'] as &$val){
-                $val['exist']=in_array($val['route'],$currentPermission) ? true : false;
+                $val['exist']= in_array($val['route'],$currentPermission);
 
                 //二级权限
                 foreach ($val['subPerm'] ?? [] as $k => $v){
-                    $val['subPerm'][$k]['exist']=in_array($v['route'],$currentPermission) ? true : false;
+                    $val['subPerm'][$k]['exist']= in_array($v['route'],$currentPermission);
                 }
             }
             unset($val);
@@ -454,22 +448,21 @@ class AccountController extends Controller
         $serversList = pdo_getall("microserver_unilink", array('status'=>1));
         foreach ($serversList as &$value){
 
-            $value['perms']=unserialize($value['perms'] ?? '');
+            $value['perms']=$value['perms']?unserialize($value['perms']):[];
 
-            if(empty($value['perms']))
-                $value['perms']=['name'=>'微服务入口','route'=>'entrance'];
-
-
+            if(empty($value['perms'])){
+                $value['perms']=['name'=>__('serviceEntry'),'route'=>'entrance'];
+            }
             $currentPermission=$permission['servers'][$value['name']] ?? [];
 
             //比较是否已设置权限
             foreach ($value['perms'] as $ke => &$val){
                 $val=['name'=>$val,'route'=>$ke];
-                $val['exist']=in_array($val['route'],$currentPermission) ? true : false;
+                $val['exist']= in_array($val['route'],$currentPermission);
 
                 //二级权限
                 foreach ($val['subPerm'] ?? [] as $k => $v){
-                    $val['subPerm'][$k]['exist']=in_array($v['route'],$currentPermission) ? true : false;
+                    $val['subPerm'][$k]['exist']= in_array($v['route'],$currentPermission);
                 }
             }
             unset($val);

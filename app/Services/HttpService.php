@@ -72,7 +72,7 @@ class HttpService
 
     public static function ihttp_multi_request($urls, $posts = array(), $extra = array(), $timeout = 60) {
         if (!is_array($urls)) {
-            return error(1, '请使用ihttp_request函数');
+            return error(1, __('requestFailed'));
         }
         $curl_multi = curl_multi_init();
         $curl_client = $response = array();
@@ -216,7 +216,7 @@ class HttpService
         }
         $urlset = parse_url($url);
         if (!empty($urlset['scheme']) && !in_array($urlset['scheme'], array('http', 'https'))) {
-            return error(1, '只能使用 http 及 https 协议');
+            return error(1, 'Only http and https protocols are supported');
         }
         if (empty($urlset['path'])) {
             $urlset['path'] = '/';
@@ -225,7 +225,7 @@ class HttpService
             $urlset['query'] = "?{$urlset['query']}";
         }
         if (strexists($url, 'https://') && !extension_loaded('openssl')) {
-            return error(1, '请开启您PHP环境的openssl');
+            return error(1, 'Please enable the openssl extension of your PHP environment');
         }
         if (empty($urlset['host'])) {
             $current_url = parse_url($GLOBALS['_W']['siteroot']);
@@ -234,7 +234,7 @@ class HttpService
             $urlset['path'] = $current_url['path'] . 'web/' . str_replace('./', '', $urlset['path']);
             $urlset['ip'] = '127.0.0.1';
         } elseif (!self::ihttp_allow_host($urlset['host'])) {
-            return error(1, 'host 非法');
+            return error(1, 'Invalid HOST');
         }
 
         if ($set_default_port && empty($urlset['port'])) {
@@ -264,7 +264,7 @@ class HttpService
 
     public static function ihttp_build_curl($url, $post, $extra, $timeout) {
         if (!function_exists('curl_init') || !function_exists('curl_exec')) {
-            return error(1, 'curl扩展未开启');
+            return error(1, 'Please enable the curl extension of your PHP environment');
         }
 
         $urlset = self::ihttp_parse_url($url);

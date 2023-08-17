@@ -2,19 +2,19 @@
 
 <div class="main-content fui-content">
 
-    <h2>平台管理</h2>
+    <h2>{{ __('manageData', array('data'=>__('platform'))) }}</h2>
 
     <div class="layui-tab fui-tab margin-bottom-xl">
         <ul class="layui-tab-title title_tab">
             <li>
-                <a href="{{ wurl('account/profile',array('uniacid'=>$uniacid)) }}">基础信息</a>
+                <a href="{{ wurl('account/profile',array('uniacid'=>$uniacid)) }}">@lang('basicInformation')</a>
             </li>
             <li class="layui-this">
-                <a href="{{ wurl('account/functions',array('uniacid'=>$uniacid)) }}">应用与服务</a>
+                <a href="{{ wurl('account/functions',array('uniacid'=>$uniacid)) }}">@lang('Applications&Services')</a>
             </li>
             @if(in_array($role,['founder','owner']) || $_W['isfounder'])
                 <li>
-                    <a href="{{ wurl('account/role',array('uniacid'=>$uniacid)) }}">操作权限</a>
+                    <a href="{{ wurl('account/role',array('uniacid'=>$uniacid)) }}">@lang('operatingAuthority')</a>
                 </li>
             @endif
         </ul>
@@ -23,14 +23,14 @@
     <div class="fui-card layui-card">
         <div class="layui-card-header nobd">
             @if($_W['isfounder'] || $role=='founder')
-                <a href="{{ wurl('account/modules',array('uniacid'=>$uniacid), true) }}" class="fr text-blue ajaxshow" title="平台模块管理">管理</a>
+                <a href="{{ wurl('account/modules',array('uniacid'=>$uniacid), true) }}" class="fr text-blue ajaxshow" title="{{ __('manageData', array('data'=>__('application'))) }}">@lang('manage')</a>
             @endif
-            <span class="title">应用模块</span>
+            <span class="title">@lang('application')</span>
         </div>
         <div class="layui-card-body">
             @if(empty($components))
                 <div class="fui-empty text-center" style="line-height: 150px;">
-                    <span class="text-gray" style="font-size: 16px;">暂无可用应用</span>
+                    <span class="text-gray" style="font-size: 16px;">@lang('NoAppsAvailable')</span>
                 </div>
             @else
             <div class="layui-row layui-col-space15 fui-list card">
@@ -56,7 +56,7 @@
 
     <div class="fui-card layui-card">
         <div class="layui-card-header nobd">
-            <span class="title">功能服务</span>
+            <span class="title">@lang('Functions&Services')</span>
         </div>
         <div class="layui-card-body">
             <div class="layui-row layui-col-space15 fui-list card">

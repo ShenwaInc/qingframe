@@ -63,9 +63,9 @@ class AccountService {
     static function GetAllEntrances($uniacid, $uid=0){
         $entrances = array(
             'account'=>array(
-                'profile'=>"基础信息",
-                'functions'=>'应用与服务',
-                'role'=>'操作权限'
+                'profile'=>__('basicInformation'),
+                'functions'=>__('Applications&Services'),
+                'role'=>__('operatingAuthority')
             ),
             'module'=>[],
             'server'=>[]

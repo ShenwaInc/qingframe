@@ -12,15 +12,18 @@ class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
-    public function message($msg='操作失败，请重试',$redirect='',$type='error',$extra=array()){
+    public function message($prompt='operationFailed', $redirect='', $type='error', $extra=array()){
         global $_W;
-        if ($redirect && isset($extra['light']) && $extra['light']!=''){
-            $msg = str_replace($extra['light'],'<a href="'.$redirect.'" class="message-light">'.$extra['light'].'</a>',$msg);
+        if (is_string($prompt) && preg_match('/^([\w\s]+)$/', $prompt)){
+            $prompt = __($prompt);
         }
-        $return = array('redirect'=>$redirect,'type'=>$type, 'code'=>$extra['code']??0, 'message'=>$msg, 'data'=>[]);
-        if (is_array($msg)){
+        if ($redirect && isset($extra['light']) && $extra['light']!=''){
+            $prompt = str_replace($extra['light'],'<a href="'.$redirect.'" class="message-light">'.$extra['light'].'</a>',$prompt);
+        }
+        $return = array('redirect'=>$redirect,'type'=>$type, 'code'=>$extra['code']??0, 'message'=>$prompt, 'data'=>[]);
+        if (is_array($prompt)){
             $return['message'] = 'OK';
-            $return['data'] = $msg;
+            $return['data'] = $prompt;
         }
         if(!isset($_W['isajax'])){
             $_W['isajax'] = \request()->ajax() || \request('inajax', 0);
@@ -33,7 +36,7 @@ class Controller extends BaseController
         }
     }
 
-    public function success($message="操作成功！", $redirect=""){
+    public function success($message="successful", $redirect=""){
         return $this->message($message, $redirect, "success");
     }
 

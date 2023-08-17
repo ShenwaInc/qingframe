@@ -3,7 +3,7 @@
     <div class="main-content fui-content">
         <div class="fui-card layui-card">
             <div class="layui-card-header nobd">
-                <a href="{{ wurl('report/post') }}" class="fr layui-btn layui-btn-normal ajaxshow">提交工单</a>
+                <a href="{{ wurl('report/post') }}" class="fr layui-btn layui-btn-normal ajaxshow">{{ __('newData', array('data'=>__('workOrder'))) }}</a>
                 <span class="title">{{ $title }}</span>
             </div>
             <div class="layui-card-body">
@@ -11,11 +11,11 @@
                     <table class="layui-table" lay-skin="nob" lay-even>
                         <thead>
                         <tr>
-                            <th class="layui-hide-xs">工单号</th>
-                            <th>问题描述</th>
-                            <th class="layui-hide-xs">状态</th>
-                            <th>提交时间</th>
-                            <th class="text-right">操作</th>
+                            <th class="layui-hide-xs">@lang('WorkOrderID')</th>
+                            <th>@lang('content')</th>
+                            <th class="layui-hide-xs">@lang('state')</th>
+                            <th>@lang('releaseTime')</th>
+                            <th class="text-right">@lang('action')</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -31,21 +31,21 @@
                                 <td>{{ $value['created_at'] }}</td>
                                 <td class="text-right">
                                     @if($value['status']<6)
-                                        <a class="text-blue ajaxshow" href="{{ wurl('report/feedback', array('id'=>$value['id'])) }}">补充反馈</a>&nbsp;
-                                        <a class="text-green confirm ajaxshow" data-text="确定此工单已完成验收吗？" href="{{ wurl('report/Complete', array('id'=>$value['id'])) }}">完成</a>&nbsp;
-                                        <a class="text-red confirm layui-hide ajaxshow" data-text="确定要关闭该工单吗？" href="{{ wurl('report/closeOrder', array('id'=>$value['id'])) }}">关闭</a>
+                                        <a class="text-blue ajaxshow" href="{{ wurl('report/feedback', array('id'=>$value['id'])) }}">@lang('feedback')</a>&nbsp;
+                                        <a class="text-green confirm ajaxshow" data-text="@lang('workOrderComplete')" href="{{ wurl('report/Complete', array('id'=>$value['id'])) }}">@lang('done')</a>&nbsp;
+                                        <a class="text-red confirm layui-hide ajaxshow" data-text="@lang('workOrderClose')" href="{{ wurl('report/closeOrder', array('id'=>$value['id'])) }}">@lang('close')</a>
                                     @endif
                                 </td>
                             </tr>
                         @endforeach
                         @if(empty($list))
-                            <tr><td colspan="5" class="text-muted text-center">暂无数据</td></tr>
+                            <tr><td colspan="5" class="text-muted text-center">@lang('empty')</td></tr>
                         @endif
                         </tbody>
                     </table>
                 </div>
                 <div class="row" style="padding-bottom: 15px;">
-                    <div class="layui-col-md6">共找到{{ $total }}条工单</div>
+                    <div class="layui-col-md6">{{ __('recordsFound', array('row'=>$total)) }}</div>
                     <div class="layui-col-md6 text-right">{!! $pager !!}</div>
                 </div>
             </div>

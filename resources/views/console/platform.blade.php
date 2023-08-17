@@ -5,7 +5,7 @@
     <div class="fui-card layui-card" style="min-height: 480px;">
         @if(empty($list) && !$cancreate)
             <div class="fui-empty text-center" style="line-height: 480px;">
-                <span class="text-gray" style="font-size: 22px;">暂无可用平台</span>
+                <span class="text-gray" style="font-size: 22px;">@lang('noPlatformAvailable')</span>
             </div>
         @else
         <div class="layui-row layui-col-space15 fui-list card">
@@ -19,9 +19,9 @@
                 </a>
                 <div class="js-dropdown layui-nav-item">
                     <dl class="layui-nav-child layui-anim layui-anim-upbit js-dropdown-menu">
-                        <dd><a href="{{ wurl('account/profile') }}?uniacid={{ $item['uniacid'] }}">管理</a></dd>
+                        <dd><a href="{{ wurl('account/profile') }}?uniacid={{ $item['uniacid'] }}">@lang('manage')</a></dd>
                         @if(in_array($item['user_role'], ['founder','owner']) || $_W['isfounder'])
-                        <dd><a href="{{ wurl('account/remove') }}?uniacid={{ $item['uniacid'] }}" class="text-red confirm" data-text="删除后前台将无法使用，是否确定要删除？">删除</a></dd>
+                        <dd><a href="{{ wurl('account/remove') }}?uniacid={{ $item['uniacid'] }}" class="text-red confirm" data-text="@lang('deletePlatformRemain')">@lang('delete')</a></dd>
                         @endif
                     </dl>
                     <span class="layui-icon layui-icon-down text-gray"></span>
@@ -30,10 +30,10 @@
             @endforeach
             @if($cancreate)
             <div class="layui-col-md3 layui-col-sm4 layui-col-xs12 fui-item">
-                <a href="{{ url("console/account/create") }}" title="创建新平台" class="fui-content dashed ajaxshow">
+                <a href="{{ url("console/account/create") }}" title="{{ __('createNewData', array('data'=>__('platform'))) }}" class="fui-content dashed ajaxshow">
                     <div class="fui-info">
                         <span class="card-icon layui-icon layui-icon-add-1 text-gray"></span>
-                        <strong class="card-name text-gray">新建平台</strong>
+                        <strong class="card-name text-gray">{{ __('createNewData', array('data'=>__('platform'))) }}</strong>
                     </div>
                 </a>
             </div>

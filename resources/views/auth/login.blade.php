@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     @php
         global $_W;
@@ -18,13 +18,13 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="shortcut icon" href="{{ $_W ? tomedia($_W['setting']['page']['icon']) : asset('/favicon.ico') }}" />
     <title>后台管理系统</title>
-    <link rel="stylesheet" href="{{ asset('/static/bootstrap/css/bootstrap.min.css') }}?v={{ TIMESTAMP }}" />
-    <link rel="stylesheet" href="{{ asset('/static/layui/css/layui.css') }}?v={{ TIMESTAMP }}" />
-    <link rel="stylesheet" href="{{ asset('/static/css/console.css') }}?v={{ TIMESTAMP }}" />
-    <script type="text/javascript" src="{{ asset('/static/layui/layui.js') }}?v={{ TIMESTAMP }}"></script>
-    <script type="text/javascript" src="{{ asset('/static/js/jquery-1.11.1.min.js') }}?v={{ TIMESTAMP }}"></script>
-    <script type="text/javascript" src="{{ asset('/static/js/core.jquery.js') }}?v={{ TIMESTAMP }}"></script>
-    <link rel="stylesheet" href="{{ asset('/static/css/auth.css') }}?v={{ TIMESTAMP }}" />
+    <link rel="stylesheet" href="{{ asset('/static/bootstrap/css/bootstrap.min.css') }}?v={{ QingRelease }}" />
+    <link rel="stylesheet" href="{{ asset('/static/layui/css/layui.css') }}?v={{ QingRelease }}" />
+    <link rel="stylesheet" href="{{ asset('/static/css/console.css') }}?v={{ QingRelease }}" />
+    <script type="text/javascript" src="{{ asset('/static/layui/layui.js') }}?v={{ QingRelease }}"></script>
+    <script type="text/javascript" src="{{ asset('/static/js/jquery-1.11.1.min.js') }}?v={{ QingRelease }}"></script>
+    <script type="text/javascript" src="{{ asset('/static/js/core.jquery.js') }}?v={{ QingRelease }}"></script>
+    <link rel="stylesheet" href="{{ asset('/static/css/auth.css') }}?v={{ QingRelease }}" />
 </head>
 
 <body layadmin-themealias="ocean-header" class="layui-layout-body" style="position:inherit !important;">

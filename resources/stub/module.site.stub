@@ -1,8 +1,9 @@
 <?php
 
+namespace Addons\dummy;
 use App\Utils\WeModule;
 
-class DummyModuleSite extends WeModule{
+class site extends WeModule{
 
 	public function doWebIndex(){
         //后台默认入口

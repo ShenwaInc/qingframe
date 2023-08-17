@@ -8,7 +8,7 @@ use Closure;
 error_reporting(0);
 define('IA_ROOT', base_path('public'));
 define('BASE_ROOT', base_path('/'));
-define('QingFramework', true);
+define('QingFrame', true);
 define("MICRO_SERVER", base_path("servers/"));
 define('MAGIC_QUOTES_GPC', (function_exists('get_magic_quotes_gpc') && @get_magic_quotes_gpc()) || @ini_get('magic_quotes_sybase'));
 define('ATTACHMENT_ROOT', storage_path('app/public/'));
@@ -33,6 +33,7 @@ class App
     {
         global $_W,$_GPC;
         $_GPC = $request->all();
+        $_W['startTime'] = microtime(true);
         $_W['config'] = config('system');
         $_W['framework'] = ['version'=>QingVersion, 'release'=>QingRelease];
         $_W['timestamp'] = TIMESTAMP;

@@ -24,12 +24,12 @@ class CatchCall {
 
 /**
  * 调用服务方法
- * @param string $name 服务名称
- * @param array|null $params 构造参数
+ * @param mixed $params 调用参数
  * @return object 服务实例
  */
-function serv(string $name, $params=null){
+function serv(...$params){
     static $_servers;
+    $name = $params[0];
     if (empty($_servers)) $_servers = array();
     if (isset($_servers[$name])){
         return $_servers[$name];
@@ -41,7 +41,7 @@ function serv(string $name, $params=null){
     try {
         require_once $service;
         $class_name = ucfirst($name) . 'Service';
-        $instance = new $class_name($params);
+        $instance = !empty($params) ? new $class_name($params[0]) : new $class_name();
         if ($instance->service['status']!=1){
             return new CatchCall("Service $name has stopped.");
         }
@@ -293,6 +293,17 @@ function error($errno, $message = '') {
         'errno' => $errno,
         'message' => $message
     );
+}
+
+function debugInfo(){
+    global $_W;
+    if ($_W['config']['debugMode']){
+        $_W['debugInfo'] = array(
+            'runtime'=>number_format((microtime(true) - $_W['startTime']), 6)
+        );
+        return $_W['debugInfo'];
+    }
+    return false;
 }
 
 function session_exit($print=''){

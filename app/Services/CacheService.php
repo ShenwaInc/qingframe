@@ -436,7 +436,7 @@ class CacheService
                 $key = $cache_key;
             }
             if (empty($cache_key_all['caches'][$key])) {
-                return error(1, '缓存' . $key . ' 不存在!');
+                return error(1, 'Cache' . $key . ' does not exist!');
             } else {
                 $cache_info_key = $cache_key_all['caches'][$key]['key'];
                 preg_match_all('/\%([a-zA-Z\_\-0-9]+)/', $cache_info_key, $key_params);
@@ -460,7 +460,7 @@ class CacheService
                     }
 
                     if (strexists($cache_info_key, '%')) {
-                        return error(1, '缺少缓存参数或参数不正确!');
+                        return error(1, 'Missing or incorrect cache parameter!');
                     } else {
                         return ':' . $cache_info_key;
                     }
@@ -474,7 +474,7 @@ class CacheService
         $cache_common_params = $cache_key_all['common_params'];
 
         if (empty($cache_info)) {
-            return error(2, '缓存 ' . $cache_key . ' 不存在!');
+            return error(2, 'Cache ' . $cache_key . ' does not exist!');
         } else {
             $cache_key = $cache_info['key'];
         }
@@ -492,7 +492,7 @@ class CacheService
             }
 
             if (strexists($cache_key, '%')) {
-                return error(1, '缺少缓存参数或参数不正确!');
+                return error(1, 'Missing or incorrect cache parameter!');
             }
         }
 

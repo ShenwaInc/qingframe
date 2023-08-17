@@ -6,7 +6,7 @@
         <div class="layui-card-body">
             @if(empty($modules))
                 <div class="fui-empty text-center" style="line-height: 150px;">
-                    <span class="text-gray" style="font-size: 16px;">暂无可用应用</span>
+                    <span class="text-gray" style="font-size: 16px;">@lang('NoAppsAvailable')</span>
                 </div>
             @else
                 <form lay-filter="extramodules" action="{{ wurl('account/modules',array('uniacid'=>$_W['uniacid'], 'post'=>1)) }}" method="post">
@@ -25,7 +25,7 @@
                         @endforeach
                     </div>
                     <div class="text-center padding">
-                        <button type="submit" lay-submit class="layui-btn layui-btn-normal">完成</button>
+                        <button type="submit" lay-submit class="layui-btn layui-btn-normal">@lang('save')</button>
                     </div>
                 </form>
             @endif

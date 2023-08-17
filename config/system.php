@@ -3,7 +3,8 @@
 return [
     'name'=>env('APP_NAME'),
     'identity'=>env('APP_IDENTITY', 'swa_framework_laravel'),
-    'defaultmodule'=>env('APP_MODULE','whotalk'),
+    'defaultModule'=>env('APP_MODULE',''),
+    'debugMode'=>(bool)env('APP_DEBUG', false),
     'setting'=>array(
         'charset'=>'utf-8',
         'cache'=>'mysql',

@@ -1,7 +1,6 @@
 @include('common.header')
 <div class="layui-fluid unpadding">
     <div{{ $_W['isajax'] ? '' : ' class=main-content' }}>
-
             <div class="{{ $_W['isajax'] ? '' : 'fui-card layui-card' }}">
                 @if(!$_W['isajax'])<div class="layui-card-header"><span class="title">{{ $title }}</span></div>@endif
                 <div class="layui-card-body">
@@ -9,15 +8,15 @@
                         <table class="layui-table fui-table lines" lay-even lay-skin="nob">
                             <thead>
                             <tr>
-                                <th>组件</th>
-                                <th class="layui-hide-xs">说明</th>
-                                <th><div class="text-right">操作</div></th>
+                                <th>@lang('appName')</th>
+                                <th class="layui-hide-xs">@lang('description')</th>
+                                <th><div class="text-right">@lang('action')</div></th>
                             </tr>
                             </thead>
                             <tbody>
                             @if(empty($components))
                                 <tr>
-                                    <td colspan="3" class="text-center">暂无数据</td>
+                                    <td colspan="3" class="text-center">@lang('empty')</td>
                                 </tr>
                             @else
                                 @foreach ($components as $com)

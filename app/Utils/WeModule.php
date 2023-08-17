@@ -147,27 +147,51 @@ class WeModule
         return wurl("m/$module_name".($do?"/$do":''), $query);
     }
 
+    public function View($data, $template){
+        global $_W, $_GPC, $_MODULE_VIEW;
+        $platform = defined('IN_SYS') ? 'web' : 'app';
+        if (empty($template)){
+            $template = tpl_build($_W['controller'], $_W['action'], public_path("addons/".$this->modulename."/views/$platform"));
+        }
+        $source = public_path("addons/" . $this->modulename . "/views/$platform/$template.blade.php");
+        if (!file_exists($source)){
+            $source = str_replace("/views/$platform/", "/views/", $source);
+            if (!file_exists($source)){
+                session()->save();
+                exit("Error: template source '$template' is not exist!");
+            }
+        }
+        if (empty($data)){
+            $data = array();
+        }
+        $_MODULE_VIEW = $this->modulename;
+        $data['_W'] = $_W;
+        $data['_GPC'] = $_GPC;
+        View::share($data);
+        return View::file($source);
+    }
+
     public function template($filename, $extra='') {
         global $_W;
         $name = strtolower($this->modulename);
         $defineDir = dirname($this->__define);
         if (defined('IN_SYS')) {
-            $source = IA_ROOT . "/web/themes/{$_W['template']}/{$name}/{$extra}{$filename}.html";
-            $compile = storage_path("framework/tpls/web/{$name}/{$extra}{$filename}.tpl.php");
+            $source = IA_ROOT . "/web/themes/{$_W['template']}/$name/$extra$filename.html";
+            $compile = storage_path("framework/tpls/web/$name/$extra$filename.tpl.php");
             if (!is_file($source)) {
-                $source = IA_ROOT . "/web/themes/default/{$name}/{$filename}.html";
+                $source = IA_ROOT . "/web/themes/default/$name/$filename.html";
             }
             if (!is_file($source)) {
-                $source = $defineDir . "/{$extra}template/{$filename}.html";
+                $source = $defineDir . "/{$extra}template/$filename.html";
             }
             if (!is_file($source) && !empty($extra)) {
-                $source = $defineDir . "/template/{$filename}.html";
+                $source = $defineDir . "/template/$filename.html";
             }
             if (!is_file($source)) {
-                $source = IA_ROOT . "/web/themes/{$_W['template']}/{$filename}.html";
+                $source = IA_ROOT . "/web/themes/{$_W['template']}/$filename.html";
             }
             if (!is_file($source)) {
-                $source = IA_ROOT . "/web/themes/default/{$filename}.html";
+                $source = IA_ROOT . "/web/themes/default/$filename.html";
             }
         } else {
             $source = $defineDir . "/{$extra}template/mobile/$filename.html";
@@ -182,7 +206,7 @@ class WeModule
 
         if (!is_file($source)) {
             session()->save();
-            exit("Error: template source '{$filename}' is not exist!");
+            exit("Error: template source '$filename' is not exist!");
         }
         $paths = pathinfo($compile);
         $compile = str_replace($paths['filename'], $_W['uniacid'] . '_' . $paths['filename'], $compile);

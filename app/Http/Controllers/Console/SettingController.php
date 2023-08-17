@@ -282,7 +282,7 @@ class SettingController extends Controller
             $return['framework'] = $framework;
             $return['cloudinfo'] = !empty($framework['online']) ? unserialize($framework['online']) : array('isnew'=>false);
         }
-        $return['activeState'] = CloudService::CloudActive();
+        $return['activeState'] = CloudService::CloudActive(true);
         $return['appSecurityEntrance'] = env("APP_SECURITY_ENTRANCE");
         return $this->globalView('console.setting', $return);
     }

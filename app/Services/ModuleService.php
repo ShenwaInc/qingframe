@@ -13,10 +13,10 @@ class ModuleService
 
     static function getManifest($identity,$path='addons'){
         $manifestFile = base_path("public/$path/$identity/manifest.json");
-        if(!file_exists($manifestFile)) return error(-1,'无法解析模块安装包');
+        if(!file_exists($manifestFile)) return error(-1,'Unable to parse module installation package');
         $JSON = file_get_contents($manifestFile);
         $result = json_decode($JSON, true);
-        if (empty($result) || !isset($result['application'])) return error(-1,'无效的模块安装包');
+        if (empty($result) || !isset($result['application'])) return error(-1,'invalid application package');
         $result['installed'] = false;
         if (DB::table('modules')->where('name', $identity)->exists()){
             $result['installed'] = true;
@@ -37,7 +37,7 @@ class ModuleService
                 MSService::TerminalSend(['mode'=>'info', 'message'=>"正在运行应用安装脚本..."]);
                 script_run($ManiFest['install'], public_path("{$path}/{$identity}/"));
             } catch (\Exception $exception){
-                return error(-1,'安装失败：'.(DEVELOPMENT?$exception->getMessage():'运行安装脚本出现错误'));
+                return error(-1,__('installFailed', ['reason'=>DEVELOPMENT?$exception->getMessage():__('installFailedRender')]));
             }
         }
         //写入模块数据表
@@ -49,19 +49,19 @@ class ModuleService
         }
         $module['from'] = $from;
         if (!DB::table('modules')->insert($module)){
-            return error(-1,'无法解析模块安装包');
+            return error(-1,'Unable to parse module installation package');
         }
         if (!empty($ManiFest['servers'])){
             try {
                 $MSS = new MSService();
                 $MSS->checkRequire($ManiFest['servers']);
             }catch (\Exception $exception){
-                return error(-1,'安装依赖服务时发生错误：'.$exception->getMessage());
+                return error(-1,__('installFailed', ['reason'=>$exception->getMessage()]));
             }
         }
         $stopTime = time();
-        $timeOut = $from=='cloud' ? '' : "耗时".($stopTime-$startTime)."秒";
-        MSService::TerminalSend(['mode'=>'success', 'message'=>"模块安装完成！".$timeOut], true);
+        $timeOut = $from=='cloud' ? '' : __('takesTime', ['time'=>$stopTime-$startTime]);
+        MSService::TerminalSend(['mode'=>'success', 'message'=>__('installSuccessfully').$timeOut], true);
         //写入组件表
         if ($from=='cloud'){
             $comdata = array(
@@ -87,7 +87,7 @@ class ModuleService
     static function installCheck($identity){
         $ManiFest = self::getManifest($identity);
         if (is_error($ManiFest)) return $ManiFest;
-        if (!$ManiFest['installed']) return error(-3,'该模块尚未安装');
+        if (!$ManiFest['installed']) return error(-3,__('applicationNotInstall'));
         return $ManiFest;
     }
 
@@ -137,7 +137,7 @@ class ModuleService
                 MSService::TerminalSend(['mode'=>'info', 'message'=>"正在运行应用升级脚本..."]);
                 script_run($ManiFest['upgrade'], public_path("addons/$identity/"));
             } catch (\Exception $exception){
-                return error(-1,'升级失败：运行升级脚本出现错误:'.$exception->getMessage());
+                return error(-1,__('installFailed', ['reason'=>$exception->getMessage()]));
             }
         }
         //更新模块数据表
@@ -152,7 +152,7 @@ class ModuleService
                 $MSS = new MSService();
                 $MSS->checkRequire($ManiFest['servers']);
             }catch (\Exception $exception){
-                return error(-1,'安装依赖服务时发生错误：'.$exception->getMessage());
+                return error(-1,__('installServerFailed', ['reason'=>$exception->getMessage()]));
             }
         }
         //更新模块数据表
@@ -197,7 +197,7 @@ class ModuleService
                 MSService::TerminalSend(['mode'=>'info', 'message'=>"正在运行应用卸载脚本..."]);
                 script_run($ManiFest['uninstall'], public_path("addons/$identity/"));
             } catch (\Exception $exception){
-                return error(-1,'卸载失败：运行脚本出现错误:'.$exception->getMessage());
+                return error(-1,__('uninstallFailed', array('reason'=>DEVELOPMENT?$exception->getMessage():__('installFailedRender'))));
             }
         }
         //更新模块数据表

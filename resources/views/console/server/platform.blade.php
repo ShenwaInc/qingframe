@@ -3,13 +3,13 @@
     <div class="{{ $_GPC['inajax'] ? '' : 'main-content' }}">
         <div class="{{ $_GPC['inajax'] ? '' : 'layui-card fui-card' }}">
             <div class="layui-card-header layui-hide-layer">
-                <span class="title">选择平台</span>
-                <p class="layui-word-aux">当前服务的管理需要区分不同平台</p>
+                <span class="title">{{ __('chooseData', array('data'=>__('platform'))) }}</span>
+                <p class="layui-word-aux">@lang('platformDistinguish')</p>
             </div>
             <div class="layui-card-body">
                 @if(empty($platforms) && !$cancreate)
                     <div class="fui-empty text-center" style="line-height: 480px;">
-                        <span class="text-gray" style="font-size: 22px;">暂无可用平台</span>
+                        <span class="text-gray" style="font-size: 22px;">@lang('noPlatformAvailable')</span>
                     </div>
                 @else
                     <div class="layui-row layui-col-space15 fui-list card">

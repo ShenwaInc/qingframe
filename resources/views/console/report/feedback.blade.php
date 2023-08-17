@@ -12,16 +12,16 @@
                     <form class="layui-form" method="post" action="{{ wurl('report/feedback', array('id'=>$id)) }}">
                         <input type="hidden" name="_token" value="{{ csrf_token() }}" />
                         <div class="layui-form-item must">
-                            <label class="layui-form-label">补充说明</label>
+                            <label class="layui-form-label">@lang('content')</label>
                             <div class="layui-input-block">
-                                <textarea name="data[content]" required lay-verify="required" placeholder="请在此处描述您遇到的问题" class="layui-textarea"></textarea>
+                                <textarea name="data[content]" required lay-verify="required" placeholder="@lang('workOrderDescription')" class="layui-textarea"></textarea>
                             </div>
                         </div>
                         <div class="layui-form-item">
-                            <label class="layui-form-label">附件</label>
+                            <label class="layui-form-label">@lang('attachment')</label>
                             <div class="layui-input-block upload-btn">
-                                <button type="button" class="layui-btn layui-btn-sm layui-btn-normal js-uploader" id="attach{{ TIMESTAMP }}">添加附件</button>
-                                <div class="layui-word-aux">支持 .png .jpg .pdf .txt .rar .doc .xls .zip .mp4等格式，最多上传5个附件</div>
+                                <button type="button" class="layui-btn layui-btn-sm layui-btn-normal js-uploader" id="attach{{ TIMESTAMP }}">{{ __('newData', array('data'=>__('attachment'))) }}</button>
+                                <div class="layui-word-aux">@lang('attachExtLimit')</div>
                             </div>
                             <div class="layui-input-block" style="margin-top: 10px;">
                                 <div class="row layui-col-space10" id="attachList"></div>
@@ -29,8 +29,8 @@
                         </div>
                         <div class="layui-form-item">
                             <div class="layui-input-block">
-                                <button class="layui-btn layui-btn-normal" lay-submit type="submit" value="true" name="savedata">提交</button>
-                                <button class="layui-btn layui-btn-primary" type="reset">重填</button>
+                                <button class="layui-btn layui-btn-normal" lay-submit type="submit" value="true" name="savedata">@lang('save')</button>
+                                <button class="layui-btn layui-btn-primary" type="reset">@lang('reset')</button>
                             </div>
                         </div>
                     </form>

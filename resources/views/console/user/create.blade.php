@@ -2,7 +2,7 @@
 
 @if(!$_W['isajax'])
     <div class="main-content">
-        <h2 class="padding-bottom-xl">{{ $uid>0 ? '编辑' : '新增子' }}账户</h2>
+        <h2 class="padding-bottom-xl">{{ __($uid==0?'newData':'modifyData', array('data'=>__('subAccount'))) }}</h2>
         <div class="fui-card layui-card">
             <div class="layui-card-body">
                 @endif
@@ -14,50 +14,51 @@
                             <input type="hidden" name="uid" value="{{ $uid }}" />
                         @endif
                         <div class="layui-form-item must">
-                            <label class="layui-form-label">用户名</label>
+                            <label class="layui-form-label">@lang('username')</label>
                             <div class="layui-input-block">
-                                <input type="text" required lay-verify="required"{{ $uid>0 ? ' readonly' : '' }} name="username" value="{{ $user['username'] }}" placeholder="请输入用户名" autocomplete="off" class="layui-input">
+                                <input type="text" required lay-verify="required"{{ $uid>0 ? ' readonly' : '' }} name="username" value="{{ $user['username'] }}" placeholder="{{ __('typeSomething', array('data'=>__('username'))) }}" autocomplete="off" class="layui-input">
                             </div>
                         </div>
                         <div class="layui-form-item{{ $uid==0 ? ' must' : '' }}">
-                            <label class="layui-form-label">登录密码</label>
+                            <label class="layui-form-label">@lang('loginPassword')</label>
                             <div class="layui-input-block">
-                                <input type="password"{{ $uid==0 ? ' required lay-verify="required"' : '' }} name="password" value="" placeholder="请设置一个登录登录密码{{ $uid>0 ? '，如不修改请留空' : '' }}" autocomplete="off" class="layui-input">
+                                <input type="password"{{ $uid==0 ? ' required lay-verify="required"' : '' }} name="password" value="" placeholder="{{ __('loginPasswordSet', array('extra'=>$uid>0?__('loginPasswordNotModify'):'')) }}" autocomplete="off" class="layui-input">
                             </div>
                         </div>
                         @if($uid==0)
                         <div class="layui-form-item must">
-                            <label class="layui-form-label">确认密码</label>
+                            <label class="layui-form-label">@lang('rePassword')</label>
                             <div class="layui-input-block">
-                                <input type="password" required lay-verify="required" name="repassword" value="" placeholder="请重复您的登录密码" autocomplete="off" class="layui-input">
+                                <input type="password" required lay-verify="required" name="repassword" value="" placeholder="@lang('reTypePassword')" autocomplete="off" class="layui-input">
                             </div>
                         </div>
                         @endif
                         <div class="layui-form-item">
-                            <label class="layui-form-label">到期时间</label>
+                            <label class="layui-form-label">@lang('expireDate')</label>
                             <div class="layui-input-block">
-                                <input type="text" readonly name="endtime" value="{{ $user['endtime']==0 ? '' : date('Y-m-d',$user['endtime']) }}" placeholder="请选择到期时间，留空表示不限期" autocomplete="off" class="layui-input layui-input-laydate">
+                                <input type="text" readonly name="endtime" value="{{ $user['endtime']==0 ? '' : date('Y-m-d',$user['endtime']) }}" placeholder="@lang('chooseDate')" autocomplete="off" class="layui-input layui-input-laydate">
+                                <div class="layui-word-aux">@lang('emptyForLongtime')</div>
                             </div>
                         </div>
                         @if($_W['isfounder'])
                             <div class="layui-form-item">
-                                <label class="layui-form-label">平台权限</label>
+                                <label class="layui-form-label">{{ __('permissions', array('operation'=>__('platform'))) }}</label>
                                 <div class="layui-input-block">
-                                    <input type="number" min="0" name="maxaccount" value="{{ $user['maxaccount'] }}" placeholder="请输入允许用户创建的平台数量，填0或留空表示不允许创建" autocomplete="off" class="layui-input">
-                                    <div class="layui-word-aux">用户可创建平台总数量，填0或留空表示不允许创</div>
+                                    <input type="number" min="0" name="maxaccount" value="{{ $user['maxaccount'] }}" placeholder="@lang('platformLimit')" autocomplete="off" class="layui-input">
+                                    <div class="layui-word-aux">@lang('platformLimit')</div>
                                 </div>
                             </div>
                         @endif
                         <div class="layui-form-item">
-                            <label class="layui-form-label">备注</label>
+                            <label class="layui-form-label">@lang('remark')</label>
                             <div class="layui-input-block">
-                                <textarea rows="2" class="layui-textarea" placeholder="请输入用户备注，50字内" name="remark">{{ $user['remark'] }}</textarea>
+                                <textarea rows="2" class="layui-textarea" placeholder="{{ __('typeRemark', array('size'=>'50')) }}" name="remark">{{ $user['remark'] }}</textarea>
                             </div>
                         </div>
                         <div class="layui-form-item">
                             <div class="layui-input-block">
-                                <button class="layui-btn layui-btn-normal" lay-submit type="submit" value="true" name="savedata">保存</button>
-                                <button type="reset" class="layui-btn layui-btn-primary">重填</button>
+                                <button class="layui-btn layui-btn-normal" lay-submit type="submit" value="true" name="savedata">@lang('save')</button>
+                                <button type="reset" class="layui-btn layui-btn-primary">@lang('reset')</button>
                             </div>
                         </div>
                     </form>

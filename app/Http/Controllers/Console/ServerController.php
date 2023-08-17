@@ -87,16 +87,16 @@ class ServerController extends Controller
         $startTime = time();
         $op = $request->get("op","index");
         $identity = $request->get("nid", "");
-        $return = array("title"=>"微服务管理", "op"=>$op);
+        $return = array("title"=>__('microServers'), "op"=>$op);
         $MSS = new MSService();
         switch ($op){
             case "stop" : {
-                $return['title'] .= " - 已停用";
+                $return['title'] .= " - ". __('terminated');
                 $return['servers'] = MSService::InitService(0);
                 break;
             }
             case "local" : {
-                $return['title'] .= " - 未安装";
+                $return['title'] .= " - ". __('moreServices');
                 $return['servers'] = MSService::getlocal();
                 $cloudservers = MSService::cloudservers();
                 if (!empty($cloudservers)){
@@ -111,7 +111,7 @@ class ServerController extends Controller
                 }
                 $stopTime = time();
                 $MSS->TerminalSend(["mode"=>"success", "message"=>"安装成功！总耗时".($stopTime-$startTime)."秒"], true);
-                return $this->message("安装成功！", wurl("server"), "success");
+                return $this->message("installSuccessfully", wurl("server"), "success");
             }
             case "uninstall" :{
                 $res = $MSS->uninstall($identity);
@@ -119,13 +119,13 @@ class ServerController extends Controller
                     return $this->TerminalError($res['message']);
                 }
                 $MSS->TerminalSend(["mode"=>"success", "message"=>"服务卸载完成！"], true);
-                return $this->message('服务已卸载完成',wurl("server"),'success');
+                return $this->message('uninstallComplete',wurl("server"),'success');
             }
             case "composer" : {
                 $composer = MICRO_SERVER.$identity."/composer.json";
                 if (!file_exists($composer)){
                     $MSS->TerminalSend(["mode"=>"success", "message"=>"安装成功！"], true);
-                    return $this->message("安装成功", wurl("server"), "success");
+                    return $this->message("installSuccessfully", wurl("server"), "success");
                 }
                 $MSS::TerminalSend(["mode"=>"info", "message"=>"即将安装Composer依赖【microserver/{$identity}】"]);
                 $res = $MSS::ComposerRequire(MICRO_SERVER.$identity."/", "microserver/".$identity);
@@ -142,8 +142,8 @@ class ServerController extends Controller
                     if (!file_exists($composerErr)){
                         $composerErr = "";
                     }
-                    $title = "安装依赖组件包";
-                    $composerNext = '<strong>安装好后，请<a href="'.wurl('server').'" class="text-blue">点此返回上一页</a></strong>';
+                    $title = __('installVendor');
+                    $composerNext = __('installVendorNext');
                     if (!function_exists('tpl_compile')){
                         include_once app_path("Helpers/smarty.php");
                     }
@@ -151,11 +151,11 @@ class ServerController extends Controller
                 }
                 @unlink(MICRO_SERVER.$identity."/composer.error");
                 $MSS->TerminalSend(["mode"=>"success", "message"=>"Composer安装完成"], true);
-                return $this->message("安装成功", wurl("server"), "success");
+                return $this->message("installSuccessfully", wurl("server"), "success");
             }
             case "disable" : {
                 if (MSService::disable($identity)){
-                    return $this->message('操作成功',wurl("server"),'success');
+                    return $this->success('successful',wurl("server"));
                 }
                 return $this->message();
             }
@@ -166,7 +166,7 @@ class ServerController extends Controller
                 }
                 $stopTime = time();
                 $MSS->TerminalSend(["mode"=>"success", "message"=>"升级成功！总耗时".($stopTime-$startTime)."秒"], true);
-                return $this->message("升级成功", wurl("server"), "success");
+                return $this->message("upgradeSuccessfully", wurl("server"), "success");
             }
             case "cloudup" : {
                 $res = $MSS->cloudUpdate($identity);
@@ -175,7 +175,7 @@ class ServerController extends Controller
                 }
                 $stopTime = time();
                 $MSS->TerminalSend(["mode"=>"success", "message"=>"升级成功！总耗时".($stopTime-$startTime)."秒"], true);
-                return $this->message("升级成功", wurl("server"), "success");
+                return $this->message("upgradeSuccessfully", wurl("server"), "success");
             }
             case "cloudinst" : {
                 $res = $MSS->cloudInstall($identity);
@@ -184,11 +184,11 @@ class ServerController extends Controller
                 }
                 $stopTime = time();
                 $MSS->TerminalSend(["mode"=>"success", "message"=>"安装成功！总耗时".($stopTime-$startTime)."秒"], true);
-                return $this->message("安装成功", wurl("server"), "success");
+                return $this->message("installSuccessfully", wurl("server"), "success");
             }
             case "restore" : {
                 if (MSService::restore($identity)){
-                    return $this->message('操作成功',wurl("server", array('op'=>'stop')),'success');
+                    return $this->message('successful',wurl("server", array('op'=>'stop')),'success');
                 }
                 return $this->message();
             }
@@ -247,7 +247,7 @@ class ServerController extends Controller
             if (!empty($apis['wiki'])){
                 return redirect($apis['wiki']);
             }else{
-                return $this->message("该服务未提供任何接口");
+                return $this->message("serviceWithoutApis");
             }
         }
         return $this->globalView("console.server.api", array(

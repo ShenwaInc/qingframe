@@ -14,7 +14,7 @@ class SiteController extends Controller
             //已知平台
             return redirect("login/$uniacid");
         }
-        abort(403, '无效的后台入口');
+        abort(403);
         return true;
     }
 

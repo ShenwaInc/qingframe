@@ -12,17 +12,17 @@
                     <form class="layui-form" method="post" lay-filter="orderReportForm" action="{{ wurl('report/post') }}">
                         <input type="hidden" name="_token" value="{{ csrf_token() }}" />
                         <div class="layui-form-item must">
-                            <label class="layui-form-label">问题描述</label>
+                            <label class="layui-form-label">@lang('content')</label>
                             <div class="layui-input-block">
-                                <textarea name="data[content]" required lay-verify="required" placeholder="请在此处描述您遇到的问题" class="layui-textarea"></textarea>
+                                <textarea name="data[content]" required lay-verify="required" placeholder="@lang('workOrderDescription')" class="layui-textarea"></textarea>
                             </div>
                         </div>
                         <div class="layui-form-item must">
-                            <label class="layui-form-label">问题分类</label>
+                            <label class="layui-form-label">@lang('category')</label>
                             <div class="layui-input-block">
                                 <div class="layui-input-inline">
                                     <select name="cateId" lay-filter="orderCategory" class="layui-select" required lay-verify="required" lay-search>
-                                        <option value="">请选择工单问题的类型</option>
+                                        <option value="">@lang('workOrderCate')</option>
                                         @foreach($cates as $key=>$value)
                                             <option value="{{ $value['id'] }}">{{ $value['name'] }}</option>
                                         @endforeach
@@ -31,7 +31,7 @@
                                 @foreach($subcates as $cateId=>$subCate)
                                     <div class="layui-input-inline subcates layui-hide" id="subCate{{ $cateId }}">
                                         <select name="subCate[{{ $cateId }}]" lay-search>
-                                            <option value="">请选择工单详细分类</option>
+                                            <option value="">@lang('workOrderCateSub')</option>
                                             @foreach($subCate as $cate)
                                                 <option value="{{ $cate['id'] }}">{{ $cate['name'] }}</option>
                                             @endforeach
@@ -41,23 +41,23 @@
                             </div>
                         </div>
                         <div class="layui-form-item">
-                            <label class="layui-form-label">机密信息</label>
+                            <label class="layui-form-label">@lang('confidential')</label>
                             <div class="layui-input-block">
-                                <textarea name="data[secret]" placeholder="请在此处填写您的机密信息，如账号密码、IP地址等" class="layui-textarea"></textarea>
-                                <p class="layui-word-aux layui-hide">填写此项内容表示您已阅读并同意<a href="" target="_blank" class="text-blue">《轻如云服务协议》</a>中关于机密信息的管理条例</p>
+                                <textarea name="data[secret]" placeholder="@lang('workOrderConfidential')" class="layui-textarea"></textarea>
+                                <p class="layui-word-aux layui-hide">{!! __('workOrderAgreement') !!}</p>
                             </div>
                         </div>
                         <div class="layui-form-item must">
-                            <label class="layui-form-label">联系方式</label>
+                            <label class="layui-form-label">@lang('contact')</label>
                             <div class="layui-input-block upload-btn">
                                 <input type="text" name="data[mobile]" value="{{ $cloudState['mobile'] }}" required lay-verify="required" class="layui-input" />
                             </div>
                         </div>
                         <div class="layui-form-item">
-                            <label class="layui-form-label">附件</label>
+                            <label class="layui-form-label">@lang('attachment')</label>
                             <div class="layui-input-block upload-btn">
-                                <button type="button" class="layui-btn layui-btn-sm layui-btn-normal js-uploader" id="attach{{ TIMESTAMP }}">添加附件</button>
-                                <div class="layui-word-aux">支持 .png .jpg .pdf .txt .rar .doc .xls .zip .mp4等格式，最多上传5个附件</div>
+                                <button type="button" class="layui-btn layui-btn-sm layui-btn-normal js-uploader" id="attach{{ TIMESTAMP }}">{{ __('newData', array('data'=>__('attachment'))) }}</button>
+                                <div class="layui-word-aux">@lang('attachExtLimit')</div>
                             </div>
                             <div class="layui-input-block" style="margin-top: 10px;">
                                 <div class="row layui-col-space10" id="attachList"></div>
@@ -65,8 +65,8 @@
                         </div>
                         <div class="layui-form-item">
                             <div class="layui-input-block">
-                                <button class="layui-btn layui-btn-normal" lay-submit lay-filter="formSubmitBtn" type="submit" value="true" name="savedata">提交</button>
-                                <button class="layui-btn layui-btn-primary" type="reset">重填</button>
+                                <button class="layui-btn layui-btn-normal" lay-submit lay-filter="formSubmitBtn" type="submit" value="true" name="savedata">@lang('save')</button>
+                                <button class="layui-btn layui-btn-primary" type="reset">@lang('reset')</button>
                             </div>
                         </div>
                     </form>
@@ -104,7 +104,7 @@
             Core.post('{{ wurl("report/post") }}', function (res) {
                 console.log(res);
                 if(res.type!=='success') return Core.report(res);
-                layer.msg('工单提交成功！请耐心等待工作人员处理', {icon:1});
+                layer.msg('@lang("workOrderSubmitted")', {icon:1});
                 setTimeout(function () {
                     window.location.reload();
                 }, 1800);

@@ -230,9 +230,9 @@ class MicroService
         //引用控制器
         include_once $ctrl;
         $class = ucfirst($controller)."Controller";
-        if (!class_exists($class)) return error(-1,"找不到控制器$class");
+        if (!class_exists($class)) return error(-1,__('controllerNotFound', ['ctrl'=>$class]));
         $instance = new $class();
-        if (!method_exists($instance,$method)) return error(-1,"找不到指定方法$class::$method()");
+        if (!method_exists($instance,$method)) return error(-1,"Method $class::$method() dose not exist!");
         return $instance->$method();
     }
 
@@ -244,7 +244,6 @@ class MicroService
      * @return bool
      */
     public function Event($listener, $data=array(), $channel='global'){
-        $event = "$channel.$listener";
         if (empty($this->events)){
             $globalEvents = Cache::get("GLOBALS_EVENTS", array());
             if(empty($globalEvents)){
@@ -282,10 +281,10 @@ class MicroService
      * 视图编译
      * @param array $data 模板数据
      * @param string $template 模板名称
-     * @return bool|\Illuminate\Contracts\View\View
+     * @return \Illuminate\Contracts\View\View|\Illuminate\Http\JsonResponse
      */
     public function View($data, $template='', $drive=""){
-        global $_W, $_GPC;
+        global $_W, $_GPC, $inService;
         if (is_error($data)){
             $this->message($data['message']);
         }
@@ -303,6 +302,7 @@ class MicroService
         if (!empty($drive)){
             $this->CompileDrive = $drive;
         }
+        $inService = $this;
         if ($this->CompileDrive=='smarty'){
             if (empty($template)){
                 $template = tpl_build($_W['controller'], $_W['action'], $this->serverPath.$this->identity."/template/$platform");
@@ -329,30 +329,42 @@ class MicroService
             if (empty($template)){
                 $template = tpl_build($_W['controller'], $_W['action'], $this->serverPath.$this->identity."/views/$platform");
             }
-            if (!empty($data)){
-                $data['_W'] = $_W;
-                $data['_GPC'] = $_GPC;
-                View::share($data);
+            if (empty($data)){
+                $data = array();
             }
+            $data['_W'] = $_W;
+            $data['_GPC'] = $_GPC;
+            $data['inService'] = $inService;
+            View::share($data);
             $source = $this->serverPath.$this->identity."/views/$platform/$template.blade.php";
+            if (!file_exists($source)){
+                throw new \Exception("view $template dose not exist.");
+            }
             return View::file($source);
         }
-        return true;
+        return response()->json($data);
     }
 
     public function message($msg, $redirect = '', $type = 'error'){
         global $_W, $_GPC;
         $data = array('message'=>$msg,'redirect'=>$redirect,'type'=>$type);
+        if (is_string($data['message']) && preg_match('/^([\w\s.]+)$/', $data['message'])){
+            $data['message'] = __($data['message']);
+        }
         ob_clean();
         if ($_W['isajax']){
-            echo json_encode($data);
+            $data['data'] = [];
+            $data['code'] = $type=='success' ? 0 : -1;
+            if (is_array($data['message'])){
+                $data['data'] = $data['message'];
+                $data['message'] = 'OK';
+            }
+            return response()->json($data);
         }else{
             View::share('_W',$_W);
             View::share('_GPC',$_GPC);
-            echo response()->view('message',$data)->content();
+            return response()->view('message',$data)->content();
         }
-        session()->save();
-        exit;
     }
 
     /**
@@ -390,9 +402,9 @@ class MicroService
         if (!empty($WorkingDirectory)){
             global $_W;
             if ($_W['isajax']){
-                $this->message("依赖缺失：$requireName");
+                $this->message("Vendor package missing: $requireName");
             }
-            $title = "安装依赖组件包";
+            $title = __('installVendor');
             include tpl_include("web/composer");
             session_exit();
         }

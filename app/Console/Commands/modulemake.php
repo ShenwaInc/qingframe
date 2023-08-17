@@ -6,7 +6,6 @@ use App\Http\Middleware\App;
 use App\Services\FileService;
 use App\Services\ModuleService;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
 
 class modulemake extends Command {
     /**
@@ -55,7 +54,7 @@ class modulemake extends Command {
         $moduleName = $arguments['name'] ? trim($arguments['name']) : ucfirst($identity);
         $this->info("Identity:$identity, moduleName:$moduleName");
         try {
-            if (DB::table('modules')->where('name', $identity)->value('mid')){
+            if (pdo_fetch("select mid from " . tablename('modules'). " where `name`=:name", array(':name'=>$identity))){
                 return $this->report("Module $identity already installed!");
             }
             if (ModuleService::localExists($identity)){
@@ -78,7 +77,7 @@ class modulemake extends Command {
             return $this->report("Create package faild: may not have permission.");
         }
         $Manifest = file_get_contents(resource_path('stub/module.manifest.stub'));
-        $Manifest = str_replace(array("Dummy","dummy","TIMESTAMP"), array($moduleName, $identity, date("YmdH01", TIMESTAMP)), $Manifest);
+        $Manifest = str_replace(array("Dummy","dummy","TIMESTAMP"), array($moduleName, $identity, date("Ymd01", TIMESTAMP)), $Manifest);
         if ($arguments['type']!=1){
             $Manifest = str_replace('"module_type": "1"', '"module_type": "'.$arguments['type'].'"', $Manifest);
         }

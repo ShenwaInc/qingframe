@@ -17,8 +17,8 @@
 @if(!$_W['isajax'])
     <div class="main-content">
         <div class='title'>
-            <h2>设置权限</h2>
-            <a href='javascript:;' onClick="javascript:history.back()">返回</a>
+            <h2>@lang('operatingAuthority')</h2>
+            <a href='javascript:;' onClick="javascript:history.back()">@lang('back')</a>
         </div>
         <div class="fui-card layui-card">
             <div class="layui-card-body">
@@ -28,7 +28,7 @@
                         @csrf
                         <div class="layui-form-item permissions">
                             <div class='per-title'>
-                                <div>应用权限</div>
+                                <div>{{ __('permissions', array('operation'=>__('application'))) }}</div>
                             </div>
                             @foreach($modulesList as $value)
                             <div class='per-list-block'>
@@ -61,7 +61,7 @@
                         </div>
                         <div class="layui-form-item permissions">
                             <div class='per-title'>
-                                <div>服务权限</div>
+                                <div>{{ __('permissions', array('operation'=>__('service'))) }}</div>
                             </div>
                             @foreach($serversList as $value)
                             <div class='per-list-block'>
@@ -94,7 +94,7 @@
                         </div>
                         <div class="layui-form-item">
                             <div style='float: right'>
-                                <button class="layui-btn layui-btn-normal" lay-submit type="submit" value="true" name="savedata">保存</button>
+                                <button class="layui-btn layui-btn-normal" lay-submit type="submit" value="true" name="savedata">@lang('save')</button>
                             </div>
                         </div>
                     </form>

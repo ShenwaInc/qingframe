@@ -2,26 +2,26 @@
 
 <div class="main-content">
 
-    <h2>平台管理</h2>
+    <h2>{{ __('manageData', array('data'=>__('platform'))) }}</h2>
 
     <div class="layui-tab fui-tab margin-bottom-xl">
         <ul class="layui-tab-title title_tab">
             <li>
-                <a href="{{ wurl('account/profile',array('uniacid'=>$uniacid)) }}">基础信息</a>
+                <a href="{{ wurl('account/profile',array('uniacid'=>$uniacid)) }}">@lang('basicInformation')</a>
             </li>
             <li>
-                <a href="{{ wurl('account/functions',array('uniacid'=>$uniacid)) }}">应用与服务</a>
+                <a href="{{ wurl('account/functions',array('uniacid'=>$uniacid)) }}">@lang('Applications&Services')</a>
             </li>
             <li class="layui-this">
-                <a href="{{ wurl('account/role',array('uniacid'=>$uniacid)) }}">操作权限</a>
+                <a href="{{ wurl('account/role',array('uniacid'=>$uniacid)) }}">@lang('operatingAuthority')</a>
             </li>
         </ul>
     </div>
 
     <div class="fui-card layui-card">
         <div class="layui-card-header nobd">
-            <a href="{{ wurl('account/role',array('uniacid'=>$uniacid,'op'=>'add'),true) }}" title="新增平台权限" class="fr layui-btn layui-btn-sm layui-btn-normal ajaxshow">新增权限</a>
-            <span class="title">操作权限</span>
+            <a href="{{ wurl('account/role',array('uniacid'=>$uniacid,'op'=>'add'),true) }}" data-width="750" title="{{ __('newData', array('data'=>__('platformOperator'))) }}" class="fr layui-btn layui-btn-sm layui-btn-normal ajaxshow">{{ __('newData', array('data'=>__('operator'))) }}</a>
+            <span class="title">@lang('operatingAuthority')</span>
         </div>
         <div class="layui-card-body">
             <div class="un-padding">
@@ -33,29 +33,29 @@
                     </colgroup>
                     <thead>
                     <tr>
-                        <th>用户</th>
-                        <th class="layui-hide-xs">权限</th>
-                        <th style="text-align: right">操作</th>
+                        <th>@lang('user')</th>
+                        <th class="layui-hide-xs">@lang('operatingAuthority')</th>
+                        <th style="text-align: right">@lang('action')</th>
                     </tr>
                     </thead>
                     <tbody>
                     @if(empty($users))
                     <tr>
-                        <td colspan="3" class="text-center">暂无数据</td>
+                        <td colspan="3" class="text-center">@lang('empty')</td>
                     </tr>
                     @endif
                     @foreach($users as $key=>$value)
                         <tr>
                             <td><span{{ $value['expired'] ? ' class=text-gray' : '' }}>{{ $value['username'] }}</span>&nbsp;<span class="layui-badge layui-bg-{{ $colors[$value['role']] }}">{{ $value['roler'] }}</span></td>
-                            <td class="layui-hide-xs">{{ empty($value['permission']) ? '所有权限' : '部分权限' }}</td>
+                            <td class="layui-hide-xs">{{  __(empty($value['permission'])?'allPermissions':'partialPermissions') }}</td>
                             <td class="text-right">
                                 @if($value['role']=='owner')
                                     @if($_W['isfounder'])
-                                        <a href="javascript:;" onclick="showWindow(this)" data-id="#role-setowner" title="更换所有者" class="text-blue">修改</a>
+                                        <a href="javascript:;" onclick="showWindow(this)" data-id="#role-setowner" title="@lang('switchOwner')" class="text-blue">@lang('modify')</a>
                                     @endif
                                 @else
-                                    <a href="{{ wurl('account/permission',array('uniacid'=>$uniacid,'uid'=>$value['uid']),true) }}" class="text-blue margin-right-sm">设置权限</a>
-                                    <a href="{{ wurl('account/role',array('uniacid'=>$uniacid,'uid'=>$value['uid'],'op'=>'remove'),true) }}" class="text-red confirm" data-text="确定要删除该用户的操作权限吗？">删除</a>
+                                    <a href="{{ wurl('account/permission',array('uniacid'=>$uniacid,'uid'=>$value['uid']),true) }}" class="text-blue margin-right-sm">@lang('setting')</a>
+                                    <a href="{{ wurl('account/role',array('uniacid'=>$uniacid,'uid'=>$value['uid'],'op'=>'remove'),true) }}" class="text-red confirm" data-text="@lang('removeOperatorConfirm')">@lang('delete')</a>
                                 @endif
                             </td>
                         </tr>
@@ -73,24 +73,24 @@
         <form class="layui-form" style="min-height: 360px" method="POST" action="{{ wurl('account/role',array('uniacid'=>$uniacid,'op'=>'setowner')) }}">
             @csrf
             <div class="layui-form-item">
-                <label class="layui-form-label">选择用户</label>
+                <label class="layui-form-label">{{ __('chooseData', array('data'=>__('user'))) }}</label>
                 <div class="layui-input-block">
                     <div class="layui-input-inline" style="width: 70%">
                         <select name="uid" lay-search required lay-verify="required">
-                            <option value="">输入用户名搜索</option>
+                            <option value="">{{ __('type&search', array('input'=>__('username'))) }}</option>
                             <option value="{{ $_W['uid'] }}">{{ $_W['user']['username'] }}</option>
                             @foreach($subusers as $sub)
                                 <option value="{{ $sub['uid'] }}">{{ $sub['username'] }}</option>
                             @endforeach
                         </select>
                     </div>
-                    <a href="{{ wurl('user/create',array('uid'=>0),true) }}" class="layui-btn ajaxshow">新增用户</a>
+                    <a href="{{ wurl('user/create',array('uid'=>0),true) }}" class="layui-btn ajaxshow">{{ __('newData', array('data'=>__('user'))) }}</a>
                 </div>
             </div>
             <div class="layui-form-item">
                 <div class="layui-input-block">
-                    <button class="layui-btn layui-btn-normal" lay-submit type="submit" value="true" name="savedata">保存</button>
-                    <button type="reset" class="layui-btn layui-btn-primary">重填</button>
+                    <button class="layui-btn layui-btn-normal" lay-submit type="submit" value="true" name="savedata">@lang('save')</button>
+                    <button type="reset" class="layui-btn layui-btn-primary">@lang('reset')</button>
                 </div>
             </div>
         </form>

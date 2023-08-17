@@ -23,12 +23,12 @@ class UserController extends Controller
     public function doCreate(Request $request){
         global $_W;
         $uid = (int)$request->input('uid',0);
-        $return = array('title'=>'创建子账户','uid'=>$uid,'user'=>array('uid'=>0,'username'=>'','remark'=>'','endtime'=>0,'maxaccount'=>0));
+        $return = array('title'=>__('newData', array('data'=>__('subAccount'))),'uid'=>$uid,'user'=>array('uid'=>0,'username'=>'','remark'=>'','endtime'=>0,'maxaccount'=>0));
         if ($uid>0){
             $user = DB::table('users')->where('uid',$uid)->first();
-            if (empty($user)) return $this->message('找不到该用户，可能已被删除');
+            if (empty($user)) return $this->message('userNotfound');
             if ($user['owner_uid']!=$_W['uid'] && !$_W['isfounder']){
-                return $this->message('您暂时无权操作该用户');
+                return $this->message('userNotAuthorized');
             }
             $user['maxaccount'] = (int)DB::table('users_extra_limit')->where('uid',$user['uid'])->value('maxaccount');
             $return['user'] = $user;
@@ -42,11 +42,11 @@ class UserController extends Controller
             $maxaccount = (int)$request->input('maxaccount',0);
             $data = array('remark'=>$remark,'username'=>$username,'starttime'=>TIMESTAMP);
             if (empty($data['username'])){
-                if ($uid==0) return $this->message('用户名不能为空');
+                if ($uid==0) return $this->message(__("typeSomething", array('data'=>__('username'))));
                 $data['username'] = $user['username'];
             }else{
                 $namelen = mb_strlen($data['username'],'utf-8');
-                if ($namelen<3 || $namelen>15) return $this->message('用户名长度不正确(3~15)');
+                if ($namelen<3 || $namelen>15) return $this->message('usernameValid');
             }
             if (empty($endtime)){
                 $data['endtime'] = 0;
@@ -54,16 +54,17 @@ class UserController extends Controller
                 $data['endtime'] = strtotime($endtime);
             }
             if (!empty($password)){
-                $pwdlen = strlen($password);
-                if ($pwdlen<6) return $this->message('密码长度不能小于6');
+                $pwdLen = strlen($password);
+                $passportLen = (int)env('APP_PASSPORT_LEN', 6);
+                if ($pwdLen<$passportLen) return $this->message(__('newPasswordValid', array('len'=>$passportLen)));
                 if ($uid==0){
-                    if (empty($repassword)) return $this->message('请确认您输入的密码');
-                    if ($password!=$repassword) return $this->message('两次输入的密码不一致');
+                    if (empty($repassword)) return $this->message('reTypePassword');
+                    if ($password!=$repassword) return $this->message('rePasswordError');
                 }
                 $data['salt'] = \Str::random(8);
                 $data['password'] = sha1("{$password}-{$data['salt']}-{$_W['config']['setting']['authkey']}");
             }elseif ($uid==0){
-                return $this->message('请设置一个登录密码');
+                return $this->message('typeNewPassword');
             }
             if ($uid>0){
                 $complete = DB::table('users')->where('uid',$user['uid'])->update($data);
@@ -88,7 +89,7 @@ class UserController extends Controller
                     DB::table('users_extra_limit')->insert(array('uid'=>$complete,'maxaccount'=>$maxaccount,'timelimit'=>$data['endtime']));
                 }
             }
-            if ($complete) return $this->message('保存成功！', referer(), 'success');
+            if ($complete) return $this->message('savedSuccessfully', referer(), 'success');
             return $this->message();
         }
         return $this->globalView('console.user.create',$return);
@@ -99,13 +100,13 @@ class UserController extends Controller
         $uid = (int)$request->input('uid',0);
         $query = DB::table('users')->where('uid',$uid);
         $user = $query->first();
-        if (empty($user)) return $this->message('找不到该用户，可能已被删除');
+        if (empty($user)) return $this->message('userNotfound');
         if ($user['owner_uid']!=$_W['uid'] && !$_W['isfounder']){
-            return $this->message('您暂时无权操作该用户');
+            return $this->message('userNotAuthorized');
         }
         $complete = $query->update(array('status'=>3));
         if ($complete){
-            return $this->message('删除成功！',wurl('user/subuser'),'success');
+            return $this->message('deleteSuccessfully',wurl('user/subuser'),'success');
         }
         return $this->message();
     }
@@ -113,29 +114,29 @@ class UserController extends Controller
     public function doCheckout(Request $request){
         global $_W;
         $uid = (int)$request->input('uid',0);
-        $user = User::where('uid',intval($uid))->first();
-        if (empty($user) || $user->status!=2) return $this->message('找不到该用户，可能已被删除');
+        $user = User::where('uid', $uid)->first();
+        if (empty($user) || $user->status!=2) return $this->message('userNotfound');
         if ($user->owner_uid!=$_W['uid'] && !$_W['isfounder']){
-            return $this->message('您暂时无权操作该用户');
+            return $this->message('userNotAuthorized');
         }
         //清除会话
         $request->session()->flush();
         //退出登录
         Auth::logout();
         $_W['uid'] = 0;
-        $_W['user'] = array('uid'=>0,'username'=>'未登录');
+        $_W['user'] = array('uid'=>0,'username'=>__('visitor'));
         //自动登录
         Auth::login($user, true);
-        return $this->message("即将切换到".$user->username."登录",url('console'),'success');
+        return $this->message(__('userSwitchLogin', ['name'=>$user->username]),url('console'),'success');
     }
 
     public function doSubuser(Request $request){
         global $_W;
-        $data = array('title'=>'子账户管理','users'=>array());
+        $data = array('title'=>__('manageData', array('data'=>__('subAccount'))),'users'=>array());
         $users = UserService::GetSubs($_W['uid']);
         if (!empty($users)){
             foreach ($users as &$value){
-                $value['expiredate'] = '永久';
+                $value['expiredate'] = __('longtime');
                 $value['expire'] = false;
                 if ($value['endtime']>0){
                     $value['expiredate'] = date('Y-m-d',$value['endtime']);
@@ -172,10 +173,10 @@ class UserController extends Controller
             global $_W;
             $avatar = $request->input('path', '');
             if (empty($avatar)){
-                return $this->message("无效的图片路径");
+                return $this->message("attachFileInvalid");
             }
             if (DB::table('users_profile')->where('uid',$_W['uid'])->update(['avatar'=>$avatar,'edittime'=>TIMESTAMP])){
-                return $this->message("更新成功！",wurl('user/profile'),'success');
+                return $this->message("savedSuccessfully",wurl('user/profile'),'success');
             }
         }
         return $this->message();
@@ -183,7 +184,7 @@ class UserController extends Controller
 
     public function doProfile(Request $request){
         global $_W;
-        $return = array('title'=>'账户管理');
+        $return = array('title'=>__('accountManagement'));
         $profile = pdo_get('users_profile',array('uid'=>$_W['uid']));
         $return['profile'] = !empty($profile) ? $profile : array(
             'avatar' => $_W['setting']['page']['logo']
@@ -192,24 +193,25 @@ class UserController extends Controller
     }
 
     public function doPassport(Request $request){
-        $return = array('title'=>'登录密码');
+        $return = array('title'=>__('loginPassword'));
         if ($request->isMethod('post')){
             global $_W;
+            $passportLen = (int)env('APP_PASSPORT_LEN', 6);
             $password = $request->input('oldpassword');
-            if (empty($password)) return $this->message('请输入您原来的登录密码');
+            if (empty($password)) return $this->message('typeOldPassword');
             $newpassowrd = $request->input('newpassword');
             //验证旧密码
             $user = pdo_get('users',array('uid'=>$_W['uid']),array('uid','password','salt'));
             $hash = sha1("{$password}-{$user['salt']}-{$_W['config']['setting']['authkey']}");
             if ($hash!=$user['password']){
-                return $this->message('旧密码不正确');
+                return $this->message('validOldPassword');
             }
-            if (!$newpassowrd) return $this->message('请设置新的登录密码');
-            if ($password==$newpassowrd) return $this->message('新密码不能和旧密码一样');
+            if (!$newpassowrd) return $this->message('typeNewPassword');
+            if ($password==$newpassowrd) return $this->message('rePasswordValid');
             $repassword = $request->input('repassword');
-            if (!$repassword) return $this->message('请再次输入您的新登录密码');
-            if ($newpassowrd!=$repassword) return $this->message('两次输入的密码不一致');
-            if (strlen($newpassowrd)<6) return $this->message('登录密码不能少于6位数');
+            if (!$repassword) return $this->message('reTypePassword');
+            if ($newpassowrd!=$repassword) return $this->message('rePasswordError');
+            if (strlen($newpassowrd)<$passportLen) return $this->message(__('newPasswordValid', array('len'=>$passportLen)));
             $update = array(
                 'salt'=>\Str::random(8)
             );
@@ -218,8 +220,8 @@ class UserController extends Controller
             if ($complete){
                 Auth::logout();
                 $_W['uid'] = 0;
-                $_W['user'] = array('uid'=>0,'username'=>'未登录');
-                return $this->message('密码重置成功，请重新登录',url('/login'),'success');
+                $_W['user'] = array('uid'=>0,'username'=>__('visitor'));
+                return $this->message('rePassPortSuccessfully',url('/login'),'success');
             }
             return $this->message();
         }

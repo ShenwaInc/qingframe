@@ -111,9 +111,9 @@ class FileService
 
     static function Upload(Request $request,$type='image',$field='file'){
         global $_W;
-        if (!$request->hasFile($field)) return error(-1,'没有上传内容');
+        if (!$request->hasFile($field)) return error(-1,__('uploadValid'));
         if (!in_array($type, array('image', 'media', 'attach'))) {
-            return error(-2, '未知的上传类型');
+            return error(-2, __('uploadValid'));
         }
         $harmtype = array('asp', 'php', 'jsp', 'js', 'css', 'php3', 'php4', 'php5', 'ashx', 'aspx', 'exe', 'cgi');
         $Upload = $request->file($field);
@@ -121,20 +121,20 @@ class FileService
         $size = $Upload->getSize();
         $setting = SettingService::Load('upload');
         if (in_array($ext, $harmtype)){
-            return error(-3, '不允许上传此类文件');
+            return error(-3, __('attachExtInvalid',['ext'=>$ext]));
         }
         if ($type!='attach'){
             $allowExt = $setting['upload'][$type]['extentions'];
             $limit = $setting['upload'][$type]['limit'];
             if (!in_array($ext, $allowExt)) {
-                return error(-3, '不允许上传此类文件');
+                return error(-3, __('attachExtInvalid',['ext'=>$ext]));
             }
             if (!empty($limit) && $limit * 1024 < $size) {
-                return error(-4, "上传的文件超过大小限制({$size}byte)");
+                return error(-4, __('attachSizeInvalid', ['size'=>$size]));
             }
         }
         $path = $Upload->store("{$type}s/{$_W['uniacid']}/".date('Y/m'));
-        if (!$path) return error(-1,'上传失败，请重试');
+        if (!$path) return error(-1,__('uploadFailed'));
         //图片压缩
         if ($type=='image'){
             $quality = intval($setting['upload']['image']['zip_percentage']);
@@ -152,10 +152,10 @@ class FileService
     static function file_upload($file, $type = 'image', $name = '', $compress = false) {
         $harmtype = array('asp', 'php', 'jsp', 'js', 'css', 'php3', 'php4', 'php5', 'ashx', 'aspx', 'exe', 'cgi');
         if (empty($file)) {
-            return error(-1, '没有上传内容');
+            return error(-1, __('uploadValid'));
         }
         if (!in_array($type, array('image', 'thumb', 'voice', 'video', 'audio'))) {
-            return error(-2, '未知的上传类型');
+            return error(-2, __('uploadValid'));
         }
         global $_W;
         $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
@@ -184,10 +184,11 @@ class FileService
             $allowExt = $setting['extentions'];
         }
         if (!in_array(strtolower($ext), $allowExt) || in_array(strtolower($ext), $harmtype)) {
-            return error(-3, '不允许上传此类文件');
+            return error(-3, __('attachExtInvalid',['ext'=>$ext]));
         }
-        if (!empty($limit) && $limit * 1024 < filesize($file['tmp_name'])) {
-            return error(-4, "上传的文件超过大小限制，请上传小于 {$limit}k 的文件");
+        $size = filesize($file['tmp_name']);
+        if (!empty($limit) && $limit * 1024 < $size) {
+            return error(-4, __('attachSizeInvalid', ['size'=>$size]));
         }
 
         $result = array();
@@ -214,15 +215,13 @@ class FileService
             if (!empty($exif['THUMBNAIL']['Orientation'])) {
                 $image = imagecreatefromstring(file_get_contents($file['tmp_name']));
                 switch($exif['THUMBNAIL']['Orientation']) {
-                    case 8:
-                        $image = imagerotate($image,0,0);
-                        break;
                     case 3:
                         $image = imagerotate($image,180,0);
                         break;
                     case 6:
                         $image = imagerotate($image,-90,0);
                         break;
+                    case 8:
                     default:
                         $image = imagerotate($image,0,0);
                         break;
@@ -236,7 +235,7 @@ class FileService
             imagedestroy($image);
         }
         if (empty($newimage)) {
-            return error(-1, '文件上传失败, 请将 attachment 目录权限先777 <br> (如果777上传失败,可尝试将目录设置为755)');
+            return error(-1, __('uploadFailed'));
         }
 
         if ('image' == $type && $compress) {
@@ -333,9 +332,8 @@ class FileService
     }
 
     public static function file_check_uni_space($file) {
-        global $_W;
         if (!is_file($file)) {
-            return error(-1, '未找到上传的文件。');
+            return error(-1, __('uploadValid'));
         }
         $uni_remote_setting = SettingService::uni_load('remote');
         if (empty($uni_remote_setting['remote']['type'])) {
@@ -350,7 +348,7 @@ class FileService
             if ($attachment_limit > 0) {
                 $file_size = max(1, round(filesize($file) / 1024));
                 if (($file_size + $uni_setting['attachment_size']) > ($attachment_limit * 1024)) {
-                    return error(-1, '上传失败，可使用的附件空间不足！');
+                    return error(-1, __('uploadFailedLimit'));
                 }
             }
         }
@@ -361,7 +359,7 @@ class FileService
     public static function file_change_uni_attchsize($file, $is_add = true) {
         global $_W;
         if (!is_file($file)) {
-            return error(-1, '未找到的文件。');
+            return error(-1, __('uploadValid'));
         }
         $file_size = round(filesize($file) / 1024);
         $file_size = max(1, $file_size);

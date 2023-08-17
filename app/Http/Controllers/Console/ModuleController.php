@@ -13,15 +13,20 @@ use Illuminate\Support\Facades\DB;
 
 class ModuleController extends Controller
 {
-    //
 
+    /**
+     * @throws \Exception
+     */
     public function entry(Request $request, $modulename, $do='index'){
         global $_W;
         $WeModule = new WeModule();
         try {
             $site = $WeModule->create($modulename);
         }catch (\Exception $exception){
-            return $this->message('模块初始化失败，请联系技术处理');
+            if (DEVELOPMENT){
+                throw $exception;
+            }
+            return $this->message($exception->getMessage());
         }
         $method = "doWeb" . ucfirst($do);
         DB::table('users_operate_history')->updateOrInsert(
@@ -40,8 +45,7 @@ class ModuleController extends Controller
         if (method_exists($this, $method)){
             return $this->$method($request);
         }
-        $return = array('title'=>'应用管理', 'op'=>'plugin');
-        $return['types'] = array('框架','应用','服务','资源');
+        $return = array('title'=>__('applications'), 'op'=>'plugin');
         $return['colors'] = array('red','blue','green','orange');
         $return['components'] = CloudService::getPlugins();
         $swaSocket = serv('websocket');
@@ -65,7 +69,7 @@ class ModuleController extends Controller
         if (is_error($install)){
             return $this->TerminalError($install['message']);
         }
-        return $this->message('恭喜您，安装完成！', url('console/module'),'success');
+        return $this->message('installSuccessfully', url('console/module'),'success');
     }
 
     /**
@@ -78,7 +82,7 @@ class ModuleController extends Controller
             return $this->TerminalError($complete['message']);
         }
         CacheService::flush();
-        return $this->message('恭喜您，升级成功！', url('console/module'),'success');
+        return $this->message('upgradeSuccessfully', url('console/module'),'success');
     }
 
     /**
@@ -91,7 +95,7 @@ class ModuleController extends Controller
             MSService::TerminalSend(["mode"=>"err", "message"=>$cloudrequire['message']], true);
             return $this->message($cloudrequire['message'], trim($cloudrequire['redirect']));
         }
-        return $this->message('恭喜您，安装完成！', url('console/module'),'success');
+        return $this->message('installSuccessfully', url('console/module'),'success');
     }
 
     /**
@@ -112,7 +116,7 @@ class ModuleController extends Controller
         }
         $redirect = url('console/module');
         CacheService::flush();
-        return $this->message('恭喜您，升级成功！', $redirect,'success');
+        return $this->message('upgradeSuccessfully', $redirect,'success');
     }
 
     public function TerminalError($message){
@@ -127,7 +131,7 @@ class ModuleController extends Controller
         $identity = $request->input('nid', "");
         $uninstall = ModuleService::uninstall($identity);
         if (is_error($uninstall)) return $this->TerminalError($uninstall['message']);
-        return $this->message('卸载完成', url('console/module'),'success');
+        return $this->message('uninstallComplete', url('console/module'),'success');
     }
 
 

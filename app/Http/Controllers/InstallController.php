@@ -150,21 +150,9 @@ class InstallController extends Controller
             $uni_account->where('uniacid',$uniacid)->update(array('default_acid' => $acid));
             UserService::AccountRoleUpdate($uniacid,$uid);
 
-            //initialize mc group
-            DB::table('mc_groups')->insert(array('uniacid' => $uniacid, 'title' => '默认会员组', 'isdefault' => 1));
-
-            //initialize uni setting
-            DB::table('uni_settings')->insert(array(
-                'creditnames' => serialize(array('credit1' => array('title' => '积分', 'enabled' => 1), 'credit2' => array('title' => '余额', 'enabled' => 1))),
-                'creditbehaviors' => serialize(array('activity' => 'credit1', 'currency' => 'credit2')),
-                'uniacid' => $uniacid,
-                'default_site' => 0,
-                'sync' => serialize(array('switch' => 0, 'acid' => '')),
-            ));
-
             //initializer laravel framework
             DB::table('gxswa_cloud')->insert(array(
-                'identity'=>'swa_framework_laravel',
+                'identity'=>$_W['config']['identity'],
                 'name'=>'轻如云系统V1',
                 'modulename'=>'',
                 'type'=>0,

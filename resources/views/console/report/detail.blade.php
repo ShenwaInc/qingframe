@@ -2,19 +2,13 @@
 <div class="layui-fluid">
     <div class="@if(empty($_GPC['inajax'])) main-content @endif">
         <div class="fui-card layui-card unpadding">
-            @if(!$_W['isajax'])
-            <div class="layui-card-header nobd">
-                <a href="" class="fr text-blue ajaxshow" title="编辑站点信息"><i class="fa fa-edit"></i></a>
-                <span class="title">{{ $title }}</span>
-            </div>
-            @endif
             <div class="layui-card-body">
                 <div class="un-padding">
                     <div class="layui-tab layui-tab-brief" lay-filter="docDemoTabBrief">
                         <ul class="layui-tab-title">
-                            <li @if(empty($feedbacks)) class="layui-this" @endif >工单详情</li>
-                            <li @if(!empty($feedbacks)) class="layui-this" @endif >在线沟通</li>
-                            <li>工单日志</li>
+                            <li @if(empty($feedbacks)) class="layui-this" @endif >@lang('workDetails')</li>
+                            <li @if(!empty($feedbacks)) class="layui-this" @endif >@lang('communication')</li>
+                            <li>@lang('records')</li>
                         </ul>
                         <div class="layui-tab-content">
                             <div class="layui-tab-item @if(empty($feedbacks)) layui-show @endif ">
@@ -25,41 +19,41 @@
                                     </colgroup>
                                     <tbody>
                                     <tr>
-                                        <td><span class="fui-table-lable">工单号</span></td>
-                                        <td class="soild-after">{{ $orderInfo['ordersn'] }}&nbsp;<span class="text-blue js-clip" data-url="{{ $orderInfo['ordersn'] }}" style="cursor: pointer;">复制</span></td>
+                                        <td><span class="fui-table-lable">@lang('WorkOrderID')</span></td>
+                                        <td class="soild-after">{{ $orderInfo['ordersn'] }}&nbsp;<span class="text-blue js-clip" data-url="{{ $orderInfo['ordersn'] }}" style="cursor: pointer;">@lang('copy')</span></td>
                                     </tr>
                                     <tr>
-                                        <td><span class="fui-table-lable">工单内容</span></td>
+                                        <td><span class="fui-table-lable">@lang('content')</span></td>
                                         <td class="soild-after" style="white-space: pre-wrap">{{ $orderInfo['content'] }}</td>
                                     </tr>
                                     @if(!empty($orderInfo['secret']))
                                         <tr>
-                                            <td><span class="fui-table-lable">机密信息</span></td>
+                                            <td><span class="fui-table-lable">@lang('confidential')</span></td>
                                             <td class="soild-after" id="orderSecret">
                                                 <div class="order-secret">{{ $orderInfo['secret'] }}</div>
-                                                <span class="text-blue js-secret" style="cursor: pointer;">展开</span>
+                                                <span class="text-blue js-secret" style="cursor: pointer;">@lang('view')</span>
                                             </td>
                                         </tr>
                                     @endif
                                     <tr>
-                                        <td><span class="fui-table-lable">相关附件</span></td>
+                                        <td><span class="fui-table-lable">@lang('attachment')</span></td>
                                         <td class="soild-after">
                                             @if(!empty($orderInfo['fileList']))
                                                 @foreach($orderInfo['fileList'] as $value)
                                                     <p><a href="{{ $value['url'] }}" class="text-blue" target="_blank">{{ $value['name'] }}</a></p>
                                                 @endforeach
                                             @else
-                                                暂无
+                                                @lang('empty')
                                             @endif
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td><span class="fui-table-lable">提交时间</span></td>
-                                        <td class="soild-after">{{ $orderInfo['created_at'] }}</td>
+                                        <td><span class="fui-table-lable">@lang('state')</span></td>
+                                        <td class="soild-after">{{ $orderInfo['statusName'] }}</td>
                                     </tr>
                                     <tr>
-                                        <td><span class="fui-table-lable">工单状态</span></td>
-                                        <td class="soild-after">{{ $orderInfo['statusName'] }}</td>
+                                        <td><span class="fui-table-lable">@lang('releaseTime')</span></td>
+                                        <td class="soild-after">{{ $orderInfo['created_at'] }}</td>
                                     </tr>
                                     </tbody>
                                 </table>
@@ -68,7 +62,7 @@
                                 <div id="orderDialog">
                                     @if(empty($feedbacks))
                                         <div class="fui-empty">
-                                            <span>暂无沟通记录</span>
+                                            <span>@lang('empty')</span>
                                         </div>
                                     @else
                                     <div class="dialog-list">
@@ -80,11 +74,11 @@
                                             <div class="dialog-content">
                                                 <p><span class="dialog-nick">{{ $value['my'] ? $_W['user']['username'] : $value['name'] }}</span>&nbsp;&nbsp;&nbsp;{{ $value['created_at'] }}</p>
                                                 @if($value['type']=='img')
-                                                    <div class="dialog-message msg-img"><img src="{{ $value['content'] }}" alt="沟通图片" /></div>
+                                                    <div class="dialog-message msg-img"><img src="{{ $value['content'] }}" alt="@lang('communication')" /></div>
                                                 @elseif($value['type']=='text')
                                                     <div class="dialog-message msg-text">{!! $value['content'] !!}</div>
                                                 @else
-                                                    <div class="dialog-message msg-file"><a href="{{ $value['content'] }}" class="text-blue" target="_blank">下载附件</a></div>
+                                                    <div class="dialog-message msg-file"><a href="{{ $value['content'] }}" class="text-blue" target="_blank">@lang('download')</a></div>
                                                 @endif
                                             </div>
                                         </div>
@@ -96,7 +90,7 @@
                             <div class="layui-tab-item order-log">
                                 @if(empty($logs))
                                     <div class="fui-empty">
-                                        <span>暂无记录</span>
+                                        <span>@lang('empty')</span>
                                     </div>
                                 @else
                                     @foreach($logs as $key=>$value)
@@ -111,9 +105,9 @@
                     </div>
                     <div class="text-right">
                         @if($orderInfo['status']<6)
-                            <a class="layui-btn layui-btn-normal ajaxshow" href="{{ wurl('report/feedback', array('id'=>$orderInfo['id'])) }}">补充反馈</a>
-                            <a class="layui-btn confirm ajaxshow" data-text="确定此工单已完成验收吗？" href="{{ wurl('report/Complete', array('id'=>$orderInfo['id'])) }}">完成工单</a>
-                            <a class="layui-btn layui-btn-warm confirm ajaxshow layui-hide" data-text="确定要关闭该工单吗？" href="{{ wurl('report/closeOrder', array('id'=>$orderInfo['id'])) }}">关闭工单</a>
+                            <a class="layui-btn layui-btn-normal ajaxshow" href="{{ wurl('report/feedback', array('id'=>$orderInfo['id'])) }}">@lang('feedback')</a>
+                            <a class="layui-btn confirm ajaxshow" data-text="@lang('workOrderComplete')" href="{{ wurl('report/Complete', array('id'=>$orderInfo['id'])) }}">@lang('done')</a>
+                            <a class="layui-btn layui-btn-warm confirm ajaxshow layui-hide" data-text="@lang('workOrderClose')" href="{{ wurl('report/closeOrder', array('id'=>$orderInfo['id'])) }}">@lang('close')</a>
                         @endif
                     </div>
                 </div>
@@ -156,10 +150,10 @@
             let Elem = $('#orderSecret');
             if(Elem.hasClass('layui-show')){
                 Elem.removeClass('layui-show');
-                $(this).text('展开');
+                $(this).text("@lang('view')");
             }else{
                 Elem.addClass('layui-show');
-                $(this).text('收起');
+                $(this).text("@lang('hide')");
             }
         })
     });

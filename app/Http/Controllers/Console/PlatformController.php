@@ -16,11 +16,11 @@ class PlatformController extends Controller
 
         if (empty($_W['isfounder']) && !empty($_W['user']) && ($_W['user']['status'] == 1 || $_W['user']['status'] == 3)) {
             Auth::logout();
-            return $this->message('您的账号正在审核或是已经被系统禁止，请联系网站管理员解决！');
+            return $this->message('accountUnavailable');
         }
         if (($_W['setting']['site']['close'] == 1) && empty($_W['isfounder'])) {
             Auth::logout();
-            return $this->message('站点已关闭，关闭原因：' . $_W['setting']['site']['closereason'], url('login'), 'error');
+            return $this->message(__('closingFor', array('reason'=>$_W['setting']['site']['closereason'])), url('login'), 'error');
         }
 
         if (SITEACID){

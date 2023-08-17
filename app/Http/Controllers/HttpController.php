@@ -79,9 +79,8 @@ class HttpController extends Controller
         try {
             include_once $ctrl;
             $className = ucfirst($ctroller)."Controller";
-            if (!class_exists($className)) return $this->message("找不到控制器$className");
+            if (!class_exists($className)) return $this->message(__('controllerNotFound', array('ctrl'=>$className)));
             $instance = new $className();
-            //if (!method_exists($instance,$method)) return $this->message("找不到指定方法$className::$method()");
             return $instance->$method();
         }catch (\Exception $exception){
             if (DEVELOPMENT){

@@ -6,7 +6,7 @@
         </div>
     </div>
     <div class="fui-footer-extra">
-        <p class="fui-footer-copyright">{!! $_W['page']['copyright'] !!}</p>
+        <p class="fui-footer-copyright"><span class="fr">{{ now() }}@if($debugInfo = debugInfo()), Processed in {{ $debugInfo['runtime'] }} second(s)@endif</span>{!! $_W['page']['copyright'] !!}</p>
     </div>
 </div>
 <script type="text/javascript">
@@ -73,7 +73,7 @@
         Obj.find('a.confirm').not('.ajaxshow').click(function(){
             var comfirmText = $(this).data('text');
             var redirect = $(this).attr('href');
-            layer.confirm(comfirmText, {icon: 3, title:'提示'}, function(index){
+            layer.confirm(comfirmText, {icon: 3, title:'@lang("confirm")'}, function(index){
                 window.location.href = redirect;
                 layer.close(index);
             });
@@ -94,18 +94,10 @@
                     $(datapicker).val(''),$(datapicker+'-i').val('').dropdown('toggle').focus();
                     break;
                 case 'updateCache' :
-                    layui.use('layer', function(){
-                        var index = layer.load(0,{shade: false,time: 3000});
-                        $.post('./index.php?c=system&a=updatecache&do=updatecache', {}, function(data) {
-                            console.log(data);
-                            layer.close(index);
-                            layer.msg('缓存更新成功',{icon:1})
-                        })
-                    });
-                    break;
+                    return Core.cacheclear();
                 case 'showqrcode' :
                     var qrcode = $(this).data('url');
-                    let title = typeof($(this).data('title'))=='undefined' ? '使用微信扫描二维码' : $(this).data('title');
+                    let title = typeof($(this).data('title'))=='undefined' ? '@lang("WeChatToScanCode")' : $(this).data('title');
                     layer.open({
                         title:title,
                         content: '<div style="width: 200px; height: 200px; margin: 0 auto;"><img src="'+qrcode+'" height="200" width="200" /></div>',
@@ -137,7 +129,7 @@
                     let src = typeof($(this).attr('src'))!='undefined' ? $(this).attr('src') : $(this).attr('data-src');
                     let imgtitle = typeof($(this).attr('title'))!='undefined' ? $(this).attr('title') : $(this).attr('data-alt');
                     let potos = {
-                        "title": "图片预览", //相册标题
+                        "title": "@lang('preview')", //相册标题
                         "id": 1, //相册id
                         "start": 0, //初始显示的图片序号，默认0
                         "data": [   //相册包含的图片，数组格式
@@ -185,7 +177,7 @@
                 },{inajax:1},'html',true);
             }
             if(confirmText!==''){
-                layer.confirm(confirmText, {icon: 3, title:'提示'}, function(index){
+                layer.confirm(confirmText, {icon: 3, title:'@lang("confirm")'}, function(index){
                     layer.close(index);
                     callBack();
                 });
@@ -207,10 +199,10 @@
                 }
             });
             e.on("success", function (t) {
-                layer.msg("复制成功！",{icon:1});
+                layer.msg("@lang('copySuccessfully')",{icon:1});
             });
             e.on("error", function (t) {
-                layer.msg("复制失败，请重试！",{icon:2});
+                layer.msg("@lang('copyFailed')",{icon:2});
             })
         });
     }
