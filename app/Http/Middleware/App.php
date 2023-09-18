@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Utils\Agent;
 use Closure;
+use Illuminate\Support\Facades\Cache;
 
 error_reporting(0);
 define('IA_ROOT', base_path('public'));

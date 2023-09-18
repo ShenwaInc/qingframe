@@ -15,7 +15,7 @@
                             <input type="text" name="siteroot" id="siteRoot" class="layui-input layui-bg-gray radius" required lay-verify="required" readonly value="{{ $siteinfo['siteroot'] }}" />
                             <div class="layui-word-aux">
                                 @if(!$siteinfo['hasDomain'])<strong class="text-red">{{ __('domainNotify', array('domain'=>$siteinfo['siteroot'])) }}</strong>@endif
-                                <p>{!! __('domainModify', array('times'=>$siteinfo['reDomain'])) !!}</p>
+                                <p>{!! __('domainModify', array('times'=>$siteinfo['reDomain'])) !!}&nbsp;&nbsp;<a href="javascript:;" class="text-blue js-reDomain">@lang('modify')</a></p>
                             </div>
                         </div>
                     </div>

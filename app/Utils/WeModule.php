@@ -98,6 +98,10 @@ class WeModule
         return $payment->cashier($data, $this->modulename);
     }
 
+    public function doWebMenu(){
+
+    }
+
     private static function defineConst($obj) {
         global $_W;
 
@@ -210,10 +214,10 @@ class WeModule
         }
         $paths = pathinfo($compile);
         $compile = str_replace($paths['filename'], $_W['uniacid'] . '_' . $paths['filename'], $compile);
+        if (!function_exists("tpl_compile")){
+            include_once app_path("Helpers/smarty.php");
+        }
         if (DEVELOPMENT || !is_file($compile) || filemtime($source) > filemtime($compile)) {
-            if (!function_exists("tpl_compile")){
-                include_once app_path("Helpers/smarty.php");
-            }
             tpl_compile($source, $compile, $this->modulename);
         }
 

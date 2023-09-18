@@ -10,9 +10,17 @@ return [
     'packageNotFound'=>'找不到语言包：:lang',
     'switch'=>'切换语言',
     'invalidPackage'=>'无效的语言包',
-    'packageIDPlaceholder'=>'字母/数字/下划线，必须以字母开头',
+    'invalidPackageId'=>'无效的语言包ID',
+    'packageIDPlaceholder'=>'仅限字母/数字/下划线，必须以字母开头',
     'packageNamePlaceholder'=>'如简体中文、繁体中文、英文等',
     'locale'=>'语言环境',
     'localePlaceholder'=>'请输入该语言包的语种，一般是字母简写，例如简体中文：zh、英文：en、法语：fr等',
-    'chooseLanguage'=>'请选择语言'
+    'chooseLanguage'=>'请选择语言',
+    'entries'=>'语言包词条',
+    'newEntry'=>'新增词条',
+    'variableNotice'=>'词条翻译中的<strong class="code-inline margin-lr-xs text-red">:xxx</strong>表示变量，请勿删除或修改变量名，否则可能显示异常',
+    'entryName'=>'词条名',
+    'typeEntryName'=>'请输入词条名',
+    'entryText'=>'词条文本',
+    'typeEntryText'=>'请输入词条文本'
 ];

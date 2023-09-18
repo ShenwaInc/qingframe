@@ -8,7 +8,7 @@
                         <table class="layui-table fui-table lines" lay-even lay-skin="nob">
                             <thead>
                             <tr>
-                                <th>@lang('appName')</th>
+                                <th>@lang('name')</th>
                                 <th class="layui-hide-xs">@lang('description')</th>
                                 <th><div class="text-right">@lang('action')</div></th>
                             </tr>
