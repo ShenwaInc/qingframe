@@ -243,24 +243,24 @@ class MSService
             if($server['status']!=1) continue;
             $server['entry'] = serv($server['identity'])->getEntry();
             if (!empty($server['entry']) && !is_error($server['entry'])){
-                $server['actions'] .= '<a class="layui-btn layui-btn-sm layui-btn-normal" target="_blank" href="'.$server['entry'].'">管理</a>';
+                $server['actions'] .= '<a class="layui-btn layui-btn-sm layui-btn-normal" target="_blank" href="'.$server['entry'].'">'.__('manage').'</a>';
             }
             $server['upgrade'] = array();
-            $upgradeAction = '<a class="layui-btn layui-btn-sm layui-btn-danger js-upgrade js-terminal layui-hide" data-text="升级前请做好数据备份" lay-tips="该服务可升级至最新版本" data-nid="'.$server['identity'].'" href="'.wurl('server', array('op'=>'cloudup', 'nid'=>$server['identity'])).'">升级</a>';
+            $upgradeAction = '<a class="layui-btn layui-btn-sm layui-btn-danger js-upgrade js-terminal layui-hide" data-text="升级前请做好数据备份" lay-tips="该服务可升级至最新版本" data-nid="'.$server['identity'].'" href="'.wurl('server', array('op'=>'cloudup', 'nid'=>$server['identity'])).'">'.__('upgrade').'</a>';
             if (DEVELOPMENT){
                 if (!empty(serv($server['identity'])->getMethods())){
-                    $server['actions'] .= '<a class="layui-btn layui-btn-sm" target="_blank" href="'.wurl("server/methods/{$server['identity']}").'">调用方法</a>';
+                    $server['actions'] .= '<a class="layui-btn layui-btn-sm" target="_blank" href="'.wurl("server/methods/{$server['identity']}").'">'.__('methods').'</a>';
                 }
                 $apis = serv($server['identity'])->getApis();
                 if (!empty($apis['wiki']) || !empty($apis['schemas'])){
-                    $server['actions'] .= '<a class="layui-btn layui-btn-sm" href="'.wurl("server/apis/{$server['identity']}").'" target="_blank">接口</a>';
+                    $server['actions'] .= '<a class="layui-btn layui-btn-sm" href="'.wurl("server/apis/{$server['identity']}").'" target="_blank">API</a>';
                 }
                 $manifest = self::getmanifest($server['identity'], true);
                 if (!is_error($manifest)){
                     if(version_compare($manifest['version'], $server['version'], '>')){
                         //本地可升级
                         $server['upgrade'] = array('version'=>$manifest['version'],'canup'=>true);
-                        $upgradeAction = '<a class="layui-btn layui-btn-sm layui-btn-danger js-terminal" data-text="升级前请做好数据备份" lay-tips="该服务可升级至V'.$manifest['version'].'版本" href="'.wurl('server', array("op"=>"upgrade", "nid"=>$server['identity'])).'">升级</a>';
+                        $upgradeAction = '<a class="layui-btn layui-btn-sm layui-btn-danger js-terminal" data-text="升级前请做好数据备份" lay-tips="该服务可升级至V'.$manifest['version'].'版本" href="'.wurl('server', array("op"=>"upgrade", "nid"=>$server['identity'])).'">'.__('upgrade').'</a>';
                     }
                 }
                 if (mb_strlen($server['summary'],'utf8')>30){
@@ -274,7 +274,7 @@ class MSService
                 }elseif (!empty($cloudServer)){
                     $release = $cloudServer['release'];
                     if (version_compare($release['version'], $server['version'], '>') || $release['releasedate']>$server['releases']){
-                        $upgradeAction = '<a class="layui-btn layui-btn-sm layui-btn-danger js-terminal" data-text="升级前请做好数据备份" lay-tips="该服务可升级至V'.$release['version'].'Release'.$release['releasedate'].'" href="'.wurl('server', array('op'=>'cloudup', 'nid'=>$server['identity'])).'">升级</a>';
+                        $upgradeAction = '<a class="layui-btn layui-btn-sm layui-btn-danger js-terminal" data-text="升级前请做好数据备份" lay-tips="该服务可升级至V'.$release['version'].'Release'.$release['releasedate'].'" href="'.wurl('server', array('op'=>'cloudup', 'nid'=>$server['identity'])).'">'.__('upgrade').'</a>';
                         $server['upgrade'] = array('version'=>$release['version'],'canup'=>true);
                     }else{
                         $upgradeAction = "";
@@ -287,7 +287,7 @@ class MSService
             if (!$serverPath){
                 $server['isdelete'] = true;
             }elseif(file_exists($serverPath . "composer.error")){
-                $server['actions'] .= '<a class="layui-btn layui-btn-sm layui-btn-danger js-terminal" href="'.wurl('server', array('op'=>'composer', 'nid'=>$server['identity'])).'">修复</a>';
+                $server['actions'] .= '<a class="layui-btn layui-btn-sm layui-btn-danger js-terminal" href="'.wurl('server', array('op'=>'composer', 'nid'=>$server['identity'])).'">'.__('修复').'</a>';
             }
         }
         return $servers;
@@ -574,11 +574,9 @@ class MSService
                 script_run($service['configs']['uninstall'], MICRO_SERVER.$identity);
             }catch (\Exception $exception){
                 $this->TerminalSend(["mode"=>"err", "message"=>$exception->getMessage()]);
-                return error(-1,"卸载失败：".$exception->getMessage());
+                return error(-1,__('uninstallFailed', array('reason'=>$exception->getMessage())));
             }
-            if (!pdo_delete(self::$tableName,array('id'=>$service['id']))){
-                return error(-1,'卸载失败，请重试');
-            }
+            pdo_delete(self::$tableName,array('id'=>$service['id']));
             $this->getEvents(true);
             pdo_delete("microserver_unilink", array("name"=>$identity));
             $composerExists = file_exists(MICRO_SERVER.$identity."/composer.json");
@@ -847,7 +845,7 @@ class MSService
                 if (!empty($service) && isset($service['application'])){
                     if (self::isexist($service['application']['identity'])) continue;
                     $serv = $service['application'];
-                    $serv['actions'] = '<a class="layui-btn layui-btn-sm layui-btn-normal js-terminal" data-text="确定要安装该服务？" href="'.wurl('server', array("op"=>"install", "nid"=>$serv['identity'])).'">安装</a>';
+                    $serv['actions'] = '<a class="layui-btn layui-btn-sm layui-btn-normal js-terminal" data-text="'.__('installConfirm').'" href="'.wurl('server', array("op"=>"install", "nid"=>$serv['identity'])).'">'.__('install').'</a>';
                     $serv['status'] = -1;
                     $serv['isdelete'] = false;
                     $servers[$serv['identity']] = $serv;

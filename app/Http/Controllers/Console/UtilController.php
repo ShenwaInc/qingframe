@@ -43,7 +43,7 @@ class UtilController extends Controller
         }catch (\Exception $exception){
             return $this->message($exception->getMessage());
         }
-        return $this->message('updateCompleted','','success');
+        return $this->message('successful','','success');
     }
 
     public function doFile(Request $request){

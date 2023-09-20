@@ -58,6 +58,11 @@ class App
         if (function_exists('date_default_timezone_set')) {
             date_default_timezone_set($_W['config']['setting']['timezone']);
         }
+        $appLocale = config('app.locale');
+        $_W['locale'] = session()->get("FRAME_LOCALE", $appLocale);
+        if ($appLocale!=$_W['locale']){
+            \Illuminate\Support\Facades\App::setLocale($_W['locale']);
+        }
         return $next($request);
     }
 

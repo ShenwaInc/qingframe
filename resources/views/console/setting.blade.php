@@ -133,7 +133,7 @@
                                     <a href="{{ wurl('setting/selfupgrade') }}" class="text-red js-terminal" data-text="@lang('upgradeConfirm')">@lang('upgradeNow')</a>&nbsp;&nbsp;
                                     <a href="{{ wurl('setting/updateLog') }}" class="text-blue ajaxshow">@lang('cloudComparison')</a><br/>
                                 @endif
-                                <a href="{{ wurl('setting/detection') }}" class="text-blue ajaxshow">@lang('Check for updates')</a>&nbsp;&nbsp;
+                                <a href="{{ wurl('setting/detection') }}" class="text-green ajaxshow">@lang('Check for updates')</a>&nbsp;&nbsp;
                                 <a href="https://www.yuque.com/shenwa/qingru/bggtv6hgvtf4ieun" target="_blank" class="text-blue">@lang('updateLog')</a>
                             </td>
                         </tr>

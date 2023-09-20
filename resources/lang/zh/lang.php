@@ -14,6 +14,7 @@ return [
     'packageIDPlaceholder'=>'仅限字母/数字/下划线，必须以字母开头',
     'packageNamePlaceholder'=>'如简体中文、繁体中文、英文等',
     'locale'=>'语言环境',
+    'invalidLocale'=>'无效的语言',
     'localePlaceholder'=>'请输入该语言包的语种，一般是字母简写，例如简体中文：zh、英文：en、法语：fr等',
     'chooseLanguage'=>'请选择语言',
     'entries'=>'语言包词条',
@@ -22,5 +23,6 @@ return [
     'entryName'=>'词条名',
     'typeEntryName'=>'请输入词条名',
     'entryText'=>'词条文本',
-    'typeEntryText'=>'请输入词条文本'
+    'typeEntryText'=>'请输入词条文本',
+    'setDefault'=>'确定要更改系统默认语言？'
 ];

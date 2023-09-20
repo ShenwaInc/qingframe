@@ -83,7 +83,7 @@ class CloudService
                 $com['logo'] = asset($com['logo']);
                 $com['website'] = $com['url'];
                 $com['cloudinfo'] = array();
-                $com['installtime'] = '<span class="layui-badge">'.__('readyToInstall').'</span>';
+                $com['installtime'] = '<span class="layui-badge layui-bg-orange">'.__('readyToInstall').'</span>';
                 $com['addtime'] = 0;
                 $com['action'] = '';
                 //已安装
@@ -92,7 +92,7 @@ class CloudService
                         $com['installtime'] = $plugins[$identity]['installtime'];
                         $com['lastupdate'] = $plugins[$identity]['lastupdate'];
                     }else{
-                        $com['installtime'] = '本地安装';
+                        $com['installtime'] = __('appLocal');
                         $com['lastupdate'] = '-';
                     }
                     $com['addtime'] = $com['releasedate'];
@@ -170,7 +170,7 @@ class CloudService
                         'version'=>$value['release']['version'],
                         'releasedate'=>$releaseDate
                     );
-                    $com['installtime'] = '<span class="layui-badge">'.__('readyToInstall').'</span>';
+                    $com['installtime'] = '<span class="layui-badge layui-bg-orange">'.__('readyToInstall').'</span>';
                     $com['action'] = '<a href="'.wurl('module/require', array('nid'=>$value['identity'])).'" class="layui-btn layui-btn-sm layui-btn-normal js-terminal" data-text="'.__('installConfirm').'">'.__('install').'</a>';
                     $plugins[$identify] = $com;
                 }

@@ -15,7 +15,8 @@
     <title>
         @if(!empty($title))
             {{ $title }} -
-        @endif{{$_W['page']['title']}}
+        @endif
+            @lang($_W['page']['title'])
     </title>
     <link rel="stylesheet" href="{{ asset('/static/css/font-awesome.min.css') }}?v={{ QingRelease }}" />
     <link rel="stylesheet" href="{{ asset('/static/layui/css/layui.css') }}?v={{ QingRelease }}" />

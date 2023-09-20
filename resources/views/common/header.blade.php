@@ -5,7 +5,7 @@
     <div class="layui-header">
         <div class="fui-header-sm">
             <div class="layui-logo">
-                <a href="{{ $_W['consolePage'] }}">{{ $_W['page']['title'] }}</a>
+                <a href="{{ $_W['consolePage'] }}">@lang($_W['page']['title'])</a>
             </div>
 
             <ul class="layui-nav layui-layout-right">

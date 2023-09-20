@@ -90,7 +90,10 @@ if (empty($socket)){
             if(typeof(confirmText)=='undefined' || !confirmText){
                 terminalInit(postUrl);
             }else {
-                Core.confirm(confirmText, function (){terminalInit(postUrl);});
+                Core.confirm(confirmText, function (){terminalInit(postUrl);}, false, {
+                    title: '@lang("confirm")',
+                    btn:['@lang("确定")', '@lang("取消")']
+                });
             }
             return false;
         });

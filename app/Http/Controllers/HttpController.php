@@ -10,19 +10,7 @@ class HttpController extends Controller
     public function ServerApi($server, $segment1='index', $segment2=''){
         global $_W;
         $_W['isapi'] = true;
-        $ctrl = trim($segment1);
-        if (!empty($segment2)){
-            $ctrl = implode("/", array($ctrl, trim($segment2)));
-        }
-        $service = serv($server);
-        if (is_error($service) || !$service->enabled){
-            abort(404);
-        }
-        $uniacid = request()->input('i', SITEACID);
-        if ($service->Unique){
-            (new AppRuntime())->Runtime($uniacid, request()->header('x-auth-token'));
-        }
-        $data = $service->HttpRequest('api', $ctrl);
+        $data = $this->HttpRequest($server, $segment1, $segment2, 'api');
         if (is_error($data)) return $this->message($data['message'], trim($data['redirect']));
         if (!is_array($data)) return $data;
         if (isset($data['message']) && isset($data['type'])){
@@ -31,7 +19,7 @@ class HttpController extends Controller
         return response()->json($data);
     }
 
-    public function ServerApp($server, $segment1='index', $segment2=''){
+    public function HttpRequest($server, $segment1='index', $segment2='', $platform='app'){
         $ctrl = trim($segment1);
         if (!empty($segment2)){
             $ctrl = implode("/", array($ctrl, trim($segment2)));
@@ -44,7 +32,11 @@ class HttpController extends Controller
         if ($service->Unique){
             (new AppRuntime())->Runtime($uniacid, request()->header('x-auth-token'));
         }
-        $data = $service->HttpRequest('app', $ctrl);
+        return $service->HttpRequest('api', $ctrl);
+    }
+
+    public function ServerApp($server, $segment1='index', $segment2=''){
+        $data = $this->HttpRequest($server, $segment1, $segment2);
         if (!is_error($data)) {
             if (!is_array($data)) return $data;
             if (isset($data['message']) && isset($data['type'])) {

@@ -24,7 +24,7 @@
                 </div>
                 @if(!empty($redirect))
                 <div class="message-redirect">
-                    <a href="{{ $redirect }}" class="message-light">{{ __('aboutToJump') }}</a>
+                    <a href="{!! $redirect !!}" class="message-light">{{ __('aboutToJump') }}</a>
                 </div>
                 @endif
             </div>
@@ -36,7 +36,7 @@
     <script type="text/javascript">
         $(function (){
             setTimeout(function (){
-                window.location.href = "{{ $redirect }}";
+                window.location.href = "{!! $redirect !!}";
             },3*1e3);
         });
     </script>

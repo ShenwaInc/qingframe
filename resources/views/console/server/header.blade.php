@@ -33,7 +33,7 @@
             <div class="fui-header-sm">
                 <div class="layui-logo">
                     @if($_W['inserver'])
-                    <a href="{{ $inService->getEntry()?:'javascript:;' }}">{{ $inService->service['name'] }}</a>
+                    <a href="{{ $inService->getEntry()?:'javascript:;' }}">@lang($inService->service['name'])</a>
                     @else
                     <a href="{{ wurl('server') }}">@lang('microServers')</a>
                     @endif

@@ -6,7 +6,14 @@
         </div>
     </div>
     <div class="fui-footer-extra">
-        <p class="fui-footer-copyright"><span class="fr">{{ now() }}@if($debugInfo = debugInfo()), Processed in {{ $debugInfo['runtime'] }} second(s)@endif</span>{!! $_W['page']['copyright'] !!}</p>
+        <p class="fui-footer-copyright">
+            @if(!empty($_W['setting']['languages']))
+                @php $locale = config('app.locale', 'zh'); @endphp
+                <span style="cursor: pointer" class="fr js-languages text-blue margin-left">{{ $_W['setting']['languages'][$locale]['name'] }}&nbsp;<i style="font-size: 12px" class="layui-icon layui-icon-down text-gray"></i></span>
+            @endif
+            <span class="fr layui-hide-xs">{{ now() }}@if($debugInfo = debugInfo()), Processed in {{ $debugInfo['runtime'] }} second(s)@endif</span>
+            {!! $_W['page']['copyright'] !!}
+        </p>
     </div>
 </div>
 <script type="text/javascript">
@@ -34,10 +41,32 @@
         if(typeof (DropRender)=='function'){
             DropRender(dropdown);
         }
+        @if(!empty($_W['setting']['languages']))
+        dropdown.render({
+            elem: ".js-languages",
+            data:[
+                @foreach($_W['setting']['languages'] as $key=>$value)
+                {title:"{{ $value['name'] }}", id:"{{ $key }}"},
+                @endforeach
+            ],
+            click:function (e) {
+                checkLocale(e.id);
+            }
+        });
+        @endif
         layform = form;
         layupload = upload;
         laydropdown = dropdown;
     });
+    function checkLocale(locale) {
+        Core.post('server/language/checkout', function (res) {
+            if(res.type==="success"){
+                window.location.reload();
+            }else{
+                Core.report(res);
+            }
+        }, {locale: locale})
+    }
     function DateInit(Obj){
         if (Obj.find('.layui-input-laydate').length>0){
             Obj.find('.layui-input-laydate').each(function(index, element) {
@@ -73,7 +102,7 @@
         Obj.find('a.confirm').not('.ajaxshow').click(function(){
             var comfirmText = $(this).data('text');
             var redirect = $(this).attr('href');
-            layer.confirm(comfirmText, {icon: 3, title:'@lang("confirm")'}, function(index){
+            layer.confirm(comfirmText, {icon: 3, title:'@lang("confirm")', btn:['@lang("确定")', '@lang("取消")']}, function(index){
                 window.location.href = redirect;
                 layer.close(index);
             });
