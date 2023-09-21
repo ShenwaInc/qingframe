@@ -565,6 +565,11 @@ class CacheService
         if ($_W['uniacid']){
             SettingService::uni_load('',$_W['uniacid']);
         }
+        try {
+
+        }catch (\Exception $exception){
+
+        }
         return true;
     }
 

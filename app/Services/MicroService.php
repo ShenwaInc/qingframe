@@ -345,8 +345,11 @@ class MicroService
         return response()->json($data);
     }
 
-    public function message($msg, $redirect = '', $type = 'error'){
+    public function message($msg='', $redirect = '', $type = 'error'){
         global $_W, $_GPC;
+        if (empty($msg)){
+            $msg = $type=='success' ? ($_W['isapi']?'OK':'successful') : 'operationFailed';
+        }
         $data = array('message'=>$msg,'redirect'=>$redirect,'type'=>$type);
         if (is_string($data['message']) && preg_match('/^([\w\s.]+)$/', $data['message'])){
             $data['message'] = __($data['message']);

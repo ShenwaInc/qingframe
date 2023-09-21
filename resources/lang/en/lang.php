@@ -24,5 +24,8 @@ return [
     'typeEntryName'=>'Please enter the entry name',
     'entryText'=>'Entry text',
     'typeEntryText'=>'Please enter the entry text',
-    'setDefault'=>'Are you sure you want to make this the system default language?'
+    'setDefault'=>'Are you sure you want to make this the system default language?',
+    'country'=>'Region',
+    'countryPlaceholder'=>'Enter the country or region, such as 中国大陆, 中国台湾, England, France, etc.',
+    'removeLocaleNotify'=>'There are some language packs on the current language, please clean them up before deleting it.'
 ];

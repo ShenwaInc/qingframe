@@ -15,7 +15,8 @@ return [
     'packageNamePlaceholder'=>'如简体中文、繁体中文、英文等',
     'locale'=>'语言环境',
     'invalidLocale'=>'无效的语言',
-    'localePlaceholder'=>'请输入该语言包的语种，一般是字母简写，例如简体中文：zh、英文：en、法语：fr等',
+    'invalidLocaleId'=>'无效的语言ID',
+    'localePlaceholder'=>'请输入语种字母简写，例如简体中文：zh、英文：en、法语：fr等',
     'chooseLanguage'=>'请选择语言',
     'entries'=>'语言包词条',
     'newEntry'=>'新增词条',
@@ -24,5 +25,8 @@ return [
     'typeEntryName'=>'请输入词条名',
     'entryText'=>'词条文本',
     'typeEntryText'=>'请输入词条文本',
-    'setDefault'=>'确定要更改系统默认语言？'
+    'setDefault'=>'确定要更改系统默认语言？',
+    'country'=>'国家或地区',
+    'countryPlaceholder'=>'输入国家或地区，如中国大陆、中国台湾、England、France等',
+    'removeLocaleNotify'=>'该语种下存在语言包，请先清理语言包后再删除语种'
 ];
