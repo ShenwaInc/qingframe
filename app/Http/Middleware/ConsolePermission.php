@@ -38,7 +38,7 @@ class ConsolePermission
             echo response()->view('message',array('message'=>'您的账号服务已到期，请联系管理员','redirect'=>'/login','type'=>'error'))->content();
             exit();
         }
-        $_W['inconsole'] = true;
+        $_W['inConsole'] = true;
         $_W['consolePage'] = url('console');
         $_W['uid'] = $user['uid'];
         $profile = DB::table('users_profile')->where('uid',$_W['uid'])->select('avatar','gender','mobile','email')->first();

@@ -377,7 +377,7 @@ class MicroService
     public function Composer(){
         $composer = $this->serverPath.$this->identity."/composer.json";
         $requireName = "microserver/".$this->identity;
-        $composerErr = "";
+        $composerErr = $composerVer = "";
         if (!file_exists($composer)) return true;
         if (DEVELOPMENT){
             //开发者模式
@@ -407,9 +407,13 @@ class MicroService
             if ($_W['isajax']){
                 $this->message("Vendor package missing: $requireName");
             }
-            $title = __('installVendor');
-            include tpl_include("web/composer");
-            session_exit();
+            MSService::ComposerPage(array(
+                'composerVer'=>$composerVer,
+                'composerErr'=>$composerErr,
+                'WorkingDirectory'=>$WorkingDirectory,
+                'requireName'=>$requireName,
+                'composerNext'=>''
+            ));
         }
         return true;
     }

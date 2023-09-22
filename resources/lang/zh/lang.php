@@ -28,5 +28,6 @@ return [
     'setDefault'=>'确定要更改系统默认语言？',
     'country'=>'国家或地区',
     'countryPlaceholder'=>'输入国家或地区，如中国大陆、中国台湾、England、France等',
-    'removeLocaleNotify'=>'该语种下存在语言包，请先清理语言包后再删除语种'
+    'removeLocaleNotify'=>'该语种下存在语言包，请先清理语言包后再删除语种',
+    'removeFramePack'=>'系统语言包无法删除'
 ];

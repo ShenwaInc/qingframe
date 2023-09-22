@@ -51,7 +51,7 @@ class App
         $_W['uniacid'] = $_W['uid'] = 0;
         $_W['user'] = array('uid'=>$_W['uid'],'username'=>'未登录');
         $_W['account'] = array('uniacid'=>0);
-        $_W['inconsole'] = $_W['inapp'] = false;
+        $_W['inConsole'] = $_W['inapp'] = false;
         $_W['token'] = csrf_token();
         $_W['os'] = Agent::getOs();
         $_W['routePath'] = $request->path();

@@ -48,6 +48,7 @@ class AccountController extends Controller
         }
         $_W['account'] = $this->account;
         $_W['page']['title'] = $this->account['name'];
+        $_W['consolePage'] = wurl('account/profile', array('uniacid'=>$uniacid));
         return $this->account;
     }
 

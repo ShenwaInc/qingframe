@@ -2,13 +2,13 @@
     <div class="layui-header">
         <div class="fui-header-sm">
             <div class="layui-logo">
-                {if $_W['inserver']}
-                {php $service = serv($_W['server']);}
-                {php $entrance = $service->getEntry();}
-                <a href="{if !empty($entrance)}{$entrance}{else}javascript:;{/if}">{php echo $service->service['name']}</a>
+                {if $_W['inService']}
+                {php $entrance = $inService->getEntry();}
+                <a href="{if !empty($entrance)}{$entrance}{else}javascript:;{/if}">{php echo $inService->service['name']}</a>
                 {else}
                 <a href="{php echo wurl('server')}">微服务管理</a>
                 {/if}
+                <a href="/console" class="fui-homepage margin-left-sm" title="{php echo __('backConsole')}"><span class="layui-icon layui-icon-home"></span></a>
             </div>
 
             <ul class="layui-nav layui-layout-right">
@@ -19,7 +19,7 @@
                     </a>
                     <dl class="layui-nav-child layui-anim layui-anim-upbit" style="padding: 0;">
                         <dd><a href="{php echo wurl('user/profile')}" target="_blank"><span class="layui-icon layui-icon-username"></span>&nbsp;账户信息</a></dd>
-                        {if $service->Unique}
+                        {if $inService->Unique}
                         <dd><a href="{php echo wurl('account/profile', ['uniacid'=>$_W['uniacid']])}"><span class="layui-icon layui-icon-website"></span>&nbsp;平台管理</a></dd>
                         {/if}
                         <hr style="margin: 5px 0;">

@@ -274,4 +274,7 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
     .fui-layer{max-width: 95% !important;}
     .fui-layer .layui-layer-content{overflow: auto;}
     .fui-layer .layui-form-item .layui-input-inline{margin-left: 3px;}
+    .layui-form-item .layui-form-label{width: 72px; padding: 9px 10px;}
+    .layui-input-block{margin-left: 92px;}
+    .layui-table td, .layui-table th{padding: 9px 10px;}
 }

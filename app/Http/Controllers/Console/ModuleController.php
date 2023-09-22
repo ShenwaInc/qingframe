@@ -90,10 +90,10 @@ class ModuleController extends Controller
      */
     public function doRequire(Request $request){
         $identity = $request->input('nid', "");
-        $cloudrequire = CloudService::RequireModule($identity);
-        if (is_error($cloudrequire)){
-            MSService::TerminalSend(["mode"=>"err", "message"=>$cloudrequire['message']], true);
-            return $this->message($cloudrequire['message'], trim($cloudrequire['redirect']));
+        $cloudRequire = CloudService::RequireModule($identity);
+        if (is_error($cloudRequire)){
+            MSService::TerminalSend(["mode"=>"err", "message"=>$cloudRequire['message']], true);
+            return $this->message($cloudRequire['message'], trim($cloudRequire['redirect']));
         }
         return $this->message('installSuccessfully', url('console/module'),'success');
     }

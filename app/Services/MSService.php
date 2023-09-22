@@ -6,6 +6,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\View;
 use Symfony\Component\Process\Process;
 
 class MSService
@@ -243,17 +244,17 @@ class MSService
             if($server['status']!=1) continue;
             $server['entry'] = serv($server['identity'])->getEntry();
             if (!empty($server['entry']) && !is_error($server['entry'])){
-                $server['actions'] .= '<a class="layui-btn layui-btn-sm layui-btn-normal" target="_blank" href="'.$server['entry'].'">'.__('manage').'</a>';
+                $server['actions'] .= '<a class="layui-btn layui-btn-sm layui-btn-normal layui-hide-xs" target="_blank" href="'.$server['entry'].'">'.__('manage').'</a>';
             }
             $server['upgrade'] = array();
             $upgradeAction = '<a class="layui-btn layui-btn-sm layui-btn-danger js-upgrade js-terminal layui-hide" data-text="升级前请做好数据备份" lay-tips="该服务可升级至最新版本" data-nid="'.$server['identity'].'" href="'.wurl('server', array('op'=>'cloudup', 'nid'=>$server['identity'])).'">'.__('upgrade').'</a>';
             if (DEVELOPMENT){
                 if (!empty(serv($server['identity'])->getMethods())){
-                    $server['actions'] .= '<a class="layui-btn layui-btn-sm" target="_blank" href="'.wurl("server/methods/{$server['identity']}").'">'.__('methods').'</a>';
+                    $server['actions'] .= '<a class="layui-btn layui-btn-sm layui-hide-xs" target="_blank" href="'.wurl("server/methods/{$server['identity']}").'">'.__('methods').'</a>';
                 }
                 $apis = serv($server['identity'])->getApis();
                 if (!empty($apis['wiki']) || !empty($apis['schemas'])){
-                    $server['actions'] .= '<a class="layui-btn layui-btn-sm" href="'.wurl("server/apis/{$server['identity']}").'" target="_blank">API</a>';
+                    $server['actions'] .= '<a class="layui-btn layui-btn-sm layui-hide-xs" href="'.wurl("server/apis/{$server['identity']}").'" target="_blank">API</a>';
                 }
                 $manifest = self::getmanifest($server['identity'], true);
                 if (!is_error($manifest)){
@@ -766,6 +767,20 @@ class MSService
             $output = implode(" ", $command) . "：" . $output;
         }
         file_put_contents($logPath, $output);
+    }
+
+    public static function ComposerPage($params, $inService=null){
+        $params['title'] = __('installVendor');
+        global $_W;
+        $data = array();
+        if ($inService){
+            $_W['inService'] = true;
+            $data['_W'] = $_W;
+            $data['inService'] = $inService;
+        }
+        View::share($data);
+        $html = View::make('console.composer', $params)->render();
+        session_exit($html);
     }
 
     public static function ComposerHome(){

@@ -32,7 +32,7 @@
         <div class="layui-header">
             <div class="fui-header-sm">
                 <div class="layui-logo">
-                    @if($_W['inserver'])
+                    @if($_W['inService'])
                     <a href="{{ $inService->getEntry()?:'javascript:;' }}">@lang($inService->service['name'])</a>
                     @else
                     <a href="{{ wurl('server') }}">@lang('microServers')</a>
@@ -43,12 +43,11 @@
                 <ul class="layui-nav layui-layout-right">
                     <li class="layui-nav-item">
                         <a href="javascript:;">
-                            <i class="layui-icon-username layui-icon"></i>
                             {{ $_W['username'] }}
                         </a>
                         <dl class="layui-nav-child layui-anim layui-anim-upbit" style="padding: 0;">
                             <dd><a href="{{ wurl('user/profile') }}" target="_blank"><span class="layui-icon layui-icon-username"></span>&nbsp;@lang('accountManagement')</a></dd>
-                            @if($inService->Unique)
+                            @if($_W['inService'] && $inService->Unique)
                             <dd><a href="{{ wurl('account/profile', ['uniacid'=>$_W['uniacid']]) }}"><span class="layui-icon layui-icon-website"></span>&nbsp;{{ __('manageData', array('data'=>__('platform'))) }}</a></dd>
                             @endif
                             <hr style="margin: 5px 0;">
@@ -56,6 +55,23 @@
                             <dd><a href="{{ wurl("") }}"><span class="layui-icon layui-icon-console"></span>&nbsp;@lang('backConsole')</a></dd>
                         </dl>
                     </li>
+                    @if($_W['isfounder'])
+                        <li class="layui-nav-item">
+                            @if($_W['config']['site']['id']==0)
+                                <a href="{{url('console/active')}}">@lang('systemActivation')<span class="layui-badge-dot"></span></a>
+                            @else
+                                <a href="{{url('console/setting')}}">@lang('systemManagement')</a>
+                                <dl id="layui-admin-sysmenu" class="layui-nav-child layui-anim layui-anim-upbit">
+                                    <dd><a href="{{ url('console/setting') }}">@lang('siteInformation')</a></dd>
+                                    <dd><a href="{{ url('console/server') }}">@lang('microServers')</a></dd>
+                                    <dd><a href="{{ url('console/module') }}">@lang('applications')</a></dd>
+                                </dl>
+                            @endif
+                        </li>
+                        <li class="layui-nav-item layui-hide-xs{{ $_W['inReport']?' layui-this':'' }}">
+                            <a href="{{url('console/report')}}">@lang('workOrder')</a>
+                        </li>
+                    @endif
                     <li class="layui-nav-item layui-hide-xs js-fullscreen" lay-unselect>
                         <a href="javascript:;" layadmin-event="fullscreen">
                             <i class="layui-icon layui-icon-screen-full"></i>

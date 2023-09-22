@@ -81,7 +81,7 @@ class AuthController extends Controller
         return $this->failed_login();
     }
 
-    public function Entry(Request $request,$uniacid){
+    public function Entry(Request $request, $uniacid){
         $account = AccountService::FetchUni($uniacid);
         if (is_error($account) || empty($account)){
             abort(404);
@@ -98,7 +98,7 @@ class AuthController extends Controller
             return $this->message("该平台服务已到期，请联系管理员处理");
         }
         SettingService::Load();
-        return $this->globalView('auth.login', array('account'=>$account));
+        return $this->globalView(["auth.loginCustom{$account['uniacid']}","auth.login"], array('account'=>$account));
     }
 
     public function failed_login($msg='用户名或密码不正确'){

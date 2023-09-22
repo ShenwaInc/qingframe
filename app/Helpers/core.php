@@ -124,7 +124,7 @@ function array_elements($keys, $src, $default = false) {
 function checksubmit($var='_token'){
     global $_GPC,$_W;
     if (!$_W['ispost']) return false;
-    if ($_W['inconsole']){
+    if ($_W['inConsole']){
         $headers = request()->header('X-CSRF-TOKEN');
         return !empty($_GPC[$var]) || !empty($headers);
     }elseif (defined('IN_API') && $var=='_token'){

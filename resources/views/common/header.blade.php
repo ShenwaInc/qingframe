@@ -6,13 +6,14 @@
         <div class="fui-header-sm">
             <div class="layui-logo">
                 <a href="{{ $_W['consolePage'] }}">@lang($_W['page']['title'])</a>
+                @if($_W['routePath']!='console')<a href="/console" class="fui-homepage margin-left-sm" title="@lang('backConsole')"><span class="layui-icon layui-icon-home"></span></a>@endif
             </div>
 
             <ul class="layui-nav layui-layout-right">
                 @if($_W['uid']>0)
                     <li class="layui-nav-item">
                         <a href="javascript:;">
-                            <img src="{{ tomedia($_W['user']['avatar']) }}" class="layui-nav-img user-avatar" />
+                            <img src="{{ tomedia($_W['user']['avatar']) }}" class="layui-nav-img user-avatar layui-hide-xs" />
                             {{$_W['user']['username']}}
                         </a>
                         <dl id="layui-admin-usermenu" class="layui-nav-child layui-anim layui-anim-upbit">
@@ -35,7 +36,7 @@
                                 </dl>
                             @endif
                         </li>
-                        <li class="layui-nav-item{{ $_W['inReport']?' layui-this':'' }}">
+                        <li class="layui-nav-item layui-hide-xs{{ $_W['inReport']?' layui-this':'' }}">
                             <a href="{{url('console/report')}}">@lang('workOrder')</a>
                         </li>
                     @endif

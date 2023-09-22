@@ -47,16 +47,18 @@
                     @foreach($servers as $key=>$service)
                     <tr>
                         <td>
-                            <img alt="{{ $service['name'] }}" class="layui-avatar" src="{{ asset($service['cover']) }}?v={{ QingRelease }}" height="36" />
-                            @if($op=='index' && !empty($service['entry']))
-                            <a href="{{ $service['entry'] }}" target="_blank" class="color-default">{{ $service['name'] }}</a>
-                            @else
-                            <span class="color-default">{{ $service['name'] }}</span>
-                            @endif
-                            <span id="update{{ $service['identity'] }}" class="layui-badge-dot{{ empty($service['upgrade']) ? ' layui-hide' : '' }}" lay-tips="@lang('versionNew')"></span>
-                            @if($service['isdelete'])
-                            &nbsp;<span class="layui-badge layui-bg-cyan">@lang('deleted')</span>
-                            @endif
+                            <div class="text-cut" style="max-width: 40vw;">
+                                <img alt="{{ $service['name'] }}" class="layui-avatar" src="{{ asset($service['cover']) }}?v={{ QingRelease }}" height="36" />
+                                @if($op=='index' && !empty($service['entry']))
+                                    <a href="{{ $service['entry'] }}" target="_blank" class="color-default">{{ $service['name'] }}</a>
+                                @else
+                                    <span class="color-default">{{ $service['name'] }}</span>
+                                @endif
+                                <span id="update{{ $service['identity'] }}" class="layui-badge-dot{{ empty($service['upgrade']) ? ' layui-hide' : '' }}" lay-tips="@lang('versionNew')"></span>
+                                @if($service['isdelete'])
+                                    &nbsp;<span class="layui-badge layui-bg-cyan">@lang('deleted')</span>
+                                @endif
+                            </div>
                         </td>
                         <td class="layui-hide-xs">
                             V{{ $service['version'] }}

@@ -213,9 +213,15 @@ class CloudService
             'identity'=>$identity,
             'fp'=>config('system.identity')
         );
-        $zipcontent = self::CloudApi('require',$data,true);
-        if (is_error($zipcontent)) return $zipcontent;
-        if (!$zipcontent) return error(-1,__('requestFailed'));
+        $zipContent = self::CloudApi('require',$data,true);
+        if (is_error($zipContent)) return $zipContent;
+        if (empty($zipContent)) return error(-1,__('requestFailed'));
+        $isJson = json_decode($zipContent, true);
+        if (!empty($isJson)){
+            $result = error(-1, $isJson['message']);
+            $result['redirect'] = trim($isJson['redirect']);
+            return $result;
+        }
         if (!$patch){
             $patch = base_path("storage/patch/");
         }
@@ -223,7 +229,7 @@ class CloudService
             FileService::mkdirs($patch);
         }
         $filename = FileService::file_random_name($patch,'zip');
-        if (!file_put_contents($patch . $filename, $zipcontent)) {
+        if (!file_put_contents($patch . $filename, $zipContent)) {
             return error(-1,__('saveFailed'));
         }
 
@@ -236,7 +242,7 @@ class CloudService
             @unlink($patch.$filename);
         }else{
             @unlink($patch.$filename);
-            return error(-1,'unzipFailed');
+            return error(-1,__('unzipFailed'));
         }
 
         //如果解压包内嵌则操作搬移

@@ -13,7 +13,7 @@ class ServerController extends Controller
     public function HttpRequest($server,$segment1='',$segment2=""){
         global $_W, $_GPC;
         $_W['server'] = trim($server);
-        $_W['inserver'] = true;
+        $_W['inService'] = true;
         $_W['basescript'] = "server";
         if (!function_exists('tpl_compile') && defined("IN_SYS")){
             include_once app_path("Helpers/smarty.php");
@@ -142,12 +142,14 @@ class ServerController extends Controller
                     if (!file_exists($composerErr)){
                         $composerErr = "";
                     }
-                    $title = __('installVendor');
                     $composerNext = __('installVendorNext');
-                    if (!function_exists('tpl_compile')){
-                        include_once app_path("Helpers/smarty.php");
-                    }
-                    return include tpl_include("web/composer");
+                    $MSS::ComposerPage(array(
+                        'composerVer'=>"",
+                        'composerErr'=>$composerErr,
+                        'WorkingDirectory'=>$WorkingDirectory,
+                        'requireName'=>$requireName,
+                        'composerNext'=>$composerNext
+                    ));
                 }
                 @unlink(MICRO_SERVER.$identity."/composer.error");
                 $MSS->TerminalSend(["mode"=>"success", "message"=>"Composer安装完成"], true);

@@ -32,7 +32,7 @@ class HttpController extends Controller
         if ($service->Unique){
             (new AppRuntime())->Runtime($uniacid, request()->header('x-auth-token'));
         }
-        return $service->HttpRequest('api', $ctrl);
+        return $service->HttpRequest($platform, $ctrl);
     }
 
     public function ServerApp($server, $segment1='index', $segment2=''){
@@ -51,17 +51,17 @@ class HttpController extends Controller
      * @throws \Exception
      */
     public function ServerRun($server, $segment='index'){
-        $ctroller = trim($segment);
+        $controller = trim($segment);
         $method = "main";
         $serverName = ucfirst($server) . 'Service';
         if (!class_exists($serverName)){
             require_once MICRO_SERVER.strtolower($server)."/$serverName.php";
         }
-        $ctrl = MICRO_SERVER.strtolower($server)."/run/".ucfirst($ctroller)."Controller.php";
+        $ctrl = MICRO_SERVER.strtolower($server)."/run/".ucfirst($controller)."Controller.php";
         if (!file_exists($ctrl)){
             $ctrl = MICRO_SERVER.strtolower($server)."/run/IndexController.php";
-            $method = $ctroller;
-            $ctroller = "index";
+            $method = $controller;
+            $controller = "index";
         }
         if (!file_exists($ctrl)){
             abort(404);
@@ -70,7 +70,7 @@ class HttpController extends Controller
 
         try {
             include_once $ctrl;
-            $className = ucfirst($ctroller)."Controller";
+            $className = ucfirst($controller)."Controller";
             if (!class_exists($className)) return $this->message(__('controllerNotFound', array('ctrl'=>$className)));
             $instance = new $className();
             return $instance->$method();
