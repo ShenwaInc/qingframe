@@ -83,6 +83,7 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 .text-bold{font-weight: bold;}
 .text-black, .layui-word-aux .text-black{color: #333333}
 .text-blue, .color-default{color: #0081ff;}
+.text-orange{color: #f37b1d;}
 .text-red{color: #e54d42;}
 .text-gray, .text-empty{color:#aaaaaa;}
 .text-white{color: #FFFFFF;}
@@ -102,6 +103,7 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 .unmargin{margin: -15px;}
 .margin-bottom{margin-bottom: 15px;}
 .margin-top{margin-top: 15px;}
+.margin-top-xs{margin-top: 5px;}
 .margin-bottom-xl{margin-bottom: 30px;}
 .margin-right{margin-right: 15px;}
 .margin-right-xs{margin-right: 5px;}

@@ -566,7 +566,7 @@ class CacheService
             SettingService::uni_load('',$_W['uniacid']);
         }
         try {
-
+            serv('language')->langUsable(false);
         }catch (\Exception $exception){
 
         }

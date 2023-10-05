@@ -25,7 +25,7 @@
                             <a href="{{ wurl('server') }}">@lang('installed')</a>
                         </li>
                         <li @if($op=='stop')  class="layui-this" @endif>
-                            <a href="{{ wurl('server', array("op"=>"stop")) }}">@lang('terminated')</a>
+                            <a href="{{ wurl('server', array("op"=>"stop")) }}">@lang('已停用')</a>
                         </li>
                         <li @if($op=='local')  class="layui-this" @endif>
                             <a href="{{ wurl('server', array("op"=>"local")) }}">@lang('moreServices')</a>

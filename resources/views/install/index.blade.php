@@ -1,7 +1,7 @@
 @include('install.header')
     <div class="wp">
         <div class="layui-card shadows">
-            <div class="layui-card-header bg-gray">安装使用协议</div>
+            <div class="layui-card-header bg-gray">软件安装使用服务协议</div>
             <div class="layui-card-body">
                 @include('agreement')
             </div>

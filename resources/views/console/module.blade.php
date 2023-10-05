@@ -31,7 +31,7 @@
                             <th>@lang('app')</th>
                             <th class="layui-hide-xs">@lang('installTime')</th>
                             <th class="layui-hide-xs">@lang('lastUpdate')</th>
-                            <th class="layui-hide-xs">@lang('versionCloud')</th>
+                            <th class="layui-hide-xs">@lang('云服务')</th>
                             <th><div class="text-right">@lang('action')</div></th>
                         </tr>
                         </thead>
@@ -54,11 +54,14 @@
                                     <td class="layui-hide-xs">{!! $com['lastupdate'] !!}</td>
                                     <td class="layui-hide-xs">
                                         @if(empty($com['cloudinfo']))
-                                            @lang('appLocal')
+                                            -
                                         @else
                                             V{{ $com['cloudinfo']['version'] }}&nbsp;&nbsp;Release{{ $com['cloudinfo']['releasedate'] }}
                                             @if($com['cloudinfo']['isnew'])
                                                 <span class="layui-badge-dot" lay-tips="{{ $com['cloudinfo']['releasedate']==$com['releasedate'] ? __('sourceCodeChanged') : __('versionNew') }}"></span>
+                                            @endif
+                                            @if($com['expireDate'])
+                                                <p class="margin-top-xs">{!! $com['expireDate'] !!}</p>
                                             @endif
                                         @endif
                                     </td>

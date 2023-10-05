@@ -29,38 +29,38 @@
                 <div class="layui-form-item must">
                     <label class="layui-form-label">主机名(HOST)</label>
                     <div class="layui-input-block">
-                        <input type="text" required lay-verify="required" name="db[host]" value="{{$database['host']}}" placeholder="请输入主机名" autocomplete="off" class="layui-input">
+                        <input type="text" required lay-verify="required" name="db[host]" value="{{ $database['host'] }}" placeholder="请输入主机名" autocomplete="off" class="layui-input">
                     </div>
                 </div>
                 <div class="layui-form-item must">
                     <label class="layui-form-label">端口(PORT)</label>
                     <div class="layui-input-block">
-                        <input type="number" required lay-verify="required" name="db[port]" value="{{$database['port']}}" placeholder="请输入数据库的开放端口，一般是3306" autocomplete="off" class="layui-input">
+                        <input type="number" required lay-verify="required" name="db[port]" value="{{ $database['port'] }}" placeholder="请输入数据库的开放端口，一般是3306" autocomplete="off" class="layui-input">
                     </div>
                 </div>
                 <div class="layui-form-item must">
                     <label class="layui-form-label">数据库名(DB)</label>
                     <div class="layui-input-block">
-                        <input type="text" required lay-verify="required" name="db[database]" value="{{$database['database']}}" placeholder="请输入数据库的名称" autocomplete="off" class="layui-input">
+                        <input type="text" required lay-verify="required" name="db[database]" value="{{ $database['database'] }}" placeholder="请输入数据库的名称" autocomplete="off" class="layui-input">
                     </div>
                 </div>
                 <div class="layui-form-item must">
                     <label class="layui-form-label">用户名(USER)</label>
                     <div class="layui-input-block">
-                        <input type="text" required lay-verify="required" name="db[username]" value="{{$database['username']}}" placeholder="请输入连接此数据库的用户名" autocomplete="off" class="layui-input">
+                        <input type="text" required lay-verify="required" name="db[username]" value="{{ $database['username'] }}" placeholder="请输入连接此数据库的用户名" autocomplete="off" class="layui-input">
                     </div>
                 </div>
                 <div class="layui-form-item must">
                     <label class="layui-form-label">数据库密码</label>
                     <div class="layui-input-block">
-                        <input type="password" required lay-verify="required" name="db[password]" value="" placeholder="请输入该数据库的连接密码" autocomplete="off" class="layui-input">
+                        <input type="password" required lay-verify="required" name="db[password]" value="{{ $database['password'] }}" placeholder="请输入该数据库的连接密码" autocomplete="off" class="layui-input">
                     </div>
                 </div>
                 <div class="dbconnect form-item0">
                     <div class="layui-form-item must">
                         <label class="layui-form-label">数据表前缀</label>
                         <div class="layui-input-block">
-                            <input type="text" name="db[prefix]" value="{{$database['prefix']}}" placeholder="请输入数据表前缀，微擎数据库默认为ims_" autocomplete="off" class="layui-input">
+                            <input type="text" name="db[prefix]" value="{{ $database['prefix'] }}" placeholder="请输入数据表前缀，微擎数据库默认为ims_" autocomplete="off" class="layui-input">
                         </div>
                     </div>
                 </div>

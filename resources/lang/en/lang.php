@@ -27,5 +27,6 @@ return [
     'setDefault'=>'Are you sure you want to make this the system default language?',
     'country'=>'Region',
     'countryPlaceholder'=>'Enter the country or region, such as 中国大陆, 中国台湾, England, France, etc.',
-    'removeLocaleNotify'=>'There are some language packs on the current language, please clean them up before deleting it.'
+    'removeLocaleNotify'=>'There are some language packs on the current language, please clean them up before deleting it.',
+    '系统版本过低'=>"The system version is too low, please upgrade to the latest version first"
 ];

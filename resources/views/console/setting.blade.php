@@ -58,11 +58,11 @@
                         </tr>
                         <tr>
                             <td><span class="fui-table-lable">@lang('copyright')</span></td>
-                            <td class="soild-after">{!! $_W['setting']['page']['copyright'] !!}</td>
+                            <td class="soild-after fui-footer-copyright">{!! $_W['setting']['page']['copyright'] !!}</td>
                         </tr>
                         <tr>
                             <td><span class="fui-table-lable">@lang('bottomNavigation')</span></td>
-                            <td class="soild-after text-blue">
+                            <td class="soild-after">
                                 {!! $_W['setting']['page']['links'] !!}
                             </td>
                         </tr>

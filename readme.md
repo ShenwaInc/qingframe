@@ -28,11 +28,11 @@ location / {
 ### 安装与部署
 1. 拉取项目源码
 ```shell
-git clone https://github.com/ShenwaInc/qingwork.git
+git clone https://github.com/ShenwaInc/qingframe.git
 ```
 2. 在根目录运行如下命令来安装依赖包
 ```shell
-cd qingwork
+cd qingframe
 composer update
 ```
 3. 拷贝根目录下的 .example.env 文件并重命名为 .env

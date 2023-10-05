@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Http\Middleware\App;
+use App\Services\CacheService;
 use App\Services\FileService;
 use App\Services\MSService;
 use Illuminate\Console\Command;
@@ -72,8 +73,8 @@ class selfmigrate extends Command
             $composer = file_get_contents(base_path('composer.json'));
             if (strpos($composer, 'public/addons')===false){
                 $composerJson = json_decode($composer, true);
-                $Addonskey = "Addons\\";
-                $composerJson["autoload"]["psr-4"][$Addonskey] = 'public/addons/';
+                $AddonsKey = "Addons\\";
+                $composerJson["autoload"]["psr-4"][$AddonsKey] = 'public/addons/';
                 if (file_put_contents(base_path('composer.json'), json_encode($composerJson, JSON_UNESCAPED_UNICODE+JSON_PRETTY_PRINT+JSON_UNESCAPED_SLASHES))){
                     $WorkingDirectory = base_path("/");
                     $process = new Process(['composer','update']);
@@ -95,6 +96,7 @@ class selfmigrate extends Command
                     $this->error('composer.json migrate fail.');
                 }
             }
+            CacheService::flush();
             $this->info('Qingwork framework migrate successfully.');
         } catch (\Exception $exception){
             $this->error("Migrate fail:".$exception->getMessage());

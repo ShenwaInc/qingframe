@@ -53,8 +53,8 @@ class selfup extends Command
             $_W['siteroot'] = $appurl . "/";
         }
         $component = DB::table('gxswa_cloud')->where('type',0)->first(['id','identity','modulename','type','releasedate','rootpath']);
-        $cloudupdate = CloudService::CloudUpdate($component['identity'],base_path().'/');
-        if (is_error($cloudupdate)) return $this->error($cloudupdate['message']) || "";
+        $cloudUpdate = CloudService::CloudUpdate($component['identity'],base_path().'/');
+        if (is_error($cloudUpdate)) return $this->error($cloudUpdate['message']) || "";
 
         //更新版本信息
         $arguments = $this->argument();
@@ -63,13 +63,13 @@ class selfup extends Command
             'release'=>(int)env("APP_RELEASE")
         );
         if (empty($arguments['version'])){
-            $ugradeInfo = CloudService::CloudApi('structure',array('identity'=>$component['identity']));
-            if (is_error($ugradeInfo)){
+            $upgradeInfo = CloudService::CloudApi('structure',array('identity'=>$component['identity']));
+            if (is_error($upgradeInfo)){
                 $arguments['version'] = $system['version'];
                 $arguments['release'] = $system['release'] + 1;
             }else{
-                $arguments['version'] = $ugradeInfo['version'];
-                $arguments['release'] = $ugradeInfo['releasedate'];
+                $arguments['version'] = $upgradeInfo['version'];
+                $arguments['release'] = $upgradeInfo['releasedate'];
             }
         }
         DB::table('gxswa_cloud')->where('id',$component['id'])->update(array(

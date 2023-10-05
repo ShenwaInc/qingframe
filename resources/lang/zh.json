@@ -95,6 +95,7 @@
     "chooseDate": "选择日期",
     "chooseData": "选择:data",
     "longtime": "长期",
+    "expiresOn": "于:date到期",
     "emptyForLongtime": "如留空则表示长期",
     "defaultEntry": "默认入口",
     "defaultEntryValid": "默认入口不能为空",

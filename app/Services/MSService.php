@@ -247,7 +247,7 @@ class MSService
                 $server['actions'] .= '<a class="layui-btn layui-btn-sm layui-btn-normal layui-hide-xs" target="_blank" href="'.$server['entry'].'">'.__('manage').'</a>';
             }
             $server['upgrade'] = array();
-            $upgradeAction = '<a class="layui-btn layui-btn-sm layui-btn-danger js-upgrade js-terminal layui-hide" data-text="升级前请做好数据备份" lay-tips="该服务可升级至最新版本" data-nid="'.$server['identity'].'" href="'.wurl('server', array('op'=>'cloudup', 'nid'=>$server['identity'])).'">'.__('upgrade').'</a>';
+            $upgradeAction = '<a class="layui-btn layui-btn-sm layui-btn-danger js-upgrade js-terminal layui-hide" data-text="'.__('升级前请做好数据备份').'" lay-tips="该服务可升级至最新版本" data-nid="'.$server['identity'].'" href="'.wurl('server', array('op'=>'cloudup', 'nid'=>$server['identity'])).'">'.__('upgrade').'</a>';
             if (DEVELOPMENT){
                 if (!empty(serv($server['identity'])->getMethods())){
                     $server['actions'] .= '<a class="layui-btn layui-btn-sm layui-hide-xs" target="_blank" href="'.wurl("server/methods/{$server['identity']}").'">'.__('methods').'</a>';
@@ -261,7 +261,7 @@ class MSService
                     if(version_compare($manifest['version'], $server['version'], '>')){
                         //本地可升级
                         $server['upgrade'] = array('version'=>$manifest['version'],'canup'=>true);
-                        $upgradeAction = '<a class="layui-btn layui-btn-sm layui-btn-danger js-terminal" data-text="升级前请做好数据备份" lay-tips="该服务可升级至V'.$manifest['version'].'版本" href="'.wurl('server', array("op"=>"upgrade", "nid"=>$server['identity'])).'">'.__('upgrade').'</a>';
+                        $upgradeAction = '<a class="layui-btn layui-btn-sm layui-btn-danger js-terminal" data-text="'.__('升级前请做好数据备份').'" lay-tips="该服务可升级至V'.$manifest['version'].'版本" href="'.wurl('server', array("op"=>"upgrade", "nid"=>$server['identity'])).'">'.__('upgrade').'</a>';
                     }
                 }
                 if (mb_strlen($server['summary'],'utf8')>30){
@@ -389,7 +389,7 @@ class MSService
             }
         }
         //自动安装框架必须服务
-        $requires = array("websocket", "sso");
+        $requires = array("websocket", "sso", "language");
         foreach ($requires as $serve){
             try {
                 if (in_array($serve, $installed) || self::isexist($serve)){
@@ -477,7 +477,7 @@ class MSService
             if (is_error($res)) return $res;
             if (!$res){
                 $composerUrl = wurl("server", array('op'=>'composer', 'nid'=>$identity), true);
-                $this->TerminalSend(["mode"=>"err", "message"=>"Composer依赖安装失败，<a href='$composerUrl' target='_blank'>请点击此处手动安装</a>"]);
+                $this->TerminalSend(["mode"=>"err", "message"=>"Composer依赖安装失败，<a href='$composerUrl' target='_blank'>请点击此处再次尝试</a>"]);
                 return error(-102, "Composer依赖安装失败，请手动安装");
             }
         }
@@ -529,8 +529,8 @@ class MSService
                 $res = $this->ComposerRequire(MICRO_SERVER.$identity."/", $ComposerName);
                 if (is_error($res)) return $res;
                 if (!$res){
-                    $composerUrl = wurl("server", array('op'=>'composer', 'nid'=>$identity), true);
-                    $this->TerminalSend(["mode"=>"err", "message"=>"Composer依赖安装失败，<a href='$composerUrl' target='_blank'>请点击此处手动安装</a>"]);
+                    $composerUrl = wurl("server", array('op'=>'composer', 'nid'=>$identity, 'fp'=>'upgrade'), true);
+                    $this->TerminalSend(["mode"=>"err", "message"=>"Composer依赖安装失败，<a href='$composerUrl' target='_blank'>请点击此处再次尝试</a>"]);
                     return error(-102, "Composer依赖安装失败，请手动安装");
                 }
             }
@@ -615,6 +615,24 @@ class MSService
     }
 
     /**
+     * @param array $command
+     * @param $WorkingDirectory
+     * @return Process
+     */
+    public static function ComposerProcess(array $command, $WorkingDirectory): Process
+    {
+        $process = new Process($command);
+        $process->setWorkingDirectory($WorkingDirectory);
+        $process->setEnv(['COMPOSER_HOME' => self::ComposerHome()]);
+        $process->setTimeout(ini_get('max_execution_time') - 5);
+        $process->run(function ($type, $buffer) {
+            self::TerminalSend(["mode" => str_replace('err', 'warm', $type), "message" => $buffer]);
+        });
+        $process->wait();
+        return $process;
+    }
+
+    /**
      * 自动安装Composer依赖
      * @param string $basePath composer.json路径
      * @param string $name 包名称
@@ -653,14 +671,7 @@ class MSService
             }
         }
         try {
-            $process = new Process($command);
-            $process->setWorkingDirectory($WorkingDirectory);
-            $process->setEnv(['COMPOSER_HOME'=>self::ComposerHome()]);
-            $process->setTimeout(ini_get('max_execution_time')-5);
-            $process->run(function ($type, $buffer) {
-                self::TerminalSend(["mode"=>str_replace('err', 'warm', $type), "message"=>$buffer]);
-            });
-            $process->wait();
+            $process = self::ComposerProcess($command, $WorkingDirectory);
             if ($process->isSuccessful()) {
                 $stopTime = time();
                 self::TerminalSend(["mode"=>"success", "message"=>"Composer依赖【{$name}】安装成功！耗时".($stopTime-$startTime)."秒"]);
@@ -702,14 +713,7 @@ class MSService
             }
         }
         try {
-            $process = new Process($command);
-            $process->setWorkingDirectory($WorkingDirectory);
-            $process->setEnv(['COMPOSER_HOME'=>self::ComposerHome()]);
-            $process->setTimeout(ini_get('max_execution_time')-5);
-            $process->run(function ($type, $buffer) {
-                self::TerminalSend(["mode"=>str_replace('err', 'warm', $type), "message"=>$buffer]);
-            });
-            $process->wait();
+            $process = self::ComposerProcess($command, $WorkingDirectory);
             if ($process->isSuccessful()) {
                 $stopTime = time();
                 self::TerminalSend(["mode"=>"success", "message"=>"Composer依赖【{$name}】更新成功！耗时".($stopTime-$startTime)."秒"]);

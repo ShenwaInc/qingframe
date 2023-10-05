@@ -91,7 +91,7 @@ class ServerController extends Controller
         $MSS = new MSService();
         switch ($op){
             case "stop" : {
-                $return['title'] .= " - ". __('terminated');
+                $return['title'] .= " - ". __('已停用');
                 $return['servers'] = MSService::InitService(0);
                 break;
             }

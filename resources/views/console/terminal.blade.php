@@ -35,7 +35,7 @@ if (empty($socket)){
             skin: 'fui-layer fui-terminal', //样式类名
             id:"TerminalPopup",
             anim: 2,
-            title:'轻如云终端<span class="layui-icon layui-icon-loading layui-anim layui-anim-rotate layui-anim-loop margin-left-sm"></span>',
+            title:'@lang("轻如云终端")<span class="layui-icon layui-icon-loading layui-anim layui-anim-rotate layui-anim-loop margin-left-sm"></span>',
             shadeClose: false, //开启遮罩关闭
             content: html,
             success:function (layero, index){

@@ -65,7 +65,7 @@
                                 <div class="layui-form-item must">
                                     <label class="layui-form-label">系统名称</label>
                                     <div class="layui-input-block">
-                                        <input type="text" required lay-verify="required" name="appname" value="轻如云系统" placeholder="请输入系统软件名称" autocomplete="off" class="layui-input">
+                                        <input type="text" required lay-verify="required" name="appName" value="{{ $appName }}" placeholder="请输入系统软件名称" autocomplete="off" class="layui-input">
                                     </div>
                                 </div>
                                 @if($dbconnect==0)

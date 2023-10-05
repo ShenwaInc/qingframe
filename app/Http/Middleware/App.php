@@ -17,7 +17,7 @@ define('TIMESTAMP', time());
 define('DEVELOPMENT', (bool)env('APP_DEVELOPMENT',0));
 define('SITEACID', env('APP_UNIACID', 0));
 define('QingVersion', env('APP_VERSION'));
-define('QingRelease', env('APP_RELEASE'));
+define('QingRelease', (int)env('APP_RELEASE'));
 global $_W,$_GPC;
 $_W = $_GPC = array();
 
