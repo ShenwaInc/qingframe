@@ -5,10 +5,12 @@ namespace App\Console\Commands;
 use App\Http\Middleware\App;
 use App\Models\Account;
 use App\Services\CloudService;
+use App\Services\ModuleService;
 use App\Services\UserService;
 use Illuminate\Console\Command;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class selfSetup extends Command
 {
@@ -17,7 +19,7 @@ class selfSetup extends Command
      *
      * @var string
      */
-    protected $signature = 'self:setup {user=admin} {pwd=123456} {manual?} {appName?} {appUrl?}';
+    protected $signature = 'self:setup {user=admin} {pwd=123456} {manual?} {appName?}';
 
     /**
      * The console command description.
@@ -32,7 +34,7 @@ class selfSetup extends Command
         "logo"=>"/static/icon200.jpg",
         "icon"=>"/favicon.ico",
         "copyright"=>"© 2019-2022 Shenwa Studio. All Rights Reserved.",
-        "website"=>"https://www.qingruyun.com/",
+        "website"=>"https://www.qingruyun.com",
         "accountName"=>"whotalk",
         "accountDescription"=>"做社交从未如此简单"
     );
@@ -45,8 +47,6 @@ class selfSetup extends Command
     public function __construct()
     {
         parent::__construct();
-        $application = new App();
-        $application->initialize(new Request());
         if (file_exists(storage_path("defaultParams.json"))){
             $JSON = file_get_contents(storage_path("defaultParams.json"));
             $defaultParams = (array)json_decode($JSON, true);
@@ -66,6 +66,10 @@ class selfSetup extends Command
         global $_W;
         $params = $this->arguments();
         $title = $params['appName']?:$this->defaultParams['name'];
+        if (!isset($_W['framework'])){
+            $application = new App();
+            $application->initialize(new Request());
+        }
         if (file_exists(storage_path('installed.bin'))){
             $this->message("The system has been installed.");
         }
@@ -75,8 +79,7 @@ class selfSetup extends Command
             //import database
             $this->call('migrate');
         }catch (\Exception $exception){
-            $debugMode = env("APP_DEBUG", false);
-            return $this->message($debugMode?$exception->getMessage():'Database migrate failed.');
+            return $this->message($_W['config']['debugMode']?$exception->getMessage():'Database migrate failed.');
         }
         //2.创建默认账户
         $authKey = \Str::random(12);
@@ -155,12 +158,37 @@ class selfSetup extends Command
                 ))
             )
         ]);
+        try {
+            $this->call('storage:link');
+            $this->call('key:generate');
+        }catch (\Exception $exception){
+            //创建文件映射失败
+            Log::error('storage_link_fail',array('errno'=>-1,'message'=>$exception->getMessage()));
+        }
 
-        //6.更新环境变量
+        //6.自动安装应用
+        $defaultModule = env("APP_MODULE", "whotalk");
+        if (!empty($defaultModule) && file_exists(public_path("addons/$defaultModule/manifest.json"))){
+            ModuleService::install($defaultModule);
+        }
+
+        //7.更新环境变量
         $manualControl = (bool)$params['manual'];
         if (!$manualControl){
             $oldKey = env("APP_AUTHKEY");
             CloudService::CloudEnv("APP_AUTHKEY=$oldKey", "APP_AUTHKEY=$authKey");
+        }
+
+        //8.写入安装文件
+        $installLock = base_path('storage/installed.bin');
+        $writer = fopen($installLock,'w');
+        $complete = fwrite($writer,base64_encode(json_encode($this->defaultParams, 320)));
+        fclose($writer);
+        if(!$complete){
+            return $this->message('文件写入失败，请检查storage目录权限');
+        }
+        if (file_exists(storage_path("defaultParams.json"))){
+            @unlink(storage_path("defaultParams.json"));
         }
 
         $this->info('System installation completed');

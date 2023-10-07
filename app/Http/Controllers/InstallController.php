@@ -30,7 +30,7 @@ class InstallController extends Controller
         "logo"=>"/static/icon200.jpg",
         "icon"=>"/favicon.ico",
         "copyright"=>"© 2019-2022 Shenwa Studio. All Rights Reserved.",
-        "website"=>"https://www.qingruyun.com/",
+        "website"=>"https://www.qingruyun.com",
         "accountName"=>"whotalk",
         "accountDescription"=>"做社交从未如此简单"
     );
@@ -175,29 +175,6 @@ class InstallController extends Controller
             return $this->message('文件写入失败，请检查根目录权限');
         }
         fclose($writer);
-        //写入安装文件
-        $installLock = base_path('storage/installed.bin');
-        $writer = fopen($installLock,'w');
-        $installer['baseurl'] = $baseurl;
-        $installer['authkey'] = $authKey;
-        unset($installer['database']);
-        $complete = fwrite($writer,base64_encode(json_encode($installer, 320)));
-        fclose($writer);
-        if(!$complete){
-            return $this->message('文件写入失败，请检查storage目录权限');
-        }
-        try {
-            //创建文件符号链接
-            Artisan::call('storage:link');
-            Artisan::call('key:generate');
-            $defaultModule = env("APP_MODULE", "whotalk");
-            if (!empty($defaultModule) && file_exists(public_path("addons/$defaultModule/manifest.json"))){
-                ModuleService::install($defaultModule);
-            }
-        }catch (\Exception $exception){
-            //创建文件映射失败
-            Log::error('storage_link_fail',array('errno'=>-1,'message'=>$exception->getMessage()));
-        }
         Cache::forget('installer');
         return $this->message('恭喜您，安装成功！','','success');
     }
