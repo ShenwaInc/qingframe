@@ -32,6 +32,11 @@ class App
      */
     public function handle($request, Closure $next)
     {
+        $this->initialize($request);
+        return $next($request);
+    }
+
+    public function initialize($request){
         global $_W,$_GPC;
         $_GPC = $request->all();
         $_W['startTime'] = microtime(true);
@@ -63,7 +68,6 @@ class App
         if ($appLocale!=$_W['locale']){
             \Illuminate\Support\Facades\App::setLocale($_W['locale']);
         }
-        return $next($request);
     }
 
 }

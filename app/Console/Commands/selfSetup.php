@@ -2,10 +2,12 @@
 
 namespace App\Console\Commands;
 
+use App\Http\Middleware\App;
 use App\Models\Account;
 use App\Services\CloudService;
 use App\Services\UserService;
 use Illuminate\Console\Command;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class selfSetup extends Command
@@ -43,6 +45,8 @@ class selfSetup extends Command
     public function __construct()
     {
         parent::__construct();
+        $application = new App();
+        $application->initialize(new Request());
         if (file_exists(storage_path("defaultParams.json"))){
             $JSON = file_get_contents(storage_path("defaultParams.json"));
             $defaultParams = (array)json_decode($JSON, true);
@@ -61,6 +65,10 @@ class selfSetup extends Command
     {
         global $_W;
         $params = $this->arguments();
+        $title = $params['appName']?:$this->defaultParams['name'];
+        if (file_exists(storage_path('installed.bin'))){
+            $this->message("The system has been installed.");
+        }
         //1.数据库迁移
         try {
             @ini_set('max_execution_time',900);
@@ -137,7 +145,7 @@ class selfSetup extends Command
             array(
                 'key'=>"page",
                 'value'=>serialize(array(
-                    'title'=>$params['appName']?:$this->defaultParams['name'],
+                    'title'=>$title,
                     'icon'=>$this->defaultParams['icon'],
                     'logo'=>$this->defaultParams['logo'],
                     'copyright'=>$this->defaultParams['copyright'],
