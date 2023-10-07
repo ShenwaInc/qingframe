@@ -91,18 +91,18 @@ class InstallController extends Controller
             return $this->message('数据库连接失败，请检查配置信息是否正确');
         }
         $installer = $this->installer;
-        $authKey = \Str::random(12);
         $uid = 0;
         if ($installer['dbconnect']==0){
             //全新安装
             $manager = $request->input('render');
-            $appName = !empty($manager['appName']) ? trim($manager['appName']) : $this->defaultParams['aName'];
             if (!isset($manager['username']) || trim($manager['username'])==''){
                 return $this->message('请填写您的超管账号');
             }
             if (!isset($manager['password']) || trim($manager['password'])==''){
                 return $this->message('请设置超管的登录密码');
             }
+            $appName = !empty($manager['appName']) ? trim($manager['appName']) : $this->defaultParams['aName'];
+            $founderPWD = trim($manager['password']);
 
             $DBConfig = config('database');
             $databaseCFG = $DBConfig['connections'][$DBConfig['default']];
@@ -114,94 +114,17 @@ class InstallController extends Controller
             Config::set('database.connections.'.$DBConfig['default'],$databaseCFG);
 
             try {
-                @ini_set('max_execution_time',900);
-                //import database
-                Artisan::call('migrate');
+                $authKey = Artisan::call('self:setup', array('user'=>trim($manager['username']), 'pwd'=>$founderPWD, 'appName'=>$appName, 'manual'=>1));
             }catch (\Exception $exception){
-                return $this->message('数据库安装失败');
+                return $this->message($exception->getMessage());
             }
 
-            $salt = \Str::random(8);
-            $founderPWD = trim($manager['password']);
-            $pwdHash = sha1("{$founderPWD}-{$salt}-{$authKey}");
-            $founder = array(
-                'groupid'=>1,
-                'founder_groupid'=>1,
-                'username'=>trim($manager['username']),
-                'password'=>$pwdHash,
-                'salt'=>$salt,
-                'status'=>2,
-                'joindate'=>TIMESTAMP,
-                'endtime'=>0
-            );
-            //create founder
-            $uid = DB::table('users')->insertGetId($founder);
-            if(!$uid) return $this->message('数据写入失败');
-            $_W['uid'] = $founder['uid'] = $uid;
-            $_W['user'] = $founder;
-            DB::table('users_profile')->insert(array(
-                'avatar'=>'/static/icon200.jpg',
-                'edittime'=>TIMESTAMP,
-                'uid'=>$uid,
-                'createtime'=>TIMESTAMP,
-                'nickname'=>$founder['username']
-            ));
-            //create account
-            $uni_account = DB::table('uni_account');
-            $uniacid = $uni_account->insertGetId(array(
-                'groupid' => 0,
-                'default_acid' => 0,
-                'name' => $this->defaultParams['accountName'],
-                'description' => $this->defaultParams['accountDescription'],
-                'logo'=>$this->defaultParams['logo'],
-                'title_initial' => 'W',
-                'createtime' => TIMESTAMP,
-                'create_uid' => $uid
-            ));
-            if (empty($uniacid)) return $this->message('系统初始化失败');
-            $account_data = array('name' => $this->defaultParams['accountName']);
 
-            $acid = Account::account_create($uniacid,$account_data);
-            $uni_account->where('uniacid',$uniacid)->update(array('default_acid' => $acid));
-            UserService::AccountRoleUpdate($uniacid,$uid);
-
-            //initializer laravel framework
-            DB::table('gxswa_cloud')->insert(array(
-                'identity'=>$_W['config']['identity'],
-                'name'=>'轻如云系统V1',
-                'modulename'=>'',
-                'type'=>0,
-                'logo'=>'//shenwahuanan.oss-cn-shenzhen.aliyuncs.com/images/4/2021/08/pK8iHw0eQg5hHgg4Kqe5E1E1hSBpZS.png',
-                'website'=>'https://www.gxswa.com/laravel/',
-                'rootpath'=>'',
-                'version'=>QingVersion,
-                'releasedate'=>QingRelease,
-                'addtime'=>TIMESTAMP,
-                'dateline'=>TIMESTAMP
-            ));
-
-            //initializer default setting
-            DB::table("core_settings")->insert([
-                array(
-                    'key'=>"page",
-                    'value'=>serialize(array(
-                        'title'=>$appName,
-                        'icon'=>$this->defaultParams['icon'],
-                        'logo'=>$this->defaultParams['logo'],
-                        'copyright'=>$this->defaultParams['copyright'],
-                        'links'=>'<a class="copyright-link" href="https://www.yuque.com/shenwa/qingru" target="_blank">开发文档</a><a class="copyright-link ajaxshow" href="/console/setting/market">应用市场</a><a class="copyright-link" href="https://www.gxit.org/" target="_blank">关于我们</a><a class="copyright-link" href="https://www.gxit.org/" target="_blank">提交工单</a>',
-                        'keywords'=>'SaaS软件，应用市场，APP开发，微信应用，微服务，微信营销，小程序开发，模块化开发，快速开发，脚手架，Laravel模块',
-                        'description'=>'轻如云系统是一个基于Laravel的跨平台快速开发框架，提供丰富的基础微服务，满足各类应用程序的快速开发需求'
-                    ))
-                )
-            ]);
-        }else{
-            //安装到现有微擎，待完善
         }
         //写入配置文件
-        $envfile_tmp = resource_path('stub/env.stub');
-        $reader = fopen($envfile_tmp,'r');
-        $envData = fread($reader,filesize($envfile_tmp));
+        $envFile_tmp = resource_path('stub/env.stub');
+        $reader = fopen($envFile_tmp,'r');
+        $envData = fread($reader,filesize($envFile_tmp));
         fclose($reader);
         $baseurl = str_replace('/installer/render','',url()->current());
         $database = $installer['database'];

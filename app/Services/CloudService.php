@@ -498,13 +498,13 @@ class CloudService
 
     static function CloudEnv($search, $replace){
         if (empty($search) || empty($replace)) return false;
-        $envfile = base_path(".env");
-        $reader = fopen($envfile,'r');
-        $envdata = fread($reader,filesize($envfile));
+        $envFile = base_path(".env");
+        $reader = fopen($envFile,'r');
+        $envData = fread($reader,filesize($envFile));
         fclose($reader);
-        $envdata = str_replace($search, $replace, $envdata);
-        $writer = fopen($envfile,'w');
-        $complete = fwrite($writer,$envdata);
+        $envData = str_replace($search, $replace, $envData);
+        $writer = fopen($envFile,'w');
+        $complete = fwrite($writer,$envData);
         fclose($writer);
         return $complete;
     }

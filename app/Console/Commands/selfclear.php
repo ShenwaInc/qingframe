@@ -73,14 +73,15 @@ class selfclear extends Command
             }
         }
         //清理无用文件夹
-        $undirs = array(
+        $unusedDirs = array(
             base_path('socket/'),
             base_path('bootstrap/functions/'),
             base_path('bootstrap/wemod/'),
             resource_path('views/console/extra/'),
-            resource_path('views/console/set/')
+            resource_path('views/console/set/'),
+            public_path('web/resource/home/')
         );
-        foreach ($undirs as $dir){
+        foreach ($unusedDirs as $dir){
             if (is_dir($dir)){
                 FileService::rmdirs($dir);
             }
