@@ -87,6 +87,10 @@ class selfSetup extends Command
         $username = $params['user'] ?: "admin";
         $founderPWD = $params['pwd'] ?: "123456";
         $pwdHash = sha1("{$founderPWD}-{$salt}-{$authKey}");
+        $register_type = 0;
+        if ($username=='admin' && $founderPWD=='123456'){
+            $register_type = 1;
+        }
         $founder = array(
             'groupid'=>1,
             'founder_groupid'=>1,
@@ -95,7 +99,7 @@ class selfSetup extends Command
             'salt'=>$salt,
             'status'=>2,
             'joindate'=>TIMESTAMP,
-            'register_type'=>1,
+            'register_type'=>$register_type,
             'endtime'=>0
         );
         $uid = DB::table('users')->insertGetId($founder);
@@ -166,20 +170,14 @@ class selfSetup extends Command
             Log::error('storage_link_fail',array('errno'=>-1,'message'=>$exception->getMessage()));
         }
 
-        //6.自动安装应用
-        $defaultModule = env("APP_MODULE", "whotalk");
-        if (!empty($defaultModule) && file_exists(public_path("addons/$defaultModule/manifest.json"))){
-            ModuleService::install($defaultModule);
-        }
-
-        //7.更新环境变量
+        //6.更新环境变量
         $manualControl = (bool)$params['manual'];
         if (!$manualControl){
             $oldKey = env("APP_AUTHKEY");
             CloudService::CloudEnv("APP_AUTHKEY=$oldKey", "APP_AUTHKEY=$authKey");
         }
 
-        //8.写入安装文件
+        //7.写入安装文件
         $installLock = base_path('storage/installed.bin');
         $writer = fopen($installLock,'w');
         $complete = fwrite($writer,base64_encode(json_encode($this->defaultParams, 320)));
@@ -191,7 +189,16 @@ class selfSetup extends Command
             @unlink(storage_path("defaultParams.json"));
         }
 
+        //8.自动安装应用
+        $defaultModule = env("APP_MODULE", "whotalk");
+        if (!empty($defaultModule) && file_exists(public_path("addons/$defaultModule/manifest.json"))){
+            ModuleService::install($defaultModule);
+        }
+
         $this->info('System installation completed');
+        $this->info('Please access the console via your domain name');
+        $this->info("username: $username");
+        $this->info("password: $founderPWD");
         return $authKey;
     }
 

@@ -216,6 +216,7 @@ class UserController extends Controller
                 'salt'=>\Str::random(8)
             );
             $update['password'] = sha1("{$newpassowrd}-{$update['salt']}-{$_W['config']['setting']['authkey']}");
+            $update['register_type'] = 0;
             $complete = pdo_update('users',$update,array('uid'=>$_W['uid']));
             if ($complete){
                 Auth::logout();

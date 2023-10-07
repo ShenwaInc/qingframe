@@ -18,14 +18,15 @@
                         </div>
                         <div class="layui-form-item must">
                             <label class="layui-form-label">@lang('newPassword')</label>
-                            <div class="layui-input-block">
-                                <input type="password" required lay-verify="required" name="newpassword" value="" placeholder="@lang('typeNewPassword')" autocomplete="off" class="layui-input">
+                            <div class="layui-input-inline" style="width: 50%">
+                                <input type="password" id="passwordInput" required lay-verify="required" name="newpassword" value="" placeholder="@lang('typeNewPassword')" autocomplete="off" class="layui-input">
                             </div>
+                            <button type="button" onclick="Generate()" class="layui-btn">@lang('随机生成')</button>
                         </div>
                         <div class="layui-form-item must">
                             <label class="layui-form-label">@lang('rePassword')</label>
                             <div class="layui-input-block">
-                                <input type="password" required lay-verify="required" name="repassword" value="" placeholder="@lang('reTypePassword')" autocomplete="off" class="layui-input">
+                                <input type="password" required lay-verify="required" id="rePassword" name="repassword" value="" placeholder="@lang('reTypePassword')" autocomplete="off" class="layui-input">
                             </div>
                         </div>
                         <div class="layui-form-item">
@@ -43,5 +44,12 @@
         </div>
     </div>
 @endif
+<script type="text/javascript">
+    function Generate() {
+        let pwd = Wrandom(12);
+        $('#passwordInput').val(pwd).attr('type', 'text');
+        $('#rePassword').val(pwd);
+    }
+</script>
 
 @include('common.footer')

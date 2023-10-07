@@ -304,6 +304,8 @@
     "语言管理": "Language Service",
     "设为默认": "Set as Default",
     "轻如云终端": "QingFrame Terminal",
+    "初始密码很不安全": "The initial password is very insecure",
+    "随机生成": "Generate",
     "languageName": "English",
     "languageID": "en"
 }

@@ -9,6 +9,7 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 .layui-layout-admin .layui-logo{box-shadow: none; color: #606060 !important;overflow: hidden; white-space: nowrap; text-overflow: ellipsis; padding-left: 25px;}
 .layui-layer-content{max-height: calc(90vh - 50px);}
 .layui-layout-admin *, .layui-layer-content .layui-form *{box-sizing: content-box;}
+.layui-layer-content .layui-form .layui-btn{box-sizing: border-box;}
 .layui-form .layui-input, .layui-form .layui-textarea, .layui-form .layui-row > *{box-sizing: border-box;}
 .layui-form-label{width: 105px;}
 .layui-form-item.must .layui-form-label:after{content: '*'; top: 0; right: 5px; line-height: 38px; color: #e54d42; position: absolute;}

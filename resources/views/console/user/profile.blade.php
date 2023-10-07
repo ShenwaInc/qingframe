@@ -54,7 +54,7 @@
                         </tr>
                         <tr>
                             <td><span class="fui-table-lable">@lang('password')</span></td>
-                            <td class="soild-after"> ******** </td>
+                            <td class="soild-after"> ******** @if($_W['user']['register_type']==1)<span class="layui-badge">@lang('初始密码很不安全')</span>@endif</td>
                             <td class="text-right soild-after">
                                 <a href="{{ url('console/user/passport') }}" class="text-blue ajaxshow" title="{{ __('modifyData', array('data'=>__('password'))) }}">@lang('modify')</a>
                             </td>
