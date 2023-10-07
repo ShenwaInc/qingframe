@@ -29,14 +29,14 @@ class selfSetup extends Command
     protected $description = 'System automatic installation';
 
     public $defaultParams = array(
-        "name"=>"轻如云应用服务管理系统",
+        "name"=>"轻如云开放平台",
         "aName"=>"轻如云系统",
         "logo"=>"/static/icon200.jpg",
         "icon"=>"/favicon.ico",
-        "copyright"=>"© 2019-2022 Shenwa Studio. All Rights Reserved.",
+        "copyright"=>"© 2019-2022 ShenWa Studio. All Rights Reserved.",
         "website"=>"https://www.qingruyun.com",
-        "accountName"=>"whotalk",
-        "accountDescription"=>"做社交从未如此简单"
+        "accountName"=>"轻如云",
+        "accountDescription"=>"开放连接万事万物"
     );
 
     /**
