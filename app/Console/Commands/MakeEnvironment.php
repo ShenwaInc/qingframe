@@ -12,7 +12,7 @@ class MakeEnvironment extends Command
      *
      * @var string
      */
-    protected $signature = 'make:environment {--path=docker.env}';
+    protected $signature = 'make:env {options?} {--path=docker.env}';
 
     /**
      * The console command description.
@@ -55,9 +55,14 @@ class MakeEnvironment extends Command
     public function handle()
     {
         //
-        $inputPath = $this->option('path');
-        $envDatas = $this->getEnvironments($this->envs, $inputPath);
-        if (empty($replaces)){
+        $options = $this->argument('options');
+        if (!empty($options)){
+            return $this->MakeEnvironmentFromOptions($options);
+        }else{
+            $inputPath = $this->option('path');
+            $envData = $this->getEnvironments($this->envs, $inputPath);
+        }
+        if (empty($envData)){
             $this->error("Failed to get environment variables.");
             return false;
         }
@@ -66,7 +71,7 @@ class MakeEnvironment extends Command
             $this->error("Failed to visit env.stub.");
             return false;
         }
-        $searchs = array(
+        $search = array(
             '{AUTHKEY}',
             '{APP_DEBUG}',
             '{BASEURL}',
@@ -86,23 +91,23 @@ class MakeEnvironment extends Command
         );
         $replaces = array(
             env('APP_AUTHKEY'),
-            $envDatas['APP_DEBUG'],
+            $envData['APP_DEBUG'],
             env('APP_URL'),
             env('APP_FOUNDER'),
             env('APP_VERSION'),
             env('APP_RELEASE'),
-            $envDatas['DB_HOST'],
-            $envDatas['DB_PORT'],
-            $envDatas['DB_DATABASE'],
-            $envDatas['DB_USERNAME'],
-            $envDatas['DB_PASSWORD'],
+            $envData['DB_HOST'],
+            $envData['DB_PORT'],
+            $envData['DB_DATABASE'],
+            $envData['DB_USERNAME'],
+            $envData['DB_PASSWORD'],
             env('DB_PREFIX'),
-            $envDatas['SESSION_DRIVER'],
-            $envDatas['REDIS_HOST'],
-            $envDatas['REDIS_PASSWORD'],
-            $envDatas['REDIS_PORT']
+            $envData['SESSION_DRIVER'],
+            $envData['REDIS_HOST'],
+            $envData['REDIS_PASSWORD'],
+            $envData['REDIS_PORT']
         );
-        if (!file_put_contents(base_path(".env"), str_replace($searchs, $replaces, $envStub))){
+        if (!file_put_contents(base_path(".env"), str_replace($search, $replaces, $envStub))){
             $this->error('Build environment failed');
             return false;
         }
@@ -114,14 +119,58 @@ class MakeEnvironment extends Command
         if (empty($envs)) return [];
         if (!is_array($envs)) $envs = [$envs];
         if (!file_exists(base_path($inputPath))) return [];
-        $envDatas = array();
+        $data = array();
         $envData = file_get_contents(base_path($inputPath));
         if (!$envData) return [];
-        foreach ($envs as $key){
-            preg_match("/^".$key."=(.+)/m", $envData, $matchs);
-            $envDatas[$key] = empty($matchs) ? "" : $matchs[1];
+        foreach ($envs as $name){
+            preg_match("/^".$name."=(.+)/m", $envData, $matches);
+            $data[$name] = empty($matches) ? "" : $matches[1];
         }
-        return $envDatas;
+        return $data;
+    }
+
+    public function MakeEnvironmentFromOptions($options=""){
+        $replaces = [];
+        if (empty($options)){
+            return false;
+        }
+        $envs = array(
+            'de'=>'APP_DEBUG',
+            'ai'=>'APP_ID',
+            'as'=>'APP_SECRET',
+            'mh'=>'DB_HOST',
+            'mp'=>'DB_PORT',
+            'mu'=>'DB_USERNAME',
+            'mpwd'=>'DB_PASSWORD',
+            'sd'=>'SESSION_DRIVER',
+            'rh'=>'REDIS_HOST',
+            'rp'=>'REDIS_PASSWORD',
+            'rpo'=>'REDIS_PORT',
+            'pk'=>'MIX_PUSHER_APP_KEY',
+            'pc'=>'MIX_PUSHER_APP_CLUSTER',
+            'cs'=>'SESSION_SECURE_COOKIE',
+            'ac'=>'APP_RUNNING_IN_W7_CD'
+        );
+        $_options = explode("-", $options);
+        $envText = file_get_contents(base_path(".env"));
+        foreach ($_options as $option){
+            list($key, $value) = explode(":", $option);
+            $name = $envs[$key]?:$key;
+            if (empty($name)) continue;
+            $envText = preg_replace("/^".$name."=(.+)/m", "$name=".trim($value), $envText);
+            if ($name=='DB_USERNAME'){
+                $envText = preg_replace("/^DB_DATABASE=(.+)/m", "DB_DATABASE=".trim($value), $envText);
+            }
+            if ($name=='SESSION_DRIVER'){
+                $envText = preg_replace("/^CACHE_DRIVER=(.+)/m", "CACHE_DRIVER=".trim($value), $envText);
+            }
+        }
+        if (!file_put_contents(base_path(".env"), $envText)){
+            $this->error('Build environment failed');
+            return false;
+        }
+        $this->info("Build environment successfully.");
+        return true;
     }
 
 }
