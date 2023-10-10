@@ -19,7 +19,7 @@ class selfSetup extends Command
      *
      * @var string
      */
-    protected $signature = 'self:setup {user=admin} {pwd=123456} {manual?} {appName?}';
+    protected $signature = 'self:setup {user=admin} {pwd=123456} {manual?} {appName?} {--authKey=default}';
 
     /**
      * The console command description.
@@ -82,7 +82,10 @@ class selfSetup extends Command
             return $this->message($_W['config']['debugMode']?$exception->getMessage():'Database migrate failed.');
         }
         //2.创建默认账户
-        $authKey = \Str::random(12);
+        $authKey = $this->option("authKey");
+        if (empty($authKey) || $authKey=="default"){
+            $authKey = \Str::random(12);
+        }
         $salt = \Str::random(8);
         $username = $params['user'] ?: "admin";
         $founderPWD = $params['pwd'] ?: "123456";

@@ -122,59 +122,29 @@ class InstallController extends Controller
 
         }
         //写入配置文件
-        $envFile_tmp = resource_path('stub/env.stub');
-        $reader = fopen($envFile_tmp,'r');
-        $envData = fread($reader,filesize($envFile_tmp));
-        fclose($reader);
         $baseurl = str_replace('/installer/render','',url()->current());
         $database = $installer['database'];
-        $searches = array(
-            '{AUTHKEY}',
-            '{APP_DEBUG}',
-            '{BASEURL}',
-            '{FOUNDER}',
-            '{APP_VERSION}',
-            '{APP_RELEASE}',
-            '{DB_HOST}',
-            '{DB_PORT}',
-            '{DB_DATABASE}',
-            '{DB_USERNAME}',
-            '{DB_PASSWORD}',
-            '{DB_PREFIX}',
-            '{SESSION_DRIVER}',
-            '{REDIS_HOST}',
-            '{REDIS_PASSWORD}',
-            '{REDIS_PORT}'
-        );
+        $envText = file_get_contents(base_path(".env"));
         $replaces = array(
-            $authKey,
-            \config('app.debug', false) ? 'true' : 'false',
-            $baseurl,
-            $uid,
-            QingVersion,
-            QingRelease,
-            $database['host'],
-            $database['port'],
-            $database['database'],
-            $database['username'],
-            $database['password'],
-            $database['prefix'],
-            \config('session.driver', 'file'),
-            env('REDIS_HOST','127.0.0.1'),
-            env('REDIS_PASSWORD', 'null'),
-            env('REDIS_PORT','6379')
+            "APP_AUTHKEY"=>$authKey,
+            "APP_URL"=>$baseurl,
+            "APP_FOUNDER"=>$uid,
+            "APP_VERSION"=>QingVersion,
+            "APP_RELEASE"=>QingRelease,
+            "DB_HOST"=>$database['host'],
+            "DB_PORT"=>$database['port'],
+            "DB_DATABASE"=>$database['database'],
+            "DB_USERNAME"=>$database['username'],
+            "DB_PASSWORD"=>$database['password'],
+            "DB_PREFIX"=>$database['prefix'],
+            "CACHE_DRIVER"=>"database"
         );
-        $envData = str_replace($searches, $replaces, $envData);
-        $envFile = base_path(".env");
-        if (file_exists($envFile)){
-            @unlink($envFile);
+        foreach ($replaces as $key=>$value){
+            $envText = preg_replace("/^".$key."=(.+)/m", "$key=".trim($value), $envText);
         }
-        $writer = fopen($envFile,'w');
-        if(!fwrite($writer,$envData)){
-            fclose($writer);
+        if (!file_put_contents(base_path(".env"), $envText)){
             return $this->message('文件写入失败，请检查根目录权限');
         }
-        fclose($writer);
         Cache::forget('installer');
         return $this->message('恭喜您，安装成功！','','success');
     }

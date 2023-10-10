@@ -130,7 +130,6 @@ class MakeEnvironment extends Command
     }
 
     public function MakeEnvironmentFromOptions($options=""){
-        $replaces = [];
         if (empty($options)){
             return false;
         }
