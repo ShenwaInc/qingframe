@@ -29,21 +29,27 @@ class CatchCall {
  */
 function serv(...$params){
     static $_servers;
-    $name = $params[0];
+    $name = ucfirst($params[0]);
     if (empty($_servers)) $_servers = array();
+    $serverId = md5(base64_encode(json_encode($params)));
     if (isset($_servers[$name])){
         return $_servers[$name];
     }
-    $service = MICRO_SERVER.strtolower($name).'/'.ucfirst($name)."Service.php";
+    $service = MICRO_SERVER.strtolower($name)."/{$name}Service.php";
     if (!file_exists($service)){
-        return new CatchCall("Service ".ucfirst($name)." Not Found.");
+        return new CatchCall("Service $name Not Found.");
     }
     try {
         require_once $service;
-        $class_name = ucfirst($name) . 'Service';
-        $instance = !empty($params) ? new $class_name($params[0]) : new $class_name();
-        if ($instance->service['status']!=1){
-            return new CatchCall("Service $name has stopped.");
+        $class_name = $name . 'Service';
+        if (count($params)>1){
+            unset($params[0]);
+            $instance = new $class_name(...$params);
+        }else{
+            $instance = new $class_name();
+        }
+        if ($instance->service['status']!=1 || !$instance->enabled){
+            return new CatchCall("Service $class_name has stopped.");
         }
     }catch (Exception $exception){
         return new CatchCall($exception->getMessage());
@@ -158,11 +164,12 @@ function referer() {
     $_W['referer'] = '?' == substr($_W['referer'], -1) ? substr($_W['referer'], 0, -1) : $_W['referer'];
 
     $_W['referer'] = str_replace('&amp;', '&', $_W['referer']);
-    $reurl = parse_url($_W['referer']);
+    $reUrl = parse_url($_W['referer']);
+    $reHost = (empty($reUrl['port']) || $reUrl['port']==80) ? $reUrl['host'] : $reUrl['host'].":".$reUrl['port'];
 
-    if (!empty($reurl['host']) && !in_array($reurl['host'], array($_SERVER['HTTP_HOST'], 'www.' . $_SERVER['HTTP_HOST'])) && !in_array($_SERVER['HTTP_HOST'], array($reurl['host'], 'www.' . $reurl['host']))) {
+    if (!empty($reHost) && !in_array($reHost, array($_SERVER['HTTP_HOST'], 'www.' . $reHost)) && !in_array($_SERVER['HTTP_HOST'], array($reHost, 'www.' . $reHost))) {
         $_W['referer'] = $_W['siteroot'];
-    } elseif (empty($reurl['host'])) {
+    } elseif (empty($reUrl['host'])) {
         $_W['referer'] = $_W['siteroot'] . './' . $_W['referer'];
     }
 

@@ -338,7 +338,7 @@ class MicroService
             View::share($data);
             $source = $this->serverPath.$this->identity."/views/$platform/$template.blade.php";
             if (!file_exists($source)){
-                throw new \Exception("view $template dose not exist.");
+                abort(404, "view $template dose not exist.");
             }
             return View::file($source);
         }
