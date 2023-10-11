@@ -91,7 +91,6 @@ class InstallController extends Controller
             return $this->message('数据库连接失败，请检查配置信息是否正确');
         }
         $installer = $this->installer;
-        $uid = 0;
         if ($installer['dbconnect']==0){
             //全新安装
             $manager = $request->input('render');
@@ -128,7 +127,6 @@ class InstallController extends Controller
         $replaces = array(
             "APP_AUTHKEY"=>$authKey,
             "APP_URL"=>$baseurl,
-            "APP_FOUNDER"=>$uid,
             "APP_VERSION"=>QingVersion,
             "APP_RELEASE"=>QingRelease,
             "DB_HOST"=>$database['host'],
