@@ -60,10 +60,16 @@ class FileService
     }
 
 
-    static function file_tree($path, $include = array()) {
+    static function file_tree($path, $include = null) {
         $files = array();
+        $path = realpath($path);
         if (!empty($include)) {
-            $ds = glob($path . '/{' . implode(',', $include) . '}', GLOB_BRACE);
+            if(is_array($include) && count($include)>1){
+                $ds = glob($path . '/{' . implode(',', $include) . '}', GLOB_BRACE);
+            }else{
+                $pattern = is_array($include) ? $include[0] : $include;
+                $ds = glob($path . "/" . $pattern);
+            }
         } else {
             $ds = glob($path . '/*');
         }
