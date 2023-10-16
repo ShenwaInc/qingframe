@@ -58,6 +58,19 @@ function serv(...$params){
     return $instance;
 }
 
+function assets($path, $secure = null){
+    if ($secure!==null){
+        return asset($path, $secure);
+    }
+    if (strpos($path, 'http')===0){
+        return $path;
+    }
+    if (file_exists(public_path($path)) && !\Str::startsWith($path, "/")){
+        $path = "/" . $path;
+    }
+    return $path;
+}
+
 if (!function_exists('post_var')){
     function post_var($keys=array(),$datas=array()){
         global $_GPC;
@@ -233,7 +246,7 @@ function tomedia($src, $local_path = false, $is_cahce = false) {
         return '';
     }
     if (file_exists(public_path($src))){
-        return asset($src);
+        return assets($src);
     }
     if ($is_cahce) {
         $src .= '?v=' . time();

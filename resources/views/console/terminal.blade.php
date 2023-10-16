@@ -1,4 +1,4 @@
-<script type="text/javascript" src="{{ asset('/static/js/swasocket.js') }}?v={{ QingRelease }}"></script>
+<script type="text/javascript" src="{{ assets('/static/js/swasocket.js') }}?v={{ QingRelease }}"></script>
 <style>
     .fui-terminal .layui-code-h3{display: none;}
     .fui-terminal .layui-code-ol li{color: #FFFFFF !important; background: #000000 !important; list-style: none; margin-left: 0;}

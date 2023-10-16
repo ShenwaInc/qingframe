@@ -18,11 +18,11 @@
         @endif
             @lang($_W['page']['title'])
     </title>
-    <link rel="stylesheet" href="{{ asset('/static/css/font-awesome.min.css') }}?v={{ QingRelease }}" />
-    <link rel="stylesheet" href="{{ asset('/static/layui/css/layui.css') }}?v={{ QingRelease }}" />
-    <link rel="stylesheet" href="{{ asset('/static/css/console.css') }}?v={{ QingRelease }}" />
-    <script type="text/javascript" src="{{ asset('/static/layui/layui.js') }}?v={{ QingRelease }}"></script>
-    <script type="text/javascript" src="{{ asset('/static/js/jquery-1.11.1.min.js') }}?v={{ QingRelease }}"></script>
-    <script type="text/javascript" src="{{ asset('/static/js/core.jquery.js') }}?v={{ QingRelease }}"></script>
-    <script type="text/javascript" src="{{ asset('/static/js/require.js') }}?v={{ QingRelease }}"></script>
+    <link rel="stylesheet" href="{{ assets('/static/css/font-awesome.min.css') }}?v={{ QingRelease }}" />
+    <link rel="stylesheet" href="{{ assets('/static/layui/css/layui.css') }}?v={{ QingRelease }}" />
+    <link rel="stylesheet" href="{{ assets('/static/css/console.css') }}?v={{ QingRelease }}" />
+    <script type="text/javascript" src="{{ assets('/static/layui/layui.js') }}?v={{ QingRelease }}"></script>
+    <script type="text/javascript" src="{{ assets('/static/js/jquery-1.11.1.min.js') }}?v={{ QingRelease }}"></script>
+    <script type="text/javascript" src="{{ assets('/static/js/core.jquery.js') }}?v={{ QingRelease }}"></script>
+    <script type="text/javascript" src="{{ assets('/static/js/require.js') }}?v={{ QingRelease }}"></script>
 </head>

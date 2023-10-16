@@ -64,7 +64,7 @@
                     <div class="layui-col-lg3 layui-col-md4 layui-col-sm6 layui-col-xs12 fui-item fui-item-sm arrow">
                         <a target="_blank" href="{{ serv($value['name'])->url($value['entry']) }}" title="{{ $value['summary'] }}" class="fui-content">
                             <div class="fui-info">
-                                <img alt="{{ $value['title'] }}" class="radius" src="{{ asset($value['cover']) }}" />
+                                <img alt="{{ $value['title'] }}" class="radius" src="{{ assets($value['cover']) }}" />
                                 <strong class="card-name">{{ $value['title'] }}</strong>
                                 <p class="text-cut">{{ $value['summary'] }}</p>
                             </div>

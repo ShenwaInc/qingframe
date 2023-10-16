@@ -48,7 +48,7 @@
                     <tr>
                         <td>
                             <div class="text-cut" style="max-width: 40vw;">
-                                <img alt="{{ $service['name'] }}" class="layui-avatar" src="{{ asset($service['cover']) }}?v={{ QingRelease }}" height="36" />
+                                <img alt="{{ $service['name'] }}" class="layui-avatar" src="{{ assets($service['cover']) }}?v={{ QingRelease }}" height="36" />
                                 @if($op=='index' && !empty($service['entry']))
                                     <a href="{{ $service['entry'] }}" target="_blank" class="color-default">{{ $service['name'] }}</a>
                                 @else
