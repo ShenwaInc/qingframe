@@ -267,7 +267,7 @@ function tomedia($src, $local_path = false, $is_cahce = false) {
     }
 
     $uni_remote_setting = SettingService::uni_load('remote');
-    if ($local_path || empty($_W['setting']['remote']['type']) && (empty($_W['uniacid']) || !empty($_W['uniacid']) && empty($uni_remote_setting['remote']['type'])) || file_exists(storage_path("app/public/{$src}") )) {
+    if ($local_path || empty($_W['setting']['remote']['type']) && (empty($_W['uniacid']) || empty($uni_remote_setting['remote']['type'])) || file_exists(storage_path("app/public/{$src}") )) {
         $src = $_W['siteroot'] . 'storage/' . $src;
     } else {
         if (!empty($uni_remote_setting['remote']['type'])) {
