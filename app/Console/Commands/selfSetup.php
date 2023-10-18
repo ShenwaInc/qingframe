@@ -161,7 +161,7 @@ class selfSetup extends Command
                     'icon'=>$this->defaultParams['icon'],
                     'logo'=>$this->defaultParams['logo'],
                     'copyright'=>$this->defaultParams['copyright'],
-                    'links'=>'<a class="copyright-link" href="https://www.yuque.com/shenwa/qingru" target="_blank">开发文档</a><a class="copyright-link ajaxshow" href="/console/setting/market">应用市场</a><a class="copyright-link" href="https://www.gxit.org/" target="_blank">关于我们</a><a class="copyright-link" href="https://www.gxit.org/" target="_blank">提交工单</a>',
+                    'links'=>'<a class="copyright-link" href="https://www.yuque.com/shenwa/qingru" target="_blank">开发文档</a><a class="copyright-link ajaxshow" href="/console/setting/market">应用市场</a><a class="copyright-link" href="https://www.gxit.org/" target="_blank">关于我们</a><a class="copyright-link ajaxshow" href="/console/report/post">提交工单</a>',
                     'keywords'=>'SaaS软件，应用市场，APP开发，微信应用，微服务，微信营销，小程序开发，模块化开发，快速开发，脚手架，Laravel模块',
                     'description'=>'轻如云系统是一个基于Laravel的跨平台快速开发框架，提供丰富的基础微服务，满足各类应用程序的快速开发需求'
                 ))

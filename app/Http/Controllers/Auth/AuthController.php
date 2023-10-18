@@ -22,6 +22,7 @@ class AuthController extends Controller
         if($request->isMethod('post')){
             global $_W;
             Auth::logout();
+            \session()->flush();
             $_W['uid'] = 0;
             $_W['user'] = array('uid'=>0,'username'=>'未登录');
             return $this->message('即将退出...',url('/login'),'success');
@@ -91,8 +92,8 @@ class AuthController extends Controller
         }
         $user = $request->user();
         if (!empty($user['uid'])){
-            $redirect = wurl('account/profile', array('uniacid'=>$uniacid));
-            return $this->message('恭喜您，登录成功', $redirect,'success');
+            $redirect = url("console/account", array('uniacid'=>$uniacid));
+            return redirect($redirect);
         }
         if ($account['endtime']>0 && $account['endtime']<TIMESTAMP){
             return $this->message("该平台服务已到期，请联系管理员处理");
