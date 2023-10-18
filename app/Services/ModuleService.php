@@ -13,10 +13,10 @@ class ModuleService
 
     static function getManifest($identity,$path='addons'){
         $manifestFile = base_path("public/$path/$identity/manifest.json");
-        if(!file_exists($manifestFile)) return error(-1,'Unable to parse module installation package');
+        if(!file_exists($manifestFile)) return error(-1,__('无法解析模块安装包'));
         $JSON = file_get_contents($manifestFile);
         $result = json_decode($JSON, true);
-        if (empty($result) || !isset($result['application'])) return error(-1,'invalid application package');
+        if (empty($result) || !isset($result['application'])) return error(-1,__('无效的模块安装包'));
         $result['installed'] = false;
         if (DB::table('modules')->where('name', $identity)->exists()){
             $result['installed'] = true;
@@ -49,7 +49,7 @@ class ModuleService
         }
         $module['from'] = $from;
         if (!DB::table('modules')->insert($module)){
-            return error(-1,'Unable to parse module installation package');
+            return error(-1, __('无法解析模块安装包'));
         }
         if (!empty($ManiFest['servers'])){
             try {

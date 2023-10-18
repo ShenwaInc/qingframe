@@ -38,7 +38,7 @@ class AccountController extends Controller
         }
         if (empty($this->role)){
             //暂无权限
-            return error(-1, __('Access Denied'));
+            return error(-1, __('暂无权限'));
         }
         if ($check){
             if ($this->uniacid==0 || $this->account['isdeleted']==1) return error(-1, __('platformNotFound'));
@@ -68,7 +68,7 @@ class AccountController extends Controller
 
     public function doRole(Request $request){
         global $_W;
-        if ($this->role!='owner' && !$_W['isfounder'])return $this->message('Access Denied');
+        if ($this->role!='owner' && !$_W['isfounder'])return $this->message(__('暂无权限'));
         $return = array('title'=>__('operatingAuthority'),'users'=>array(),'uniacid'=>$this->uniacid,'role'=>$this->role);
         $subs = UserService::GetSubs($_W['uid']);
         $op = $request->input('op','');
@@ -87,7 +87,7 @@ class AccountController extends Controller
                 if ($complete) return $this->message('savedSuccessfully', wurl('account/role', array('uniacid' => $this->uniacid)), 'success');
             }elseif ($op=='setowner'){
                 if (!$_W['isfounder']){
-                    return $this->message('Access Denied');
+                    return $this->message(__('暂无权限'));
                 }
                 $uid = (int)$request->input('uid',0);
                 if ($uid==0) return $this->message('userNotfound');
@@ -346,7 +346,7 @@ class AccountController extends Controller
         global $_W;
         $role = UserService::AccountRole($_W['uid'],$uniacid);
         if (!in_array($role,array('founder','owner')) && !$_W['isfounder']){
-            return $this->message('Access Denied');
+            return $this->message(__('暂无权限'));
         }
         //删除平台
         DB::table('account')->where('uniacid',$uniacid)->update(array('isdeleted'=>1));

@@ -133,7 +133,7 @@
                                     <a href="{{ wurl('setting/selfupgrade') }}" class="text-red js-terminal" data-text="@lang('upgradeConfirm')">@lang('upgradeNow')</a>&nbsp;&nbsp;
                                     <a href="{{ wurl('setting/updateLog') }}" class="text-blue ajaxshow">@lang('cloudComparison')</a><br/>
                                 @endif
-                                <a href="{{ wurl('setting/detection') }}" class="text-green ajaxshow">@lang('Check for updates')</a>&nbsp;&nbsp;
+                                <a href="{{ wurl('setting/detection') }}" class="text-green ajaxshow">@lang('检测更新')</a>&nbsp;&nbsp;
                                 <a href="https://www.yuque.com/shenwa/qingru/bggtv6hgvtf4ieun" target="_blank" class="text-blue">@lang('updateLog')</a>
                             </td>
                         </tr>
@@ -144,7 +144,7 @@
         </div>
         <div class="fui-card layui-card @if(!$_W['isfounder']) layui-hide @endif ">
             <div class="layui-card-header nobd">
-                <span class="title">@lang('System parameters')</span>
+                <span class="title">@lang('系统参数')</span>
             </div>
             <div class="layui-card-body">
                 <div class="un-padding">
@@ -155,7 +155,7 @@
                         </colgroup>
                         <tbody>
                         <tr>
-                            <td><span class="fui-table-lable">@lang('System name')</span></td>
+                            <td><span class="fui-table-lable">@lang('系统名称')</span></td>
                             <td class="soild-after">{{ $_W['config']['name'] }}</td>
                             <td class="text-right soild-after"></td>
                         </tr>
@@ -194,7 +194,7 @@
                                 <td class="text-right soild-after"></td>
                             </tr>
                             <tr>
-                                <td><span class="fui-table-lable">@lang('all rights reserved')</span></td>
+                                <td><span class="fui-table-lable">@lang('版权所有')</span></td>
                                 <td class="soild-after">广西神蛙网络科技有限公司</td>
                                 <td class="text-right soild-after"></td>
                             </tr>

@@ -452,7 +452,7 @@ class CloudService
 
     static function CloudActive($cache=false){
         global $_W;
-        $default = array('state'=>__('Not activated'), 'hasDomain'=>true,'siteid'=>0,'siteroot'=>$_W['siteroot'],'expiretime'=>0,'status'=>0,'uid'=>0,'mobile'=>"",'name'=>$_W['setting']['page']['title']);
+        $default = array('state'=>__('未开始激活'), 'hasDomain'=>true,'siteid'=>0,'siteroot'=>$_W['siteroot'],'expiretime'=>0,'status'=>0,'uid'=>0,'mobile'=>"",'name'=>$_W['setting']['page']['title']);
         $cacheKey = CacheService::system_key('HingWork:Authorize:Active');
         $authorize = Cache::get($cacheKey,$default);
         if ($cache && isset($authorize['hasDomain'])){
@@ -467,7 +467,7 @@ class CloudService
             return $authorize;
         }
         if (!isset($res['siteinfo'])){
-            $authorize['state'] = __('Activation query failed');
+            $authorize['state'] = __('激活状态查询失败');
             return $authorize;
         }
         if (is_error($res['siteinfo'])){
