@@ -27,3 +27,5 @@ yarn-error.log
 /storage/dist/
 /resources/views/auth/loginCustom.blade.php
 /storage/defaultParams.json
+/resources/lang/*
+!/resources/lang/*.json
