@@ -34,7 +34,7 @@ class AccountService {
                 'contain_type' => array(1, 3),
                 'level' => array(1 => '订阅号', 2 => '服务号', 3 => '认证订阅号', 4 => '认证服务号'),
                 'icon' => 'wi wi-wx-circle',
-                'createurl' => url('account/post'),
+                'createurl' => wurl('account/create'),
                 'title' => '公众号'
             )
         );
@@ -98,8 +98,8 @@ class AccountService {
         }
         $account_api->uniacid = $uniacid;
         $account_api->__toArray();
-        $account_api['accessurl'] = $account_api['manageurl'] = url("console/account/$uniacid/post", array('account_type' => $account_api['type']), true);
-        $account_api['roleurl'] = url("console/account/$uniacid/postuser", array('account_type' => $account_api['type']), true);
+        $account_api['accessurl'] = $account_api['manageurl'] = wurl("account/$uniacid/post", array('account_type' => $account_api['type']), true);
+        $account_api['roleurl'] = wurl("account/$uniacid/postuser", array('account_type' => $account_api['type']), true);
         return $account_api;
     }
 

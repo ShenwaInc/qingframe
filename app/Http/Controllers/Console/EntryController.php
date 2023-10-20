@@ -8,7 +8,7 @@ class EntryController extends Controller
 {
     //
     function index(){
-        $redirect = url('console');
+        $redirect = wurl('');
         if (!empty($_SERVER['QUERY_STRING'])){
             $redirect .= '?' . $_SERVER['QUERY_STRING'];
         }

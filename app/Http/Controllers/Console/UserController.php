@@ -127,7 +127,7 @@ class UserController extends Controller
         $_W['user'] = array('uid'=>0,'username'=>__('visitor'));
         //自动登录
         Auth::login($user, true);
-        return $this->message(__('userSwitchLogin', ['name'=>$user->username]),url('console'),'success');
+        return $this->message(__('userSwitchLogin', ['name'=>$user->username]),wurl(''),'success');
     }
 
     public function doSubuser(Request $request){
@@ -222,7 +222,7 @@ class UserController extends Controller
                 Auth::logout();
                 $_W['uid'] = 0;
                 $_W['user'] = array('uid'=>0,'username'=>__('visitor'));
-                return $this->message('rePassPortSuccessfully',url('/login'),'success');
+                return $this->message('rePassPortSuccessfully',wurl(),'success');
             }
             return $this->message();
         }

@@ -27,18 +27,18 @@
                     @if($_W['isfounder'])
                         <li class="layui-nav-item">
                             @if($_W['config']['site']['id']==0)
-                                <a href="{{url('console/active')}}">@lang('systemActivation')<span class="layui-badge-dot"></span></a>
+                                <a href="{{wurl('active')}}">@lang('systemActivation')<span class="layui-badge-dot"></span></a>
                             @else
-                                <a href="{{url('console/setting')}}">@lang('systemManagement')</a>
+                                <a href="{{wurl('setting')}}">@lang('systemManagement')</a>
                                 <dl id="layui-admin-sysmenu" class="layui-nav-child layui-anim layui-anim-upbit">
-                                    <dd><a href="{{ url('console/setting') }}">@lang('siteInformation')</a></dd>
-                                    <dd><a href="{{ url('console/server') }}">@lang('microServers')</a></dd>
-                                    <dd><a href="{{ url('console/module') }}">@lang('applications')</a></dd>
+                                    <dd><a href="{{ wurl('setting') }}">@lang('siteInformation')</a></dd>
+                                    <dd><a href="{{ wurl('server') }}">@lang('microServers')</a></dd>
+                                    <dd><a href="{{ wurl('module') }}">@lang('applications')</a></dd>
                                 </dl>
                             @endif
                         </li>
                         <li class="layui-nav-item layui-hide-xs{{ $_W['inReport']?' layui-this':'' }}">
-                            <a href="{{url('console/report')}}">@lang('workOrder')</a>
+                            <a href="{{wurl('report')}}">@lang('workOrder')</a>
                         </li>
                     @endif
                     <li class="layui-nav-item layui-hide-xs js-fullscreen" lay-unselect>
@@ -48,10 +48,10 @@
                     </li>
                 @else
                     <li class="layui-nav-item">
-                        <a href="{{ url('login') }}">@lang('login')</a>
+                        <a href="/login">@lang('login')</a>
                     </li>
                     <li class="layui-nav-item layui-hide">
-                        <a href="{{ url('register') }}">@lang('register')</a>
+                        <a href="/register">@lang('register')</a>
                     </li>
                 @endif
             </ul>

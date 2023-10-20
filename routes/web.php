@@ -86,7 +86,7 @@ Route::get('/home', 'HomeController@index')->name('home');
 Route::get('/admin/{modulename}', function (Request $request, $moduleName){
     $user = $request->user();
     if (empty($user)){
-        $referer = url('login') ."?referer=console/m/$moduleName";
+        $referer = "/login?referer=console/m/$moduleName";
         return response()->redirectTo($referer);
     }
     return response()->redirectTo("console/m/$moduleName");

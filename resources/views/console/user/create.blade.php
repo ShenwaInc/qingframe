@@ -8,7 +8,7 @@
                 @endif
 
                 <div class="fui-form">
-                    <form action="{{ url('console/user/create') }}" method="post" class="layui-form ajaxpost">
+                    <form action="{{ wurl('user/create') }}" method="post" class="layui-form ajaxpost">
                         @csrf
                         @if($uid>0)
                             <input type="hidden" name="uid" value="{{ $uid }}" />

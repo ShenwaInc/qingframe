@@ -38,7 +38,7 @@
                         <p class="text-lg">{{ empty($account) ? $_W['setting']['page']['title'] : $account['name'] }}</p>
                     </div>
                     <div class="layadmin-user-login-box layadmin-user-login-body layui-form">
-                        <form action="{{ url('auth/login') }}" id="loginform" method="post">
+                        <form action="/auth/login" id="loginform" method="post">
                             @csrf
                             @if(!empty($account))
                                 <input type="hidden" name="uniacid" value="{{ $account['uniacid'] }}" />

@@ -7,20 +7,20 @@
         <div class="layui-tab fui-tab margin-bottom-xl">
             <ul class="layui-tab-title title_tab">
                 <li class="layui-this">
-                    <a href="{{ url('console/setting') }}">@lang('siteInformation')</a>
+                    <a href="{{ wurl('setting') }}">@lang('siteInformation')</a>
                 </li>
                 <li>
-                    <a href="{{ url('console/server') }}">@lang('microServers')</a>
+                    <a href="{{ wurl('server') }}">@lang('microServers')</a>
                 </li>
                 <li>
-                    <a href="{{ url('console/module') }}">@lang('applications')</a>
+                    <a href="{{ wurl('module') }}">@lang('applications')</a>
                 </li>
             </ul>
         </div>
 
         <div class="fui-card layui-card">
             <div class="layui-card-header nobd">
-                <a href="{{ url('console/setting/pageset') }}" class="fr text-blue ajaxshow" title="{{ __('modifyData', array('data'=>__('siteInformation'))) }}"><i
+                <a href="{{ wurl('setting/pageset') }}" class="fr text-blue ajaxshow" title="{{ __('modifyData', array('data'=>__('siteInformation'))) }}"><i
                         class="fa fa-edit"></i></a>
                 <span class="title">@lang('siteInformation')</span>
             </div>
@@ -102,9 +102,9 @@
                             <td class="soild-after">{{ __(env('APP_DEBUG') ? 'open' : 'close') }}</td>
                             <td class="text-right soild-after">
                                 @if(env('APP_DEBUG'))
-                                    <a href="{{ url("console/setting/envdebug") }}?state=off" class="text-blue confirm" data-text="{{ __('debugModeConfirm', array('action'=>__('close'))) }}">@lang('close')</a>
+                                    <a href="{{ wurl("setting/envdebug") }}?state=off" class="text-blue confirm" data-text="{{ __('debugModeConfirm', array('action'=>__('close'))) }}">@lang('close')</a>
                                 @else
-                                    <a href="{{ url("console/setting/envdebug") }}?state=on" class="text-blue confirm" data-text="{{ __('debugModeConfirm', array('action'=>__('open'))) }}？">@lang('open')</a>
+                                    <a href="{{ wurl("setting/envdebug") }}?state=on" class="text-blue confirm" data-text="{{ __('debugModeConfirm', array('action'=>__('open'))) }}？">@lang('open')</a>
                                 @endif
                             </td>
                         </tr>
@@ -185,7 +185,7 @@
                                     @endif
                                 </td>
                                 <td class="text-right soild-after">
-                                    <a href="{{ url('console/active') }}" class="text-blue">@lang('reset')</a>
+                                    <a href="{{ wurl('active') }}" class="text-blue">@lang('reset')</a>
                                 </td>
                             </tr>
                             <tr>

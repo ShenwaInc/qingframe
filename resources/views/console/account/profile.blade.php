@@ -40,7 +40,7 @@
                         <td><span class="fui-table-lable">{{ __('IDofData', array('data'=>__('platform'))) }}</span></td>
                         <td class="soild-after">{{ $uniacid }}&nbsp;&nbsp;<a href="javascript:;" data-url="{{ $uniacid }}" class="text-blue js-clip"><i class="fa fa-copy"></i></a></td>
                         <td class="text-right soild-after">
-                            <a href="javascript:;" data-url="{{ url("login/".$account['uniacid']) }}" class="text-blue js-clip">@lang('copyPlatformEntry')</a>
+                            <a href="javascript:;" data-url="{{ $_W['siteroot']."login/".$account['uniacid'] }}" class="text-blue js-clip">@lang('copyPlatformEntry')</a>
                         </td>
                     </tr>
                         <tr>
@@ -121,7 +121,7 @@
         @if(in_array($role,['founder','owner', 'manager']) || $_W['isfounder'])
         upload.render({
             elem: '.js-api-verify'
-            ,url: '{{ url("console/account/apiverify") }}'
+            ,url: '{{ wurl("account/apiverify") }}'
             ,accept:'file'
             ,acceptMime:'text/plain'
             ,exts:"txt"

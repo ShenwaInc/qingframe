@@ -67,7 +67,7 @@ class ModulePermission
     public function message($msg){
         global $_W;
         View::share('_W',$_W);
-        echo response()->view('message',array('message'=>$msg,'type'=>'error','redirect'=>url('console')))->content();
+        echo response()->view('message',array('message'=>$msg,'type'=>'error','redirect'=>wurl('')))->content();
         session_exit();
     }
 }

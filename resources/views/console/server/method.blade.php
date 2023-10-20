@@ -5,13 +5,13 @@
         <div class="layui-tab fui-tab">
             <ul class="layui-tab-title title_tab">
                 <li>
-                    <a href="{{ url('console/setting') }}">@lang('siteInformation')</a>
+                    <a href="{{ wurl('setting') }}">@lang('siteInformation')</a>
                 </li>
                 <li class="layui-this">
-                    <a href="{{ url('console/server') }}">@lang('microServers')</a>
+                    <a href="{{ wurl('server') }}">@lang('microServers')</a>
                 </li>
                 <li>
-                    <a href="{{ url('console/setting/plugin') }}">@lang('applications')</a>
+                    <a href="{{ wurl('setting/plugin') }}">@lang('applications')</a>
                 </li>
             </ul>
         </div>

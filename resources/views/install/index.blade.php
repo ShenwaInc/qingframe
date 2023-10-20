@@ -16,7 +16,7 @@
         </div>
     </div>
 <script type="text/javascript">
-    var isagree = false, agreeElem = $('#w-agree'),NextUrl = '{{ url("installer/database") }}';
+    var isagree = false, agreeElem = $('#w-agree'),NextUrl = '{{ $_W['siteroot'] }}installer/database';
     function doNext(){
         if(!isagree) return layer.msg('请先仔细阅读并同意安装使用协议',{icon:2});
         Core.post('installer/agreement',function (res){

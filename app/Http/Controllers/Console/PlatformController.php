@@ -20,7 +20,7 @@ class PlatformController extends Controller
         }
         if (($_W['setting']['site']['close'] == 1) && empty($_W['isfounder'])) {
             Auth::logout();
-            return $this->message(__('closingFor', array('reason'=>$_W['setting']['site']['closereason'])), url('login'), 'error');
+            return $this->message(__('closingFor', array('reason'=>$_W['setting']['site']['closereason'])), wurl());
         }
 
         if (SITEACID){

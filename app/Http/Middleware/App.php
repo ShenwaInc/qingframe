@@ -49,7 +49,12 @@ class App
         $_W['ispost'] = $request->isMethod('post');
         $query = http_build_query($_GET, '', '&');
         $_W['siteurl'] = url()->current() . ($query ? "?".$query : "");
-        $_W['ishttps'] = \Str::startsWith($_W['siteurl'],'https');
+        $_W['ishttps'] = (bool)env('APP_FORCE_HTTPS', 0);
+        if ($_W['ishttps']){
+            $_W['siteurl'] = str_replace("http://", "https://", $_W['siteurl']);
+        }else{
+            $_W['ishttps'] = \Str::startsWith($_W['siteurl'],'https');
+        }
         $_W['sitescheme'] = $_W['ishttps'] ? 'https://' : 'http://';
         $_W['siteroot'] = $_W['sitescheme'] . $_SERVER['HTTP_HOST'] .'/';
         $_W['siteacid'] = SITEACID;

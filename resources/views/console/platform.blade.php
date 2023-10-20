@@ -11,7 +11,7 @@
         <div class="layui-row layui-col-space15 fui-list card">
             @foreach($list as $key=>$item)
             <div class="layui-col-md3 layui-col-sm4 layui-col-xs12 fui-item">
-                <a href="{{ url("console/account",array('uniacid'=>$item['uniacid'])) }}" class="fui-content">
+                <a href="{{ wurl("account") }}/{{ $item['uniacid'] }}" class="fui-content">
                     <div class="fui-info">
                         <img alt="{{ $item['name'] }}" class="radius" src="{{ tomedia($item['logo']) }}" />
                         <strong class="card-name">{{ $item['name'] }}</strong>
@@ -30,7 +30,7 @@
             @endforeach
             @if($cancreate)
             <div class="layui-col-md3 layui-col-sm4 layui-col-xs12 fui-item">
-                <a href="{{ url("console/account/create") }}" title="{{ __('createNewData', array('data'=>__('platform'))) }}" class="fui-content dashed ajaxshow">
+                <a href="{{ wurl("account/create") }}" title="{{ __('createNewData', array('data'=>__('platform'))) }}" class="fui-content dashed ajaxshow">
                     <div class="fui-info">
                         <span class="card-icon layui-icon layui-icon-add-1 text-gray"></span>
                         <strong class="card-name text-gray">{{ __('createNewData', array('data'=>__('platform'))) }}</strong>

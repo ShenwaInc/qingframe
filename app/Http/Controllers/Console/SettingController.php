@@ -52,7 +52,7 @@ class SettingController extends Controller
                     CacheService::flush();
                 }
                 $res['message'] = '恭喜您，激活成功！';
-                $redirect = url('console');
+                $redirect = wurl('');
             }
             return $this->message($res['message'], $redirect, $res["type"]);
         }
@@ -66,7 +66,7 @@ class SettingController extends Controller
         if (is_error($cloudinfo)){
             return $this->message($cloudinfo['message']);
         }
-        return $this->message('检测完成！',url('console/setting'),'success');
+        return $this->message('检测完成！',wurl('/setting'),'success');
     }
 
     public function updateLog(){
@@ -125,7 +125,7 @@ class SettingController extends Controller
             MSService::TerminalSend(['mode'=>'err', 'message'=>"程序同步失败：".$exception->getMessage()]);
             return $this->message($exception->getMessage());
         }
-        return $this->message('程序同步完成，即将自动更新...', url('console/setting/sysupgrade'),'success');
+        return $this->message('程序同步完成，即将自动更新...', wurl('/setting/sysupgrade'),'success');
     }
 
     public function SystemUpgrade(){
@@ -149,7 +149,7 @@ class SettingController extends Controller
         }catch (\Exception $exception){
             return $this->message($exception->getMessage());
         }
-        return $this->message('恭喜您，升级成功！', url('console/setting'),'success');
+        return $this->message('恭喜您，升级成功！', wurl('/setting'),'success');
     }
 
     public function cloudMarket(){
@@ -202,9 +202,9 @@ class SettingController extends Controller
                         //已安装
                         $application = $module->application;
                         if (version_compare($release['version'], $application['version'], '>') || $releaseDate>$application['releasedate']){
-                            $com['action'] .= '<a href="'.url('console/module/update').'?nid='.$identifie.'" class="layui-btn layui-btn-sm layui-btn-danger confirm" data-text="升级前请做好源码和数据备份，避免升级故障导致系统无法正常运行">升级</a>';
+                            $com['action'] .= '<a href="'.wurl('/module/update').'?nid='.$identifie.'" class="layui-btn layui-btn-sm layui-btn-danger confirm" data-text="升级前请做好源码和数据备份，避免升级故障导致系统无法正常运行">升级</a>';
                         }
-                        $com['action'] .= '<a href="'.url('console/module/remove').'?nid='.$identifie.'" class="layui-btn layui-btn-sm layui-btn-primary confirm" data-text="即将卸载该应用并删除应用产生的所有数据，是否确定要卸载？">卸载</a></div>';
+                        $com['action'] .= '<a href="'.wurl('/module/remove').'?nid='.$identifie.'" class="layui-btn layui-btn-sm layui-btn-primary confirm" data-text="即将卸载该应用并删除应用产生的所有数据，是否确定要卸载？">卸载</a></div>';
                     }else{
                         if ($module['errno']!=-1){
                             //已存在但未安装
@@ -262,7 +262,7 @@ class SettingController extends Controller
             if (!$complete){
                 return $this->message('文件写入失败，请检查根目录权限');
             }
-            return $this->message('操作成功！',url('console/setting'),'success');
+            return $this->message('操作成功！',wurl('/setting'),'success');
         }
         if ($op=='comcheck'){
             $component = DB::table('gxswa_cloud')->where('id',intval($_GPC['cid']))->first(['id','identity','type','online','releasedate','rootpath']);
@@ -368,7 +368,7 @@ class SettingController extends Controller
             }
             $complete = SettingService::Save($config,'page');
             if ($complete){
-                return $this->message('保存成功',url('console/setting'),'success');
+                return $this->message('保存成功',wurl('/setting'),'success');
             }
         }elseif ($op=='appSecurity'){
             $appSecurityEntrance = env("APP_SECURITY_ENTRANCE");
@@ -390,7 +390,7 @@ EOF;
                     }
                 }
             }
-            return $this->message('设置成功！',url('console/setting'),'success');
+            return $this->message('设置成功！',wurl('/setting'),'success');
         }
         return $this->message();
     }

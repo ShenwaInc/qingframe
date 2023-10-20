@@ -80,10 +80,10 @@ class InstallController extends Controller
             return $this->message('安装失败，请重试');
         }
         if (!$this->installer['isagree']){
-            return $this->message('请先同意安装协议',url('installer'));
+            return $this->message('请先同意安装协议',"{$_W['siteroot']}installer");
         }
         if (isset($this->installer['database']['unix_socket'])){
-            return $this->message('数据库未配置',url('installer/database'));
+            return $this->message('数据库未配置', "{$_W['siteroot']}installer/database");
         }
         //写入数据库
         $DBConnect = $this->dbConnect($this->installer['database']);
@@ -121,7 +121,7 @@ class InstallController extends Controller
 
         }
         //写入配置文件
-        $baseurl = str_replace('/installer/render','',url()->current());
+        $baseurl = preg_replace("/\/$/", "", $_W['siteroot']);
         $database = $installer['database'];
         $envText = file_get_contents(base_path(".env"));
         $replaces = array(

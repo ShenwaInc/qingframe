@@ -357,7 +357,7 @@ class AccountController extends Controller
         Cache::forget($cachekey);
         $cachekey = CacheService::system_key('uniaccount', array('uniacid' => $uniacid));
         Cache::forget($cachekey);
-        return $this->message('deleteSuccessfully',url('console'),'success');
+        return $this->message('deleteSuccessfully',wurl(''),'success');
     }
 
     public function doCreate(Request $request){

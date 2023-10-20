@@ -6,7 +6,7 @@
                 <h1 class="margin-bottom-xl">@lang('getCloud')</h1>
             </div>
             <div class="layui-card-body">
-                <form class="layui-form js-post margin-top" lay-filter="console_cloud_active" action="{{ url('console/active') }}" method="post">
+                <form class="layui-form js-post margin-top" lay-filter="console_cloud_active" action="{{ wurl('active') }}" method="post">
                     <input type="hidden" name="_token" value="{{ csrf_token() }}" />
                     <input type="hidden" name="site[uid]" id="userId" value="{{ $siteinfo['uid'] }}" />
                     <div class="layui-form-item">

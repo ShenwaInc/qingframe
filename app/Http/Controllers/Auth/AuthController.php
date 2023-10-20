@@ -25,7 +25,7 @@ class AuthController extends Controller
             \session()->flush();
             $_W['uid'] = 0;
             $_W['user'] = array('uid'=>0,'username'=>'未登录');
-            return $this->message('即将退出...',url('/login'),'success');
+            return $this->message('即将退出...',wurl(),'success');
         }
         return $this->message();
     }
@@ -72,10 +72,10 @@ class AuthController extends Controller
                 'city'=>'',
                 'createtime'=>TIMESTAMP
             ));
-            $redirect = url('console');
+            $redirect = wurl();
             $uniacid = (int)$request->input('uniacid');
             if (!empty($uniacid)){
-                $redirect = wurl('account/profile', array('uniacid'=>$uniacid));
+                $redirect = wurl("account") . "/$uniacid";
             }
             return $this->message('恭喜您，登录成功', $redirect,'success');
         }
@@ -88,11 +88,11 @@ class AuthController extends Controller
             abort(404);
         }
         if (!empty($account['isdeleted'])){
-            return $this->message("该平台已被删除", url('login'));
+            return $this->message("该平台已被删除", wurl());
         }
         $user = $request->user();
         if (!empty($user['uid'])){
-            $redirect = url("console/account", array('uniacid'=>$uniacid));
+            $redirect = wurl("account") . "/$uniacid";
             return redirect($redirect);
         }
         if ($account['endtime']>0 && $account['endtime']<TIMESTAMP){

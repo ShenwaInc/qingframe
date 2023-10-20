@@ -189,7 +189,7 @@ function referer() {
     return strip_tags($_W['referer']);
 }
 
-function wurl($segment, $params = array(), $contain_domain = false){
+function wurl($segment="", $params = array(), $contain_domain = false){
     global $_W;
     $url = 'console';
     if ($contain_domain){
@@ -256,11 +256,11 @@ function tomedia($src, $local_path = false, $is_cahce = false) {
     if (strexists($t, '//mmbiz.qlogo.cn') || strexists($t, '//mmbiz.qpic.cn')) {
         $url = '?a=image&attach='.$src;
 
-        return url('console/util/wxcode') . ltrim($url, '.');
+        return wurl('util/wxcode') . ltrim($url, '.');
     }
 
     if (\Str::startsWith($src,'//')) {
-        return 'http:' . $src;
+        return preg_replace('/^\/\//', $_W['sitescheme'], $src);
     }
     if (\Str::startsWith($src,'http://') || \Str::startsWith($src,'https://')) {
         return $src;

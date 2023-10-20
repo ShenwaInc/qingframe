@@ -16,7 +16,7 @@
             </div>
         </div>
         <div class="layui-card-body">
-            <form action="{{ url('installer/database') }}" method="post" class="layui-form">
+            <form action="/installer/database" method="post" class="layui-form">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                 <input type="hidden" name="savedbset" value="true">
                 <div class="layui-form-item layui-hide">
@@ -82,7 +82,7 @@
                 <div class="layui-form-item">
                     <div class="layui-input-block">
                         <button class="layui-btn layui-btn-normal" lay-submit lay-filter="formDemo" type="submit" value="true" name="savedata">下一步</button>
-                        <a class="layui-btn layui-btn-primary" href="{{url('installer')}}?reset=1">上一步</a>
+                        <a class="layui-btn layui-btn-primary" href="/installer?reset=1">上一步</a>
                         <button type="reset" class="layui-btn layui-btn-primary">重填</button>
                     </div>
                 </div>
@@ -102,7 +102,7 @@
             let dbconfig = data.field;
             Core.post('installer.database',function (res){
                 if (res.type!=='success') return Core.report(res);
-                window.location.href = "{{url('installer/render')}}";
+                window.location.href = "/installer/render";
             },{dbconfig:dbconfig});
             return false;
         });

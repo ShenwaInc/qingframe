@@ -10,7 +10,7 @@
 @endif
 
                     <div class="fui-form">
-                        <form action="{{ url('console/setting') }}" method="post" class="layui-form">
+                        <form action="{{ wurl('setting') }}" method="post" class="layui-form">
                             @csrf
                             <input type="hidden" name="op" value="pageset">
                             <div class="layui-form-item must">

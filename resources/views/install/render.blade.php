@@ -18,12 +18,12 @@
         <div class="layui-card-body">
             <div class="inst-render">
                 <div class="layui-row">
-                    <form action="{{ url('installer/render') }}" method="post" class="layui-form">
+                    <form action="/installer/render" method="post" class="layui-form">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                         <input type="hidden" name="saverdset" value="true">
                         <div class="layui-col-md12">
                             <fieldset class="layui-elem-field layui-field-title site-title">
-                                <legend><a href="{{ url('installer/database') }}">数据库配置&nbsp;<i class="layui-icon layui-icon-edit text-blue"></i></a></legend>
+                                <legend><a href="/installer/database">数据库配置&nbsp;<i class="layui-icon layui-icon-edit text-blue"></i></a></legend>
                             </fieldset>
                             <div class="padding-lr">
                                 <table class="layui-table" lay-skin="nob" lay-even>
@@ -106,7 +106,7 @@
                     if (res.type!=='success') return Core.report(res);
                     layer.msg('恭喜您，安装完成！',{icon:1});
                     setTimeout(function (){
-                        window.location.href = "{{ url('') }}";
+                        window.location.href = "/login";
                     },1200);
                 },{render:postdata},'json',true);
             });

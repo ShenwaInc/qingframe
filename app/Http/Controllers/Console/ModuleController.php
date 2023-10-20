@@ -69,7 +69,7 @@ class ModuleController extends Controller
         if (is_error($install)){
             return $this->TerminalError($install['message']);
         }
-        return $this->message('installSuccessfully', url('console/module'),'success');
+        return $this->message('installSuccessfully', wurl('/module'),'success');
     }
 
     /**
@@ -82,7 +82,7 @@ class ModuleController extends Controller
             return $this->TerminalError($complete['message']);
         }
         CacheService::flush();
-        return $this->message('upgradeSuccessfully', url('console/module'),'success');
+        return $this->message('upgradeSuccessfully', wurl('/module'),'success');
     }
 
     /**
@@ -95,7 +95,7 @@ class ModuleController extends Controller
             MSService::TerminalSend(["mode"=>"err", "message"=>$cloudRequire['message']], true);
             return $this->message($cloudRequire['message'], trim($cloudRequire['redirect']));
         }
-        return $this->message('installSuccessfully', url('console/module'),'success');
+        return $this->message('installSuccessfully', wurl('/module'),'success');
     }
 
     /**
@@ -114,7 +114,7 @@ class ModuleController extends Controller
         if (is_error($moduleUpdate)){
             return $this->TerminalError($moduleUpdate['message']);
         }
-        $redirect = url('console/module');
+        $redirect = wurl('/module');
         CacheService::flush();
         return $this->message('upgradeSuccessfully', $redirect,'success');
     }
@@ -131,7 +131,7 @@ class ModuleController extends Controller
         $identity = $request->input('nid', "");
         $uninstall = ModuleService::uninstall($identity);
         if (is_error($uninstall)) return $this->TerminalError($uninstall['message']);
-        return $this->message('uninstallComplete', url('console/module'),'success');
+        return $this->message('uninstallComplete', wurl('/module'),'success');
     }
 
 

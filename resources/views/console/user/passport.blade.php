@@ -8,7 +8,7 @@
 @endif
 
                 <div class="fui-form">
-                    <form action="{{ url('console/user/passport') }}" method="post" class="layui-form ajaxpost">
+                    <form action="{{ wurl('user/passport') }}" method="post" class="layui-form ajaxpost">
                         @csrf
                         <div class="layui-form-item must">
                             <label class="layui-form-label">@lang('oldPassword')</label>
