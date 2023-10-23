@@ -197,11 +197,9 @@ function wurl($segment="", $params = array(), $contain_domain = false){
     }else{
         $url = '/' . $url;
     }
-    if (strexists($segment,'.')){
-        $segment = str_replace('.','/',$segment);
-    }
     if (!empty($segment)){
-        $url .= '/' . $segment;
+        $segment = str_replace('.','/',$segment);
+        $url .= \Str::startsWith($segment, '/') ? $segment : '/' . $segment;
     }
     if (!empty($params)) {
         $queryString = http_build_query($params, '', '&');
@@ -222,7 +220,7 @@ function murl($segment, $params = array(), $noredirect = true, $addhost = false)
     }
 
     if (!empty($segment)){
-        $url .= '/' .$segment;
+        $url .= \Str::startsWith($segment, '/') ? $segment : '/' .$segment;
     }
 
     if (empty($params)){

@@ -26,7 +26,7 @@ class ReportController extends Controller {
         if (!empty($this->sourceName)) return $this->sourceName;
         $cloudState = CloudService::CloudActive();
         if ($cloudState['status']!=1){
-            return $this->message(__('请先激活云服务'), wurl('/active'));
+            return $this->message(__('请先激活云服务'), wurl('active'));
         }
         $this->sourceName = $cloudState['name']."（ID：{$cloudState['siteid']}）";
         return $this->sourceName;
