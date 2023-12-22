@@ -459,5 +459,7 @@ function pdo_run($sql) {
 }
 
 function pdo_query($sql, $params = array()) {
-    return DB::statement($sql);
+    $prefix = env("DB_PREFIX", 'ims_');
+    $sql = str_replace("ims_", $prefix, $sql);
+    return DB::statement($sql, $params);
 }
