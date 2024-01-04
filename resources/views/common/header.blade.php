@@ -6,7 +6,9 @@
         <div class="fui-header-sm">
             <div class="layui-logo">
                 <a href="{{ $_W['consolePage'] }}">@lang($_W['page']['title'])</a>
-                @if($_W['routePath']!='console')<a href="/console" class="fui-homepage margin-left-sm" title="@lang('backConsole')"><span class="layui-icon layui-icon-home"></span></a>@endif
+                @if($_W['routePath']!='console')
+                    <a href="/console" class="fui-homepage margin-left-sm{{ $_W['inAccount'] && SITEACID==$_W['uniacid'] ? ' layui-hide':'' }}" title="@lang('backConsole')"><span class="layui-icon layui-icon-home"></span></a>
+                @endif
             </div>
 
             <ul class="layui-nav layui-layout-right">

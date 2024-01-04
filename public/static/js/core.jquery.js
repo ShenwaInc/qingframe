@@ -203,6 +203,14 @@ if(typeof Basetoken == 'undefined'){
                                 $(Elem).prev().find('input.layui-input').val(item.path);
                                 $(Elem).parent().next().find('img.img-responsive').attr("src", item.url).removeClass('nopic');
                             }
+                            if(typeof(onStoragePicker)=='function'){
+                                let res = multi ? self.storageData.items : self.storageData.items[0];
+                                onStoragePicker({
+                                    url: PickerUrl,
+                                    multi:multi,
+                                    data: res
+                                });
+                            }
                         }
                         layer.close(layer.index);
                     },

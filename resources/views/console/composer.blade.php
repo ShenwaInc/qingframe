@@ -12,8 +12,8 @@
                     <blockquote class="layui-elem-quote"><strong>如安装过程遇到问题，请<a href="https://www.yuque.com/shenwa/qingru/ze9hby#qUvo3" target="_blank" class="text-blue">参考Composer完整说明文档</a>排查</strong></blockquote>
                     <pre class="layui-code" lay-title="使用Composer安装依赖包">
 cd {{ $WorkingDirectory }}
-composer {{ DEVELOPMENT ? 'update':'require '.$requireName.($composerVer?' '.$composerVer:'') }} @if($composerErr)
-rm -f {{ $composerErr }}@endif</pre>
+composer {{ DEVELOPMENT ? 'update':'require '.$requireName.($composerVer?' '.$composerVer:'') }}
+@if($composerErr)rm -f {{ $composerErr }}@endif</pre>
                     <div class="margin-bottom">
                         @if($composerNext) {!! $composerNext !!}@else<strong>安装好后，请<a href="{{ $_W['siteurl'] }}" class="text-blue">刷新</a>此页面，或返回上一步操作</strong>@endif
                     </div>

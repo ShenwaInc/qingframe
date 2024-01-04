@@ -2,8 +2,10 @@
 
 use App\Services\SettingService;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 
 class CatchCall {
 
@@ -265,7 +267,7 @@ function tomedia($src, $local_path = false, $is_cahce = false) {
     }
 
     $uni_remote_setting = SettingService::uni_load('remote');
-    if ($local_path || empty($_W['setting']['remote']['type']) && (empty($_W['uniacid']) || empty($uni_remote_setting['remote']['type'])) || file_exists(storage_path("app/public/{$src}") )) {
+    if ($local_path || empty($_W['setting']['remote']['type']) && (empty($_W['uniacid']) || empty($uni_remote_setting['remote']['type'])) || file_exists(storage_path("app/public/$src") )) {
         $src = $_W['siteroot'] . 'storage/' . $src;
     } else {
         if (!empty($uni_remote_setting['remote']['type'])) {
@@ -277,6 +279,11 @@ function tomedia($src, $local_path = false, $is_cahce = false) {
                 $src = $uni_remote_setting['remote']['qiniu']['url'] . '/' . $src;
             } elseif (4 == $uni_remote_setting['remote']['type']) {
                 $src = $uni_remote_setting['remote']['cos']['url'] . '/' . $src;
+            } else {
+                //$src = config('filesystems.disks.s3.url') . '/' . $src;
+                Config::set('filesystems.default', 's3');
+                serv("storage")->Composer();
+                $src = Storage::url($src);
             }
 
         } else {

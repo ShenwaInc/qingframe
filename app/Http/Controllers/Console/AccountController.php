@@ -54,8 +54,11 @@ class AccountController extends Controller
 
     //平台管理控制器
     public function index(Request $request,$action='profile'){
+        global $_W;
+        $_W['inAccount'] = true;
         $check = in_array($action, array('component','setting'));
         $account = $this->accInit($check);
+        $_W['uniacid'] = $account['uniacid'];
         if (is_error($account)){
             return $this->message($account['message'], '/console');
         }

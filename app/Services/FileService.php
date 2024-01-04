@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Utils\Image;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Storage;
 
 class FileService
@@ -33,6 +34,10 @@ class FileService
                 $attach_url = $_W['attachurl_remote'] = $_W['setting']['remote']['qiniu']['url'] . '/';
             } elseif ($_W['setting']['remote']['type'] == 4) {
                 $attach_url = $_W['attachurl_remote'] = $_W['setting']['remote']['cos']['url'] . '/';
+            } else{
+                //aws
+                Config::set('filesystems.default', 's3');
+                $attach_url = config('filesystems.disks.s3.url') . '/';
             }
         }
         return $attach_url;
