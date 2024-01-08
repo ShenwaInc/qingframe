@@ -18,7 +18,10 @@ class FileService
         if(empty($_W['setting']['remote_complete_info'])){
             $_W['setting']['remote_complete_info'] = $_W['setting']['remote'];
         }
-        if (!empty($_W['uniacid'])) {
+        $storage = serv('storage', intval($_W['uniacid']));
+        if ($storage->enabled){
+            $_W['setting']['remote'] = $storage->settings['remote'];
+        }elseif (!empty($_W['uniacid'])) {
             $uni_remote_setting = SettingService::uni_load('remote');
             if (!empty($uni_remote_setting['remote']['type'])) {
                 $_W['setting']['remote'] = $uni_remote_setting['remote'];
@@ -64,7 +67,6 @@ class FileService
         return is_file($dest);
     }
 
-
     static function file_tree($path, $include = null) {
         $files = array();
         $path = realpath($path);
@@ -95,7 +97,6 @@ class FileService
         return $files;
     }
 
-
     public static function mkdirs($path, $perm=0777, $rec=false) {
         if (!is_dir($path)) {
             self::mkdirs(dirname($path));
@@ -104,7 +105,6 @@ class FileService
 
         return is_dir($path);
     }
-
 
     public static function rmdirs($path, $clean = false) {
         if (!is_dir($path)) {

@@ -46,6 +46,17 @@ class MSService
                 $table->integer("dateline")->default(0)->unsigned();
             });
         }
+        if (!Schema::hasTable('microserver_data')){
+            Schema::create('microserver_data', function (Blueprint $table) {
+                $table->bigIncrements('id');
+                $table->integer("uniacid")->default(0)->unsigned();
+                $table->string('name', 20);
+                $table->mediumText('data');
+                $table->integer("addtime")->default(0)->unsigned();
+                $table->integer("dateline")->default(0)->unsigned();
+                $table->index(array('uniacid', 'name'), 'uniacid');
+            });
+        }
     }
 
     public static function getmanifest($identity, $app=false){
@@ -239,10 +250,15 @@ class MSService
         $servers = self::getservers($status);
         if ($status!=1) return $servers;
         if (empty($servers)) return array();
-        foreach ($servers as &$server){
+        $allServers = array();
+        foreach ($servers as $key=>$server){
             $server['actions'] = '';
             if($server['status']!=1) continue;
-            $server['entry'] = serv($server['identity'])->getEntry();
+            $service = serv($server['identity']);
+            $server['entry'] = "";
+            if($service->enabled){
+                $server['entry'] = $service->getEntry();
+            }
             if (!empty($server['entry']) && !is_error($server['entry'])){
                 $server['actions'] .= '<a class="layui-btn layui-btn-sm layui-btn-normal layui-hide-xs" target="_blank" href="'.$server['entry'].'">'.__('manage').'</a>';
             }
@@ -289,9 +305,12 @@ class MSService
                 $server['isdelete'] = true;
             }elseif(file_exists($serverPath . "composer.error")){
                 $server['actions'] .= '<a class="layui-btn layui-btn-sm layui-btn-danger js-terminal" href="'.wurl('server', array('op'=>'composer', 'nid'=>$server['identity'])).'">'.__('修复').'</a>';
+            }elseif (!$service->enabled){
+                $server['actions'] .= '<a class="layui-btn layui-btn-sm layui-btn-danger js-clip" data-url="'.$service->error.'" lay-tips="'.$service->error.'" href="javascript:" >'.__('修复').'</a>';
             }
+            $allServers[$key] = $server;
         }
-        return $servers;
+        return $allServers;
     }
 
     public function checkRequire($requires){

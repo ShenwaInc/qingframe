@@ -1,7 +1,7 @@
 <?php
 
+use App\Services\MSService;
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 class CreateMicroserverDataTable extends Migration
@@ -13,10 +13,7 @@ class CreateMicroserverDataTable extends Migration
      */
     public function up()
     {
-        Schema::create('microserver_data', function (Blueprint $table) {
-            $table->bigIncrements('id');
-
-        });
+        MSService::setup();
     }
 
     /**

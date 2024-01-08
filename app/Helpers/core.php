@@ -28,14 +28,15 @@ class CatchCall {
  * 调用服务方法
  * @param mixed $params 调用参数
  * @return object 服务实例
+ * @throws Exception
  */
 function serv(...$params){
     static $_servers;
     $name = ucfirst($params[0]);
     if (empty($_servers)) $_servers = array();
     $serverId = md5(base64_encode(json_encode($params)));
-    if (isset($_servers[$name])){
-        return $_servers[$name];
+    if (isset($_servers[$serverId])){
+        return $_servers[$serverId];
     }
     $service = MICRO_SERVER.strtolower($name)."/{$name}Service.php";
     if (!file_exists($service)){
@@ -54,9 +55,12 @@ function serv(...$params){
             return new CatchCall("Service $class_name has stopped.");
         }
     }catch (Exception $exception){
+        if (\config('app.debug')){
+            throw $exception;
+        }
         return new CatchCall($exception->getMessage());
     }
-    $_servers[$name] = $instance;
+    $_servers[$serverId] = $instance;
     return $instance;
 }
 
@@ -164,7 +168,7 @@ function cache_load($key, $unserialize = false, $default=null){
 
 function cache_write($key, $data, $expire = null) {
     if (empty($expire)){
-        return Cache::put($key, $data);
+        return Cache::forever($key, $data);
     }
     return Cache::put($key, $data, $expire);
 }
@@ -270,25 +274,7 @@ function tomedia($src, $local_path = false, $is_cahce = false) {
     if ($local_path || empty($_W['setting']['remote']['type']) && (empty($_W['uniacid']) || empty($uni_remote_setting['remote']['type'])) || file_exists(storage_path("app/public/$src") )) {
         $src = $_W['siteroot'] . 'storage/' . $src;
     } else {
-        if (!empty($uni_remote_setting['remote']['type'])) {
-            if (1 == $uni_remote_setting['remote']['type']) {
-                $src = $uni_remote_setting['remote']['ftp']['url'] . '/' . $src;
-            } elseif (2 == $uni_remote_setting['remote']['type']) {
-                $src = $uni_remote_setting['remote']['alioss']['url'] . '/' . $src;
-            } elseif (3 == $uni_remote_setting['remote']['type']) {
-                $src = $uni_remote_setting['remote']['qiniu']['url'] . '/' . $src;
-            } elseif (4 == $uni_remote_setting['remote']['type']) {
-                $src = $uni_remote_setting['remote']['cos']['url'] . '/' . $src;
-            } else {
-                //$src = config('filesystems.disks.s3.url') . '/' . $src;
-                Config::set('filesystems.default', 's3');
-                serv("storage")->Composer();
-                $src = Storage::url($src);
-            }
-
-        } else {
-            $src = $_W['attachurl_remote'] . $src;
-        }
+        return $_W['attachurl'] . $src;
     }
 
     return $src;

@@ -2,11 +2,10 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\SettingService;
 use App\Utils\Agent;
 use Closure;
-use Illuminate\Support\Facades\Cache;
 
-error_reporting(0);
 define('IA_ROOT', base_path('public'));
 define('BASE_ROOT', base_path('/'));
 define('QingFrame', true);
@@ -18,6 +17,8 @@ define('DEVELOPMENT', (bool)env('APP_DEVELOPMENT',0));
 define('SITEACID', env('APP_UNIACID', 0));
 define('QingVersion', env('APP_VERSION'));
 define('QingRelease', (int)env('APP_RELEASE'));
+
+error_reporting(0);
 global $_W,$_GPC;
 $_W = $_GPC = array();
 
@@ -61,13 +62,18 @@ class App
         $_W['uniacid'] = $_W['uid'] = 0;
         $_W['user'] = array('uid'=>$_W['uid'],'username'=>'未登录');
         $_W['account'] = array('uniacid'=>0);
-        $_W['inConsole'] = $_W['inapp'] = $_W['inAccount'] = false;
+        $_W['inConsole'] = $_W['inApp'] = $_W['inAccount'] = false;
         $_W['token'] = csrf_token();
         $_W['os'] = Agent::getOs();
         $_W['routePath'] = $request->path();
         if (function_exists('date_default_timezone_set')) {
             date_default_timezone_set($_W['config']['setting']['timezone']);
         }
+        if (config('app.debug')){
+            ini_set('display_errors', '1');
+            error_reporting(E_ALL ^ E_NOTICE);
+        }
+        SettingService::Load();
         $appLocale = config('app.locale');
         $_W['locale'] = session()->get("FRAME_LOCALE", $appLocale);
         if ($appLocale!=$_W['locale']){

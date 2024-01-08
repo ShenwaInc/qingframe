@@ -42,21 +42,48 @@ class MicroService
         $this->service = $service;
     }
 
-    public function SettingLoad($key = '', $uniacid=0){
-        if (!empty($uniacid)){
-            return SettingService::uni_load($key, $uniacid);
+    public function getAllSetting($uniacid=0, $cache=true){
+        if ($cache){
+            $settings = cache_read("MicroServerSetting$uniacid");
+            if (is_error($settings)) return [];
+            if (!empty($settings)) return $settings;
         }
-        return SettingService::Load($key);
+        $settings = pdo_getall("microserver_data", array("uniacid"=>intval($uniacid)), array('name', 'data'));
+        $data = [];
+        if (!empty($settings)){
+            foreach ($settings as $value){
+                $data[$value['name']] = unserialize($value['data']);
+            }
+        }
+        cache_write("MicroServerSetting$uniacid", empty($data)?error(-1, "Empty"):$data);
+        return $data;
+    }
+
+    public function SettingLoad($key = '', $uniacid=0){
+        $settings = $this->getAllSetting($uniacid);
+        if (empty($settings) || (is_string($key) && !isset($settings[$key]))){
+            if (!empty($uniacid)){
+                return SettingService::uni_load($key, $uniacid);
+            }
+            return SettingService::Load($key);
+        }
+        if (empty($key)) return $settings;
+        if (is_array($key)){
+            return post_var($key, $settings);
+        }
+        return array($key=>$settings[$key]);
     }
 
     public function SettingSave($key, $data, $uniacid=0){
-        if (!empty($uniacid)){
-            if (is_array($data)){
-                $data = serialize($data);
-            }
-            return SettingService::uni_save($uniacid, $key, $data);
+        $isExists = pdo_get("microserver_data", array("uniacid"=>intval($uniacid), "name"=>$key), array('id'));
+        if ($isExists){
+            $complete = pdo_update("microserver_data", array("data"=>serialize($data), "dateline"=>TIMESTAMP), array("id"=>$isExists['id']));
+        }else{
+            $complete = pdo_insert("microserver_data", array("uniacid"=>intval($uniacid), "name"=>$key, "data"=>serialize($data), "addtime"=>TIMESTAMP, "dateline"=>TIMESTAMP));
         }
-        return SettingService::Save($data, $key);
+        if (!$complete) return false;
+        $this->getAllSetting($uniacid, false);
+        return true;
     }
 
     /**

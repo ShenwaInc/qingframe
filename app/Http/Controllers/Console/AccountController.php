@@ -186,8 +186,18 @@ class AccountController extends Controller
         session()->put('uniacid', $account['uniacid']);
         //读取可用服务
         $servers = pdo_getall("microserver_unilink", array('status'=>1));
+        if (!empty($servers)){
+            foreach ($servers as $key=>$server){
+                $service = serv($server['name'], $this->uniacid);
+                if (!$service->enabled){
+                    unset($servers[$key]);
+                    continue;
+                }
+                $servers[$key]['entrance'] = $service->url($server['entry']);
+            }
+        }
         //判断微服务权限，待完善
-        $return['servers'] = $servers;
+        $return['servers'] = $servers?:[];
         $return['components'] = [];
 
         //读取可用模块
