@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Services\AccountService;
 use App\Services\FileService;
+use App\Services\SettingService;
 use App\Services\UserService;
 use Closure;
 use Illuminate\Support\Facades\Auth;
@@ -25,6 +26,7 @@ class ConsolePermission
     public function handle($request, Closure $next)
     {
         global $_W;
+        SettingService::Load();
         $_W['page'] = $_W['setting']['page'];
         $user = $request->user()->toArray();
         if ($user['endtime']>0 && $user['endtime']<TIMESTAMP){

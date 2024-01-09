@@ -220,6 +220,7 @@ class UserController extends Controller
             $complete = pdo_update('users',$update,array('uid'=>$_W['uid']));
             if ($complete){
                 Auth::logout();
+                \session()->flush();
                 $_W['uid'] = 0;
                 $_W['user'] = array('uid'=>0,'username'=>__('visitor'));
                 return $this->message('rePassPortSuccessfully',wurl(),'success');

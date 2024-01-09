@@ -10,13 +10,13 @@ class SettingService{
 
     static function Load($key = '', $nocache=false) {
         global $_W;
-        $cachekey = CacheService::system_key('setting');
+        $cacheKey = CacheService::system_key('setting');
         if($nocache){
-            Cache::forget($cachekey);
+            Cache::forget($cacheKey);
             $settings = array();
         }else{
             //从缓存中读取
-            $settings = Cache::get($cachekey, array());
+            $settings = Cache::get($cacheKey, array());
         }
         if (empty($settings)) {
             //如果找不到缓存则从数据库中读取
@@ -28,13 +28,14 @@ class SettingService{
             }
             if (empty($key)){
                 //写入缓存
-                Cache::put($cachekey, $settings, 86400*7);
+                Cache::put($cacheKey, $settings, 86400*7);
             }
             unset($_settings);
         }
         $_W['setting'] = array_merge($settings, (array)$_W['setting']);
         if (!empty($key)) {
-            return array($key => $settings[$key]);
+            $key = is_array($key) ? $key : [$key];
+            return post_var($key, $settings);
         } else {
             return $settings;
         }

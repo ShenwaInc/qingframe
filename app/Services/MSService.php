@@ -614,6 +614,7 @@ class MSService
 
     public static function TerminalSend($data, $finish=false){
         global $_W;
+        if (!empty($_W['TerminalSilence'])) return true;
         $data['type'] = 'terminal';
         $data['finish'] = $finish;
         $userIds = md5($_W['config']['setting']['authkey'].":terminal:{$_W['uid']}");

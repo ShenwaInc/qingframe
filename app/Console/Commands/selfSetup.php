@@ -64,6 +64,7 @@ class selfSetup extends Command
     public function handle()
     {
         global $_W;
+        $_W['TerminalSilence'] = 1;
         $params = $this->arguments();
         $title = $params['appName']?:$this->defaultParams['name'];
         if (!isset($_W['framework'])){
@@ -189,7 +190,7 @@ class selfSetup extends Command
         if(!$complete){
             return $this->message('文件写入失败，请检查storage目录权限');
         }
-        if (file_exists(storage_path("defaultParams.json"))){
+        if (file_exists(storage_path("defaultParams.json")) && !DEVELOPMENT){
             @unlink(storage_path("defaultParams.json"));
         }
 

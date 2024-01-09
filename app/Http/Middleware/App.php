@@ -73,7 +73,6 @@ class App
             ini_set('display_errors', '1');
             error_reporting(E_ALL ^ E_NOTICE);
         }
-        SettingService::Load();
         $appLocale = config('app.locale');
         $_W['locale'] = session()->get("FRAME_LOCALE", $appLocale);
         if ($appLocale!=$_W['locale']){

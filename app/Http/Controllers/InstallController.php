@@ -14,6 +14,7 @@ use Illuminate\Database\Capsule\Manager as Capsule;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 class InstallController extends Controller
 {
@@ -36,8 +37,7 @@ class InstallController extends Controller
     );
 
     public function checkInstalled(){
-        $installedfile = base_path('storage/installed.bin');
-        if(file_exists($installedfile)){
+        if(file_exists(base_path('storage/installed.bin'))){
             abort(404);
         }
     }
@@ -51,8 +51,7 @@ class InstallController extends Controller
             $installer = Cache::get('installer',$this->installer);
         }
         if (empty($installer['database'])){
-            $DBConfig = config('database');
-            $installer['database'] = $DBConfig['connections'][$DBConfig['default']];
+            $installer['database'] = config('database.connections.mysql');
         }
         $this->installer = $installer;
         if (file_exists(storage_path("defaultParams.json"))){
@@ -68,11 +67,14 @@ class InstallController extends Controller
     public function index(){
         $this->checkInstalled();
         if ($this->installer['isagree']){
-            return redirect()->action('installController@database');
+            return redirect('/installer/database');
         }
         return view('install.index', $this->defaultParams);
     }
 
+    /**
+     * @throws \Exception
+     */
     public function install(Request $request){
         $this->checkInstalled();
         global $_W;
@@ -91,6 +93,11 @@ class InstallController extends Controller
             return $this->message('数据库连接失败，请检查配置信息是否正确');
         }
         $installer = $this->installer;
+        $authKey = env('APP_AUTHKEY', "");
+        if (empty($authKey)){
+            $authKey = \Str::random(12);
+        }
+        $databaseCFG = config('database.connections.mysql');
         if ($installer['dbconnect']==0){
             //全新安装
             $manager = $request->input('render');
@@ -102,19 +109,20 @@ class InstallController extends Controller
             }
             $appName = !empty($manager['appName']) ? trim($manager['appName']) : $this->defaultParams['aName'];
             $founderPWD = trim($manager['password']);
-
-            $DBConfig = config('database');
-            $databaseCFG = $DBConfig['connections'][$DBConfig['default']];
             foreach ($databaseCFG as $key=>$cfg){
                 if(!isset($installer['database'][$key])) continue;
                 $databaseCFG[$key] = $installer['database'][$key];
             }
             $databaseCFG['strict'] = false;
-            Config::set('database.connections.'.$DBConfig['default'],$databaseCFG);
+            Config::set('database.default', 'mysql');
+            Config::set('database.connections.mysql',$databaseCFG);
 
             try {
-                $authKey = Artisan::call('self:setup', array('user'=>trim($manager['username']), 'pwd'=>$founderPWD, 'appName'=>$appName, 'manual'=>1));
+                Artisan::call('self:setup', array('user'=>trim($manager['username']), 'pwd'=>$founderPWD, 'appName'=>$appName, 'manual'=>1, '--authKey'=>$authKey));
             }catch (\Exception $exception){
+                if(DEVELOPMENT){
+                    throw $exception;
+                }
                 return $this->message($exception->getMessage());
             }
 
@@ -122,7 +130,7 @@ class InstallController extends Controller
         }
         //写入配置文件
         $baseurl = preg_replace("/\/$/", "", $_W['siteroot']);
-        $database = $installer['database'];
+        $database = $databaseCFG;
         $envText = file_get_contents(base_path(".env"));
         $replaces = array(
             "APP_AUTHKEY"=>$authKey,
@@ -160,7 +168,7 @@ class InstallController extends Controller
     public function database(){
         $this->checkInstalled();
         if (!$this->installer['isagree']){
-            return redirect()->action('installController@index');
+            return redirect('/installer');
         }
         return view('install.database',$this->installer);
     }

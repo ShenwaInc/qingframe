@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use Illuminate\Support\Facades\Schema;
 
 class Installer
 {
@@ -16,8 +17,17 @@ class Installer
      */
     public function handle($request, Closure $next)
     {
-        $installedfile = base_path('storage/installed.bin');
-        if(!file_exists($installedfile)){
+        try {
+            $installed = Schema::hasTable("account");
+        }catch (\Exception $exception){
+            if(in_array($exception->getCode(), [1044, 1045])){
+                $installed = false;
+            }else{
+                throw $exception;
+            }
+        }
+
+        if(!$installed){
             //系统未安装
             header('Location: ' . url('installer'));
             exit();

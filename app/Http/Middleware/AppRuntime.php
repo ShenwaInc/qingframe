@@ -29,6 +29,7 @@ class AppRuntime
     public function Runtime($uniacid, $authToken=null){
         if (empty($uniacid)) abort(404,'找不到该平台');
         global $_W;
+        SettingService::Load();
         $_W['session_id'] = "";
         $state = \request()->input("state", "");
         if (!empty($state) && \Str::startsWith($state, "we7sid-")){
