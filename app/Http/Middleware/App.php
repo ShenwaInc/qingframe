@@ -2,7 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use App\Services\SettingService;
 use App\Utils\Agent;
 use Closure;
 
