@@ -29,3 +29,4 @@ yarn-error.log
 /storage/defaultParams.json
 /resources/lang/*
 !/resources/lang/*.json
+/public/logs/
