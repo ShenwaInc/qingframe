@@ -17,6 +17,7 @@ class MicroService
     public $framework = "laravel";
     public $enabled = true;
     public $events = [];
+    public $serviceId;
 
     function __construct($name){
         $this->identity = $name;
@@ -80,6 +81,9 @@ class MicroService
             $complete = pdo_update("microserver_data", array("data"=>serialize($data), "dateline"=>TIMESTAMP), array("id"=>$isExists['id']));
         }else{
             $complete = pdo_insert("microserver_data", array("uniacid"=>intval($uniacid), "name"=>$key, "data"=>serialize($data), "addtime"=>TIMESTAMP, "dateline"=>TIMESTAMP));
+        }
+        if ($uniacid==0){
+            SettingService::Save($data, $key);
         }
         if (!$complete) return false;
         $this->getAllSetting($uniacid, false);
@@ -406,6 +410,9 @@ class MicroService
         $requireName = "microserver/".$this->identity;
         $composerErr = $composerVer = "";
         if (!file_exists($composer)) return true;
+        if (file_exists($this->serverPath.$this->identity."/composer.error")){
+            $composerErr = $this->serverPath.$this->identity."/composer.error";
+        }
         if (DEVELOPMENT){
             //开发者模式
             $autoloader = $this->serverPath.$this->identity."/vendor/autoload.php";
@@ -421,13 +428,10 @@ class MicroService
                 }
                 $WorkingDirectory = str_replace("\\", "/", $this->serverPath.$this->identity."/");
             }
-        }else{
-            if (file_exists($this->serverPath.$this->identity."/composer.error")){
-                $WorkingDirectory = base_path() . "/";
-                $composerObj = json_decode(file_get_contents($composer), true);
-                $composerVer = $composerObj['version'] ?? "";
-                $composerErr = $this->serverPath.$this->identity."/composer.error";
-            }
+        }elseif($composerErr){
+            $WorkingDirectory = base_path() . "/";
+            $composerObj = json_decode(file_get_contents($composer), true);
+            $composerVer = $composerObj['version'] ?? "";
         }
         if (!empty($WorkingDirectory)){
             global $_W;

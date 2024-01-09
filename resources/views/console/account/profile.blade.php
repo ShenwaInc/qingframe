@@ -51,7 +51,7 @@
                         <tr>
                             <td><span class="fui-table-lable">@lang('platformLOGO')</span></td>
                             <td class="soild-after">
-                                <img class="radius" src="{{ tomedia($account['logo']) }}" width="120" />
+                                <img class="radius" src="{{ globalMedia($account['logo']) }}" width="120" />
                             </td>
                             <td class="text-right soild-after"></td>
                         </tr>

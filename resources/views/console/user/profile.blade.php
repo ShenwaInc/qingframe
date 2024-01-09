@@ -46,7 +46,7 @@
                         <tr>
                             <td><span class="fui-table-lable">@lang('avatar')</span></td>
                             <td class="soild-after">
-                                <img class="radius user-avatar" src="{{ tomedia($profile['avatar']) }}" width="72" />
+                                <img class="radius user-avatar" src="{{ globalMedia($profile['avatar']) }}" width="72" />
                             </td>
                             <td class="text-right soild-after">
                                 <a href="javascript:" data-url="{{ serv('storage')->url('picker', array('type'=>1, 'uniacid'=>0)) }}" class="text-blue" onclick="Core.StoragePicker(this, false, setAvatar)" title="{{ __('modifyData', array('data'=>__('avatar'))) }}">@lang('modify')</a>

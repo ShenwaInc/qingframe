@@ -17,7 +17,7 @@
                             <div class="layui-col-md{{ $_GPC['inajax'] ? '4' : '3' }} layui-col-xs12 fui-item">
                                 <a href="{{ wurl('server/account', array('uniacid'=>$item['uniacid'])) }}" class="fui-content{{ $item['uniacid']==$uniacid ? ' checked':'' }}">
                                     <div class="fui-info">
-                                        <img alt="{{ $item['name'] }}" class="round" src="{{ tomedia($item['logo']) }}" />
+                                        <img alt="{{ $item['name'] }}" class="round" src="{{ globalMedia($item['logo']) }}" />
                                         <strong class="card-name">{{ $item['name'] }}</strong>
                                     </div>
                                 </a>

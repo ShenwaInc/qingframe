@@ -1,11 +1,8 @@
 <?php
 
-use App\Services\SettingService;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Storage;
 
 class CatchCall {
 
@@ -51,6 +48,7 @@ function serv(...$params){
         }else{
             $instance = new $class_name();
         }
+        $instance->serviceId = $serverId;
         if ($instance->service['status']!=1 || !$instance->enabled){
             return new CatchCall("Service $class_name has stopped.");
         }
@@ -270,14 +268,49 @@ function tomedia($src, $local_path = false, $is_cahce = false) {
         return $src;
     }
 
-    $uni_remote_setting = SettingService::uni_load('remote');
-    if ($local_path || empty($_W['setting']['remote']['type']) && (empty($_W['uniacid']) || empty($uni_remote_setting['remote']['type'])) || file_exists(storage_path("app/public/$src") )) {
+    if ($local_path || empty($_W['setting']['remote']['type']) || file_exists(storage_path("app/public/$src") )) {
         $src = $_W['siteroot'] . 'storage/' . $src;
     } else {
         return $_W['attachurl'] . $src;
     }
 
     return $src;
+}
+
+function globalMedia($src){
+    if (empty($src)) {
+        return '';
+    }
+    if (file_exists(public_path($src))){
+        return assets($src);
+    }
+    global $_W;
+    if (\Str::startsWith($src,'//')) {
+        return preg_replace('/^\/\//', $_W['sitescheme'], $src);
+    }
+    if (\Str::startsWith($src,'http://') || \Str::startsWith($src,'https://')) {
+        return $src;
+    }
+    if (empty($_W['setting']['remote']['type']) || file_exists(storage_path("app/public/$src"))){
+        return $_W['siteroot'] . 'storage/' . $src;
+    }
+    if (!empty($_W['attachurl_global'])){
+        return $_W['attachurl_global'] . $src;
+    }
+    $remoteSet = $_W['setting']['remote_complete_info'];
+    if ($remoteSet['type'] == 1) {
+        $attach_url = $remoteSet['ftp']['url'] . '/';
+    } elseif ($remoteSet['type'] == 2) {
+        $attach_url = $remoteSet['alioss']['url'] . '/';
+    } elseif ($remoteSet['type'] == 3) {
+        $attach_url = $remoteSet['qiniu']['url'] . '/';
+    } elseif ($remoteSet['type'] == 4) {
+        $attach_url = $remoteSet['cos']['url'] . '/';
+    } else{
+        $attach_url = config('filesystems.disks.s3.url') . '/';
+    }
+    $_W['attachurl_global'] = $attach_url;
+    return $attach_url . $src;
 }
 
 function random($len,$is_number=false){

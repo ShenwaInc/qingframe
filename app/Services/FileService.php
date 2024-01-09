@@ -21,27 +21,26 @@ class FileService
         $storage = serv('storage', intval($_W['uniacid']));
         if ($storage->enabled){
             $_W['setting']['remote'] = $storage->settings['remote'];
-        }elseif (!empty($_W['uniacid'])) {
-            $uni_remote_setting = SettingService::uni_load('remote');
-            if (!empty($uni_remote_setting['remote']['type'])) {
-                $_W['setting']['remote'] = $uni_remote_setting['remote'];
+            if ($storage->uniacid==0){
+                $_W['setting']['remote_complete_info'] = $_W['setting']['remote'];
             }
         }
         $attach_url = $_W['attachurl_local'] = $_W['siteroot'] . $_W['config']['upload']['attachdir'] . '/';
         if (!empty($_W['setting']['remote']['type'])) {
             if ($_W['setting']['remote']['type'] == 1) {
-                $attach_url = $_W['attachurl_remote'] = $_W['setting']['remote']['ftp']['url'] . '/';
+                $attach_url = $_W['setting']['remote']['ftp']['url'] . '/';
             } elseif ($_W['setting']['remote']['type'] == 2) {
-                $attach_url = $_W['attachurl_remote'] = $_W['setting']['remote']['alioss']['url'] . '/';
+                $attach_url = $_W['setting']['remote']['alioss']['url'] . '/';
             } elseif ($_W['setting']['remote']['type'] == 3) {
-                $attach_url = $_W['attachurl_remote'] = $_W['setting']['remote']['qiniu']['url'] . '/';
+                $attach_url = $_W['setting']['remote']['qiniu']['url'] . '/';
             } elseif ($_W['setting']['remote']['type'] == 4) {
-                $attach_url = $_W['attachurl_remote'] = $_W['setting']['remote']['cos']['url'] . '/';
+                $attach_url = $_W['setting']['remote']['cos']['url'] . '/';
             } else{
                 //aws
                 Config::set('filesystems.default', 's3');
                 $attach_url = config('filesystems.disks.s3.url') . '/';
             }
+            $_W['attachurl_remote'] = $attach_url;
         }
         return $attach_url;
     }

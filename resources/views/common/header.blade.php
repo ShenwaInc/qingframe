@@ -14,8 +14,8 @@
             <ul class="layui-nav layui-layout-right">
                 @if($_W['uid']>0)
                     <li class="layui-nav-item">
-                        <a href="javascript:;">
-                            <img src="{{ tomedia($_W['user']['avatar']) }}" class="layui-nav-img user-avatar layui-hide-xs" />
+                        <a href="{{ wurl('user/profile') }}">
+                            <img src="{{ globalMedia($_W['user']['avatar']) }}" class="layui-nav-img user-avatar layui-hide-xs" />
                             {{$_W['user']['username']}}
                             @if($_W['user']['register_type']==1)<span class="layui-badge-dot"></span>&nbsp;&nbsp;&nbsp;&nbsp;@endif
                         </a>
