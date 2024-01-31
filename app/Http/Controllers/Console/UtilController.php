@@ -141,8 +141,6 @@ class UtilController extends Controller
                 }
             }
 
-            serv("weengine")->func("web");
-
             $pager = pagination($total, $page, $page_size, '', $context = array('before' => 5, 'after' => 4, 'isajax' => $_W['isajax']));
             $result = array(
                 'list' => $list,

@@ -218,7 +218,6 @@ class SettingController extends Controller
                 $plugins[$identifie] = $com;
             }
         }
-        serv("weengine")->func("web");
         return $this->globalView('console.market', array(
             'title'=>"应用市场",
             'components'=>$plugins,

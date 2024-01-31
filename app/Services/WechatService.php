@@ -372,9 +372,8 @@ class WechatService extends WeAccount
                 $menu['matchrule']['city'] = urlencode($data_array['matchrule']['city']);
             }
         }
-        if (!empty($data_array['matchrule']['language'])) {
+        if (!empty($data_array['matchrule']['language']) && function_exists('menu_languages')) {
             $inarray = 0;
-            serv("weengine")->model("menu");
             $languages = menu_languages();
             foreach ($languages as $key => $value) {
                 if (in_array($data_array['matchrule']['language'], $value, true)) {
