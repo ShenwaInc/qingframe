@@ -274,7 +274,7 @@ class MSService
                 }
                 $manifest = self::getmanifest($server['identity'], true);
                 if (!is_error($manifest)){
-                    if(version_compare($manifest['version'], $server['version'], '>')){
+                    if(version_compare($manifest['version'], $server['version'], '>') || $manifest['releases']>$server['releases']){
                         //本地可升级
                         $server['upgrade'] = array('version'=>$manifest['version'],'canup'=>true);
                         $upgradeAction = '<a class="layui-btn layui-btn-sm layui-btn-danger js-terminal" data-text="'.__('升级前请做好数据备份').'" lay-tips="该服务可升级至V'.$manifest['version'].'版本" href="'.wurl('server', array("op"=>"upgrade", "nid"=>$server['identity'])).'">'.__('upgrade').'</a>';
