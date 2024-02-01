@@ -26,7 +26,6 @@
     "loginPasswordSet": "请设置一个登录密码:extra",
     "loginPasswordNotModify": "，如不修改请留空",
     "successful": "操作成功！",
-    "refreshCache": "更新缓存",
     "logout": "退出账户",
     "systemActivation": "系统激活",
     "aboutToJump": "即将自动跳转...",

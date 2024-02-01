@@ -14,14 +14,14 @@
             <ul class="layui-nav layui-layout-right">
                 @if($_W['uid']>0)
                     <li class="layui-nav-item">
-                        <a href="{{ wurl('user/profile') }}">
-                            <img src="{{ globalMedia($_W['user']['avatar']) }}" class="layui-nav-img user-avatar layui-hide-xs" />
+                        <a href="javascript:">{{-- 这个A标签不要加链接 --}}
+                            <img alt="{{$_W['user']['username']}}" src="{{ globalMedia($_W['user']['avatar']) }}" class="layui-nav-img user-avatar layui-hide-xs" />
                             {{$_W['user']['username']}}
                             @if($_W['user']['register_type']==1)<span class="layui-badge-dot"></span>&nbsp;&nbsp;&nbsp;&nbsp;@endif
                         </a>
                         <dl id="layui-admin-usermenu" class="layui-nav-child layui-anim layui-anim-upbit">
                             <dd><a href="{{ wurl('user/profile') }}">@lang('accountManagement')@if($_W['user']['register_type']==1)<span class="layui-badge-dot"></span>&nbsp;&nbsp;&nbsp;&nbsp;@endif</a></dd>
-                            <dd><a href="javascript:Core.cacheclear();">@lang('refreshCache')</a></dd>
+                            <dd><a href="javascript:Core.cacheclear();">@lang('更新缓存')</a></dd>
                             <hr />
                             <dd><a href="javascript:Core.logout();">@lang('logout')</a></dd>
                         </dl>
@@ -44,7 +44,7 @@
                         </li>
                     @endif
                     <li class="layui-nav-item layui-hide-xs js-fullscreen" lay-unselect>
-                        <a href="javascript:;" layadmin-event="fullscreen">
+                        <a href="javascript:" layadmin-event="fullscreen">
                             <i class="layui-icon layui-icon-screen-full"></i>
                         </a>
                     </li>

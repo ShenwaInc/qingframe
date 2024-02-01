@@ -176,7 +176,7 @@
                         </tr>
                         @if($_W['isfounder'])
                             <tr>
-                                <td><span class="fui-table-lable">@lang('cloud service')</span></td>
+                                <td><span class="fui-table-lable">@lang('云服务')</span></td>
                                 <td class="soild-after">
                                     @if($activeState['status']==1)
                                         {{$activeState['name']}}（ID:&nbsp;<span class="text-blue js-clip" data-url="{{ $activeState['siteid'] }}">{{ $activeState['siteid'] }}</span>）
