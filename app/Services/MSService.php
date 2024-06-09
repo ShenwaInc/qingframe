@@ -465,6 +465,10 @@ class MSService
                 return error(-1,"安装失败：".$exception->getMessage());
             }
         }
+        //复制资源文件
+        if (is_dir(MICRO_SERVER.$identity."/res")){
+            CloudService::copyDir(MICRO_SERVER.$identity."/res", public_path("data/resource/server/{$identity}/"), true);
+        }
         //操作入库
         $application['status'] = 1;
         $application['addtime'] = $application['dateline'] = TIMESTAMP;
@@ -534,6 +538,10 @@ class MSService
                     return error(-1,"安装失败：".$exception->getMessage());
                 }
             }
+            //复制资源文件
+            if (is_dir(MICRO_SERVER.$identity."/res")){
+                CloudService::copyDir(MICRO_SERVER.$identity."/res", public_path("data/resource/server/{$identity}/"), true);
+            }
             //操作入库
             $application['status'] = 1;
             $application['dateline'] = TIMESTAMP;
@@ -599,6 +607,9 @@ class MSService
             pdo_delete(self::$tableName,array('id'=>$service['id']));
             $this->getEvents(true);
             pdo_delete("microserver_unilink", array("name"=>$identity));
+            if (is_dir(public_path("data/resource/server/".$identity))){
+                FileService::rmdirs(public_path("data/resource/server/".$identity));
+            }
             $composerExists = file_exists(MICRO_SERVER.$identity."/composer.json");
             if ($composerExists){
                 $res = self::ComposerRemove("microserver/".$identity);

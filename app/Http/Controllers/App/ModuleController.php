@@ -53,7 +53,7 @@ class ModuleController extends Controller
             if ($_W['config']['debugMode'] || DEVELOPMENT){
                 throw $exception;
             }
-            return $this->message('模块初始化失败');
+            return $this->message("请求失败(".$exception->getCode().")");
         }
     }
 

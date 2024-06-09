@@ -20,7 +20,7 @@ class Installer
         try {
             $installed = Schema::hasTable("account");
         }catch (\Exception $exception){
-            if(in_array($exception->getCode(), [1044, 1045])){
+            if(in_array($exception->getCode(), [1044, 1045, 2002])){
                 $installed = false;
             }else{
                 throw $exception;

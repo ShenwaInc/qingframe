@@ -214,7 +214,7 @@ class CloudService
         if (!is_dir($oldDir)) {
             return false;
         }
-        if (!file_exists($aimDir)) {
+        if (!is_dir($aimDir)) {
             FileService::mkdirs($aimDir);
         }
         @ $dirHandle = opendir($oldDir);
@@ -233,6 +233,36 @@ class CloudService
         }
         closedir($dirHandle);
         return FileService::rmdirs($oldDir);
+    }
+
+    static function copyDir($from, $to, $overwrite=false): bool
+    {
+        if (!is_dir($to)) {
+            FileService::mkdirs($to);
+        }
+        $from = rtrim($from, DIRECTORY_SEPARATOR);
+        $to = rtrim($to, DIRECTORY_SEPARATOR);
+        @$dirHandle = opendir($from);
+        if (!$dirHandle) {
+            return false;
+        }
+        while (false !== ($file = readdir($dirHandle))) {
+            if ($file == '.' || $file == '..') {
+                continue;
+            }
+            $sourceFile = $from . '/'. $file;
+            $destinationFile = $to . '/'. $file;
+            if (is_file($sourceFile)) {
+                if(file_exists($destinationFile) && $overwrite){
+                    @unlink($destinationFile);
+                }
+                @copy($sourceFile, $destinationFile);
+            } else {
+                self::copyDir($sourceFile, $destinationFile . $file, $overwrite);
+            }
+        }
+        closedir($dirHandle);
+        return true;
     }
 
     static function CloudRequire($identity,$targetpath,$patch=''){

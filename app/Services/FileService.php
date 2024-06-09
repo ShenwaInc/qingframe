@@ -259,8 +259,9 @@ class FileService
 
                 return $check_result;
             }
-            $uni_remote_setting = uni_setting_load('remote');
-            if (empty($uni_remote_setting['remote']) && empty($_W['setting']['remote']['type'])) {
+
+            $storage = serv('storage');
+            if (empty($storage->settings['remote']['type'])) {
                 self::file_change_uni_attchsize($save_path);
             }
         }
@@ -297,8 +298,8 @@ class FileService
             return false;
         }
 
-        $uni_remote_setting = uni_setting_load('remote');
-        if (empty($uni_remote_setting['remote']) && empty($_W['setting']['remote']['type'])) {
+        $storage = serv('storage');
+        if (empty($storage->settings['remote']['type'])) {
             if (file_exists(ATTACHMENT_ROOT . '/' . $file) && self::file_is_uni_attach(ATTACHMENT_ROOT . '/' . $file)) {
                 self::file_change_uni_attchsize(ATTACHMENT_ROOT . '/' . $file, false);
             }
@@ -375,8 +376,8 @@ class FileService
         $file_size = max(1, $file_size);
 
         $result = true;
-        $uni_remote_setting = uni_setting_load('remote');
-        if (empty($uni_remote_setting['remote']['type']) && !empty($_W['uniacid'])) {
+        $storage = serv('storage');
+        if (empty($storage->settings['remote']['type']) && !empty($_W['uniacid'])) {
             $uni_settings = pdo_get('uni_settings', array('uniacid' => $_W['uniacid']), array('uniacid','attachment_size'));
             if (empty($uni_settings)) {
                 $result = pdo_insert('uni_settings', array('attachment_size' => $file_size, 'uniacid' => $_W['uniacid']));

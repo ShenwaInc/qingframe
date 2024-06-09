@@ -31,7 +31,10 @@ class MicroService
             $fields = array_merge($fields, array("cover","summary","entrance","datas","configs"));
         }
         $service = pdo_get($this->tableName, array('identity'=>$this->identity), $fields);
-        if (empty($service['status'])) $this->enabled = false;
+        if (empty($service['status'])){
+            $this->enabled = false;
+            throw new \Exception("Service {$service['identity']} is unavailable.");
+        }
         if (defined('IN_SYS')){
             $service['datas'] = empty($service['datas']) ? array() : unserialize($service['datas']);
             if (!empty($service['datas'])){
@@ -137,6 +140,23 @@ class MicroService
             return $this->url($entrance);
         }
         return $entrance;
+    }
+
+    /**
+     * 获取完整的服务资源文件URL
+     * @param string $res 文件相对路径
+    */
+    public function res($res): string
+    {
+        $res = preg_replace('/^\//', '', $res);
+        $realPath = public_path("data/resource/server/" . $this->identity . "/" . $res);
+        if (!file_exists($realPath) && base_path('servers/'. $this->identity . "/res/" . $res)){
+            if (!is_dir(base_path('servers/'. $this->identity . "/res/"))){
+                FileService::mkdirs(base_path('servers/'. $this->identity . "/res/"));
+            }
+            @copy(base_path('servers/'. $this->identity . "/res/" . $res), $realPath);
+        }
+        return asset("/data/resource/server/" . $this->identity . "/" . $res);
     }
 
     /**

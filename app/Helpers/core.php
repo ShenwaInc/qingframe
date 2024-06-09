@@ -53,9 +53,6 @@ function serv(...$params){
             return new CatchCall("Service $class_name has stopped.");
         }
     }catch (Exception $exception){
-        if (\config('app.debug')){
-            throw $exception;
-        }
         return new CatchCall($exception->getMessage());
     }
     $_servers[$serverId] = $instance;
@@ -149,7 +146,7 @@ function checksubmit($var='_token'){
     if (!$_W['ispost']) return false;
     if ($_W['inConsole']){
         $headers = request()->header('X-CSRF-TOKEN');
-        return !empty($_GPC[$var]) || !empty($headers);
+        return !empty($_GPC[$var]) || ($var=='_token' && !empty($headers));
     }elseif (defined('IN_API') && $var=='_token'){
         return true;
     }
@@ -311,6 +308,11 @@ function globalMedia($src){
     }
     $_W['attachurl_global'] = $attach_url;
     return $attach_url . $src;
+}
+
+function res_path($path = ''): string
+{
+    return app()->make('path.public.resource').($path ? DIRECTORY_SEPARATOR.ltrim($path, DIRECTORY_SEPARATOR) : $path);
 }
 
 function random($len,$is_number=false){
