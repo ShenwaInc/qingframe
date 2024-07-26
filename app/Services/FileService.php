@@ -13,12 +13,13 @@ use Illuminate\Support\Facades\Storage;
 class FileService
 {
 
-    public static function SetAttachUrl() {
+    public static function SetAttachUrl($uniacid=null) {
         global $_W;
+        $uniacid = $uniacid===null ? $_W['uniacid'] : intval($uniacid);
         if(empty($_W['setting']['remote_complete_info'])){
             $_W['setting']['remote_complete_info'] = $_W['setting']['remote'];
         }
-        $storage = serv('storage', intval($_W['uniacid']));
+        $storage = serv('storage', intval($uniacid));
         if ($storage->enabled){
             $_W['setting']['remote'] = $storage->settings['remote'];
             if ($storage->uniacid==0){
@@ -27,20 +28,45 @@ class FileService
         }
         $attach_url = $_W['attachurl_local'] = $_W['siteroot'] . $_W['config']['upload']['attachdir'] . '/';
         if (!empty($_W['setting']['remote']['type'])) {
-            if ($_W['setting']['remote']['type'] == 1) {
-                $attach_url = $_W['setting']['remote']['ftp']['url'] . '/';
-            } elseif ($_W['setting']['remote']['type'] == 2) {
-                $attach_url = $_W['setting']['remote']['alioss']['url'] . '/';
-            } elseif ($_W['setting']['remote']['type'] == 3) {
-                $attach_url = $_W['setting']['remote']['qiniu']['url'] . '/';
-            } elseif ($_W['setting']['remote']['type'] == 4) {
-                $attach_url = $_W['setting']['remote']['cos']['url'] . '/';
-            } else{
+            $attach_url = self::getRemoteUrl($_W['setting']['remote']);
+            $_W['attachurl_remote'] = $attach_url;
+        }
+        $_W['attachurl_global_remote'] = '';
+        if ($uniacid===0){
+            $_W['attachurl_global'] = $attach_url;
+            if (!empty($_W['setting']['remote']['type'])){
+                $_W['attachurl_global_remote'] = $attach_url;
+            }
+        }elseif(empty($_W['attachurl_global'])){
+            $attach_global = $_W['attachurl_local'];
+            $remoteSet = serv('storage', 0)->settings['remote'];
+            if (!empty($remoteSet['type'])){
+                $attach_global = self::getRemoteUrl($remoteSet);
+                $_W['attachurl_global_remote'] = $attach_global;
+            }
+            $_W['attachurl_global'] = $attach_global;
+        }
+        return $attach_url;
+    }
+
+    public static function getRemoteUrl($remoteSet){
+        switch ($remoteSet['type']) {
+            case 1:
+                $attach_url = $remoteSet['ftp']['url'] . '/';
+                break;
+            case 2:
+                $attach_url = $remoteSet['alioss']['url'] . '/';
+                break;
+            case 3:
+                $attach_url = $remoteSet['qiniu']['url'] . '/';
+                break;
+            case 4:
+                $attach_url = $remoteSet['cos']['url'] . '/';
+                break;
+            default:
                 //aws
                 Config::set('filesystems.default', 's3');
                 $attach_url = config('filesystems.disks.s3.url') . '/';
-            }
-            $_W['attachurl_remote'] = $attach_url;
         }
         return $attach_url;
     }

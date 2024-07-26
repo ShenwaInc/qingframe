@@ -1,5 +1,6 @@
 <?php
 
+use App\Services\FileService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -245,7 +246,7 @@ function tomedia($src, $local_path = false, $is_cahce = false) {
         return '';
     }
     if (file_exists(public_path($src))){
-        return assets($src);
+        return defined('IN_SYS') ? assets($src) : $_W['siteroot'] . preg_replace('/^\//', '', $src);
     }
     if ($is_cahce) {
         $src .= '?v=' . time();
@@ -282,32 +283,19 @@ function globalMedia($src){
         return assets($src);
     }
     global $_W;
+    if (!isset($_W['attachurl_global'])){
+        FileService::SetAttachUrl(0);
+    }
     if (\Str::startsWith($src,'//')) {
         return preg_replace('/^\/\//', $_W['sitescheme'], $src);
     }
     if (\Str::startsWith($src,'http://') || \Str::startsWith($src,'https://')) {
         return $src;
     }
-    if (empty($_W['setting']['remote']['type']) || file_exists(storage_path("app/public/$src"))){
-        return $_W['siteroot'] . 'storage/' . $src;
+    if (empty($_W['attachurl_global_remote']) || file_exists(storage_path("app/public/$src"))){
+        return $_W['attachurl_local'] . $src;
     }
-    if (!empty($_W['attachurl_global'])){
-        return $_W['attachurl_global'] . $src;
-    }
-    $remoteSet = $_W['setting']['remote_complete_info'];
-    if ($remoteSet['type'] == 1) {
-        $attach_url = $remoteSet['ftp']['url'] . '/';
-    } elseif ($remoteSet['type'] == 2) {
-        $attach_url = $remoteSet['alioss']['url'] . '/';
-    } elseif ($remoteSet['type'] == 3) {
-        $attach_url = $remoteSet['qiniu']['url'] . '/';
-    } elseif ($remoteSet['type'] == 4) {
-        $attach_url = $remoteSet['cos']['url'] . '/';
-    } else{
-        $attach_url = config('filesystems.disks.s3.url') . '/';
-    }
-    $_W['attachurl_global'] = $attach_url;
-    return $attach_url . $src;
+    return $_W['attachurl_global'] . $src;
 }
 
 function res_path($path = ''): string
@@ -488,6 +476,6 @@ function pdo_run($sql) {
 
 function pdo_query($sql, $params = array()) {
     $prefix = env("DB_PREFIX", 'ims_');
-    $sql = str_replace("ims_", $prefix, $sql);
+    $sql = str_replace(array("ims_", "ENGINE=MyISAM"), array($prefix, "ENGINE=InnoDB"), $sql);
     return DB::statement($sql, $params);
 }

@@ -18,9 +18,11 @@ class MicroService
     public $enabled = true;
     public $events = [];
     public $serviceId;
+    public $accountUrl = "";
 
     function __construct($name){
         $this->identity = $name;
+        $this->accountUrl = wurl('server/account');
         $this->initServer();
     }
 
@@ -151,8 +153,10 @@ class MicroService
         $res = preg_replace('/^\//', '', $res);
         $realPath = public_path("data/resource/server/" . $this->identity . "/" . $res);
         if (!file_exists($realPath) && base_path('servers/'. $this->identity . "/res/" . $res)){
-            if (!is_dir(base_path('servers/'. $this->identity . "/res/"))){
-                FileService::mkdirs(base_path('servers/'. $this->identity . "/res/"));
+            //自动搬运静态资源文件
+            $baseDir = dirname($realPath);
+            if (!is_dir($baseDir)){
+                FileService::mkdirs($baseDir);
             }
             @copy(base_path('servers/'. $this->identity . "/res/" . $res), $realPath);
         }

@@ -9,7 +9,6 @@
                 </div>
                 <div class="layui-card-body">
                     <blockquote class="layui-elem-quote">使用putty等ssh命令行工具，或者登陆宝塔终端，逐一输入如下指令并回车</blockquote>
-                    <blockquote class="layui-elem-quote"><strong>如安装过程遇到问题，请<a href="https://www.yuque.com/shenwa/qingru/ze9hby#qUvo3" target="_blank" class="text-blue">参考Composer完整说明文档</a>排查</strong></blockquote>
                     <pre class="layui-code" lay-title="使用Composer安装依赖包">
 cd {{ $WorkingDirectory }}
 composer {{ DEVELOPMENT ? 'update':'require '.$requireName.($composerVer?' '.$composerVer:'') }}
@@ -29,6 +28,7 @@ composer config -g repo.packagist composer https://packagist.phpcomposer.com
                     <blockquote class="layui-elem-quote">安装依赖包的过程如果出现404等其它错误，请检查镜像源地址是否被防火墙封禁，也可以尝试升级Composer版本</blockquote>
                     <pre class="layui-code" lay-title="升级Composer">
 composer self-update</pre>
+                    <blockquote class="layui-elem-quote"><strong>如使用过程遇到问题，请<a href="https://www.yuque.com/shenwa/qingru/yioqay5u5c496veb" target="_blank" class="text-blue">参考Composer完整说明文档</a>排查</strong></blockquote>
                 </div>
             </div>
         </div>

@@ -329,17 +329,31 @@ class AccountController extends Controller
         if ($account['endtime']>0 && $account['endtime']<TIMESTAMP && !$_W['isfounder']){
             return $this->message('platformExpired');
         }
+        $uni_settings = DB::table('uni_settings')->where('uniacid', $this->uniacid)->select(['jsauth_acid', 'bind_domain'])->first();
         if ($request->isMethod('post')){
             $op = $request->input('op');
-            if ($op=='setexpire'){
-                $data = array('endtime'=>0);
-                $expire = (string)$request->input('expire','');
-                if ($expire!=''){
-                    $data['endtime'] = strtotime($expire);
+            switch ($op){
+                case 'setDomain' : {
+                    $domain = trim($request->input('domain', ''));
+                    if (empty($domain) || !preg_match('/^(?:[a-zA-Z\d_-]+\.)*[a-z]{2,6}$/i', $domain)){
+                        return $this->message(__('请输入正确的域名'));
+                    }
+                    if ($domain==$uni_settings['bind_domain']) return $this->success();
+                    if (!DB::table('uni_settings')->where('uniacid', $this->uniacid)->update(['bind_domain'=>$domain])){
+                        return $this->message('saveFailed');
+                    }
+                    return $this->success();
                 }
-                $complete = DB::table('account')->where('acid',$account['acid'])->update($data);
-                if (!$complete) return $this->message('saveFailed');
-                return $this->message('savedSuccessfully',wurl('account/profile',array('uniacid'=>$account['uniacid']),true), 'success');
+                case 'setExpire' : {
+                    $data = array('endtime'=>0);
+                    $expire = (string)$request->input('expire','');
+                    if ($expire!=''){
+                        $data['endtime'] = strtotime($expire);
+                    }
+                    $complete = DB::table('account')->where('acid',$account['acid'])->update($data);
+                    if (!$complete) return $this->message('saveFailed');
+                    return $this->message('savedSuccessfully',wurl('account/profile',array('uniacid'=>$account['uniacid']),true), 'success');
+                }
             }
         }
         $account['expirdate'] = $account['endtime']>0 ? date('Y-m-d',$account['endtime']) : __('longtime');
@@ -349,6 +363,7 @@ class AccountController extends Controller
         $entrances = AccountService::GetAllEntrances($this->uniacid);
         $return['entrance'] = $this->entrance[$entry]. "&nbsp;&gt;&nbsp;";
         $return['entrance'] .= $entrances[$entry][$method];
+        $return['settings'] = $uni_settings;
         return $this->globalView('console.account.profile',$return);
     }
 

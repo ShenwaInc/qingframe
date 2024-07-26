@@ -346,12 +346,13 @@ class MSService
 
     public static function checkDepend($identity, $return=false){
         //判断服务依赖
-        $servers = DB::table(self::$tableName)->select(array('id','identity','name','configs'))->where('configs', 'LIKE', "%$identity%")->get()->toArray();
+        $servers = DB::table(self::$tableName)->select(array('id','identity','name','configs'))->where('configs', 'LIKE', '%:"weengine"%')->get()->toArray();
         if (!empty($servers)){
             $depends = array();
             foreach ($servers as $value){
+                if ($value['identity']==$identity) continue;
                 $configs = $value['configs'] ? unserialize($value['configs']) : [];
-                if (!empty($configs['require']) && in_array($identity, $configs['require'], true)){
+                if (is_array($configs['require']) && isset($configs['require'][$identity])){
                     $depends[$value['identity']] = $value['name'];
                 }
             }
@@ -807,14 +808,10 @@ class MSService
     public static function ComposerPage($params, $inService=null){
         $params['title'] = __('installVendor');
         global $_W;
-        $data = array();
         if ($inService){
             $_W['inService'] = true;
-            $data['_W'] = $_W;
-            $data['inService'] = $inService;
         }
-        View::share($data);
-        $html = View::make('console.composer', $params)->render();
+        $html = \view('console.composer', array_merge($params, array('_W'=>$_W, 'inService'=>$inService)))->toHtml();
         session_exit($html);
     }
 

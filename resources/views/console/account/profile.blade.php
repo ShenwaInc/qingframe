@@ -93,6 +93,17 @@
                                 <a href="{{ wurl('account/entry',array('uniacid'=>$uniacid)) }}" title="{{ __('modifyData', array('data'=>__('defaultEntry'))) }}" class="ajaxshow text-blue">@lang('modify')</a>
                             </td>
                         </tr>
+                        <tr>
+                            <td><span class="fui-table-lable">@lang('绑定域名')</span></td>
+                            <td class="soild-after">
+                                <span id="bind_domain">{{ $settings['bind_domain']?:__('未绑定') }}</span>
+                            </td>
+                            <td class="text-right soild-after">
+                                @if(in_array($role,['founder','owner']) || $_W['isfounder'])
+                                <a href="javascript:setDomain('{{$settings['bind_domain']}}');" class="text-blue">@lang('modify')</a>
+                                @endif
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -132,11 +143,30 @@
         });
         @endif
     });
+    @if(in_array($role,['founder','owner']) || $_W['isfounder'])
+        function setDomain(domain='') {
+            layer.prompt({title: '{{ __('请输入要绑定的域名') }}', value: domain, maxlength:50, placeholder:"{{ __('仅支持单个域名，只填写host部分') }}"}, function(value, index, elem){
+                if(value === '') return elem.focus();
+                let regex = /^(?:[a-zA-Z0-9_-]+\.)*[a-z]{2,6}$/;
+                if(!regex.test(value)){
+                    layer.msg('{{ __('请输入正确格式的域名') }}', {icon:2});
+                    return elem.focus();
+                }
+                Core.post('console.account.profile',function (res){
+                    Core.report(res);
+                    if(res.type==='success'){
+                        $('#bind_domain').text(value);
+                        layer.close(index);
+                    }
+                },{domain:value,op:"setDomain",uniacid:{{ $uniacid }}},'json',true)
+            });
+        }
+    @endif
     @if($_W['isfounder'])
     function setExpire(expiredata=''){
         Core.post('console.account.profile',function (res){
             Core.report(res);
-        },{expire:expiredata,op:"setexpire",uniacid:{{ $uniacid }}},'json',true)
+        },{expire:expiredata,op:"setExpire",uniacid:{{ $uniacid }}},'json',true)
     }
     function setForever(){
         Core.confirm('@lang("modifyExpireDateConfirm")',function (){
