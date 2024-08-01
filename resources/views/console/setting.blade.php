@@ -18,6 +18,12 @@
             </ul>
         </div>
 
+        @if(empty($activeState['hasDomain']))
+        <div class="layui-elem-quote margin-bottom-xl" style="border-color: #FF5722; background-color: #fadbd9;">
+            <p class="text-red">当前域名不是系统授权域名，请<a href="{{ $activeState['siteroot'] }}" class="text-blue">使用授权域名登录</a>以使用云服务。或者<a href="{{ wurl('active') }}" class="text-blue">重置云服务授权</a></p>
+        </div>
+        @endif
+
         <div class="fui-card layui-card">
             <div class="layui-card-header nobd">
                 <a href="{{ wurl('setting/pageset') }}" class="fr text-blue ajaxshow" title="{{ __('modifyData', array('data'=>__('siteInformation'))) }}"><i
@@ -124,12 +130,12 @@
                             <td><span class="fui-table-lable">@lang('versionSystem')</span></td>
                             <td class="soild-after">
                                 V{{ QingVersion }} Release{{ QingRelease }}
-                                @if($cloudinfo['isnew'])
-                                    &nbsp;&nbsp;<span class="layui-badge layui-bg-red" title="V{{ $cloudinfo['version'] }} Release{{ $cloudinfo['releasedate'] }}">{{ __($cloudinfo['releasedate']==QingRelease?'sourceCodeChanged':'versionNew') }}</span>
+                                @if($cloudInfo['isnew'])
+                                    &nbsp;&nbsp;<span class="layui-badge layui-bg-red" title="V{{ $cloudInfo['version'] }} Release{{ $cloudInfo['releasedate'] }}">{{ __($cloudInfo['releasedate']==QingRelease?'sourceCodeChanged':'versionNew') }}</span>
                                 @endif
                             </td>
                             <td class="text-right soild-after" style="line-height: 28px">
-                                @if($cloudinfo['isnew'])
+                                @if($cloudInfo['isnew'])
                                     <a href="{{ wurl('setting/selfupgrade') }}" class="text-red js-terminal" data-text="@lang('upgradeConfirm')">@lang('upgradeNow')</a>&nbsp;&nbsp;
                                     <a href="{{ wurl('setting/updateLog') }}" class="text-blue ajaxshow">@lang('cloudComparison')</a><br/>
                                 @endif

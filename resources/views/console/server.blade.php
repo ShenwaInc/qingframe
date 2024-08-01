@@ -16,6 +16,12 @@
             </ul>
         </div>
 
+        @if(empty($activeState['hasDomain']))
+            <div class="layui-elem-quote margin-bottom-xl" style="border-color: #FF5722; background-color: #fadbd9;">
+                <p class="text-red">当前域名不是系统授权域名，请<a href="{{ $activeState['siteroot'] }}" class="text-blue">使用授权域名登录</a>以使用云服务。或者<a href="{{ wurl('active') }}" class="text-blue">重置云服务授权</a></p>
+            </div>
+        @endif
+
         <div class="fui-card layui-card">
             <div class="layui-card-header nobd">
                 <span class="title">{{ $title }}</span>
@@ -94,7 +100,7 @@
 @include('console.terminal')
 <script type="text/javascript">
     $(function (){
-        @if($op=='index')
+        @if($op=='index' && !empty($activeState['hasDomain']))
         $('.js-upgrade').each(function (index, element) {
             let Elem = $(element);
             let identity = Elem.attr('data-nid');

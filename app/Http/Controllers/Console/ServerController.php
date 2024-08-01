@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Console;
 
 use App\Http\Controllers\Controller;
 use App\Services\AccountService;
+use App\Services\CloudService;
 use App\Services\MSService;
 use Illuminate\Http\Request;
 
@@ -220,6 +221,7 @@ class ServerController extends Controller
         if ($swaSocket->enabled){
             $return['socket']['server'] = $swaSocket->settings['server'];
         }
+        $return['activeState'] = CloudService::CloudActive(true);
         return $this->globalView("console.server", $return);
     }
 

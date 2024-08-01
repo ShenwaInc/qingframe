@@ -7,13 +7,13 @@
     <div class="layui-tab fui-tab margin-bottom-xl">
         <ul class="layui-tab-title title_tab">
             <li>
-                <a href="{{ wurl('account/profile',array('uniacid'=>$uniacid)) }}">@lang('basicInformation')</a>
+                <a href="{{ wurl('account/profile',array('uniacid'=>$uniacid)) }}">@lang('基础信息')</a>
             </li>
             <li>
-                <a href="{{ wurl('account/functions',array('uniacid'=>$uniacid)) }}">@lang('Applications&Services')</a>
+                <a href="{{ wurl('account/functions',array('uniacid'=>$uniacid)) }}">@lang('应用与服务')</a>
             </li>
             <li class="layui-this">
-                <a href="{{ wurl('account/role',array('uniacid'=>$uniacid)) }}">@lang('operatingAuthority')</a>
+                <a href="{{ wurl('account/role',array('uniacid'=>$uniacid)) }}">@lang('操作权限')</a>
             </li>
         </ul>
     </div>
@@ -21,7 +21,7 @@
     <div class="fui-card layui-card">
         <div class="layui-card-header nobd">
             <a href="{{ wurl('account/role',array('uniacid'=>$uniacid,'op'=>'add'),true) }}" data-width="750" title="{{ __('newData', array('data'=>__('platformOperator'))) }}" class="fr layui-btn layui-btn-sm layui-btn-normal ajaxshow">{{ __('newData', array('data'=>__('operator'))) }}</a>
-            <span class="title">@lang('operatingAuthority')</span>
+            <span class="title">@lang('操作权限')</span>
         </div>
         <div class="layui-card-body">
             <div class="un-padding">
@@ -34,7 +34,7 @@
                     <thead>
                     <tr>
                         <th>@lang('user')</th>
-                        <th class="layui-hide-xs">@lang('operatingAuthority')</th>
+                        <th class="layui-hide-xs">@lang('操作权限')</th>
                         <th style="text-align: right">@lang('action')</th>
                     </tr>
                     </thead>

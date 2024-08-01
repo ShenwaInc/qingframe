@@ -83,13 +83,13 @@ if (empty($socket)){
         $('.fui-terminal .layui-layer-content').scrollTop(TerminalOl.height());
     }
     $(function (){
-        window.Swaws.init("{{ $socket['userSign'] }}", "{{ $socket['server'] }}", SocketReceive);
         $('.js-terminal').click(function (Elem){
             let postUrl = $(this).attr('href');
             let confirmText = $(this).attr('data-text');
             if(typeof(confirmText)=='undefined' || !confirmText){
                 terminalInit(postUrl);
             }else {
+                window.Swaws.init("{{ $socket['userSign'] }}", "{{ $socket['server'] }}", SocketReceive);
                 Core.confirm(confirmText, function (){terminalInit(postUrl);}, false, {
                     title: '@lang("confirm")',
                     btn:['@lang("确定")', '@lang("取消")']

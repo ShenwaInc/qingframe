@@ -193,7 +193,7 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 
 .fui-tab .layui-tab-title{text-align: left; line-height: 40px; border-bottom: 1px solid #e0e1e2; font-size: 16px; height: auto;}
 .fui-tab .layui-tab-title > *{position: relative; margin-right: 24px; margin-bottom: -1px;}
-.fui-tab .layui-tab-title a{color: #353535; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 1; max-width: 120px; padding: 0}
+.fui-tab .layui-tab-title a{color: #353535; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 1; max-width: 150px; padding: 0; white-space: nowrap;}
 .fui-tab .layui-tab-title .layui-this:after{border: none; border-bottom: 2px solid #07c160; height: 40px;}
 
 .fui-card{padding: 25px; box-shadow: 0 1px 5px 0 rgb(0 0 0 / 5%); margin-bottom: 30px; border-radius: 3px;}

@@ -7,14 +7,14 @@
     <div class="layui-tab fui-tab margin-bottom-xl">
         <ul class="layui-tab-title title_tab">
             <li>
-                <a href="{{ wurl('account/profile',array('uniacid'=>$uniacid)) }}">@lang('basicInformation')</a>
+                <a href="{{ wurl('account/profile',array('uniacid'=>$uniacid)) }}">@lang('基础信息')</a>
             </li>
             <li class="layui-this">
-                <a href="{{ wurl('account/functions',array('uniacid'=>$uniacid)) }}">@lang('Applications&Services')</a>
+                <a href="{{ wurl('account/functions',array('uniacid'=>$uniacid)) }}">@lang('应用与服务')</a>
             </li>
             @if(in_array($role,['founder','owner']) || $_W['isfounder'])
                 <li>
-                    <a href="{{ wurl('account/role',array('uniacid'=>$uniacid)) }}">@lang('operatingAuthority')</a>
+                    <a href="{{ wurl('account/role',array('uniacid'=>$uniacid)) }}">@lang('操作权限')</a>
                 </li>
             @endif
         </ul>
@@ -56,7 +56,7 @@
 
     <div class="fui-card layui-card">
         <div class="layui-card-header nobd">
-            <span class="title">@lang('Functions&Services')</span>
+            <span class="title">@lang('功能与服务')</span>
         </div>
         <div class="layui-card-body">
             <div class="layui-row layui-col-space15 fui-list card">

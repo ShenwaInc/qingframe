@@ -22,9 +22,9 @@ class AccountController extends Controller
 
     function __construct(){
         $this->entrance = array(
-            'account'=>__('manageData', array('data'=>__('platform'))),
-            'module'=>__('application'),
-            'server'=>__('Functions&Services')
+            'account'=>'平台管理',
+            'module'=>'application',
+            'server'=>'功能与服务'
         );
     }
 
@@ -336,9 +336,12 @@ class AccountController extends Controller
                 case 'setDomain' : {
                     $domain = trim($request->input('domain', ''));
                     if (empty($domain) || !preg_match('/^(?:[a-zA-Z\d_-]+\.)*[a-z]{2,6}$/i', $domain)){
-                        return $this->message(__('请输入正确的域名'));
+                        return $this->message(__('请输入正确格式的域名'));
                     }
                     if ($domain==$uni_settings['bind_domain']) return $this->success();
+                    if (DB::table('uni_settings')->where('bind_domain', $domain)->exists()){
+                        return $this->message(__('该域名已被其它平台绑定'));
+                    }
                     if (!DB::table('uni_settings')->where('uniacid', $this->uniacid)->update(['bind_domain'=>$domain])){
                         return $this->message('saveFailed');
                     }
@@ -356,13 +359,13 @@ class AccountController extends Controller
                 }
             }
         }
-        $account['expirdate'] = $account['endtime']>0 ? date('Y-m-d',$account['endtime']) : __('longtime');
+        $account['expirdate'] = $account['endtime']>0 ? date('Y-m-d',$account['endtime']) : __('长期');
         $return = array('title'=>__('manageData', array('data'=>__('platform'))),'account'=>$account,'uniacid'=>$this->uniacid);
         $return['role'] = $this->role;
         list($entry, $method) = AccountService::GetEntrance($_W['uid'], $this->uniacid);
         $entrances = AccountService::GetAllEntrances($this->uniacid);
-        $return['entrance'] = $this->entrance[$entry]. "&nbsp;&gt;&nbsp;";
-        $return['entrance'] .= $entrances[$entry][$method];
+        $return['entrance'] = __($this->entrance[$entry]). "&nbsp;&gt;&nbsp;";
+        $return['entrance'] .= __($entrances[$entry][$method]);
         $return['settings'] = $uni_settings;
         return $this->globalView('console.account.profile',$return);
     }

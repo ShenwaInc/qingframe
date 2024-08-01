@@ -24,6 +24,11 @@ class ModuleService
         return $result;
     }
 
+    static function maintenance($identity, $maintenance=1){
+        $cloudIdentity = self::SysPrefix($identity);
+        return DB::table('gxswa_cloud')->where('identity', $cloudIdentity)->update(['maintenance'=>intval($maintenance)]);
+    }
+
     static function install($identity,$path='addons',$from='cloud'){
         $startTime = time();
         $ManiFest = self::getManifest($identity, $path);

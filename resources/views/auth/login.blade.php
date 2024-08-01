@@ -78,7 +78,11 @@
                     if (res.type!=='success') return Core.report(res);
                     layer.msg(res.message,{icon:1});
                     setTimeout(function (){
-                        window.location.href = '{{ url($_GPC['referer']) }}';
+                        @if(empty($account))
+                        window.location.href = '{{ empty($_GPC["referer"]) ? "/console" : url($_GPC["referer"]) }}';
+                        @else
+                        window.location.href = '/console/account/{{ $account['uniacid'] }}';
+                        @endif
                     },1200);
                 },data.field);
                 return false;

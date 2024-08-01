@@ -8,6 +8,7 @@ use App\Services\FileService;
 use App\Services\MSService;
 use Illuminate\Console\Command;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Symfony\Component\Process\Process;
@@ -57,6 +58,7 @@ class selfmigrate extends Command
             if (!Schema::hasColumn('uni_account_users', 'entrance')){
                 DB::statement("ALTER TABLE ".tablename('uni_account_users')." ADD `entrance` VARCHAR(100) NOT NULL DEFAULT '' AFTER `rank`;");
             }
+            Artisan::call('migrate');
             $MSS = new MSService();
             $MSS->setup();
             $MSS->autoinstall();

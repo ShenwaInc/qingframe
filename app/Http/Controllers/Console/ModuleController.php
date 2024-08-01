@@ -57,7 +57,19 @@ class ModuleController extends Controller
         if ($swaSocket->enabled){
             $return['socket']['server'] = $swaSocket->settings['server'];
         }
+        $return['activeState'] = CloudService::CloudActive(true);
         return $this->globalView('console.module', $return);
+    }
+
+    /**
+     * 停用云服务
+    */
+    public function doMaintenance(Request $request){
+        $identity = $request->input('nid', "");
+        if (!ModuleService::maintenance($identity)){
+            return $this->message();
+        }
+        return $this->success(null, referer());
     }
 
     /**

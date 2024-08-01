@@ -18,9 +18,17 @@
             </ul>
         </div>
 
+        @if(empty($activeState['hasDomain']))
+            <div class="layui-elem-quote margin-bottom-xl" style="border-color: #FF5722; background-color: #fadbd9;">
+                <p class="text-red">当前域名不是系统授权域名，请<a href="{{ $activeState['siteroot'] }}" class="text-blue">使用授权域名登录</a>以使用云服务。或者<a href="{{ wurl('active') }}" class="text-blue">重置云服务授权</a></p>
+            </div>
+        @endif
+
         <div class="fui-card layui-card">
             <div class="layui-card-header nobd">
+                @if($activeState['hasDomain'] && $activeState['status'])
                 <a href="{{ wurl('setting/market') }}" data-width="1340" class="fr layui-btn layui-btn-sm layui-btn-normal ajaxshow">@lang('appStore')</a>
+                @endif
                 <span class="title">@lang('application')</span>
             </div>
             <div class="layui-card-body">
@@ -50,15 +58,20 @@
                                             V{{$com['version']}}
                                         </div>
                                     </td>
-                                    <td class="layui-hide-xs">{!! $com['installtime'] !!}</td>
-                                    <td class="layui-hide-xs">{!! $com['lastupdate'] !!}</td>
+                                    <td class="layui-hide-xs">{!! $com['installTime'] !!}</td>
+                                    <td class="layui-hide-xs">{!! $com['lastUpdated'] !!}</td>
                                     <td class="layui-hide-xs">
-                                        @if(empty($com['cloudinfo']))
+                                        @if(empty($com['cloudInfo']))
                                             -
                                         @else
-                                            V{{ $com['cloudinfo']['version'] }}&nbsp;&nbsp;Release{{ $com['cloudinfo']['releasedate'] }}
-                                            @if($com['cloudinfo']['isnew'])
-                                                <span class="layui-badge-dot" lay-tips="{{ $com['cloudinfo']['releasedate']==$com['releasedate'] ? __('sourceCodeChanged') : __('versionNew') }}"></span>
+                                            V{{ $com['cloudInfo']['version'] }}&nbsp;&nbsp;Release{{ $com['cloudInfo']['releasedate'] }}
+                                            @if($com['cloudInfo']['upgradable'])
+                                                <span class="layui-badge-dot" lay-tips="{{ $com['cloudInfo']['releasedate']==$com['releasedate'] ? __('sourceCodeChanged') : __('versionNew') }}"></span>
+                                            @endif
+                                            @if(empty($com['maintenance']) && empty($com['cloudInfo']['isLocal']))
+                                                &nbsp;&nbsp;<a href="{!! wurl('module/maintenance', array('nid'=>$com['identifie'])) !!}" data-text="@lang('停用云服务后将不再提示云端更新版本')" class="ajaxshow confirm text-blue">@lang('disable')</a>
+                                            @elseif(!empty($com['maintenance']))
+                                                &nbsp;&nbsp;<span class="text-red">@lang('terminated')</span>
                                             @endif
                                             @if($com['expireDate'])
                                                 <p class="margin-top-xs">{!! $com['expireDate'] !!}</p>

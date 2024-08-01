@@ -72,9 +72,9 @@ class SettingController extends Controller
     public function updateLog(){
         $component = DB::table('gxswa_cloud')->where('type',0)->first(['id','identity','type','online','releasedate','rootpath']);
         if (empty($component)) return $this->message('系统出现致命错误');
-        $cloudinfo = $this->checkcloud($component,1,true);
-        if (empty($cloudinfo['difference'])) return $this->message('当前系统已经是最新版本');
-        $structures = $this->makeStructure($cloudinfo['difference']);
+        $cloudInfo = $this->checkcloud($component,1,true);
+        if (empty($cloudInfo['difference'])) return $this->message('当前系统已经是最新版本');
+        $structures = $this->makeStructure($cloudInfo['difference']);
         return $this->globalView("console.structure", array(
             'structures'=>$structures,
             'total'=>count($structures)
@@ -132,10 +132,10 @@ class SettingController extends Controller
         //升级文件对比
         $component = DB::table('gxswa_cloud')->where('type',0)->first(['id','identity','type','online','releasedate','rootpath']);
         if (!empty($component)){
-            $cloudinfo = $this->checkcloud($component);
-            if (!is_error($cloudinfo) && !empty($cloudinfo['hasDifference'])){
+            $cloudInfo = $this->checkcloud($component);
+            if (!is_error($cloudInfo) && !empty($cloudInfo['hasDifference'])){
                 if (DEVELOPMENT){
-                    dd("以下文件同步失败，请检查文件夹权限：", $cloudinfo['difference']);
+                    dd("以下文件同步失败，请检查文件夹权限：", $cloudInfo['difference']);
                 }
                 return $this->message('程序同步失败，请检查文件夹权限', wurl('setting'));
             }
@@ -191,7 +191,7 @@ class SettingController extends Controller
                     'website'=>$value['website'],
                     'action'=>'',
                     'logo'=>$value['icon'],
-                    'cloudinfo'=>[]
+                    'cloudInfo'=>[]
                 );
                 if (mb_strlen($com['description'], 'utf8')>50){
                     $com['description'] = mb_substr($com['description'], 0, 50, 'utf8') . '...';
@@ -248,38 +248,44 @@ class SettingController extends Controller
         if (!isset($_W['setting']['remote'])){
             $_W['setting']['remote'] = array('type'=>0);
         }
-        if ($op=='pageset'){
-            return $this->globalView("console.pageset",$return);
-        }
-        if ($op=='envdebug'){
-            $debug = env('APP_DEBUG',false);
-            if ($debug){
-                $complete = CloudService::CloudEnv('APP_DEBUG=true','APP_DEBUG=false');
-            }else{
-                $complete = CloudService::CloudEnv('APP_DEBUG=false','APP_DEBUG=true');
-            }
-            if (!$complete){
-                return $this->message('文件写入失败，请检查根目录权限');
-            }
-            return $this->message('操作成功！',wurl('setting'),'success');
-        }
-        if ($op=='comcheck'){
-            $component = DB::table('gxswa_cloud')->where('id',intval($_GPC['cid']))->first(['id','identity','type','online','releasedate','rootpath']);
-            if (empty($component)) return $this->message('找不到该服务组件');
-            $cloudinfo = $this->checkcloud($component, 1, true);
-            if (is_error($cloudinfo)){
-                return $this->message($cloudinfo['message']);
-            }
-            if (empty($cloudinfo['difference'])) return $this->message('该应用已升级到最新版本', "", "success");
-            $structures = $this->makeStructure($cloudinfo['difference']);
-            return $this->globalView("console.structure", array(
-                'structures'=>$structures,
-                'total'=>count($structures)
-            ));
-        }else{
-            $framework = DB::table('gxswa_cloud')->where('type',0)->first(['id','version','identity','type','online','releasedate','rootpath']);
-            $return['framework'] = $framework;
-            $return['cloudinfo'] = !empty($framework['online']) ? unserialize($framework['online']) : array('isnew'=>false);
+        switch ($op) {
+            case 'pageset':
+                return $this->globalView("console.pageset", $return);
+                break;
+
+            case 'envdebug':
+                $debug = env('APP_DEBUG', false);
+                if ($debug) {
+                    $complete = CloudService::CloudEnv('APP_DEBUG=true', 'APP_DEBUG=false');
+                } else {
+                    $complete = CloudService::CloudEnv('APP_DEBUG=false', 'APP_DEBUG=true');
+                }
+                if (!$complete) {
+                    return $this->message('文件写入失败，请检查根目录权限');
+                }
+                return $this->message('操作成功！', wurl('setting'), 'success');
+                break;
+
+            case 'comcheck':
+                $component = DB::table('gxswa_cloud')->where('id', intval($_GPC['cid']))->first(['id', 'identity', 'type', 'online', 'releasedate', 'rootpath']);
+                if (empty($component)) return $this->message('找不到该服务组件');
+                $cloudInfo = $this->checkcloud($component, 1, true);
+                if (is_error($cloudInfo)) {
+                    return $this->message($cloudInfo['message']);
+                }
+                if (empty($cloudInfo['difference'])) return $this->message('该应用已升级到最新版本', "", "success");
+                $structures = $this->makeStructure($cloudInfo['difference']);
+                return $this->globalView("console.structure", array(
+                    'structures' => $structures,
+                    'total' => count($structures)
+                ));
+                break;
+
+            default:
+                $framework = DB::table('gxswa_cloud')->where('type', 0)->first(['id', 'version', 'identity', 'type', 'online', 'releasedate', 'rootpath']);
+                $return['framework'] = $framework;
+                $return['cloudInfo'] = !empty($framework['online']) ? unserialize($framework['online']) : array('isnew' => false);
+                break;
         }
         $return['activeState'] = CloudService::CloudActive(true);
         $return['appSecurityEntrance'] = env("APP_SECURITY_ENTRANCE");

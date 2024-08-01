@@ -7,14 +7,14 @@
     <div class="layui-tab fui-tab margin-bottom-xl">
         <ul class="layui-tab-title title_tab">
             <li class="layui-this">
-                <a href="{{ wurl('account/profile',array('uniacid'=>$uniacid)) }}">@lang('basicInformation')</a>
+                <a href="{{ wurl('account/profile',array('uniacid'=>$uniacid)) }}">@lang('基础信息')</a>
             </li>
             <li>
-                <a href="{{ wurl('account/functions',array('uniacid'=>$uniacid)) }}">@lang('Applications&Services')</a>
+                <a href="{{ wurl('account/functions',array('uniacid'=>$uniacid)) }}">@lang('应用与服务')</a>
             </li>
             @if(in_array($role,['founder','owner']) || $_W['isfounder'])
             <li>
-                <a href="{{ wurl('account/role',array('uniacid'=>$uniacid)) }}">@lang('operatingAuthority')</a>
+                <a href="{{ wurl('account/role',array('uniacid'=>$uniacid)) }}">@lang('操作权限')</a>
             </li>
             @endif
         </ul>
@@ -25,7 +25,7 @@
             @if(in_array($role,['founder','owner', 'manager']) || $_W['isfounder'])
             <a href="{{ wurl('account/edit',array('uniacid'=>$uniacid), true) }}" class="fr text-blue ajaxshow" title="@lang('EditPlatformInformation')"><i class="fa fa-edit"></i></a>
             @endif
-            <span class="title">@lang('basicInformation')</span>
+            <span class="title">@lang('基础信息')</span>
         </div>
         <div class="layui-card-body">
             <div class="un-padding">
@@ -79,7 +79,7 @@
                                     <input type="text" id="expirdate" style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;" name="expire" value="" />
                                 </span>
                                 @if($account['endtime']>0)
-                                <a href="javascript:setForever();" class="text-red margin-left-sm">@lang('longtime')</a>
+                                <a href="javascript:setForever();" class="text-red margin-left-sm">@lang('长期')</a>
                                 @endif
                             </td>
                         </tr>
@@ -96,7 +96,11 @@
                         <tr>
                             <td><span class="fui-table-lable">@lang('绑定域名')</span></td>
                             <td class="soild-after">
-                                <span id="bind_domain">{{ $settings['bind_domain']?:__('未绑定') }}</span>
+                                @if(!empty($settings['bind_domain']))
+                                <span id="bind_domain">{{ $settings['bind_domain'] }}</span><span class="fa fa-copy js-clip margin-left-sm text-blue" data-url="{{ $settings['bind_domain'] }}"></span>
+                                @else
+                                <span id="bind_domain">@lang('暂未绑定')</span>
+                                @endif
                             </td>
                             <td class="text-right soild-after">
                                 @if(in_array($role,['founder','owner']) || $_W['isfounder'])
@@ -170,7 +174,7 @@
     }
     function setForever(){
         Core.confirm('@lang("modifyExpireDateConfirm")',function (){
-            $('#expiretext').text('@lang("longtime")');
+            $('#expiretext').text('@lang("长期")');
             setExpire('');
         },false,{title:'{{ __("modifyData", array("data"=>__("expireDate"))) }}'})
     }

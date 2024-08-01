@@ -34,43 +34,49 @@ class CloudService
         $components = DB::table('gxswa_cloud')->where($condition)->orderByRaw("`id` desc")->get()->toArray();
         if (!empty($components)){
             foreach ($components as $com){
-                $com['cloudinfo'] = !empty($com['online']) ? unserialize($com['online']) : array();
-                $com['cloudinfo']['isLocal'] = false;
-                $com['cloudinfo']['expired'] = false;
-                $com['cloudinfo']['isnew'] = (bool)$com['cloudinfo']['isnew'];
+                $cloudInfo = !empty($com['online']) ? unserialize($com['online']) : array();
+                $cloudInfo['isLocal'] = false;
+                $cloudInfo['expired'] = false;
+                $cloudInfo['upgradable'] = (bool)$cloudInfo['isnew'];
+                $selfMaintenance = (bool)$com['maintenance'];
                 if (!empty($com['modulename'])){
                     $local = ModuleService::installCheck($com['modulename']);
                     if (is_error($local)){
                         $com['isDelete'] = true;
-                    }elseif(DEVELOPMENT && empty($com['cloudinfo']['isnew'])){
+                    }elseif(DEVELOPMENT && empty($cloudInfo['upgradable'])){
                         //判断是否可以升级（本地升级）
                         $application = $local->application;
                         if (version_compare($application['version'], $com['version'], '>') || $application['releasedate']>$com['releasedate']){
-                            $com['cloudinfo'] = array(
+                            $cloudInfo = array_merge($cloudInfo, array(
                                 'version'=>$application['version'],
                                 'releasedate'=>$application['releasedate'],
                                 'isLocal'=>true,
                                 'expired'=>false,
-                                'isnew'=>true
-                            );
+                                'upgradable'=>true
+                            ));
                         }
                     }
                 }
                 $com['logo'] = asset($com['logo']);
-                $com['lastupdate'] = $com['updatetime'] ? date('Y/m/d H:i',$com['updatetime']) : __('installFirstTime');
-                $com['installtime'] = date('Y/m/d H:i',$com['addtime']);
+                $com['lastUpdated'] = $com['updatetime'] ? date('Y/m/d H:i',$com['updatetime']) : __('installFirstTime');
+                $com['installTime'] = date('Y/m/d H:i',$com['addtime']);
                 $com['expireDate'] = '';
-                $com['action'] = '<div class="layui-btn-group">';
-                if (!empty($com['cloudinfo']) && $com['cloudinfo']['isnew']){
-                    if ($com['cloudinfo']['isLocal']){
+                $com['action'] = '';
+                if (!empty($cloudInfo) && $cloudInfo['upgradable']){
+                    if ($cloudInfo['isLocal']){
+                        //从本地升级
                         $com['action'] .= '<a href="'.wurl('module/upgrade', array('nid'=>$com['modulename'])).'" class="layui-btn layui-btn-sm layui-btn-danger js-terminal" data-text="'.__('upgradeConfirm').'">'.__('upgrade').'</a>';
-                    }else{
+                    }elseif(!$selfMaintenance){
                         //从云端升级
                         $com['action'] .= '<a href="'.wurl('module/update', array('nid'=>$com['modulename'])).'" class="layui-btn layui-btn-sm layui-btn-danger js-terminal" data-text="'.__('upgradeConfirm').'">'.__('upgrade').'</a>';
                     }
                 }
-                $com['action'] .= '<a href="'.wurl('setting/comcheck', array('cid'=>$com['id'])).'" class="layui-btn layui-btn-sm layui-btn-normal ajaxshow">'.__('Check for updates').'</a>';
-                $com['action'] .= '<a href="'.wurl('module/remove', array('nid'=>$com['modulename'])).'" class="layui-btn layui-btn-sm layui-btn-primary js-terminal" data-text="'.__('uninstallConfirm').'">'.__('uninstall').'</a></div>';
+                if (!$selfMaintenance){
+                    //自维护应用
+                    $com['action'] .= '<a href="'.wurl('setting/comcheck', array('cid'=>$com['id'])).'" class="layui-btn layui-btn-sm layui-btn-normal ajaxshow">'.__('检测更新').'</a>';
+                }
+                $com['cloudInfo'] = $cloudInfo;
+                $com['maintenance'] = $selfMaintenance;
                 $plugins[$com['modulename']] = $com;
             }
         }
@@ -87,48 +93,51 @@ class CloudService
                 }catch (\Exception $exception){
                     continue;
                 }
+                $comCloud = $plugins[$identity] ?? [];
                 $com['logo'] = asset($com['logo']);
                 $com['website'] = $com['url'];
-                $com['installtime'] = '<span class="layui-badge layui-bg-orange">'.__('readyToInstall').'</span>';
+                $com['installTime'] = '<span class="layui-badge layui-bg-orange">'.__('readyToInstall').'</span>';
                 $com['addtime'] = 0;
-                $com['action'] = '';
                 $com['expireDate'] = '';
+                $actions = $comCloud?$comCloud['action']:'';
                 //已安装
                 if ($ManiFest['installed']){
-                    if (isset($plugins[$identity])){
-                        $com['installtime'] = $plugins[$identity]['installtime'];
-                        $com['lastupdate'] = $plugins[$identity]['lastupdate'];
-                        $com['cloudinfo'] = $plugins[$identity]['cloudinfo'];
+                    if (!empty($comCloud)){
+                        $com['installTime'] = $comCloud['installTime'];
+                        $com['lastUpdated'] = $comCloud['lastUpdated'];
+                        $com['cloudInfo'] = $comCloud['cloudInfo'];
                     }else{
-                        $com['installtime'] = __('appLocal');
-                        $com['lastupdate'] = '-';
-                        $com['cloudinfo'] = array('isnew'=>false, 'expired'=>false, 'isLocal'=>true,'version'=>$com['version'],'releasedate'=>$com['releasedate']);
+                        $com['installTime'] = __('appLocal');
+                        $com['lastUpdated'] = '-';
+                        $com['cloudInfo'] = array('upgradable'=>false, 'expired'=>false, 'isLocal'=>true,'version'=>$com['version'],'releasedate'=>$com['releasedate']);
                     }
                     $com['addtime'] = $com['releasedate'];
                     if (DEVELOPMENT){
                         $Module = ModuleService::fetch($com['identifie']);
                         if (!empty($Module) && !is_error($Module)){
                             if (version_compare($com['version'], $Module['version'], '>')){
-                                $com['cloudinfo']['version'] = $com['version'];
-                                $com['cloudinfo']['releasedate'] = $com['releasedate'];
-                                $com['cloudinfo']['isnew'] = true;
+                                $com['cloudInfo']['version'] = $com['version'];
+                                $com['cloudInfo']['releasedate'] = $com['releasedate'];
+                                $com['cloudInfo']['upgradable'] = true;
                                 //从本地升级
-                                $com['action'] .= '<a href="'.wurl('module/upgrade', array('nid'=>$Module['name'])).'" class="layui-btn layui-btn-sm layui-btn-danger js-terminal" data-text="'.__('upgradeConfirm').'">'.__('upgrade').'</a>';
+                                $actions .= '<a href="'.wurl('module/upgrade', array('nid'=>$Module['name'])).'" class="layui-btn layui-btn-sm layui-btn-danger js-terminal" data-text="'.__('upgradeConfirm').'">'.__('upgrade').'</a>';
                                 $com['version'] = $Module['version'];
                             }
                         }
                     }
-                    $com['action'] .= '<a href="'.wurl('module/remove', array('nid'=>$identity)).'" class="layui-btn layui-btn-sm layui-btn-primary js-terminal" data-text="'.__('uninstallConfirm').'">'.__('uninstall').'</a></div>';
+                    $actions .= '<a href="'.wurl('module/remove', array('nid'=>$identity)).'" class="layui-btn layui-btn-sm layui-btn-primary js-terminal" data-text="'.__('uninstallConfirm').'">'.__('uninstall').'</a></div>';
                 }else{
-                    $com['lastupdate'] = '-';
+                    $com['lastUpdated'] = '-';
                     if(DEVELOPMENT){
-                        $com['action'] = '<a href="'.wurl('module/install', array('nid'=>$identity)).'" class="layui-btn layui-btn-sm layui-btn-normal js-terminal" data-text="'.__('installConfirm').'">'.__('install').'</a>';
+                        $actions .= '<a href="'.wurl('module/install', array('nid'=>$identity)).'" class="layui-btn layui-btn-sm layui-btn-normal js-terminal" data-text="'.__('installConfirm').'">'.__('install').'</a>';
                     }
                 }
+                $com = array_merge($comCloud, $com);
+                $com['action'] = $actions;
                 $plugins[$identity] = $com;
             }
         }
-        //获取云端未安装组件
+        //获取云端未安装模块
         $cachekey = "cloud:module_list:1";
         $res = Cache::get($cachekey, array());
         if (empty($res)){
@@ -152,7 +161,7 @@ class CloudService
                     //已安装
                     $local = $plugins[$identify];
                     if ($local['addtime']==0) continue;
-                    $cloudInfo = array('isnew'=>false, 'expired'=>false, 'isLocal'=>$local['cloudinfo']['isLocal'],'version'=>$value['release']['version'],'releasedate'=>$releaseDate);
+                    $cloudInfo = array('upgradable'=>false, 'expired'=>false, 'isLocal'=>$local['cloudInfo']['isLocal'],'version'=>$value['release']['version'],'releasedate'=>$releaseDate);
                     $local['expireDate'] = '';
                     if (!is_error($value['authorize']) && !$cloudInfo['isLocal']){
                         if($value['authorize']['expiretime']==0){
@@ -165,14 +174,16 @@ class CloudService
                             $local['expireDate'] = '<span class="'.($toDay>30?'text-gray':'text-orange').'">'.__('expiresOn', array('date'=>date('Y-m-d', $value['authorize']['expiretime']))).'</span>';
                         }
                     }
-                    if (version_compare($local['version'], $value['release']['version'], '<') || $local['releasedate']<$releaseDate){
-                        //可升级至云端最新版本
-                        $cloudInfo['isnew'] = true;
-                        if (!$cloudInfo['expired'] && (empty($local['cloudinfo']) || !$local['cloudinfo']['isnew'])){
-                            $local['action'] = '<a href="'.wurl('module/update', array('nid'=>$identify)).'" class="layui-btn layui-btn-sm layui-btn-danger js-terminal" data-text="'.__('upgradeConfirm').'">'.__('upgrade').'</a>'.$local['action'];
+                    if (empty($local['maintenance'])){
+                        if (version_compare($local['version'], $value['release']['version'], '<') || $local['releasedate']<$releaseDate){
+                            //可升级至云端最新版本
+                            $cloudInfo['upgradable'] = true;
+                            if (!$cloudInfo['expired'] && (empty($local['cloudInfo']) || !$local['cloudInfo']['upgradable'])){
+                                $local['action'] = '<a href="'.wurl('module/update', array('nid'=>$identify)).'" class="layui-btn layui-btn-sm layui-btn-danger js-terminal" data-text="'.__('upgradeConfirm').'">'.__('upgrade').'</a>'.$local['action'];
+                            }
                         }
                     }
-                    $local['cloudinfo'] = $cloudInfo;
+                    $local['cloudInfo'] = $cloudInfo;
                     $plugins[$identify] = $local;
                 }else{
                     //未安装
@@ -188,16 +199,16 @@ class CloudService
                         'website'=>$value['website'],
                         'logo'=>$value['icon']
                     );
-                    $com['lastupdate'] = '-';
+                    $com['lastUpdated'] = '-';
                     $com['expireDate'] = '';
-                    $com['cloudinfo'] = array(
+                    $com['cloudInfo'] = array(
                         'version'=>$value['release']['version'],
                         'releasedate'=>$releaseDate,
-                        'isnew'=>false,
+                        'upgradable'=>false,
                         'isLocal'=>false,
-                        'expried'=>false
+                        'expired'=>false
                     );
-                    $com['installtime'] = '<span class="layui-badge layui-bg-orange">'.__('readyToInstall').'</span>';
+                    $com['installTime'] = '<span class="layui-badge layui-bg-orange">'.__('readyToInstall').'</span>';
                     $com['action'] = '<a href="'.wurl('module/require', array('nid'=>$value['identity'])).'" class="layui-btn layui-btn-sm layui-btn-normal js-terminal" data-text="'.__('installConfirm').'">'.__('install').'</a>';
                     $plugins[$identify] = $com;
                 }
@@ -482,8 +493,8 @@ class CloudService
 
     static function CloudActive($cache=false){
         global $_W;
-        $default = array('state'=>__('未开始激活'), 'hasDomain'=>true,'siteid'=>0,'siteroot'=>$_W['siteroot'],'expiretime'=>0,'status'=>0,'uid'=>0,'mobile'=>"",'name'=>$_W['setting']['page']['title']);
-        $cacheKey = CacheService::system_key('HingWork:Authorize:Active');
+        $default = array('state'=>__('未开始激活'),'siteid'=>0,'siteroot'=>$_W['siteroot'],'expiretime'=>0,'status'=>0,'uid'=>0,'mobile'=>"",'name'=>$_W['setting']['page']['title']);
+        $cacheKey = md5('HingWork:Authorize:Active:'.$_W['siteroot']);
         $authorize = Cache::get($cacheKey,$default);
         if ($cache && isset($authorize['hasDomain'])){
             return $authorize;

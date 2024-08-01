@@ -7,7 +7,7 @@
             <label class="layui-form-label">{{ __('chooseData', array('data'=>__('defaultEntry'))) }}</label>
             <div class="layui-input-block">
                 @foreach($titles as $key=>$item)
-                    <input type="radio" lay-filter="ctrls" data-target=".ctrls" value="{{ $key }}" name="ctrl" title="{{ $item }}"{{ $ctrl==$key ? ' checked' : '' }} />
+                    <input type="radio" lay-filter="ctrls" data-target=".ctrls" value="{{ $key }}" name="ctrl" title="@lang($item)"{{ $ctrl==$key ? ' checked' : '' }} />
                 @endforeach
             </div>
         </div>
@@ -17,7 +17,7 @@
             <div class="layui-input-block">
                 <select name="methods[{{ $index }}]">
                 @foreach($entry as $key=>$item)
-                    <option value="{{ $key }}"{{ $method==$key ? ' selected' : '' }}>{{ $item }}</option>
+                    <option value="{{ $key }}"{{ $method==$key ? ' selected' : '' }}>@lang($item)</option>
                 @endforeach
                 </select>
             </div>
