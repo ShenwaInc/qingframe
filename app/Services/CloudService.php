@@ -77,6 +77,7 @@ class CloudService
                 }
                 $com['cloudInfo'] = $cloudInfo;
                 $com['maintenance'] = $selfMaintenance;
+                $com['installed'] = true;
                 $plugins[$com['modulename']] = $com;
             }
         }
@@ -99,9 +100,11 @@ class CloudService
                 $com['installTime'] = '<span class="layui-badge layui-bg-orange">'.__('readyToInstall').'</span>';
                 $com['addtime'] = 0;
                 $com['expireDate'] = '';
+                $com['installed'] = $comCloud?$comCloud['installed']:false;
                 $actions = $comCloud?$comCloud['action']:'';
                 //已安装
                 if ($ManiFest['installed']){
+                    $com['installed'] = true;
                     if (!empty($comCloud)){
                         $com['installTime'] = $comCloud['installTime'];
                         $com['lastUpdated'] = $comCloud['lastUpdated'];
@@ -179,11 +182,12 @@ class CloudService
                             //可升级至云端最新版本
                             $cloudInfo['upgradable'] = true;
                             if (!$cloudInfo['expired'] && (empty($local['cloudInfo']) || !$local['cloudInfo']['upgradable'])){
-                                $local['action'] = '<a href="'.wurl('module/update', array('nid'=>$identify)).'" class="layui-btn layui-btn-sm layui-btn-danger js-terminal" data-text="'.__('upgradeConfirm').'">'.__('upgrade').'</a>'.$local['action'];
+                                $local['action'] .= '<a href="'.wurl('module/update', array('nid'=>$identify)).'" class="layui-btn layui-btn-sm layui-btn-danger js-terminal" data-text="'.__('upgradeConfirm').'">'.__('upgrade').'</a>'.$local['action'];
                             }
                         }
                     }
                     $local['cloudInfo'] = $cloudInfo;
+                    $local['installed'] = true;
                     $plugins[$identify] = $local;
                 }else{
                     //未安装
@@ -197,7 +201,8 @@ class CloudService
                         'description'=>$value['summary'],
                         'author'=>$value['author'],
                         'website'=>$value['website'],
-                        'logo'=>$value['icon']
+                        'logo'=>$value['icon'],
+                        'installed'=>false
                     );
                     $com['lastUpdated'] = '-';
                     $com['expireDate'] = '';

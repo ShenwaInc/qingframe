@@ -68,7 +68,7 @@
                                             @if($com['cloudInfo']['upgradable'])
                                                 <span class="layui-badge-dot" lay-tips="{{ $com['cloudInfo']['releasedate']==$com['releasedate'] ? __('sourceCodeChanged') : __('versionNew') }}"></span>
                                             @endif
-                                            @if(empty($com['maintenance']) && empty($com['cloudInfo']['isLocal']))
+                                            @if(empty($com['maintenance']) && !empty($com['installed']) && empty($com['cloudInfo']['isLocal']))
                                                 &nbsp;&nbsp;<a href="{!! wurl('module/maintenance', array('nid'=>$com['identifie'])) !!}" data-text="@lang('停用云服务后将不再提示云端更新版本')" class="ajaxshow confirm text-blue">@lang('disable')</a>
                                             @elseif(!empty($com['maintenance']))
                                                 &nbsp;&nbsp;<span class="text-red">@lang('terminated')</span>
