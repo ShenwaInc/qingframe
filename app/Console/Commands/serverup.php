@@ -45,7 +45,7 @@ class serverup extends Command
     {
         $MSS = new MSService();
         $MSS->setup();
-        $res = $MSS->autoinstall();
+        $res = $MSS->autoInstall();
         $this->info("Add {$res['install']} service,update {$res['upgrade']}, faild {$res['faild']}, found {$res['servers']} packages.");
         return true;
     }

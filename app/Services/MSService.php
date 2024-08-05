@@ -6,6 +6,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\View;
 use Symfony\Component\Process\Process;
 
@@ -59,7 +60,7 @@ class MSService
         }
     }
 
-    public static function getmanifest($identity, $app=false){
+    public static function getManifest($identity, $app=false){
         $manifest = MICRO_SERVER.$identity."/manifest.json";
         $inextra = false;
         if (!file_exists($manifest) && defined('MSERVER_EXTRA')){
@@ -136,7 +137,7 @@ class MSService
 
     public function cloudInfo($identity){
         //获取应用信息
-        $service = self::cloudserver($identity, true);
+        $service = self::cloudServer($identity, true);
         if (is_error($service)){
             return $service;
         }
@@ -164,7 +165,7 @@ class MSService
         return $this->install($identity, true);
     }
 
-    public static function cloudserver($identity, $nocache=false){
+    public static function cloudServer($identity, $nocache=false){
         //获取云端服务
         $cloudInfo = $nocache ? array() : Cache::get("microserver".$identity, array());
         if (!empty($cloudInfo)) return $cloudInfo;
@@ -173,7 +174,7 @@ class MSService
             'identity'=>"microserver_".$identity,
             'frompage'=>'list'
         );
-        if (self::isexist($identity)){
+        if (self::isExist($identity)){
             $data['frompage'] = 'local';
         }
         $res = CloudService::CloudApi("", $data);
@@ -184,7 +185,7 @@ class MSService
         return $res;
     }
 
-    public static function cloudservers($page=1, $keyword=""){
+    public static function cloudServers($page=1, $keyword=""){
         $cachekey = "cloud:microserver_list";
         $res = Cache::get($cachekey, array());
         if (empty($res)){
@@ -214,14 +215,14 @@ class MSService
                     'version'=>$value['release']['version'],
                     'releases'=>$value['release']['releasedate']
                 );
-                $service['actions'] = '<a class="layui-btn layui-btn-sm layui-btn-normal js-terminal" data-text="确定要安装该服务？" href="'.wurl('server', array("op"=>"cloudinst", "nid"=>$identity)).'">安装</a>';
+                $service['actions'] = '<a class="layui-btn layui-btn-sm layui-btn-normal js-terminal" data-text="确定要安装该服务？" href="'.wurl('server', array("op"=>"cloudInstall", "nid"=>$identity)).'">安装</a>';
                 $servers[] = $service;
             }
         }
         return $servers;
     }
 
-    public static function isexist($identity){
+    public static function isExist($identity){
         return DB::table(self::$tableName)->where('identity', trim($identity))->count() > 0;
     }
 
@@ -272,7 +273,7 @@ class MSService
                 if (!empty($apis['wiki']) || !empty($apis['schemas'])){
                     $server['actions'] .= '<a class="layui-btn layui-btn-sm layui-hide-xs" href="'.wurl("server/apis/{$server['identity']}").'" target="_blank">API</a>';
                 }
-                $manifest = self::getmanifest($server['identity'], true);
+                $manifest = self::getManifest($server['identity'], true);
                 if (!is_error($manifest)){
                     if(version_compare($manifest['version'], $server['version'], '>') || $manifest['releases']>$server['releases']){
                         //本地可升级
@@ -366,7 +367,8 @@ class MSService
         return [];
     }
 
-    public function autoinstall(){
+    public function autoInstall(): array
+    {
         $servers = $this->InitService();
         $return = array("upgrade"=>0, "install"=>0, "faild"=>0, "servers"=>0);
         $installed = [];
@@ -412,7 +414,7 @@ class MSService
         $requires = array("websocket", "sso", "language");
         foreach ($requires as $serve){
             try {
-                if (in_array($serve, $installed) || self::isexist($serve)){
+                if (in_array($serve, $installed) || self::isExist($serve)){
                     continue;
                 }
                 if (self::localExist($serve)){
@@ -432,9 +434,9 @@ class MSService
         return $return;
     }
 
-    public function install($identity, $fromCloud=false, $autoInstall=false){
-        if ($this->isexist($identity)) return true;
-        $service = $this->getmanifest($identity);
+    public function install($identity, $fromCloud=false){
+        if ($this->isExist($identity)) return true;
+        $service = $this->getManifest($identity);
         if (is_error($service)) return $service;
         //构造服务信息
         $keys = array('identity','name','version','cover','summary','releases');
@@ -456,6 +458,8 @@ class MSService
         //运行安装脚本
         if (!empty($service['install'])){
             try {
+                $this->TerminalSend(["mode"=>"info", "message"=>"处理微服务静态文件..."]);
+                $this->makeResource($identity, (array)$service['resources']);
                 $this->TerminalSend(["mode"=>"info", "message"=>"正在运行服务安装脚本..."]);
                 script_run($service['install'], MICRO_SERVER.$identity);
             }catch (\Exception $exception){
@@ -473,6 +477,7 @@ class MSService
         //操作入库
         $application['status'] = 1;
         $application['addtime'] = $application['dateline'] = TIMESTAMP;
+        $application['cover'] = $this->makeCover($application['cover'], $identity);
         if (!pdo_insert(self::$tableName, $application)){
             try {
                 script_run($configs['uninstall'], MICRO_SERVER.$identity);
@@ -512,7 +517,7 @@ class MSService
         //判断依赖服务
         $service = $this->getone($identity, false);
         if (empty($service)) return $this->install($identity);
-        $manifest = $this->getmanifest($identity);
+        $manifest = $this->getManifest($identity);
         if (is_error($manifest)) return $manifest;
         if($manifest['application']['identity']!=$service['identity']){
             return error(-1, "安装包的Identity不匹配");
@@ -533,6 +538,8 @@ class MSService
             //运行升级脚本
             if (!empty($manifest['upgrade'])){
                 try {
+                    $this->TerminalSend(["mode"=>"info", "message"=>"更新微服务静态文件..."]);
+                    $this->makeResource($identity, (array)$manifest['resources']);
                     $this->TerminalSend(["mode"=>"info", "message"=>"正在运行服务升级脚本..."]);
                     script_run($manifest['upgrade'], MICRO_SERVER.$identity);
                 }catch (\Exception $exception){
@@ -546,6 +553,12 @@ class MSService
             //操作入库
             $application['status'] = 1;
             $application['dateline'] = TIMESTAMP;
+            if (isset($application['cover'])){
+                $file_info = pathinfo($service['cover']);
+                if (md5($application['cover']) != $file_info['filename']){
+                    $application['cover'] = $this->makeCover($application['cover'], $identity);
+                }
+            }
             if (!pdo_update(self::$tableName, $application, array('identity'=>$service['identity']))){
                 return error(-1,'更新失败，请重试');
             }
@@ -605,6 +618,10 @@ class MSService
                 $this->TerminalSend(["mode"=>"err", "message"=>$exception->getMessage()]);
                 return error(-1,__('uninstallFailed', array('reason'=>$exception->getMessage())));
             }
+            if (is_dir(public_path("resource/server/$identity"))){
+                $this->TerminalSend(["mode"=>"info", "message"=>"正在清理微服务静态文件..."]);
+                @FileService::rmdirs(public_path("resource/server/$identity"));
+            }
             pdo_delete(self::$tableName,array('id'=>$service['id']));
             $this->getEvents(true);
             pdo_delete("microserver_unilink", array("name"=>$identity));
@@ -612,9 +629,11 @@ class MSService
                 FileService::rmdirs(public_path("data/resource/server/".$identity));
             }
             $composerExists = file_exists(MICRO_SERVER.$identity."/composer.json");
-            if ($composerExists){
+            if ($composerExists && DEVELOPMENT){
                 $res = self::ComposerRemove("microserver/".$identity);
-                if (is_error($res)) return $res;
+                if (is_error($res)){
+                    $this->TerminalSend(["mode"=>"err", "message"=>"Composer依赖移除失败，请手动处理（{$res['message']}）"]);
+                }
             }
         }
         if (!DEVELOPMENT){
@@ -622,6 +641,60 @@ class MSService
             FileService::rmdirs(MICRO_SERVER.$identity."/");
         }
         return true;
+    }
+
+    public function makeResource($identity, $resources=[]){
+        $to = public_path("resource/server/$identity");
+        if (is_dir(MICRO_SERVER . $identity . '/res')){
+            @CloudService::copyDir(MICRO_SERVER . $identity . '/res', $to);
+        }
+        if (file_exists(MICRO_SERVER . $identity . '/resource.zip')){
+            $zip = new \ZipArchive();
+            $openRes = $zip->open(MICRO_SERVER . $identity . '/resource.zip');
+            if ($openRes === TRUE) {
+                $zip->extractTo($to);
+            }
+            $zip->close();
+        }
+        if (!empty($resources)){
+            foreach ($resources as $key=>$value){
+                $savePath = public_path("resource/server/$identity/" . ltrim($key, DIRECTORY_SEPARATOR));
+                FileService::file_download($value, $savePath);
+            }
+        }
+        return true;
+    }
+
+    public function makeCover($cover, $identity){
+        if (empty($cover)) return "static/images/microserver.png";
+        $fileName = md5($cover);
+        $file_info = pathinfo($cover);
+        $filePath = "images/0/".date('Y/m');
+        $fileKey = $filePath . "/" . $fileName . "." . $file_info['extension'];
+        if (\Str::startsWith($cover, "http") || \Str::startsWith($cover, "//")){
+            if (!FileService::file_download($cover, ATTACHMENT_ROOT . '/' . $fileKey)){
+                return $cover;
+            }
+        }elseif (file_exists(MICRO_SERVER.$identity.$cover)){
+            //复制文件
+            if(file_exists(ATTACHMENT_ROOT . '/' . $fileKey)){
+                @unlink(ATTACHMENT_ROOT . '/' . $fileKey);
+            }
+            Storage::copy(MICRO_SERVER.$identity.$cover, ATTACHMENT_ROOT . '/' . $fileKey);
+        }elseif (file_exists(public_path($cover))){
+            return $cover;
+        }
+        if(file_exists(ATTACHMENT_ROOT . '/' . $fileKey)){
+            $storage = serv('storage', 0);
+            if ($storage->enabled && !empty($storage->settings['remote']['type'])){
+                $res = $storage->remoteUpload($fileKey);
+                if (!is_error($res)){
+                    @unlink(ATTACHMENT_ROOT . '/' . $fileKey);
+                }
+            }
+            return $fileKey;
+        }
+        return $cover;
     }
 
     public static function TerminalSend($data, $finish=false){
@@ -890,7 +963,7 @@ class MSService
             foreach ($manifests as $manifest){
                 $service = json_decode(@file_get_contents($manifest), true);
                 if (!empty($service) && isset($service['application'])){
-                    if (self::isexist($service['application']['identity'])) continue;
+                    if (self::isExist($service['application']['identity'])) continue;
                     $serv = $service['application'];
                     $serv['actions'] = '<a class="layui-btn layui-btn-sm layui-btn-normal js-terminal" data-text="'.__('installConfirm').'" href="'.wurl('server', array("op"=>"install", "nid"=>$serv['identity'])).'">'.__('install').'</a>';
                     $serv['status'] = -1;

@@ -86,8 +86,8 @@ class ServerController extends Controller
             return redirect("console/active");
         }
         $startTime = time();
-        $op = $request->get("op","index");
-        $identity = $request->get("nid", "");
+        $op = $request->input("op","index");
+        $identity = $request->input("nid", "");
         $return = array("title"=>__('microServers'), "op"=>$op);
         $MSS = new MSService();
         switch ($op){
@@ -99,7 +99,7 @@ class ServerController extends Controller
             case "local" : {
                 $return['title'] .= " - ". __('moreServices');
                 $return['servers'] = MSService::getlocal();
-                $cloudservers = MSService::cloudservers();
+                $cloudservers = MSService::cloudServers();
                 if (!empty($cloudservers)){
                     $return['servers'] = array_merge($cloudservers, $return['servers']);
                 }
@@ -180,7 +180,7 @@ class ServerController extends Controller
                 $MSS->TerminalSend(["mode"=>"success", "message"=>"升级成功！总耗时".($stopTime-$startTime)."秒"], true);
                 return $this->message("upgradeSuccessfully", wurl("server"), "success");
             }
-            case "cloudinst" : {
+            case "cloudInstall" : {
                 $res = $MSS->cloudInstall($identity);
                 if (is_error($res)){
                     return $this->TerminalError($res['message']);
@@ -196,7 +196,7 @@ class ServerController extends Controller
                 return $this->message();
             }
             case "cloudChk" : {
-                $cloudServer = $MSS->cloudserver($identity, true);
+                $cloudServer = $MSS->cloudServer($identity, true);
                 if (!is_error($cloudServer)){
                     $service = $MSS::getone($identity);
                     $release = $cloudServer['release'];

@@ -283,8 +283,15 @@ function globalMedia($src){
         return assets($src);
     }
     global $_W;
-    if (!isset($_W['attachurl_global'])){
-        FileService::SetAttachUrl(0);
+    if (empty($_W['attachurl_global'])){
+        $attach_global = $_W['attachurl_local'];
+        $_W['attachurl_global_remote'] = "";
+        $remoteSet = serv('storage', 0)->settings['remote'];
+        if (!empty($remoteSet['type'])){
+            $attach_global = FileService::getRemoteUrl($remoteSet);
+            $_W['attachurl_global_remote'] = $attach_global;
+        }
+        $_W['attachurl_global'] = $attach_global;
     }
     if (\Str::startsWith($src,'//')) {
         return preg_replace('/^\/\//', $_W['sitescheme'], $src);

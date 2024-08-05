@@ -47,7 +47,7 @@ class servermake extends Command
         $identity = trim($arguments['servername']);
         try {
             $MMS = new MSService();
-            if ($MMS::isexist($identity)){
+            if ($MMS::isExist($identity)){
                 $this->error("MicroServer $identity already exists!");
                 return false;
             }

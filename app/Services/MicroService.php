@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\View;
 
@@ -249,7 +250,7 @@ class MicroService
     }
 
     /**
-     * 接管路由
+     * HTTP方式访问
      * @param string|null $platform 路由通道，可选web、app、api及自定义通道
      * @param string|null $route 路由名称
      * @return array|\error 返回接口数据或报错信息
@@ -289,6 +290,15 @@ class MicroService
         $instance = new $class();
         if (!method_exists($instance,$method)) return error(-1,"Method $class::$method() dose not exist!");
         return $instance->$method();
+    }
+
+    /**
+     * 命令行方式访问
+     * Command $command
+    */
+    public function Terminal(Command $command, ...$params){
+        $command->info("Welcome to use the MicroServer Terminal.");
+        $command->info("Params: " . json_encode($params));
     }
 
     /**

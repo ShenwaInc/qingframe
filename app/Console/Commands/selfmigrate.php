@@ -61,7 +61,7 @@ class selfmigrate extends Command
             Artisan::call('migrate');
             $MSS = new MSService();
             $MSS->setup();
-            $MSS->autoinstall();
+            $MSS->autoInstall();
             if(is_dir(base_path('socket'))){
                 FileService::rmdirs(base_path('socket'));
                 DB::table('gxswa_cloud')->where(array('identity'=>'laravel_whotalk_socket'))->update(array('rootpath'=>'swasocket/'));

@@ -37,14 +37,6 @@ class FileService
             if (!empty($_W['setting']['remote']['type'])){
                 $_W['attachurl_global_remote'] = $attach_url;
             }
-        }elseif(empty($_W['attachurl_global'])){
-            $attach_global = $_W['attachurl_local'];
-            $remoteSet = serv('storage', 0)->settings['remote'];
-            if (!empty($remoteSet['type'])){
-                $attach_global = self::getRemoteUrl($remoteSet);
-                $_W['attachurl_global_remote'] = $attach_global;
-            }
-            $_W['attachurl_global'] = $attach_global;
         }
         return $attach_url;
     }
@@ -77,6 +69,44 @@ class FileService
         self::mkdirs($path);
         Storage::put($filename, $data);
         return is_file($uri);
+    }
+
+    public static function file_download($url, $savePath='', $timeout=60){
+        global $_W;
+        if (\Str::startsWith($url, "//")){
+            $url = $_W['sitescheme'] . substr($url, 2);
+        }
+        if(function_exists('curl_init')) {
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_VERBOSE, 1);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($ch, CURLOPT_AUTOREFERER, false);
+            curl_setopt($ch, CURLOPT_REFERER, $_W['siteurl']);
+            curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+            curl_setopt($ch, CURLOPT_HEADER, 0);
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
+            $fileContent = curl_exec($ch);
+            curl_close($ch);
+            if (empty($fileContent) ){
+                return false;
+            }
+        } else {
+            $opts = array(
+                "http"=>array(
+                    "method"=>"GET",
+                    "header"=>"",
+                    "timeout"=>$timeout)
+            );
+            $context = stream_context_create($opts);
+            $fileContent = file_get_contents($url, false, $context);
+            if (empty($fileContent)) return false;
+        }
+        if (!empty($savePath)){
+            return Storage::put($savePath, $fileContent);
+        }
+        return $fileContent;
     }
 
     public static function file_move($filename, $dest) {

@@ -217,11 +217,9 @@ class CloudService
         return $plugins;
     }
 
-    static function MoveDir($oldDir, $aimDir, $overWrite = false){
-        $aimDir = str_replace('', '/', $aimDir);
-        $aimDir = substr($aimDir, -1) == '/' ? $aimDir : $aimDir . '/';
-        $oldDir = str_replace('', '/', $oldDir);
-        $oldDir = substr($oldDir, -1) == '/' ? $oldDir : $oldDir . '/';
+    static function MoveDir($from, $to, $overWrite = false){
+        $aimDir = rtrim($from, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+        $oldDir = rtrim($to, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
         if (!is_dir($oldDir)) {
             return false;
         }
@@ -309,6 +307,7 @@ class CloudService
             //删除补丁包
             @unlink($patch.$filename);
         }else{
+            $zip->close();
             @unlink($patch.$filename);
             return error(-1,__('unzipFailed'));
         }
