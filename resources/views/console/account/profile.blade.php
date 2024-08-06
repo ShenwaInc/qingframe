@@ -45,7 +45,7 @@
                     </tr>
                         <tr>
                             <td><span class="fui-table-lable">{{ __('nameOfData', array('data'=>__('platform'))) }}</span></td>
-                            <td class="soild-after">{{ $account['name'] }}</td>
+                            <td class="soild-after">{{ __($account['name']) }}</td>
                             <td class="text-right soild-after"></td>
                         </tr>
                         <tr>

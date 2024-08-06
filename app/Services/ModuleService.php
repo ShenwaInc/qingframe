@@ -56,20 +56,9 @@ class ModuleService
         if (!DB::table('modules')->insert($module)){
             return error(-1, __('无法解析模块安装包'));
         }
-        if (!empty($ManiFest['servers'])){
-            try {
-                $MSS = new MSService();
-                $MSS->checkRequire($ManiFest['servers']);
-            }catch (\Exception $exception){
-                return error(-1,__('installFailed', ['reason'=>$exception->getMessage()]));
-            }
-        }
-        $stopTime = time();
-        $timeOut = $from=='cloud' ? '' : __('takesTime', ['time'=>$stopTime-$startTime]);
-        MSService::TerminalSend(['mode'=>'success', 'message'=>__('installSuccessfully').$timeOut], true);
         //写入组件表
         if ($from=='cloud'){
-            $comdata = array(
+            $comData = array(
                 'name'=>$module['title'],
                 'modulename'=>$identity,
                 'type'=>1,
@@ -84,8 +73,19 @@ class ModuleService
             DB::table('gxswa_cloud')->updateOrInsert(array(
                 'identity'=>self::SysPrefix($identity),
                 'rootpath'=>"public/$path/$identity/"
-            ),$comdata);
+            ),$comData);
         }
+        if (!empty($ManiFest['servers'])){
+            try {
+                $MSS = new MSService();
+                $MSS->checkRequire($ManiFest['servers']);
+            }catch (\Exception $exception){
+                return error(-1,__('installFailed', ['reason'=>$exception->getMessage()]));
+            }
+        }
+        $stopTime = time();
+        $timeOut = $from=='cloud' ? '' : __('takesTime', ['time'=>$stopTime-$startTime]);
+        MSService::TerminalSend(['mode'=>'success', 'message'=>__('installSuccessfully').$timeOut], true);
         return true;
     }
 

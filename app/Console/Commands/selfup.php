@@ -47,17 +47,26 @@ class selfup extends Command
     {
         //框架升级
         global $_W;
+        $arguments = $this->argument();
         if (empty($_W['siteroot'])){
-            $appurl = env('APP_URL');
-            if (empty($appurl)) return $this->error('Invaild website url.') || "";
-            $_W['siteroot'] = $appurl . "/";
+            $appUrl = env('APP_URL');
+            if (empty($appUrl)) return $this->error('Invaild website url.') || "";
+            $_W['siteroot'] = $appUrl . "/";
         }
         $component = DB::table('gxswa_cloud')->where('type',0)->first(['id','identity','modulename','type','releasedate','rootpath']);
-        $cloudUpdate = CloudService::CloudUpdate($component['identity'],base_path().'/');
-        if (is_error($cloudUpdate)) return $this->error($cloudUpdate['message']) || "";
+        if ($arguments['version']!='local'){
+            //从云端升级
+            $cloudUpdate = CloudService::CloudUpdate($component['identity'],base_path().'/');
+            if (is_error($cloudUpdate)) return $this->error($cloudUpdate['message']) || "";
+        }
+
+        //运行升级脚本
+        self::call('self:migrate');
+        self::call('route:clear');
+        self::call('server:update');
+        self::call('self:clear');
 
         //更新版本信息
-        $arguments = $this->argument();
         $system = array(
             'version'=>env("APP_VERSION"),
             'release'=>(int)env("APP_RELEASE")
@@ -71,6 +80,11 @@ class selfup extends Command
                 $arguments['version'] = $upgradeInfo['version'];
                 $arguments['release'] = $upgradeInfo['releasedate'];
             }
+        }
+        if ($arguments['version']=='local'){
+            //从本地升级
+            $arguments['version'] = $system['version'];
+            $arguments['release'] = $system['release'];
         }
         DB::table('gxswa_cloud')->where('id',$component['id'])->update(array(
             'version'=>$arguments['version'],

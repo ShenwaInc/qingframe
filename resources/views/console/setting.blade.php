@@ -40,7 +40,7 @@
                         <tbody>
                         <tr>
                             <td><span class="fui-table-lable">@lang('siteName')</span></td>
-                            <td class="soild-after">{{ $_W['setting']['page']['title'] }}</td>
+                            <td class="soild-after">@lang($_W['setting']['page']['title'])</td>
                         </tr>
                         <tr>
                             <td><span class="fui-table-lable">LOGO</span></td>
@@ -130,12 +130,12 @@
                             <td><span class="fui-table-lable">@lang('versionSystem')</span></td>
                             <td class="soild-after">
                                 V{{ QingVersion }} Release{{ QingRelease }}
-                                @if($cloudInfo['isnew'])
+                                @if($cloudInfo['upgradable'])
                                     &nbsp;&nbsp;<span class="layui-badge layui-bg-red" title="V{{ $cloudInfo['version'] }} Release{{ $cloudInfo['releasedate'] }}">{{ __($cloudInfo['releasedate']==QingRelease?'sourceCodeChanged':'versionNew') }}</span>
                                 @endif
                             </td>
                             <td class="text-right soild-after" style="line-height: 28px">
-                                @if($cloudInfo['isnew'])
+                                @if($cloudInfo['upgradable'])
                                     <a href="{{ wurl('setting/selfupgrade') }}" class="text-red js-terminal" data-text="@lang('upgradeConfirm')">@lang('upgradeNow')</a>&nbsp;&nbsp;
                                     <a href="{{ wurl('setting/updateLog') }}" class="text-blue ajaxshow">@lang('cloudComparison')</a><br/>
                                 @endif
@@ -196,7 +196,7 @@
                             </tr>
                             <tr>
                                 <td><span class="fui-table-lable">@lang('systemKernel')</span></td>
-                                <td class="soild-after">QingFrame (Based on <a href="https://laravel.com/" class="text-blue" target="_blank">Laravel</a> 6.2.0)</td>
+                                <td class="soild-after">@lang('轻如云系统') v{{ QingVersion }} (Based on <a href="https://laravel.com/" class="text-blue" target="_blank">Laravel</a> v6.2.0)</td>
                                 <td class="text-right soild-after"></td>
                             </tr>
                             <tr>

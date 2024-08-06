@@ -62,7 +62,7 @@ class SettingController extends Controller
     public function detection(){
         $component = DB::table('gxswa_cloud')->where('type',0)->first(['id','identity','type','online','releasedate','rootpath']);
         if (empty($component)) return $this->message('系统出现致命错误');
-        $cloudInfo = $this->checkcloud($component,1,true);
+        $cloudInfo = $this->checkCloud($component,1,true);
         if (is_error($cloudInfo)){
             return $this->message($cloudInfo['message']);
         }
@@ -72,7 +72,7 @@ class SettingController extends Controller
     public function updateLog(){
         $component = DB::table('gxswa_cloud')->where('type',0)->first(['id','identity','type','online','releasedate','rootpath']);
         if (empty($component)) return $this->message('系统出现致命错误');
-        $cloudInfo = $this->checkcloud($component,1,true);
+        $cloudInfo = $this->checkCloud($component,1,true);
         if (empty($cloudInfo['difference'])) return $this->message('当前系统已经是最新版本');
         $structures = $this->makeStructure($cloudInfo['difference']);
         return $this->globalView("console.structure", array(
@@ -107,7 +107,7 @@ class SettingController extends Controller
             }
             MSService::TerminalSend(['mode'=>'success', 'message'=>'程序同步完成，更新系统版本信息']);
             //更新版本号
-            $cloudInfo = $this->checkcloud($component);
+            $cloudInfo = $this->checkCloud($component);
             if (is_error($cloudInfo)) return $this->message($cloudInfo['message']);
             DB::table('gxswa_cloud')->where('id',$component['id'])->update(array(
                 'version'=>$cloudInfo['version'],
@@ -115,7 +115,7 @@ class SettingController extends Controller
                 'dateline'=>TIMESTAMP,
                 'releasedate'=>$cloudInfo['releasedate'],
                 'online'=>serialize(array(
-                    'isnew'=>false,
+                    'upgradable'=>false,
                     'version'=>$cloudInfo['version'],
                     'releasedate'=>$cloudInfo['releasedate']
                 ))
@@ -132,7 +132,7 @@ class SettingController extends Controller
         //升级文件对比
         $component = DB::table('gxswa_cloud')->where('type',0)->first(['id','identity','type','online','releasedate','rootpath']);
         if (!empty($component)){
-            $cloudInfo = $this->checkcloud($component);
+            $cloudInfo = $this->checkCloud($component);
             if (!is_error($cloudInfo) && !empty($cloudInfo['hasDifference'])){
                 if (DEVELOPMENT){
                     dd("以下文件同步失败，请检查文件夹权限：", $cloudInfo['difference']);
@@ -251,8 +251,6 @@ class SettingController extends Controller
         switch ($op) {
             case 'pageset':
                 return $this->globalView("console.pageset", $return);
-                break;
-
             case 'envdebug':
                 $debug = env('APP_DEBUG', false);
                 if ($debug) {
@@ -264,12 +262,10 @@ class SettingController extends Controller
                     return $this->message('文件写入失败，请检查根目录权限');
                 }
                 return $this->message('操作成功！', wurl('setting'), 'success');
-                break;
-
             case 'comcheck':
                 $component = DB::table('gxswa_cloud')->where('id', intval($_GPC['cid']))->first(['id', 'identity', 'type', 'online', 'releasedate', 'rootpath']);
                 if (empty($component)) return $this->message('找不到该服务组件');
-                $cloudInfo = $this->checkcloud($component, 1, true);
+                $cloudInfo = $this->checkCloud($component, 1, true);
                 if (is_error($cloudInfo)) {
                     return $this->message($cloudInfo['message']);
                 }
@@ -279,12 +275,10 @@ class SettingController extends Controller
                     'structures' => $structures,
                     'total' => count($structures)
                 ));
-                break;
-
             default:
                 $framework = DB::table('gxswa_cloud')->where('type', 0)->first(['id', 'version', 'identity', 'type', 'online', 'releasedate', 'rootpath']);
                 $return['framework'] = $framework;
-                $return['cloudInfo'] = !empty($framework['online']) ? unserialize($framework['online']) : array('isnew' => false);
+                $return['cloudInfo'] = !empty($framework['online']) ? unserialize($framework['online']) : array('upgradable' => false);
                 break;
         }
         $return['activeState'] = CloudService::CloudActive(true);
@@ -292,44 +286,43 @@ class SettingController extends Controller
         return $this->globalView('console.setting', $return);
     }
 
-    public function checkcloud($component,$compare=1,$nocache=false){
-        $cachekey = "cloud:structure:{$component['identity']}";
-        $ugradeinfo = array();
-        $fromcache = true;
-        if (!$nocache){
-            $ugradeinfo = Cache::get($cachekey);
+    public function checkCloud($component, $compare=1, $noCache=false){
+        $cacheKey = "cloud:structure:{$component['identity']}";
+        $upgradeInfo = array();
+        $fromCache = true;
+        if (!$noCache){
+            $upgradeInfo = Cache::get($cacheKey);
         }
-        if (empty($ugradeinfo)){
-            $fromcache = false;
+        if (empty($upgradeInfo)){
+            $fromCache = false;
             $data = array(
                 'identity'=>$component['identity']
             );
-            $ugradeinfo = CloudService::CloudApi('structure',$data);
-            if (is_error($ugradeinfo)) return $ugradeinfo;
+            $upgradeInfo = CloudService::CloudApi('structure',$data);
+            if (is_error($upgradeInfo)) return $upgradeInfo;
         }
-        if ($compare==0) return $ugradeinfo;
-        $structure = $ugradeinfo['structure'];
-        $ugradeinfo['difference'] = $this->compare($component,$ugradeinfo['structure']);
-        $ugradeinfo['hasDifference'] = $this->hasdifference($ugradeinfo['difference'],$component['type']);
-        if ($component['releasedate']<$ugradeinfo['releasedate'] && $compare<2){
-            $ugradeinfo['isnew'] = true;
-        }else{
-            $ugradeinfo['isnew'] = $ugradeinfo['hasDifference'];
+        if ($compare==0) return $upgradeInfo;
+        $structure = $upgradeInfo['structure'];
+        $upgradeInfo['upgradable'] = false;
+        $upgradeInfo['difference'] = $this->compare($component,$upgradeInfo['structure']);
+        $upgradeInfo['hasDifference'] = $this->hasdifference($upgradeInfo['difference'],$component['type']);
+        if ($component['releasedate']<$upgradeInfo['releasedate'] && $compare<2){
+            $upgradeInfo['upgradable'] = true;
         }
-        if ($fromcache){
-            $onlineinfo = $component['online'] ? unserialize($component['online']) : array();
-            if ($onlineinfo['isnew']==$ugradeinfo['isnew']){
-                return $ugradeinfo;
+        if ($fromCache){
+            $onlineInfo = $component['online'] ? unserialize($component['online']) : array();
+            if ($onlineInfo['upgradable']==$upgradeInfo['upgradable']){
+                return $upgradeInfo;
             }
         }
-        $difference = $ugradeinfo['difference'];
-        unset($ugradeinfo['structure'],$ugradeinfo['difference']);
-        $update = array('dateline'=>TIMESTAMP,'online'=>serialize($ugradeinfo));
+        $difference = $upgradeInfo['difference'];
+        unset($upgradeInfo['structure'],$upgradeInfo['difference']);
+        $update = array('dateline'=>TIMESTAMP,'online'=>serialize($upgradeInfo));
         pdo_update('gxswa_cloud',$update,array('identity'=>$component['identity']));
-        $ugradeinfo['structure'] = $structure;
-        $ugradeinfo['difference'] = $difference;
-        Cache::put($cachekey,$ugradeinfo,1800);
-        return $ugradeinfo;
+        $upgradeInfo['structure'] = $structure;
+        $upgradeInfo['difference'] = $difference;
+        Cache::put($cacheKey,$upgradeInfo,7200);
+        return $upgradeInfo;
     }
 
     public function compare($component,$structure=''){

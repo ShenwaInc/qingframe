@@ -335,22 +335,22 @@ class CloudService
             'identity'=>$identity,
             'fp'=>config('system.identity')
         );
-        $ugradeinfo = self::CloudApi('structure',$data);
-        if (is_error($ugradeinfo)) return $ugradeinfo;
-        MSService::TerminalSend(['mode'=>'info', 'message'=>'获取到云端程序信息：V'.$ugradeinfo['version']]);
-        $structures = json_decode(base64_decode($ugradeinfo['structure']), true);
+        $upgradeInfo = self::CloudApi('structure',$data);
+        if (is_error($upgradeInfo)) return $upgradeInfo;
+        MSService::TerminalSend(['mode'=>'info', 'message'=>'获取到云端程序信息：V'.$upgradeInfo['version']]);
+        $structures = json_decode(base64_decode($upgradeInfo['structure']), true);
         $difference = self::CloudCompare($structures,$targetpath);
         if (empty($difference)) return true;
         MSService::TerminalSend(['mode'=>'info', 'message'=>'从云端同步应用程序...']);
         $data = array(
             'identity'=>$identity,
             'fp'=>config('system.identity'),
-            'releasedate'=>$ugradeinfo['releasedate'],
+            'releasedate'=>$upgradeInfo['releasedate'],
             'difference'=>base64_encode(json_encode($difference))
         );
-        $zipcontent = self::CloudApi('upgrade',$data,true);
-        if (is_error($zipcontent)) return $zipcontent;
-        if (empty($zipcontent)){
+        $zipContent = self::CloudApi('upgrade',$data,true);
+        if (is_error($zipContent)) return $zipContent;
+        if (empty($zipContent)){
             MSService::TerminalSend(['mode'=>'err', 'message'=>'云端程序同步失败，请更新缓存后再试']);
             return error(-1,__('patchFailed'));
         }
@@ -361,23 +361,23 @@ class CloudService
             FileService::mkdirs($patch);
         }
         $filename = FileService::file_random_name($patch,'zip');
-        $fullname = $patch.$filename;
-        if (!file_put_contents($fullname, $zipcontent)) {
+        $fullName = $patch.$filename;
+        if (!file_put_contents($fullName, $zipContent)) {
             MSService::TerminalSend(['mode'=>'err', 'message'=>'云端程序同步失败，请检查文件权限']);
             return error(-1,__('saveFailed'));
         }
-        $patchpath = $patch.$identity.$ugradeinfo['releasedate'].'/';
+        $patchpath = $patch.$identity.$upgradeInfo['releasedate'].'/';
         if (is_dir($patchpath)){
             FileService::rmdirs($patchpath);
         }
         $zip = new \ZipArchive();
-        $openRes = $zip->open($fullname);
+        $openRes = $zip->open($fullName);
         if ($openRes === TRUE) {
             $zip->extractTo($patchpath);
             $zip->close();
-            @unlink($fullname);
+            @unlink($fullName);
         }else{
-            @unlink($fullname);
+            @unlink($fullName);
             MSService::TerminalSend(['mode'=>'err', 'message'=>'补丁包解压失败，请检查文件夹权限']);
             return error(-1,__('unzipFailed'));
         }

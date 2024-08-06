@@ -14,7 +14,7 @@
                 <a href="{{ wurl("account") }}/{{ $item['uniacid'] }}" class="fui-content">
                     <div class="fui-info">
                         <img alt="{{ $item['name'] }}" class="radius" src="{{ globalMedia($item['logo']) }}" />
-                        <strong class="card-name">{{ $item['name'] }}</strong>
+                        <strong class="card-name">@lang($item['name'])</strong>
                     </div>
                 </a>
                 <div class="js-dropdown layui-nav-item">

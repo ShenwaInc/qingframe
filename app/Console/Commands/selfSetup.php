@@ -195,7 +195,7 @@ class selfSetup extends Command
         }
 
         //8.自动安装应用
-        $defaultModule = env("APP_MODULE", "whotalk");
+        $defaultModule = env("APP_MODULE", "");
         if (!empty($defaultModule) && file_exists(public_path("addons/$defaultModule/manifest.json"))){
             ModuleService::install($defaultModule);
         }

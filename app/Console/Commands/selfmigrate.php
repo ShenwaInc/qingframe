@@ -58,7 +58,7 @@ class selfmigrate extends Command
             if (!Schema::hasColumn('uni_account_users', 'entrance')){
                 DB::statement("ALTER TABLE ".tablename('uni_account_users')." ADD `entrance` VARCHAR(100) NOT NULL DEFAULT '' AFTER `rank`;");
             }
-            Artisan::call('migrate');
+            self::call('migrate');
             $MSS = new MSService();
             $MSS->setup();
             $MSS->autoInstall();

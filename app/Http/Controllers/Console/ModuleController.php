@@ -69,7 +69,7 @@ class ModuleController extends Controller
         if (!ModuleService::maintenance($identity)){
             return $this->message();
         }
-        return $this->success(null, referer());
+        return $this->success('successful', referer());
     }
 
     /**
