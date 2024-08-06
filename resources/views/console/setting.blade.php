@@ -131,12 +131,17 @@
                             <td class="soild-after">
                                 V{{ QingVersion }} Release{{ QingRelease }}
                                 @if($cloudInfo['upgradable'])
-                                    &nbsp;&nbsp;<span class="layui-badge layui-bg-red" title="V{{ $cloudInfo['version'] }} Release{{ $cloudInfo['releasedate'] }}">{{ __($cloudInfo['releasedate']==QingRelease?'sourceCodeChanged':'versionNew') }}</span>
+                                    &nbsp;&nbsp;<span class="layui-badge layui-bg-red" title="V{{ $cloudInfo['version'] }} Release{{ $cloudInfo['releasedate'] }}">@lang('发现新版本')</span>
+                                @elseif($cloudInfo['hasDifference'])
+                                    <span class="layui-badge layui-badge-dot" lay-tips="@lang('当前系统源码与云端对比有变动')"></span>
                                 @endif
                             </td>
                             <td class="text-right soild-after" style="line-height: 28px">
                                 @if($cloudInfo['upgradable'])
                                     <a href="{{ wurl('setting/selfupgrade') }}" class="text-red js-terminal" data-text="@lang('upgradeConfirm')">@lang('upgradeNow')</a>&nbsp;&nbsp;
+                                    <a href="{{ wurl('setting/updateLog') }}" class="text-blue ajaxshow">@lang('cloudComparison')</a><br/>
+                                @elseif($cloudInfo['hasDifference'])
+                                    <a href="{{ wurl('setting/selfupgrade') }}" class="text-red js-terminal" data-text="@lang('upgradeConfirm')">@lang('同步云端')</a>&nbsp;&nbsp;
                                     <a href="{{ wurl('setting/updateLog') }}" class="text-blue ajaxshow">@lang('cloudComparison')</a><br/>
                                 @endif
                                 <a href="{{ wurl('setting/detection') }}" class="text-green ajaxshow">@lang('检测更新')</a>&nbsp;&nbsp;
