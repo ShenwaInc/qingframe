@@ -151,15 +151,6 @@ class ModuleService
         $moduledata = self::ModuleData($application,$subscribes,$handles);
         $moduledata['permissions'] = empty($ManiFest['permissions']) ? "" : serialize($ManiFest['permissions']);
         DB::table('modules')->where('name',$application['identifie'])->update($moduledata);
-        //安装模块依赖服务
-        if (!empty($ManiFest['servers'])){
-            try {
-                $MSS = new MSService();
-                $MSS->checkRequire($ManiFest['servers']);
-            }catch (\Exception $exception){
-                return error(-1,__('installServerFailed', ['reason'=>$exception->getMessage()]));
-            }
-        }
         //更新模块数据表
         if (!empty($component) || $from=='cloud'){
             $cloudinfo = empty($component['online']) ? array() : unserialize($component['online']);
@@ -185,6 +176,15 @@ class ModuleService
                 DB::table('gxswa_cloud')->insert($comInfo);
             }else{
                 DB::table('gxswa_cloud')->where('identity', $cloudIdentity)->update($comInfo);
+            }
+        }
+        //安装模块依赖服务
+        if (!empty($ManiFest['servers'])){
+            try {
+                $MSS = new MSService();
+                $MSS->checkRequire($ManiFest['servers']);
+            }catch (\Exception $exception){
+                return error(-1,__('installServerFailed', ['reason'=>$exception->getMessage()]));
             }
         }
         $stopTime = time();
