@@ -95,7 +95,7 @@
     "云服务": "Cloud Services",
     "长期": "Long-term",
     "已到期": "Expired",
-    "expiresOn": "Expire on :date",
+    "expiresOn": "Expires on :date",
     "emptyForLongtime": "Leave blank for indefinite",
     "defaultEntry": "Default entry",
     "defaultEntryValid": "The default entry cannot be empty",

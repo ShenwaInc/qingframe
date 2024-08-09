@@ -4,13 +4,14 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class CloudService
 {
 
     static $identity = 'swa_framework_laravel';
-    static $cloudapi = 'https://chat.gxit.org/app/index.php?i=4&c=entry&m=swa_supersale&do=api';
-    static $apilist = array('rmcom'=>'cloud.vendor.remove','require'=>'cloud.install','structure'=>'cloud.structure','upgrade'=>'cloud.makepatch');
+    static $cloudApi = 'https://chat.gxit.org/app/index.php?i=4&c=entry&m=swa_supersale&do=api';
+    static $apiList = array('rmcom'=>'cloud.vendor.remove','require'=>'cloud.install','structure'=>'cloud.structure','upgrade'=>'cloud.makepatch');
 
     static function RequireModule($identity,$path='addons'){
         $modulePre = ModuleService::SysPrefix();
@@ -34,10 +35,10 @@ class CloudService
         $components = DB::table('gxswa_cloud')->where($condition)->orderByRaw("`id` desc")->get()->toArray();
         if (!empty($components)){
             foreach ($components as $com){
-                $cloudInfo = !empty($com['online']) ? unserialize($com['online']) : array();
+                $cloudInfo = !empty($com['online']) ? unserialize($com['online']) : array('upgradable'=>false);
                 $cloudInfo['isLocal'] = false;
                 $cloudInfo['expired'] = false;
-                $cloudInfo['upgradable'] = (bool)$cloudInfo['isnew'];
+                $cloudInfo['upgradable'] = (bool)$cloudInfo['upgradable'];
                 $selfMaintenance = (bool)$com['maintenance'];
                 if (!empty($com['modulename'])){
                     $local = ModuleService::installCheck($com['modulename']);
@@ -62,25 +63,13 @@ class CloudService
                 $com['installTime'] = date('Y/m/d H:i',$com['addtime']);
                 $com['expireDate'] = '';
                 $com['action'] = '';
-                if (!empty($cloudInfo) && $cloudInfo['upgradable']){
-                    if ($cloudInfo['isLocal']){
-                        //从本地升级
-                        $com['action'] .= '<a href="'.wurl('module/upgrade', array('nid'=>$com['modulename'])).'" class="layui-btn layui-btn-sm layui-btn-danger js-terminal" data-text="'.__('upgradeConfirm').'">'.__('upgrade').'</a>';
-                    }elseif(!$selfMaintenance){
-                        //从云端升级
-                        $com['action'] .= '<a href="'.wurl('module/update', array('nid'=>$com['modulename'])).'" class="layui-btn layui-btn-sm layui-btn-danger js-terminal" data-text="'.__('upgradeConfirm').'">'.__('upgrade').'</a>';
-                    }
-                }
-                if (!$selfMaintenance){
-                    //自维护应用
-                    $com['action'] .= '<a href="'.wurl('setting/comcheck', array('cid'=>$com['id'])).'" class="layui-btn layui-btn-sm layui-btn-normal ajaxshow">'.__('检测更新').'</a>';
-                }
                 $com['cloudInfo'] = $cloudInfo;
                 $com['maintenance'] = $selfMaintenance;
                 $com['installed'] = true;
                 $plugins[$com['modulename']] = $com;
             }
         }
+        //dd($plugins);
         //获取本地模块
         $modules = FileService::file_tree(public_path('addons'), array('*/manifest.json'));
         if (!empty($modules)){
@@ -95,12 +84,15 @@ class CloudService
                     continue;
                 }
                 $comCloud = $plugins[$identity] ?? [];
+                if (empty($com['modulename'])){
+                    $com['modulename'] = $com['identifie'];
+                }
                 $com['logo'] = asset($com['logo']);
                 $com['website'] = $com['url'];
                 $com['installTime'] = '<span class="layui-badge layui-bg-orange">'.__('readyToInstall').'</span>';
                 $com['addtime'] = 0;
-                $com['expireDate'] = '';
-                $com['installed'] = $comCloud?$comCloud['installed']:false;
+                $com['installed'] = !empty($comCloud);
+                $com['expireDate'] = !empty($comCloud) ? $comCloud['expireDate'] : '';
                 $actions = $comCloud?$comCloud['action']:'';
                 //已安装
                 if ($ManiFest['installed']){
@@ -122,8 +114,6 @@ class CloudService
                                 $com['cloudInfo']['version'] = $com['version'];
                                 $com['cloudInfo']['releasedate'] = $com['releasedate'];
                                 $com['cloudInfo']['upgradable'] = true;
-                                //从本地升级
-                                $actions .= '<a href="'.wurl('module/upgrade', array('nid'=>$Module['name'])).'" class="layui-btn layui-btn-sm layui-btn-danger js-terminal" data-text="'.__('upgradeConfirm').'">'.__('upgrade').'</a>';
                                 $com['version'] = $Module['version'];
                             }
                         }
@@ -141,8 +131,8 @@ class CloudService
             }
         }
         //获取云端未安装模块
-        $cachekey = "cloud:module_list:1";
-        $res = Cache::get($cachekey, array());
+        $cacheKey = "cloud:module_list:1";
+        $res = Cache::get($cacheKey, array());
         if (empty($res)){
             $data = array(
                 'r'=>'cloud.packages',
@@ -152,7 +142,7 @@ class CloudService
                 'authorize'=>1
             );
             $res = CloudService::CloudApi("", $data);
-            Cache::put($cachekey, $res, 600);
+            Cache::put($cacheKey, $res, 600);
         }
         if (!is_error($res) && !empty($res['servers'])){
             $modulePre = ModuleService::SysPrefix();
@@ -163,28 +153,27 @@ class CloudService
                 if (isset($plugins[$identify])){
                     //已安装
                     $local = $plugins[$identify];
-                    if ($local['addtime']==0) continue;
+                    if ($local['addtime']==0 || !empty($local['maintenance'])) continue;
                     $cloudInfo = array('upgradable'=>false, 'expired'=>false, 'isLocal'=>$local['cloudInfo']['isLocal'],'version'=>$value['release']['version'],'releasedate'=>$releaseDate);
                     $local['expireDate'] = '';
-                    if (!is_error($value['authorize']) && !$cloudInfo['isLocal']){
-                        if($value['authorize']['expiretime']==0){
-                            $local['expireDate'] = '<span class="text-green">'.__('longtime').'</span>';
-                        }elseif ($value['authorize']['expiretime']<=TIMESTAMP){
-                            $local['expireDate'] = '<span class="text-red">'.__('已到期').'</span>';
-                            $cloudInfo['expired'] = true;
+                    if (!$cloudInfo['isLocal']){
+                        if (!is_error($value['authorize'])){
+                            if($value['authorize']['expiretime']==0){
+                                $local['expireDate'] = '<span class="text-green">'.__('longtime').'</span>';
+                            }elseif ($value['authorize']['expiretime']<=TIMESTAMP){
+                                $local['expireDate'] = '<span class="text-red">'.__('已到期').'</span>';
+                                $cloudInfo['expired'] = true;
+                            }else{
+                                $toDay = ($value['authorize']['expiretime'] - TIMESTAMP)/86400;
+                                $local['expireDate'] = '<span class="'.($toDay>30?'text-gray':'text-orange').'">'.__('expiresOn', array('date'=>date('Y-m-d', $value['authorize']['expiretime']))).'</span>';
+                            }
                         }else{
-                            $toDay = ($value['authorize']['expiretime'] - TIMESTAMP)/86400;
-                            $local['expireDate'] = '<span class="'.($toDay>30?'text-gray':'text-orange').'">'.__('expiresOn', array('date'=>date('Y-m-d', $value['authorize']['expiretime']))).'</span>';
+                            $local['expireDate'] = '<span class="text-red">'.$value['authorize']['message'].'</span>';
                         }
                     }
-                    if (empty($local['maintenance'])){
-                        if (version_compare($local['version'], $value['release']['version'], '<') || $local['releasedate']<$releaseDate){
-                            //可升级至云端最新版本
-                            $cloudInfo['upgradable'] = true;
-                            if (!$cloudInfo['expired'] && (empty($local['cloudInfo']) || !$local['cloudInfo']['upgradable'])){
-                                $local['action'] .= '<a href="'.wurl('module/update', array('nid'=>$identify)).'" class="layui-btn layui-btn-sm layui-btn-danger js-terminal" data-text="'.__('upgradeConfirm').'">'.__('upgrade').'</a>'.$local['action'];
-                            }
-                        }
+                    if (version_compare($local['version'], $value['release']['version'], '<') || $local['releasedate']<$releaseDate){
+                        //可升级至云端最新版本
+                        $cloudInfo['upgradable'] = true;
                     }
                     $local['cloudInfo'] = $cloudInfo;
                     $local['installed'] = true;
@@ -366,14 +355,14 @@ class CloudService
             MSService::TerminalSend(['mode'=>'err', 'message'=>'云端程序同步失败，请检查文件权限']);
             return error(-1,__('saveFailed'));
         }
-        $patchpath = $patch.$identity.$upgradeInfo['releasedate'].'/';
-        if (is_dir($patchpath)){
-            FileService::rmdirs($patchpath);
+        $patchPath = $patch.$identity.$upgradeInfo['releasedate'].'/';
+        if (is_dir($patchPath)){
+            FileService::rmdirs($patchPath);
         }
         $zip = new \ZipArchive();
         $openRes = $zip->open($fullName);
         if ($openRes === TRUE) {
-            $zip->extractTo($patchpath);
+            $zip->extractTo($patchPath);
             $zip->close();
             @unlink($fullName);
         }else{
@@ -383,8 +372,8 @@ class CloudService
         }
         MSService::TerminalSend(['mode'=>'info', 'message'=>'更新程序源码...']);
         //5、将补丁文件更新到本地
-        self::CloudPatch($targetpath,$patchpath,true);
-        FileService::rmdirs($patchpath);
+        self::CloudPatch($targetpath,$patchPath,true);
+        FileService::rmdirs($patchPath);
         return true;
     }
 
@@ -424,7 +413,8 @@ class CloudService
         return $difference;
     }
 
-    static function CloudPatch($target,$source,$overwrite=false){
+    static function CloudPatch($target,$source,$overwrite=false): bool
+    {
         if (!$target || !$source) return false;
         if (!is_dir($target)){
             if ($overwrite){
@@ -443,18 +433,14 @@ class CloudService
                 }
                 $new = $source.$entry;
                 if(is_dir($new)) {
-                    if (!is_dir($target.$entry)){
-                        FileService::mkdirs($target.$entry.'/');
-                    }
+                    @Storage::makeDirectory($target.$entry);
                     self::CloudPatch($target.$entry.'/',$source.$entry.'/',$overwrite);
                 }else{
                     if(file_exists($target.$entry)){
-                        if($overwrite){
-                            @unlink($target.$entry);
-                        }else{
-                            if (md5_file($target.$entry)==md5_file($new)) continue;
-                            @unlink($target.$entry);
+                        if(!$overwrite) {
+                            if (md5_file($target . $entry) == md5_file($new)) continue;
                         }
+                        @unlink($target.$entry);
                     }
                     @copy($new, $target.$entry);
                 }
@@ -464,11 +450,11 @@ class CloudService
         return true;
     }
 
-    static function CloudApi($apiname,$data=array(),$return=false){
+    static function CloudApi($route, $data=array(), $return=false){
         global $_W;
         if (!$data['appsecret']) $data['appsecret'] = self::AppSecret();
         if (!isset($data['r'])){
-            $data['r'] = self::$apilist[$apiname];
+            $data['r'] = self::$apiList[$route];
         }
         if (!isset($data['fp'])){
             $data['fp'] = config('system.identity');
@@ -478,18 +464,24 @@ class CloudService
         $data['siteid'] = $_W['config']['site']['id'];
         $data['devmode'] = env('APP_DEVELOPMENT',0);
         $data['sign'] = self::GetSignature($data['appsecret'],$data);
-        $CloudApi = env('APP_CLOUD_API', self::$cloudapi);
+        $CloudApi = env('APP_CLOUD_API', self::$cloudApi);
         $res = HttpService::ihttp_post($CloudApi,$data);
         if (is_error($res)) return $res;
-        if($return) return $res['content'];
+        if($return){
+            if(strexists($res['content'], 'error')){
+                $result = json_decode($res['content'],true);
+                return error(-1,$result['message']);
+            }
+            return $res['content'];
+        }
         $result = json_decode($res['content'],true);
         if (isset($result['message']) && isset($result['type'])){
             if ($result['type']!='success' && !is_array($result['message'])){
-                $respone = error(-1,$result['message']);
+                $response = error(-1,$result['message']);
                 if (!empty($result['redirect'])){
-                    $respone['redirect'] = $result['redirect'];
+                    $response['redirect'] = $result['redirect'];
                 }
-                return $respone;
+                return $response;
             }
         }
         return $result;

@@ -55,7 +55,7 @@
                                         <img src="{{ $com['logo'] }}" class="fl bg-gray radius margin-right-sm" height="48" />
                                         <div class="fui-table-name">
                                             <a href="{{$com['website']}}" class="text-blue" target="_blank">{{$com['name']}}</a><br/>
-                                            V{{$com['version']}}
+                                            <span title="Release {{ $com['releasedate'] }}">V{{$com['version']}}</span>
                                         </div>
                                     </td>
                                     <td class="layui-hide-xs">{!! $com['installTime'] !!}</td>
@@ -64,22 +64,35 @@
                                         @if(empty($com['cloudInfo']))
                                             -
                                         @else
-                                            V{{ $com['cloudInfo']['version'] }}&nbsp;&nbsp;Release{{ $com['cloudInfo']['releasedate'] }}
+                                            V{{ $com['cloudInfo']['version'] }}&nbsp;&nbsp;Release {{ $com['cloudInfo']['releasedate'] }}
                                             @if($com['cloudInfo']['upgradable'])
-                                                <span class="layui-badge-dot" lay-tips="{{ $com['cloudInfo']['releasedate']==$com['releasedate'] ? __('sourceCodeChanged') : __('versionNew') }}"></span>
+                                                @if($com['cloudInfo']['releasedate']==$com['releasedate'])
+                                                    <span class="layui-badge-dot" lay-tips="@lang('当前系统源码与云端对比有变动')"></span>
+                                                @else
+                                                    <span class="layui-badge-dot" lay-tips="@lang('发现新版本')"></span>
+                                                @endif
                                             @endif
                                             @if(empty($com['maintenance']) && !empty($com['installed']) && empty($com['cloudInfo']['isLocal']))
                                                 &nbsp;&nbsp;<a href="{!! wurl('module/maintenance', array('nid'=>$com['identifie'])) !!}" data-text="@lang('停用云服务后将不再提示云端更新版本')" class="ajaxshow confirm text-blue">@lang('disable')</a>
                                             @elseif(!empty($com['maintenance']))
-                                                &nbsp;&nbsp;<span class="text-red">@lang('terminated')</span>
+                                                &nbsp;&nbsp;<span class="text-gray">@lang('terminated')</span>
                                             @endif
-                                            @if($com['expireDate'])
+                                            @if($com['expireDate'] && empty($com['maintenance']))
                                                 <p class="margin-top-xs">{!! $com['expireDate'] !!}</p>
                                             @endif
                                         @endif
                                     </td>
                                     <td class="text-right">
-                                        <div class="layui-btn-group">{!! $com['action'] !!}</div>
+                                        <div class="layui-btn-group">
+                                            @if(empty($com['maintenance']) && !empty($com['id']))
+                                                <a href="{{ wurl('setting/comcheck', array('cid'=>$com['id'])) }}" class="layui-btn layui-btn-sm layui-btn-normal ajaxshow">@lang('检测更新')</a>
+                                            @endif
+                                            @if($com['cloudInfo']['upgradable'])
+                                                <a href="{{ wurl(empty($com['cloudInfo']['isLocal'])?'module/update':'module/upgrade', array('nid'=>$com['modulename'])) }}" data-text="@lang('upgradeConfirm')" class="layui-btn layui-btn-sm layui-btn-danger js-terminal">@lang('upgrade')</a>
+                                            @endif
+                                            {!! $com['action'] !!}
+                                        </div>
+                                        <div class="layui-btn-group layui-hide"></div>
                                     </td>
                                 </tr>
                             @endforeach
