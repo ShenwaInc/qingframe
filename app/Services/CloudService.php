@@ -69,7 +69,6 @@ class CloudService
                 $plugins[$com['modulename']] = $com;
             }
         }
-        //dd($plugins);
         //获取本地模块
         $modules = FileService::file_tree(public_path('addons'), array('*/manifest.json'));
         if (!empty($modules)){
@@ -154,7 +153,7 @@ class CloudService
                     //已安装
                     $local = $plugins[$identify];
                     if ($local['addtime']==0 || !empty($local['maintenance'])) continue;
-                    $cloudInfo = array('upgradable'=>false, 'expired'=>false, 'isLocal'=>$local['cloudInfo']['isLocal'],'version'=>$value['release']['version'],'releasedate'=>$releaseDate);
+                    $cloudInfo = array('upgradable'=>$local['cloudInfo']['upgradable'], 'expired'=>false, 'isLocal'=>$local['cloudInfo']['isLocal'],'version'=>$value['release']['version'],'releasedate'=>$releaseDate);
                     $local['expireDate'] = '';
                     if (!$cloudInfo['isLocal']){
                         if (!is_error($value['authorize'])){
