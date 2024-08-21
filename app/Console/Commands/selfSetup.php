@@ -36,7 +36,8 @@ class selfSetup extends Command
         "copyright"=>"© 2019-2022 ShenWa Studio. All Rights Reserved.",
         "website"=>"https://www.qingruyun.com",
         "accountName"=>"轻如云",
-        "accountDescription"=>"开放连接万事万物"
+        "accountDescription"=>"开放连接万事万物",
+        "accountId"=>0
     );
 
     /**
@@ -198,6 +199,11 @@ class selfSetup extends Command
         $defaultModule = env("APP_MODULE", "");
         if (!empty($defaultModule) && file_exists(public_path("addons/$defaultModule/manifest.json"))){
             ModuleService::install($defaultModule);
+        }
+
+        //9.指定唯一平台
+        if (!empty($this->defaultParams['accountId'])){
+            CloudService::CloudEnv("APP_UNIACID=0", "APP_UNIACID={$uniacid}");
         }
 
         $this->info('System installation completed');
