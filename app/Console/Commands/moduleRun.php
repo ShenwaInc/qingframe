@@ -38,7 +38,7 @@ class moduleRun extends Command
     public function handle()
     {
         $moduleId = $this->argument('id');
-        $className = "Addons\{$moduleId}\Terminal";
+        $className = "Addons\\". $moduleId. "\Terminal";
         if (class_exists($className)){
             try {
                 $instance = new $className;
@@ -48,7 +48,7 @@ class moduleRun extends Command
                 $this->error($exception->getMessage());
             }
         }else{
-            $this->info("Module $moduleId has no runnable script.");
+            $this->line("Module $moduleId has no runnable script.");
         }
         return true;
     }
