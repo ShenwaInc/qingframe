@@ -2,6 +2,7 @@
     w.Swaws = {
         onDisconnect:null,
         onConnect:null,
+        onOpen:null,
         Heartbeat:false,
         HeartInterval:null,
         UserSign:"",
@@ -25,7 +26,9 @@
                     }
                 }
                 WsSocket.send(JSON.stringify(data));
-                console.log(data.Message);
+                if(typeof(self.onOpen) === 'function'){
+                    self.onOpen(event, data);
+                }
             };
             WsSocket.onmessage = function (res) {
                 let socketData = {};

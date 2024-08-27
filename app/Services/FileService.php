@@ -104,7 +104,7 @@ class FileService
             if (empty($fileContent)) return false;
         }
         if (!empty($savePath)){
-            return Storage::put($savePath, $fileContent);
+            return file_put_contents($savePath, $fileContent);
         }
         return $fileContent;
     }

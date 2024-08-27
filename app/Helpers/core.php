@@ -279,10 +279,16 @@ function globalMedia($src){
     if (empty($src)) {
         return '';
     }
+    global $_W;
+    if (\Str::startsWith($src,'http://') || \Str::startsWith($src,'https://')) {
+        return $src;
+    }
+    if (\Str::startsWith($src,'//')) {
+        return preg_replace('/^\/\//', $_W['sitescheme'], $src);
+    }
     if (file_exists(public_path($src))){
         return assets($src);
     }
-    global $_W;
     if (empty($_W['attachurl_global'])){
         $attach_global = $_W['attachurl_local'];
         $_W['attachurl_global_remote'] = "";
@@ -292,12 +298,6 @@ function globalMedia($src){
             $_W['attachurl_global_remote'] = $attach_global;
         }
         $_W['attachurl_global'] = $attach_global;
-    }
-    if (\Str::startsWith($src,'//')) {
-        return preg_replace('/^\/\//', $_W['sitescheme'], $src);
-    }
-    if (\Str::startsWith($src,'http://') || \Str::startsWith($src,'https://')) {
-        return $src;
     }
     if (empty($_W['attachurl_global_remote']) || file_exists(storage_path("app/public/$src"))){
         return $_W['attachurl_local'] . $src;
@@ -368,16 +368,16 @@ function pdo_get($tablename, $condition = array(), $fields = array()) {
     return $query->first($fields);
 }
 
-function pdo_getall($tablename, $condition = array(), $fields = array(), $keyfield = '', $orderby = array(), $limit = array()) {
+function pdo_getall($tablename, $condition = array(), $fields = array(), $keyfield = '', $orderBy = array(), $limit = array()) {
     $query = DB::table($tablename)->where($condition);
     if ($fields){
         $query = $query->select($fields);
     }
-    if (!empty($orderby)){
-        if (!is_array($orderby)){
-            $orderby = array($orderby,'desc');
+    if (!empty($orderBy)){
+        if (!is_array($orderBy)){
+            $orderBy = array($orderBy,'desc');
         }
-        $query = $query->orderBy($orderby[0],$orderby[1]);
+        $query = $query->orderBy($orderBy[0],$orderBy[1]);
     }
     if ($limit){
         $query = $query->offset($limit[0])->limit($limit[1]);
