@@ -264,7 +264,7 @@ class MSService
                 $server['actions'] .= '<a class="layui-btn layui-btn-sm layui-btn-normal layui-hide-xs" target="_blank" href="'.$server['entry'].'">'.__('manage').'</a>';
             }
             $server['upgrade'] = array();
-            $upgradeAction = '<a class="layui-btn layui-btn-sm layui-btn-danger js-upgrade js-terminal layui-hide" data-text="'.__('升级前请做好数据备份').'" lay-tips="该服务可升级至最新版本" data-nid="'.$server['identity'].'" href="'.wurl('server', array('op'=>'cloudup', 'nid'=>$server['identity'])).'">'.__('upgrade').'</a>';
+            $upgradeAction = '<a class="layui-btn layui-btn-sm layui-btn-danger js-upgrade js-terminal layui-hide" data-text="'.__('升级前请做好数据备份').'" lay-tips="'.__('发现新版本').'" data-nid="'.$server['identity'].'" href="'.wurl('server', array('op'=>'cloudup', 'nid'=>$server['identity'])).'">'.__('upgrade').'</a>';
             if (DEVELOPMENT){
                 if (!empty(serv($server['identity'])->getMethods())){
                     $server['actions'] .= '<a class="layui-btn layui-btn-sm layui-hide-xs" target="_blank" href="'.wurl("server/methods/{$server['identity']}").'">'.__('methods').'</a>';
