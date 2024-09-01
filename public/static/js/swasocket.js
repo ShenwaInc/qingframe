@@ -43,7 +43,7 @@
                     self.Heartbeat = true;
                     self.socketRetry = 0;
                     self.HeartInterval = setInterval(function (){
-                        let sendHeart = self.doHeartbeat();
+                        let sendHeart = self.doHeartbeat(WsSocket);
                         if (!sendHeart){
                             clearInterval(self.HeartInterval);
                             self.HeartInterval = null;
@@ -90,11 +90,17 @@
                 console.log("Connection closed.", e);
                 self.io = null;
                 self.Heartbeat = false;
-                if (typeof (Fail) == 'function' && e.code!==1005) {
-                    Fail();
-                }
                 if (typeof (self.onDisconnect)=='function'){
                     self.onDisconnect();
+                }
+                if (e.code===1005 || e.code===3089){
+                    //手动停止
+                    clearInterval(self.HeartInterval);
+                    self.HeartInterval = null;
+                    return true;
+                }
+                if (typeof (Fail) == 'function' && e.code!==1005) {
+                    Fail();
                 }
                 if((e.code!==1000 && e.code!==1006) || typeof(e.code)=='undefined'){
                     if(self.socketRetry>=5){
@@ -127,10 +133,10 @@
             };
             return this.io.send(JSON.stringify(socketData));
         },
-        doHeartbeat:function (){
+        doHeartbeat:function (socket){
             if (!this.Heartbeat){
                 console.log("已经失去心跳急需抢救");
-                this.io.close(3019);
+                socket.close(3019);
                 return false;
             }
             this.Heartbeat = false;
