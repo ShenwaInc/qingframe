@@ -17,7 +17,7 @@ define('SITEACID', env('APP_UNIACID', 0));
 define('QingVersion', env('APP_VERSION'));
 define('QingRelease', (int)env('APP_RELEASE'));
 
-error_reporting(0);
+error_reporting(E_ERROR);
 global $_W,$_GPC;
 $_W = $_GPC = array();
 
@@ -41,6 +41,7 @@ class App
         $_GPC = $request->all();
         $_W['startTime'] = microtime(true);
         $_W['config'] = config('system');
+        $_W['setting'] = [];
         $_W['framework'] = ['version'=>QingVersion, 'release'=>QingRelease];
         $_W['timestamp'] = TIMESTAMP;
         $_W['charset'] = $_W['config']['setting']['charset'];
@@ -70,7 +71,7 @@ class App
         }
         if (config('app.debug')){
             ini_set('display_errors', '1');
-            error_reporting(E_ALL ^ E_NOTICE);
+            //error_reporting(E_ALL ^ E_NOTICE);
         }
         $appLocale = config('app.locale');
         $_W['locale'] = session()->get("FRAME_LOCALE", $appLocale);

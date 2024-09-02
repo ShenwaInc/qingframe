@@ -245,9 +245,6 @@ function tomedia($src, $local_path = false, $is_cahce = false) {
     if (empty($src)) {
         return '';
     }
-    if (file_exists(public_path($src))){
-        return defined('IN_SYS') ? assets($src) : $_W['siteroot'] . preg_replace('/^\//', '', $src);
-    }
     if ($is_cahce) {
         $src .= '?v=' . time();
     }
@@ -264,6 +261,18 @@ function tomedia($src, $local_path = false, $is_cahce = false) {
     }
     if (\Str::startsWith($src,'http://') || \Str::startsWith($src,'https://')) {
         return $src;
+    }
+    if (\Str::startsWith($src,'/') && file_exists(public_path($src))){
+        return defined('IN_SYS') ? assets($src) : $_W['siteroot'] . preg_replace('/^\//', '', $src);
+    }
+    if (file_exists($src)){
+        $baseDir = dirname($src);
+        if (strexists($baseDir, 'storage' . DIRECTORY_SEPARATOR . 'app/public' . DIRECTORY_SEPARATOR)){
+            return $_W['siteroot'] . 'storage/' . preg_replace('/^.+storage\/app\/public\//', "", $src);;
+        }elseif (strexists($baseDir, 'public' . DIRECTORY_SEPARATOR)){
+            return $_W['siteroot'] . preg_replace('/^.+public\//', "", $src);
+        }
+        return '';
     }
 
     if ($local_path || empty($_W['setting']['remote']['type']) || file_exists(storage_path("app/public/$src") )) {

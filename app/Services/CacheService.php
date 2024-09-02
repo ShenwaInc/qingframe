@@ -411,7 +411,6 @@ class CacheService
     static function system_key($cache_key) {
         $cache_key_all = self::key_all();
 
-        $params = array();
         $args = func_get_args();
         if (empty($args[1])) {
             $args[1] = '';
@@ -496,7 +495,7 @@ class CacheService
             }
         }
 
-        $cache_key = ':' . $cache_key;
+        $cache_key = env('APP_AUTHKEY') . ':' . $cache_key;
         if (strlen($cache_key) > 100) {
             trigger_error('Cache name is over the maximum length');
         }

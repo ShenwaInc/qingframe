@@ -233,16 +233,10 @@ class ModuleService
             if (file_exists(IA_ROOT . '/addons/' . $module_info['name'] . '/preview-custom.jpg')) {
                 $module_info['preview'] = tomedia(IA_ROOT . '/addons/' . $module_info['name'] . '/preview-custom.jpg', '', true);
             }
-            $module_receive_ban = (array)SettingService::Load('module_receive_ban');
-            if (is_array($module_receive_ban['module_receive_ban']) && in_array($name, $module_receive_ban['module_receive_ban'])) {
-                $module_info['is_receive_ban'] = true;
-            }
-            $module_ban = (array)SettingService::Load('module_ban');
-            if (is_array($module_ban['module_ban']) && in_array($name, $module_ban['module_ban'])) {
-                $module_info['is_ban'] = true;
-            }
+            $module_info['is_receive_ban'] = false;
+            $module_info['is_ban'] = false;
             $module_upgrade = (array)SettingService::Load('module_upgrade');
-            if (is_array($module_upgrade['module_upgrade']) && in_array($name, array_keys($module_upgrade['module_upgrade']))) {
+            if (!empty($module_upgrade['module_upgrade']) && in_array($name, array_keys($module_upgrade['module_upgrade']))) {
                 $module_info['is_upgrade'] = true;
             }
 
@@ -285,14 +279,14 @@ class ModuleService
             $setting = Cache::get($setting_cachekey,array());
             if (!isset($setting['settings'])) {
                 $setting = DB::table('uni_account_modules')->where(array('module'=>$name,'uniacid'=>$_W['uniacid']))->first();
-                $setting = empty($setting) ? array('module' => $name) : $setting;
+                $setting = empty($setting) ? array('module' => $name, 'shortcut'=>'', 'module_shortcut'=>'', 'displayorder'=>0, 'uniacid'=>$_W['uniacid'], 'settings'=>'') : $setting;
                 Cache::put($setting_cachekey, $setting, 86400*7);
             }
             $module['config'] = unserialize($setting['settings']);
             $module['enabled'] = $module['issystem'] || !isset($setting['enabled']) ? 1 : $setting['enabled'];
-            $module['displayorder'] = $setting['displayorder'];
-            $module['shortcut'] = $setting['shortcut'];
-            $module['module_shortcut'] = $setting['module_shortcut'];
+            $module['displayorder'] = empty($setting['displayorder'])?0:$setting['displayorder'];
+            $module['shortcut'] = empty($setting['shortcut'])?'':$setting['shortcut'];
+            $module['module_shortcut'] = empty($setting['module_shortcut'])?'':$setting['module_shortcut'];
         }
         return $module;
     }
