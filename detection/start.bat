@@ -1,1 +1,0 @@
-python.exe ./detecte.py
