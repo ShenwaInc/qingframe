@@ -1,0 +1,53 @@
+{
+    "categories_with_coordinates": [
+        {
+            "category": "b3",
+            "coordinates": [
+                712.5,
+                668.5
+            ]
+        },
+        {
+            "category": "b7",
+            "coordinates": [
+                721.0,
+                589.0
+            ]
+        },
+        {
+            "category": "b2",
+            "coordinates": [
+                730.5,
+                514.5
+            ]
+        },
+        {
+            "category": "b8",
+            "coordinates": [
+                740.0,
+                445.0
+            ]
+        },
+        {
+            "category": "b4",
+            "coordinates": [
+                761.0,
+                308.5
+            ]
+        },
+        {
+            "category": "b0",
+            "coordinates": [
+                770.5,
+                244.5
+            ]
+        },
+        {
+            "category": "b6",
+            "coordinates": [
+                794.0,
+                119.0
+            ]
+        }
+    ]
+}

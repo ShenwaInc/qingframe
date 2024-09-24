@@ -31,3 +31,4 @@ yarn-error.log
 !/resources/lang/*.json
 /public/logs/
 /*.bat
+/detection/

@@ -1,1 +1,0 @@
-php artisan module:run huiyun 192.168.1.178 4001 0
