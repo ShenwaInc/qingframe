@@ -36,22 +36,27 @@ function serv(...$params){
     if (isset($_servers[$serverId])){
         return $_servers[$serverId];
     }
-    $service = MICRO_SERVER.strtolower($name)."/{$name}Service.php";
-    if (!file_exists($service)){
-        return new CatchCall("Service $name Not Found.");
-    }
+    $identity = strtolower($name);
     try {
-        require_once $service;
-        $class_name = $name . 'Service';
+        $className = "\Server\\{$identity}\\{$name}Service";
+        if (!class_exists($className)){
+            $service = MICRO_SERVER.$identity."/{$name}Service.php";
+            if (!file_exists($service)){
+                return new CatchCall("Service $name Not Found.");
+            }
+            require_once $service;
+            $className = $name . 'Service';
+        }
         if (count($params)>1){
             unset($params[0]);
-            $instance = new $class_name(...$params);
+            $instance = new $className(...$params);
         }else{
-            $instance = new $class_name();
+            $instance = new $className();
         }
         $instance->serviceId = $serverId;
+        $instance->identity = $identity;
         if ($instance->service['status']!=1 || !$instance->enabled){
-            return new CatchCall("Service $class_name has stopped.");
+            return new CatchCall("Service $className has stopped.");
         }
     }catch (Exception $exception){
         return new CatchCall($exception->getMessage());

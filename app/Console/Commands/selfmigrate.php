@@ -73,15 +73,21 @@ class selfmigrate extends Command
             }
             //更新composer.json
             $composer = file_get_contents(base_path('composer.json'));
-            if (strpos($composer, 'public/addons')===false){
-                $composerJson = json_decode($composer, true);
-                $AddonsKey = "Addons\\";
-                $composerJson["autoload"]["psr-4"][$AddonsKey] = 'public/addons/';
+            $composerJson = json_decode($composer, true);
+            $psr4Servers = "Server\\";
+            if (!strexists($composer, 'public/addons') || empty($composerJson["autoload"]["psr-4"][$psr4Servers])){
+                if (strexists($composer, 'public/addons')){
+                    $AddonsKey = "Addons\\";
+                    $composerJson["autoload"]["psr-4"][$AddonsKey] = 'public/addons/';
+                }
+                if (empty($composerJson["autoload"]["psr-4"][$psr4Servers])){
+                    $composerJson["autoload"]["psr-4"][$psr4Servers] = 'servers/';
+                }
                 if (file_put_contents(base_path('composer.json'), json_encode($composerJson, JSON_UNESCAPED_UNICODE+JSON_PRETTY_PRINT+JSON_UNESCAPED_SLASHES))){
                     $WorkingDirectory = base_path("/");
                     $process = new Process(['composer','update']);
                     $process->setWorkingDirectory($WorkingDirectory);
-                    $process->setEnv(['COMPOSER_HOME'=>MSService::ComposerHome()]);
+                    $process->setEnv(['COMPOSER_HOME'=>base_path()]);
                     $process->setTimeout(300);
                     $process->run(function ($type, $buffer) {
                         $this->line($buffer);

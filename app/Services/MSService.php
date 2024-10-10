@@ -890,14 +890,15 @@ class MSService
 
     public static function ComposerHome(){
         $php_uname = php_uname();
+        $username = get_current_user();
         if (strexists($php_uname, "Windows")){
-            return "C:\Users\<user>\AppData\Roaming\Composer";
+            return "C:\Users\\{$username}\AppData\Roaming\Composer";
         }elseif (strexists($php_uname, "Linux")){
             return "/root/.composer";
         }elseif (strexists($php_uname, "nux")){
-            return "/home/<user>/.composer";
+            return "/home//{$username}/.composer";
         }elseif (strexists($php_uname, 'OSX')){
-            return '/Users/<user>/.composer';
+            return '/Users//{$username}/.composer';
         }
         return "";
     }
