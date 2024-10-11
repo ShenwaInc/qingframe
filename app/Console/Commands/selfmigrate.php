@@ -8,7 +8,6 @@ use App\Services\FileService;
 use App\Services\MSService;
 use Illuminate\Console\Command;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Symfony\Component\Process\Process;
@@ -87,7 +86,7 @@ class selfmigrate extends Command
                     $WorkingDirectory = base_path("/");
                     $process = new Process(['composer','update']);
                     $process->setWorkingDirectory($WorkingDirectory);
-                    $process->setEnv(['COMPOSER_HOME'=>base_path()]);
+                    $process->setEnv(['COMPOSER_HOME'=>MSService::ComposerHome()]);
                     $process->setTimeout(300);
                     $process->run(function ($type, $buffer) {
                         $this->line($buffer);

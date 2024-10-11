@@ -284,7 +284,10 @@ if(typeof Basetoken == 'undefined'){
                 PickerItem($(this));
                 return false;
             });
-            let UploadBtn = Ajaxwindow.find(".attach-uploader");
+            let UploadBtn = Ajaxwindow.find(".attach-uploader"), groupId = 0;
+            if(Ajaxwindow.find('.category .cate-item.layui-border-green').length>0){
+                groupId = Ajaxwindow.find('.category .cate-item.layui-border-green').data('id');
+            }
             let UploadOptions = {
                 elem: UploadBtn.get()[0],
                 url:UploadBtn.data('url'),
@@ -313,7 +316,8 @@ if(typeof Basetoken == 'undefined'){
                 data:{
                     token:Basetoken,
                     inputname:"file",
-                    frompage:"picker"
+                    frompage:"picker",
+                    gid:groupId
                 },
                 headers:{
                     "X-CSRF-TOKEN":Basetoken

@@ -896,9 +896,9 @@ class MSService
         }elseif (strexists($php_uname, "Linux")){
             return "/root/.composer";
         }elseif (strexists($php_uname, "nux")){
-            return "/home//{$username}/.composer";
+            return "/home/{$username}/.composer";
         }elseif (strexists($php_uname, 'OSX')){
-            return '/Users//{$username}/.composer';
+            return "/Users/{$username}/.composer";
         }
         return "";
     }
