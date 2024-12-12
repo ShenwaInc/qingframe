@@ -279,6 +279,7 @@ class CloudService
         if (!empty($isJson)){
             $result = error(-1, $isJson['message']);
             $result['redirect'] = trim($isJson['redirect']);
+            dd($result);
             return $result;
         }
         if (!$patch){
@@ -469,7 +470,12 @@ class CloudService
         if($return){
             if(strexists($res['content'], 'error')){
                 $result = json_decode($res['content'],true);
-                return error(-1,$result['message']);
+                if (empty($result)) return $res['content'];
+                $response = error(-1,$result['message']);
+                if (!empty($result['redirect'])){
+                    $response['redirect'] = $result['redirect'];
+                }
+                return $response;
             }
             return $res['content'];
         }
