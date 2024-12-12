@@ -276,5 +276,7 @@
     "patchFailed": "补丁获取失败",
     "activated": "已激活",
     "takesTime": "耗时:time秒",
-    "lowBrowserVersion": "您使用的 IE 浏览器版本过低, 推荐使用 Chrome 浏览器或 IE8 及以上版本浏览器."
+    "lowBrowserVersion": "您使用的 IE 浏览器版本过低, 推荐使用 Chrome 浏览器或 IE8 及以上版本浏览器.",
+    "welcomeEdit": "您可以使用其它编辑工具直接编辑&nbsp;&nbsp;<strong class=\"text-blue\">:path</strong>&nbsp;&nbsp;文件的内容（如果没有该文件请直接复制下方内容创建文件）",
+    "welcomeTips": "HTML内容支持渲染变量，具体标签语法请参考<a href=\"https://learnku.com/docs/laravel/6.x/blade/5147\" class=\"text-blue\" target=\"_blank\">Blade 模板</a>。如您不了解该内容，请不要轻易改动，以免对系统造成安全隐患"
 }

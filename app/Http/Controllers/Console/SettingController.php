@@ -225,21 +225,44 @@ class SettingController extends Controller
         ));
     }
 
+    /**
+     * @throws \Exception
+     */
+    public function doWelcome(){
+        $welcomePath = resource_path('views/welcomeCustom.blade.php');
+        if (checksubmit('save')){
+            $html = \request()->input('welcomeHTML');
+            if (!empty($html)){
+                $html = htmlspecialchars_decode($html);
+            }
+            if (empty($html) || !strexists($html, '<html') || !strexists($html, '</html>')){
+                return $this->message("无效的HTML内容");
+            }
+            if (!file_put_contents($welcomePath, $html)){
+                return $this->message('saveFailed');
+            }
+            return $this->message('savedSuccessfully', \request()->input('redirect', referer()), 'success');
+        }
+        $welcomeCustom = false;
+        if (file_exists($welcomePath)){
+            $welcomeCustom = true;
+            $welcomeHTML = file_get_contents($welcomePath);
+        }else{
+            $welcomeHTML = file_get_contents(resource_path('views/welcome.blade.php'));
+        }
+        return $this->globalView("console.setting.welcome", array(
+            'title'=>__('欢迎页'),
+            'isCustom'=>$welcomeCustom,
+            'path'=>$welcomePath,
+            'redirect'=>referer(),
+            'html'=>$welcomeHTML
+        ));
+    }
+
     public function index($op='main'){
         global $_W,$_GPC;
         if ($_W['config']['site']['id']==0){
             return redirect("console/active");
-        }
-        if($op=='detection'){
-            return $this->detection();
-        }elseif ($op=='selfupgrade'){
-            return $this->selfUpgrade();
-        }elseif ($op=='sysupgrade'){
-            return $this->SystemUpgrade();
-        }elseif ($op=='market'){
-            return $this->cloudMarket();
-        }elseif ($op=='updateLog'){
-            return $this->updateLog();
         }
         $return = array('title'=>'系统管理','op'=>$op,'components'=>array());
         if (!isset($_W['setting']['page'])){
@@ -248,7 +271,21 @@ class SettingController extends Controller
         if (!isset($_W['setting']['remote'])){
             $_W['setting']['remote'] = array('type'=>0);
         }
+        $method = 'do' . ucfirst($op);
+        if (method_exists($this, $method)){
+            return $this->$method();
+        }
         switch ($op) {
+            case 'detection':
+                return $this->detection();
+            case 'selfupgrade':
+                return $this->selfUpgrade();
+            case 'sysupgrade':
+                return $this->SystemUpgrade();
+            case 'market':
+                return $this->cloudMarket();
+            case 'updateLog':
+                return $this->updateLog();
             case 'pageset':
                 return $this->globalView("console.pageset", $return);
             case 'envdebug':
@@ -279,6 +316,7 @@ class SettingController extends Controller
                 $framework = DB::table('gxswa_cloud')->where('type', 0)->first(['id', 'version', 'identity', 'type', 'online', 'releasedate', 'rootpath']);
                 $return['framework'] = $framework;
                 $return['cloudInfo'] = !empty($framework['online']) ? unserialize($framework['online']) : array('upgradable' => false);
+                $return['welcomeCustom'] = file_exists(resource_path('views/welcomeCustom.blade.php'));
                 break;
         }
         $return['activeState'] = CloudService::CloudActive(true);

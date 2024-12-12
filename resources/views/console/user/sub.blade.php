@@ -49,7 +49,7 @@
                     <tr>
                         <td>{{ $value['uid'] }}</td>
                         <td>
-                            {{ $value['username'] }}
+                            @lang($value['username'])
                             @if(!empty($value['remark']))
                                 <span class="text-gray">({{$value['remark']}})</span>
                             @endif

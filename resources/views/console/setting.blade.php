@@ -96,7 +96,6 @@
                             <td class="text-right soild-after"></td>
                         </tr>
                         @if($_W['setting']['close']['status']==1)
-                            {
                             <tr>
                                 <td><span class="fui-table-lable">@lang('reasonForClosing')</span></td>
                                 <td class="soild-after">{{ $_W['setting']['close']['reson'] }}</td>
@@ -122,8 +121,16 @@
                                 @else
                                     @lang('notConfigured')
                                 @endif
+                            </td>
                             <td class="text-right soild-after">
                                 <a href="javascript:" class="text-blue js-SecurityEntrance">{{ __($appSecurityEntrance?'modify':'setup') }}</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><span class="fui-table-lable">@lang('欢迎页')</span></td>
+                            <td class="soild-after">@if($welcomeCustom) <span class="layui-badge layui-bg-blue">@lang('自定义')</span> @else <span class="layui-badge layui-bg-green">@lang('系统默认')</span> @endif</td>
+                            <td class="text-right soild-after">
+                                <a href="{{ wurl('setting/welcome') }}" class="text-blue">@lang('edit')</a>
                             </td>
                         </tr>
                         <tr>

@@ -28,7 +28,7 @@ class PlatformController extends Controller
         }
 
         session()->forget('uniacid');
-        $data = array('cancreate'=>true);
+        $data = array('creatable'=>true, 'consoleHome'=>true);
         $params = post_var(array('keyword'));
 
         if ($_W['isadmin']) {
@@ -40,9 +40,10 @@ class PlatformController extends Controller
         if (!$_W['isfounder']){
             $maxCreate = (int)DB::table('users_extra_limit')->where('uid',$_W['uid'])->value('maxaccount');
             if ($maxCreate<=$data['created']){
-                $data['cancreate'] = false;
+                $data['creatable'] = false;
             }
         }
+        $_W['consolePage'] = $_W['siteroot'];
 
         return $this->globalView('console.platform', $data);
     }

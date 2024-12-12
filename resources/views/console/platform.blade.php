@@ -3,7 +3,7 @@
 <div class="main-content">
 
     <div class="fui-card layui-card" style="min-height: 480px;">
-        @if(empty($list) && !$cancreate)
+        @if(empty($list) && !$creatable)
             <div class="fui-empty text-center" style="line-height: 480px;">
                 <span class="text-gray" style="font-size: 22px;">@lang('noPlatformAvailable')</span>
             </div>
@@ -28,7 +28,7 @@
                 </div>
             </div>
             @endforeach
-            @if($cancreate)
+            @if($creatable)
             <div class="layui-col-md3 layui-col-sm4 layui-col-xs12 fui-item">
                 <a href="{{ wurl("account/create") }}" title="{{ __('createNewData', array('data'=>__('platform'))) }}" class="fui-content dashed ajaxshow">
                     <div class="fui-info">

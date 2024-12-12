@@ -11,17 +11,48 @@
 |
 */
 
+use App\Http\Middleware\App;
+use App\Http\Middleware\Authenticate;
 use App\Http\Middleware\ConsolePermission;
 use App\Http\Middleware\ModulePermission;
+use App\Services\SettingService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 
-$appSecurityEntrance = env("APP_SECURITY_ENTRANCE", "/");
+$appSecurityEntrance = env("APP_SECURITY_ENTRANCE");
 if (!empty($appSecurityEntrance) && $appSecurityEntrance!="/"){
     Route::get("/$appSecurityEntrance", function (Request $request){
         $request->session()->put("securityEntrance", random(12));
         return redirect("/login");
     });
 }
+
+Route::get('/', function (Request $request){
+    try {
+        $installed = Schema::hasTable("account");
+    }catch (\Exception $exception){
+        if(in_array($exception->getCode(), [1044, 1045, 2002])){
+            $installed = false;
+        }else{
+            throw $exception;
+        }
+    }
+    if (!$installed){
+        return response()->redirectTo('installer');
+    }
+
+    global $_W;
+    $App = new App();
+    $App->initialize($request);
+    $locale = $request->input('lang', $_W['locale']);
+    if (!empty($locale) && $locale!=$_W['locale']){
+        \Illuminate\Support\Facades\App::setLocale($locale);
+        session()->put('FRAME_LOCALE', $locale);
+    }
+    SettingService::Load();
+    $language = serv('language');
+    return response()->view(['welcomeCustom', 'welcome'], array('title'=>__($_W['setting']['page']['title']), 'Multilingual'=>$language->enabled, 'locale'=>$locale));
+});
 
 Route::group(['prefix' => 'auth','namespace'=>'Auth', 'middleware'=>['app']],function (){
     Route::post('/login', 'AuthController@Login');
@@ -37,17 +68,13 @@ Route::group(['prefix' => 'wem','namespace' => 'App', 'middleware'=>['app','runt
     Route::post('/subscribe/{action}', 'ModuleController@subscribe');
 });
 
-Route::group(['namespace'=>'Console', 'middleware'=>['installer', 'app']],function (){
-    Route::get('/', 'EntryController@index');
-});
-
-Route::group(['prefix' => 'console', 'namespace' => 'Console', 'middleware'=>['auth', 'app', ConsolePermission::class]], function () {
+Route::group(['prefix' => 'console', 'namespace' => 'Console', 'middleware'=>[Authenticate::class, 'app', ConsolePermission::class]], function () {
     Route::get('/', 'PlatformController@index');
     Route::get('/util/{op?}', 'UtilController@index');
     Route::post('/util/{op?}', 'UtilController@save');
-    Route::match(['get', 'post'],'/active', 'SettingController@active');
-    Route::get('/setting/{op?}', 'SettingController@index');
     Route::post('/setting', 'SettingController@save');
+    Route::match(['get', 'post'],'/active', 'SettingController@active');
+    Route::match(['get', 'post'], '/setting/{op?}', 'SettingController@index');
     Route::get('/account/{uniacid}', 'PlatformController@checkout')->where('uniacid','[0-9]+');
     Route::match(['get', 'post'],'/account/{action}', 'AccountController@index')->where('action','[a-z]+');
     Route::match(['get', 'post'],'/user/{op?}', 'UserController@index');
@@ -60,7 +87,7 @@ Route::group(['prefix' => 'console', 'namespace' => 'Console', 'middleware'=>['a
     Route::match(['get', 'post'], '/report/{option?}', 'ReportController@httpReq');
 });
 
-Route::group(['prefix'=>'server', 'namespace' =>'Console', 'middleware'=>['auth', 'app', ConsolePermission::class]],function (){
+Route::group(['prefix'=>'server', 'namespace' =>'Console', 'middleware'=>[Authenticate::class, 'app', ConsolePermission::class]],function (){
     Route::any('/{server}/{segment1?}/{segment2?}', 'ServerController@HttpRequest');
 });
 
@@ -84,8 +111,7 @@ Auth::routes();
 Route::get('/home', 'HomeController@index')->name('home');
 
 Route::get('/admin/{modulename}', function (Request $request, $moduleName){
-    $user = $request->user();
-    if (empty($user)){
+    if (empty($request->user())){
         $referer = "/login?referer=console/m/$moduleName";
         return response()->redirectTo($referer);
     }

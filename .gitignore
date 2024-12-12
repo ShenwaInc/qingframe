@@ -32,3 +32,4 @@ yarn-error.log
 /public/logs/
 /*.bat
 /detection/
+/resources/views/welcomeCustom.blade.php

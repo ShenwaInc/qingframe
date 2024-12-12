@@ -7,7 +7,7 @@
                 <p class="layui-word-aux">@lang('platformDistinguish')</p>
             </div>
             <div class="layui-card-body">
-                @if(empty($platforms) && !$cancreate)
+                @if(empty($platforms) && !$creatable)
                     <div class="fui-empty text-center" style="line-height: 480px;">
                         <span class="text-gray" style="font-size: 22px;">@lang('noPlatformAvailable')</span>
                     </div>
