@@ -167,7 +167,7 @@ class CloudService
                                 $local['expireDate'] = '<span class="'.($toDay>30?'text-gray':'text-orange').'">'.__('expiresOn', array('date'=>date('Y-m-d', $value['authorize']['expiretime']))).'</span>';
                             }
                         }else{
-                            $local['expireDate'] = '<span class="text-red">'.$value['authorize']['message'].'</span>';
+                            $local['expireDate'] = '<span class="text-red">'.__($value['authorize']['message']).'</span>';
                         }
                     }
                     if (version_compare($local['version'], $value['release']['version'], '<') || $local['releasedate']<$releaseDate){

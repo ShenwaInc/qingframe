@@ -48,7 +48,7 @@ function serv(...$params){
             $className = $name . 'Service';
         }
         if (count($params)>1){
-            unset($params[0]);
+            array_splice($params, 0, 1);
             $instance = new $className(...$params);
         }else{
             $instance = new $className();

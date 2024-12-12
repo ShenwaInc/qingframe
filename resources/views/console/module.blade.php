@@ -54,7 +54,7 @@
                                     <td>
                                         <img src="{{ $com['logo'] }}" class="fl bg-gray radius margin-right-sm" height="48" />
                                         <div class="fui-table-name">
-                                            <a href="{{$com['website']}}" class="text-blue" target="_blank">{{$com['name']}}</a><br/>
+                                            <a href="{{$com['website']}}" class="text-blue" title="@lang($com['description'])" target="_blank">@lang($com['name'])</a><br/>
                                             <span title="Release {{ $com['releasedate'] }}">V{{$com['version']}}</span>
                                         </div>
                                     </td>

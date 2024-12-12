@@ -24,12 +24,12 @@
                                         <td>
                                             <img src="{{ $com['logo'] }}" class="fl bg-gray radius margin-right-sm" height="48" />
                                             <div class="fui-table-name text-cut">
-                                                <a href="{{$com['website']}}" class="text-blue" target="_blank">{{$com['name']}}</a><br/>
+                                                <a href="{{$com['website']}}" class="text-blue" target="_blank">@lang($com['name'])</a><br/>
                                                 V{{$com['version']}}
                                             </div>
                                         </td>
                                         <td class="layui-hide-xs">
-                                            <p class="text-ellip">{{ $com['description'] }}</p>
+                                            <p class="text-ellip">@lang($com['description'])</p>
                                         </td>
                                         <td class="text-right">
                                             <div class="layui-btn-group">{!! $com['action'] !!}</div>

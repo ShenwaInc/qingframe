@@ -556,7 +556,7 @@ class MSService
             if (isset($application['cover'])){
                 $file_info = pathinfo($service['cover']);
                 if (md5($application['cover']) != $file_info['filename']){
-                    $application['cover'] = $this->makeCover($application['cover'], $identity);
+                    $application['cover'] = @$this->makeCover($application['cover'], $identity);
                 }
             }
             if (!pdo_update(self::$tableName, $application, array('identity'=>$service['identity']))){

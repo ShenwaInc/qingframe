@@ -70,7 +70,7 @@ class selfmigrate extends Command
             if ($query->exists()){
                 $query->delete();
             }
-            //更新composer.json
+            //动态更新composer.json
             $composer = file_get_contents(base_path('composer.json'));
             $composerJson = json_decode($composer, true);
             $psr4Servers = "Server\\";
@@ -103,6 +103,17 @@ class selfmigrate extends Command
                     $this->error('composer.json migrate fail.');
                 }
             }
+            //动态更新语言包
+            $languages = [];
+            if (!empty($languages)){
+                $languageService = serv('language');
+                if ($languageService->enabled){
+                    foreach ($languages as $key=>$value){
+                        $languageService->langAppend($key, $value);
+                    }
+                }
+            }
+            //更新系统缓存
             CacheService::flush();
             $this->info('Qingwork framework migrate successfully.');
         } catch (\Exception $exception){

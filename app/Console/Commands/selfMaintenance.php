@@ -43,8 +43,9 @@ class selfMaintenance extends Command
         $state = $this->argument('state');
 
         if (ModuleService::maintenance($identity, $state)){
-            return $this->info('Cloud service configuration successfully.');
+            $this->info('Cloud service configuration successfully.');
+        }else{
+            $this->error('Application cloud service configuration failed');
         }
-        $this->error('Application cloud service configuration failed');
     }
 }

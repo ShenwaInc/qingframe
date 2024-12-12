@@ -369,6 +369,13 @@ if(typeof Basetoken == 'undefined'){
                     Elem.find("input.layui-input").val(InputVal);
                     $("#"+PickerId+"-avatar").attr("src", Curdd.data('avatar'));
                     Elem.find(".layui-form-select").addClass("selected").removeClass("layui-form-selected");
+                    if(typeof(onMemberPick)=='function'){
+                        onMemberPick({
+                            uid:Curuid,
+                            nickname:InputVal,
+                            avatar:Curdd.data('avatar')
+                        });
+                    }
                 });
                 Elem.on("input", ".layui-input", function (e){
                     let Input = $(this);

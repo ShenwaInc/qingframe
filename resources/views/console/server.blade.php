@@ -18,7 +18,7 @@
 
         @if(empty($activeState['hasDomain']))
             <div class="layui-elem-quote margin-bottom-xl" style="border-color: #FF5722; background-color: #fadbd9;">
-                <p class="text-red">当前域名不是系统授权域名，请<a href="{{ $activeState['siteroot'] }}" class="text-blue">使用授权域名登录</a>以使用云服务。或者<a href="{{ wurl('active') }}" class="text-blue">重置云服务授权</a></p>
+                <p class="text-red">当前域名不是系统授权域名，请<a href="{{ $activeState['siteroot'] }}" class="text-blue">使用授权域名登录</a>以使用云服务。或者<a href="{{ wurl('active') }}" class="text-blue">@lang('重置云服务')</a></p>
             </div>
         @endif
 
@@ -54,9 +54,9 @@
                     <tr>
                         <td>
                             <div class="text-cut" style="max-width: 40vw;">
-                                <img alt="{{ $service['name'] }}" class="layui-avatar" src="{{ globalMedia($service['cover']) }}?v={{ QingRelease }}" height="36" />
+                                <img alt="@lang($service['name'])" class="layui-avatar" src="{{ globalMedia($service['cover']) }}?v={{ QingRelease }}" height="36" />
                                 @if($op=='index' && !empty($service['entry']))
-                                    <a href="{{ $service['entry'] }}" target="_blank" class="color-default">{{ $service['name'] }}</a>
+                                    <a href="{{ $service['entry'] }}" target="_blank" class="color-default">@lang($service['name'])</a>
                                 @else
                                     <span class="color-default">{{ $service['name'] }}</span>
                                 @endif
@@ -69,7 +69,7 @@
                         <td class="layui-hide-xs">
                             V{{ $service['version'] }}
                         </td>
-                        <td class="layui-hide-xs">{{ $service['summary'] }}</td>
+                        <td class="layui-hide-xs">@lang($service['summary'])</td>
                         <td class="text-right">
                             @if(empty($service['binded']))
                             <div class="layui-btn-group text-center">

@@ -219,7 +219,7 @@ class SettingController extends Controller
             }
         }
         return $this->globalView('console.market', array(
-            'title'=>"应用市场",
+            'title'=>__("应用市场"),
             'components'=>$plugins,
             'pager'=>pagination($res['total'], $page)
         ));
@@ -261,7 +261,7 @@ class SettingController extends Controller
                 if (!$complete) {
                     return $this->message('文件写入失败，请检查根目录权限');
                 }
-                return $this->message('操作成功！', wurl('setting'), 'success');
+                return $this->message('successful', wurl('setting'), 'success');
             case 'comcheck':
                 $component = DB::table('gxswa_cloud')->where('id', intval($_GPC['cid']))->first(['id', 'identity', 'type', 'online', 'releasedate', 'rootpath']);
                 if (empty($component)) return $this->message('找不到该服务组件');
@@ -366,7 +366,7 @@ class SettingController extends Controller
             }
             $complete = SettingService::Save($config,'page');
             if ($complete){
-                return $this->message('保存成功',wurl('setting'),'success');
+                return $this->message('savedSuccessfully',wurl('setting'),'success');
             }
         }elseif ($op=='appSecurity'){
             $appSecurityEntrance = env("APP_SECURITY_ENTRANCE");
@@ -380,15 +380,15 @@ APP_SECURITY_ENTRANCE=$SecurityCode
 
 EOF;
                     if (!CloudService::CloudEnv("APP_TIMEZONE=$TIMEZONE",$replace)){
-                        return $this->message("设置失败，请检查文件权限");
+                        return $this->message("文件写入失败，请检查根目录权限");
                     }
                 }else{
                     if (!CloudService::CloudEnv("APP_SECURITY_ENTRANCE=$appSecurityEntrance","APP_SECURITY_ENTRANCE=".trim($SecurityCode))){
-                        return $this->message("设置失败，请检查文件权限");
+                        return $this->message("文件写入失败，请检查根目录权限");
                     }
                 }
             }
-            return $this->message('设置成功！',wurl('setting'),'success');
+            return $this->message('savedSuccessfully',wurl('setting'),'success');
         }
         return $this->message();
     }

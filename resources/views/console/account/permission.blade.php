@@ -17,7 +17,7 @@
 @if(!$_W['isajax'])
     <div class="main-content">
         <div class='title'>
-            <h2>@lang('operatingAuthority')</h2>
+            <h2>@lang('操作权限')</h2>
             <a href='javascript:;' onClick="javascript:history.back()">@lang('back')</a>
         </div>
         <div class="fui-card layui-card">
