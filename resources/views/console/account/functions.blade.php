@@ -39,7 +39,7 @@
                         <a target="_blank" href="{{ wurl("m/".$item['identity']) }}" class="fui-content">
                             <div class="fui-info">
                                 <img alt="{{ $item['name'] }}" class="radius" src="{{ $item['logo'] }}" />
-                                <strong class="card-name">{{ $item['name'] }}</strong>
+                                <strong class="card-name">@lang($item['name'])</strong>
                             </div>
                         </a>
                         @if($_W['isfounder'])
@@ -62,11 +62,11 @@
             <div class="layui-row layui-col-space15 fui-list card">
                 @foreach($servers as $value)
                     <div class="layui-col-lg3 layui-col-md4 layui-col-sm6 layui-col-xs12 fui-item fui-item-sm arrow">
-                        <a target="_blank" href="{{ $value['entrance'] }}" title="{{ $value['summary'] }}" class="fui-content">
+                        <a target="_blank" href="{{ $value['entrance'] }}" title="@lang('manage')" class="fui-content">
                             <div class="fui-info">
-                                <img alt="{{ $value['title'] }}" class="radius" src="{{ assets($value['cover']) }}" />
-                                <strong class="card-name">{{ $value['title'] }}</strong>
-                                <p class="text-cut">{{ $value['summary'] }}</p>
+                                <img alt="@lang($value['title'])" class="radius" src="{{ assets($value['cover']) }}" />
+                                <strong class="card-name">@lang($value['title'])</strong>
+                                <p class="text-cut">@lang($value['summary'])</p>
                             </div>
                         </a>
                     </div>

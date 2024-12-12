@@ -14,7 +14,7 @@
                             <div class="layui-input-block">
                                 <div class="layui-input-inline" style="width: 70%">
                                     <select name="uid" lay-search required lay-verify="required">
-                                        <option value="">{{ __('type&search', array('input'=>__('username'))) }}</option>
+                                        <option value="">{{ __('type&search', array('data'=>__('username'))) }}</option>
                                         @foreach($subusers as $sub)
 
                                             <option value="{{ $sub['uid'] }}"{{ $owner==$sub['uid']?' disabled':'' }}>{{ $sub['username'] }}{{ $owner==$sub['uid']?'('.__('owner').')':'' }}</option>
@@ -27,7 +27,7 @@
                         <div class="layui-form-item">
                             <label class="layui-form-label">@lang('role')</label>
                             <div class="layui-input-block">
-                                <input type="radio" name="role" value="manager" checked title="@lang('manager')" />
+                                <input type="radio" name="role" value="manager" checked title="@lang('管理员')" />
                                 <input type="radio" name="role" value="operator" title="@lang('operator')" />
                             </div>
                         </div>

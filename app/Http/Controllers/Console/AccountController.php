@@ -72,7 +72,7 @@ class AccountController extends Controller
     public function doRole(Request $request){
         global $_W;
         if ($this->role!='owner' && !$_W['isfounder'])return $this->message(__('暂无权限'));
-        $return = array('title'=>__('operatingAuthority'),'users'=>array(),'uniacid'=>$this->uniacid,'role'=>$this->role);
+        $return = array('title'=>__('操作权限'),'users'=>array(),'uniacid'=>$this->uniacid,'role'=>$this->role);
         $subs = UserService::GetSubs($_W['uid']);
         $op = $request->input('op','');
         if ($request->isMethod('post')){
