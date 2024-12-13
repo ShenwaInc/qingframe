@@ -490,7 +490,7 @@ class CloudService
         if($return){
             if(strexists($res['content'], 'error')){
                 $result = json_decode($res['content'],true);
-                if (empty($result)) return $res['content'];
+                if (json_last_error() != JSON_ERROR_NONE || empty($result['message'])) return $res['content'];
                 $response = error(-1,$result['message']);
                 if (!empty($result['redirect'])){
                     $response['redirect'] = $result['redirect'];
