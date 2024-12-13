@@ -377,34 +377,54 @@ class CloudService
         return true;
     }
 
-    static function CloudCompare($structures=array(),$target='',$basedir=''){
+    /**
+     * 文件结构对比，通过文件md5对比本地文件夹和给定的文件结构是否有偏差
+     * @param array $structures 文件结构
+     * @param string $target 本地文件夹路径，须以 / 结尾
+     * @param string|null $basedir 本次对比的子目录，须以 / 结尾
+     * @param array|null $ignore 忽略文件
+    */
+    static function CloudCompare($structures,$target,$basedir='', $ignore=[]){
         if (empty($structures) || !$target) return false;
         if (!is_dir($target)) return  $structures;
         $difference = array();
         foreach ($structures as $item){
             if (is_array($item)){
+                //文件夹，进一步扫描对比
                 $folder = $basedir.$item[0];
-                $dirdiff = array();
+                if (in_array($folder, $ignore) || in_array($folder."/", $ignore)){
+                    //已注明的忽略文件夹
+                    continue;
+                }
+                $dirDiff = array();
                 if (!is_dir($target.$folder)){
-                    $dirdiff = $item;
+                    $dirDiff = $item;
                 }else{
                     $structure = self::CloudCompare($item[1],$target,$folder.'/');
                     if (!empty($structure)){
-                        $dirdiff = array($item[0],$structure);
+                        $dirDiff = array($item[0],$structure);
                     }
                 }
-                if (!empty($dirdiff)){
-                    $difference[] = $dirdiff;
+                if (!empty($dirDiff)){
+                    $difference[] = $dirDiff;
                 }
             }else{
-                $fileinfo = explode('|',$item);
-                $filepath = $basedir.$fileinfo[0];
+                list($filename, $fileMD5) = explode('|',$item);
+                if (\Str::startsWith($filename, '.')){
+                    //忽略对比以.开头的文件
+                    continue;
+                }
+                $filepath = $basedir.$filename;
+                if (in_array($filepath, $ignore) || in_array("/".$filepath, $ignore)){
+                    //已注明的忽略文件
+                    continue;
+                }
                 if (!file_exists($target.$filepath)){
                     $difference[] = $item;
                 }else{
                     $md5 = md5_file($target.$filepath);
                     $hash = substr($md5,0,4).substr($md5,-4);
-                    if($hash!=$fileinfo[1]){
+                    if($hash!=$fileMD5){
                         $difference[] = $item;
                     }
                 }

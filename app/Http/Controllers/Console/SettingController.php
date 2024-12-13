@@ -300,8 +300,11 @@ class SettingController extends Controller
                 }
                 return $this->message('successful', wurl('setting'), 'success');
             case 'comcheck':
-                $component = DB::table('gxswa_cloud')->where('id', intval($_GPC['cid']))->first(['id', 'identity', 'type', 'online', 'releasedate', 'rootpath']);
+                $component = DB::table('gxswa_cloud')->where('id', intval($_GPC['cid']))->first(['id', 'identity', 'type', 'online', 'releasedate', 'rootpath', 'modulename']);
                 if (empty($component)) return $this->message('找不到该服务组件');
+                if (empty($component['identity'])){
+                    $component['identity'] = ModuleService::SysPrefix($component['modulename']);
+                }
                 $cloudInfo = $this->checkCloud($component, 1, true);
                 if (is_error($cloudInfo)) {
                     return $this->message($cloudInfo['message']);
@@ -354,7 +357,7 @@ class SettingController extends Controller
             }
         }
         $difference = $upgradeInfo['difference'];
-        unset($upgradeInfo['structure'],$upgradeInfo['difference']);
+        unset($upgradeInfo['structure'], $upgradeInfo['difference']);
         $update = array('dateline'=>TIMESTAMP,'online'=>serialize($upgradeInfo));
         pdo_update('gxswa_cloud',$update,array('identity'=>$component['identity']));
         $upgradeInfo['structure'] = $structure;
@@ -365,10 +368,17 @@ class SettingController extends Controller
 
     public function compare($component,$structure=''){
         if (!$structure) return array();
-        $targetpath = base_path($component['rootpath']);
-        if ($component['type']==0) $targetpath = base_path() . "/";
+        $targetPath = base_path($component['rootpath']);
+        if ($component['type']==0) $targetPath = base_path() . "/";
         $structures = json_decode(base64_decode($structure), true);
-        return CloudService::CloudCompare($structures,$targetpath);
+        $ignore = [];
+        if (file_exists($targetPath."ignore.json")){
+            $JSON = file_get_contents($targetPath."ignore.json");
+            if (!empty($JSON)){
+                $ignore = (array)json_decode($JSON);
+            }
+        }
+        return CloudService::CloudCompare($structures, $targetPath, '', $ignore);
     }
 
     public function hasdifference($difference,$type=0){
