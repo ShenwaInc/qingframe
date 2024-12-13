@@ -15,6 +15,7 @@ html, body {
     align-items: center;
     display: flex;
     justify-content: center;
+    position: relative;
 }
 
 .position-ref {
@@ -25,6 +26,17 @@ html, body {
     position: absolute;
     right: 10px;
     top: 18px;
+}
+
+.page-top{
+    position: absolute;
+    width: 100%;
+    height: auto;
+    top: 0;
+    left: 0;
+    min-height: 630px;
+    background: url("../images/page1.png") no-repeat;
+    background-size: contain;
 }
 
 .content {

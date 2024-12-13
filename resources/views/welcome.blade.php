@@ -14,6 +14,8 @@
     </head>
     <body>
         <div class="flex-center position-ref full-height">
+            <div class="page-top"></div>
+
             @if (Route::has('login'))
                 <div class="top-right links">
                     @auth
