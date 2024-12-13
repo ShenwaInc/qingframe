@@ -416,7 +416,7 @@ class MicroService
             $msg = $type=='success' ? ($_W['isapi']?'OK':'successful') : 'operationFailed';
         }
         $data = array('message'=>$msg,'redirect'=>$redirect,'type'=>$type);
-        if (is_string($data['message']) && preg_match('/^([\w\s.]+)$/', $data['message'])){
+        if (is_string($data['message']) && preg_match('/^([\w\s.]*)([\x{4e00}-\x{9fa5}]*)$/u', $data['message'])){
             $data['message'] = __($data['message']);
         }
         ob_clean();

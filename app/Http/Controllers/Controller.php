@@ -14,7 +14,7 @@ class Controller extends BaseController
 
     public function message($prompt='operationFailed', $redirect='', $type='error', $extra=array()){
         global $_W;
-        if (is_string($prompt)){
+        if (is_string($prompt) && preg_match('/^([\w\s.]*)([\x{4e00}-\x{9fa5}]*)$/u', $prompt)){
             $prompt = __($prompt);
         }
         if ($redirect && isset($extra['light']) && $extra['light']!=''){
