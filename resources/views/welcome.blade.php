@@ -10,7 +10,7 @@
         <link rel="stylesheet" href="{{ assets('/static/css/nunito.css') }}?v={{ QingRelease }}" />
 
         <!-- Styles -->
-        <link rel="stylesheet" href="{{ assets('/static/css/welcome.css') }}?v={{ TIMESTAMP }}" />
+        <link rel="stylesheet" href="{{ assets('/static/css/welcome.css') }}?v={{ QingRelease }}" />
     </head>
     <body>
         <div class="flex-bottom position-ref full-height">
