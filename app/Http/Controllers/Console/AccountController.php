@@ -292,7 +292,10 @@ class AccountController extends Controller
         if (checksubmit()){
             $controller = trim($_GPC['ctrl']);
             if (empty($controller)) return $this->message("defaultEntryValid");
-            $method = trim($_GPC['methods'][$controller]);
+            $method = 'profile';
+            if (!empty($_GPC['methods'][$controller])){
+                $method = trim($_GPC['methods'][$controller]);
+            }
             if (empty($method)) return $this->message("defaultEntryValid");
             $condition = array(
                 'uid'=>$_W['uid'],

@@ -2,23 +2,12 @@
 
 <div class="main-content">
 
-    <h2>{{ __('manageData', array('data'=>__('platform'))) }}</h2>
+    <h2>
+        <a href="javascript:window.history.go(-1);" class="pull-right fr layui-btn layui-btn-primary">@lang('back')</a>
+        {{ $title }}
+    </h2>
 
-    <div class="layui-tab fui-tab margin-bottom-xl">
-        <ul class="layui-tab-title title_tab">
-            <li>
-                <a href="{{ wurl('account/profile',array('uniacid'=>$uniacid)) }}">@lang('基础信息')</a>
-            </li>
-            <li>
-                <a href="{{ wurl('account/functions',array('uniacid'=>$uniacid)) }}">@lang('应用与服务')</a>
-            </li>
-            <li class="layui-this">
-                <a href="{{ wurl('account/role',array('uniacid'=>$uniacid)) }}">@lang('操作权限')</a>
-            </li>
-        </ul>
-    </div>
-
-    <div class="fui-card layui-card">
+    <div class="fui-card layui-card margin-top-xl">
         <div class="layui-card-header nobd">
             <a href="{{ wurl('account/role',array('uniacid'=>$uniacid,'op'=>'add'),true) }}" data-width="750" title="{{ __('newData', array('data'=>__('platformOperator'))) }}" class="fr layui-btn layui-btn-sm layui-btn-normal ajaxshow">{{ __('newData', array('data'=>__('operator'))) }}</a>
             <span class="title">@lang('操作权限')</span>

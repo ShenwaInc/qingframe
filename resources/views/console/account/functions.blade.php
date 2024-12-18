@@ -2,23 +2,10 @@
 
 <div class="main-content fui-content">
 
-    <h2>{{ __('manageData', array('data'=>__('platform'))) }}</h2>
-
-    <div class="layui-tab fui-tab margin-bottom-xl">
-        <ul class="layui-tab-title title_tab">
-            <li>
-                <a href="{{ wurl('account/profile',array('uniacid'=>$uniacid)) }}">@lang('基础信息')</a>
-            </li>
-            <li class="layui-this">
-                <a href="{{ wurl('account/functions',array('uniacid'=>$uniacid)) }}">@lang('应用与服务')</a>
-            </li>
-            @if(in_array($role,['founder','owner']) || $_W['isfounder'])
-                <li>
-                    <a href="{{ wurl('account/role',array('uniacid'=>$uniacid)) }}">@lang('操作权限')</a>
-                </li>
-            @endif
-        </ul>
-    </div>
+    <h2>
+        <a href="javascript:window.history.go(-1);" class="pull-right fr layui-btn layui-btn-primary">@lang('back')</a>
+        {{ __('manageData', array('data'=>__('platform'))) }}
+    </h2>
 
     <div class="fui-card layui-card">
         <div class="layui-card-header nobd">

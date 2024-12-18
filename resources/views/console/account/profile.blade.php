@@ -2,9 +2,9 @@
 
 <div class="main-content fui-content">
 
-    <h2>{{ __('manageData', array('data'=>__('platform'))) }}</h2>
+    <h2 class="layui-hide">{{ __('manageData', array('data'=>__('platform'))) }}</h2>
 
-    <div class="layui-tab fui-tab margin-bottom-xl">
+    <div class="layui-tab fui-tab margin-bottom-xl layui-hide">
         <ul class="layui-tab-title title_tab">
             <li class="layui-this">
                 <a href="{{ wurl('account/profile',array('uniacid'=>$uniacid)) }}">@lang('基础信息')</a>
@@ -40,7 +40,7 @@
                             <tbody>
                             <tr>
                                 <td><span class="fui-table-lable">{{ __('IDofData', array('data'=>__('platform'))) }}</span></td>
-                                <td class="soild-after">{{ $uniacid }}&nbsp;&nbsp;<a href="javascript:;" data-url="{{ $uniacid }}" class="text-blue js-clip"><i class="fa fa-copy"></i></a></td>
+                                <td class="soild-after">{{ $uniacid }}&nbsp;&nbsp;<a href="javascript:;" data-url="{{ $uniacid }}" class="text-gray js-clip"><i class="fa fa-copy"></i></a></td>
                                 <td class="text-right soild-after">
                                     <a href="javascript:;" data-url="{{ $_W['siteroot']."login/".$account['uniacid'] }}" class="text-blue js-clip">@lang('copyPlatformEntry')</a>
                                 </td>
@@ -72,17 +72,14 @@
                                 </td>
                                 <td colspan="2">
                                     <div class="layui-row layui-col-space20">
-                                        @if($_W['isfounder'])
-                                        <div class="fui-icon-list" lay-tips="@lang('清空表示设为长期有效')">
-                                            <a href="javascript:;">
+                                        <div class="fui-icon-list">
+                                            <a href="{{ wurl('account/entry',array('uniacid'=>$uniacid)) }}" title="{{ __('modifyData', array('data'=>__('默认入口'))) }}" class="ajaxshow">
                                                 <div class="fui-icon-item">
-                                                    <span class="layui-icon-date layui-icon"></span>
+                                                    <span class="layui-icon-console layui-icon"></span>
                                                 </div>
-                                                @lang('expireDate')
+                                                @lang('默认入口')
                                             </a>
-                                            <input type="text" id="expirdate" style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;" name="expire" value="" />
                                         </div>
-                                        @endif
                                         <div class="fui-icon-list" lay-tips="@lang('interfaceFileRemain')">
                                             <a href="javascript:" class="js-api-verify">
                                                 <div class="fui-icon-item">
@@ -92,7 +89,7 @@
                                             </a>
                                         </div>
                                         @if(in_array($role,['founder','owner']) || $_W['isfounder'])
-                                        <div class="fui-icon-list" @if(!empty($settings['bind_domain'])) lay-tips="{{ __('已绑定域名：:domain', ['domain'=>$settings['bind_domain']]) }}" @endif>
+                                        <div class="fui-icon-list">
                                             <a href="javascript:setDomain('{{$settings['bind_domain']}}');">
                                                 <div class="fui-icon-item @if(!empty($settings['bind_domain'])) selected @endif">
                                                     <span class="layui-icon-website layui-icon"></span>
@@ -100,15 +97,34 @@
                                                 @lang('绑定域名')
                                             </a>
                                         </div>
-                                        @endif
-                                        <div class="fui-icon-list" lay-tips="{{$entrance}}">
-                                            <a href="{{ wurl('account/entry',array('uniacid'=>$uniacid)) }}" title="{{ __('modifyData', array('data'=>__('默认入口'))) }}" class="ajaxshow">
+                                        <div class="fui-icon-list">
+                                            <a href="{{ wurl('account/role',array('uniacid'=>$uniacid)) }}">
                                                 <div class="fui-icon-item">
-                                                    <span class="layui-icon-console layui-icon"></span>
+                                                    <span class="layui-icon-group layui-icon"></span>
                                                 </div>
-                                                @lang('默认入口')
+                                                @lang('操作权限')
                                             </a>
                                         </div>
+                                        @endif
+                                        @if($_W['isfounder'])
+                                            <div class="fui-icon-list" lay-tips="@lang('清空表示设为长期有效')">
+                                                <a href="javascript:;">
+                                                    <div class="fui-icon-item">
+                                                        <span class="layui-icon-date layui-icon"></span>
+                                                    </div>
+                                                    @lang('expireDate')
+                                                </a>
+                                                <input type="text" id="expirdate" style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;" name="expire" value="" />
+                                            </div>
+                                            <div class="fui-icon-list">
+                                                <a href="https://www.yuque.com/shenwa/qingru/wq6gs0omqb3gb82h" target="_blank">
+                                                    <div class="fui-icon-item">
+                                                        <span class="layui-icon-about text-orange layui-icon"></span>
+                                                    </div>
+                                                    @lang('使用指南')
+                                                </a>
+                                            </div>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>
@@ -136,7 +152,7 @@
                         <div class="layui-row layui-col-space15 fui-list card">
                             @foreach($components as $item)
                                 <div class="layui-col-lg6 layui-col-sm12 fui-item arrow">
-                                    <a target="_blank" href="{{ wurl("m/".$item['identity']) }}" class="fui-content">
+                                    <a target="_blank" href="{{ wurl("m/".$item['identity']) }}" class="fui-content margin-0">
                                         <div class="fui-info">
                                             <img alt="{{ $item['name'] }}" class="radius" src="{{ $item['logo'] }}" />
                                             <strong class="card-name">@lang($item['name'])</strong>

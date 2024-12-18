@@ -94,6 +94,7 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 .text-cut{overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
 
 /* padding-margin */
+.padding-0{padding: 0 !important;}
 .padding{padding: 15px;}
 .padding-xl{padding: 30px;}
 .padding-lr{padding-left: 15px; padding-right: 15px;}
@@ -133,7 +134,6 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 .fui-footer-copyright{color: #9a9a9a; font-size: 12px;}
 
 .card .js-dropdown{position: absolute; top: 15px; right: 15px;}
-.card.layui-col-space15 .js-dropdown{right: 25px;}
 .js-dropdown .layui-icon{height: 20px; line-height: 20px; background-color: #FFFFFF; position: absolute; right: 0; padding: 0 5px; border-radius: 2px 2px 0 0; z-index: 101; border: 1px solid #FFFFFF; border-bottom: 0;}
 .js-dropdown .js-dropdown-menu{top: 20px; left: auto; right: 0; border-radius: 2px 0 2px 2px; box-shadow: none;}
 .js-dropdown .js-dropdown-menu a{line-height: 28px; padding: 0 10px;}
