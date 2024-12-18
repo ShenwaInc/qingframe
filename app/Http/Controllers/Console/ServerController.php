@@ -82,13 +82,15 @@ class ServerController extends Controller
     }
 
     public function index(Request $request){
-        if (empty($GLOBALS['_W']['config']['site']['id'])){
+        global $_W;
+        if (empty($_W['config']['site']['id'])){
             return redirect("console/active");
         }
+        $_W['inSetting'] = true;
         $startTime = time();
         $op = $request->input("op","index");
         $identity = $request->input("nid", "");
-        $return = array("title"=>__('microServers'), "op"=>$op);
+        $return = array("title"=>__('服务管理'), "op"=>$op);
         $MSS = new MSService();
         switch ($op){
             case "stop" : {

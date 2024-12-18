@@ -14,7 +14,7 @@
             <ul class="layui-nav layui-layout-right">
                 @if($_W['uid']>0)
                     <li class="layui-nav-item">
-                        <a href="javascript:">{{-- 这个A标签不要加链接 --}}
+                        <a href="javascript:"><!--这个A标签不要加链接-->
                             <img alt="{{$_W['user']['username']}}" src="{{ globalMedia($_W['user']['avatar']) }}" class="layui-nav-img user-avatar layui-hide-xs" />
                             {{$_W['user']['username']}}
                             @if($_W['user']['register_type']==1)<span class="layui-badge-dot"></span>&nbsp;&nbsp;&nbsp;&nbsp;@endif
@@ -27,20 +27,20 @@
                         </dl>
                     </li>
                     @if($_W['isfounder'])
-                        <li class="layui-nav-item">
+                        <li class="layui-nav-item{{ $_W['inSetting']?' layui-this':'' }}">
                             @if($_W['config']['site']['id']==0)
                                 <a href="{{wurl('active')}}">@lang('systemActivation')<span class="layui-badge-dot"></span></a>
                             @else
                                 <a href="{{wurl('setting')}}">@lang('systemManagement')</a>
                                 <dl id="layui-admin-sysmenu" class="layui-nav-child layui-anim layui-anim-upbit">
                                     <dd><a href="{{ wurl('setting') }}">@lang('siteInformation')</a></dd>
-                                    <dd><a href="{{ wurl('server') }}">@lang('microServers')</a></dd>
+                                    <dd><a href="{{ wurl('server') }}">@lang('服务管理')</a></dd>
                                     <dd><a href="{{ wurl('module') }}">@lang('applications')</a></dd>
                                 </dl>
                             @endif
                         </li>
                         <li class="layui-nav-item layui-hide-xs{{ $_W['inReport']?' layui-this':'' }}">
-                            <a href="{{wurl('report')}}">@lang('workOrder')</a>
+                            <a href="{{wurl('report')}}">@lang('提交工单')</a>
                         </li>
                     @endif
                     <li class="layui-nav-item layui-hide-xs js-fullscreen" lay-unselect>

@@ -8,7 +8,7 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 .layui-nav, .layui-nav .layui-nav-item .layui-nav-child a{line-height: 36px; text-align: center;}
 .layui-layout-admin .layui-logo{box-shadow: none; color: #606060 !important;overflow: hidden; white-space: nowrap; text-overflow: ellipsis; padding-left: 25px;}
 .layui-layer-content{max-height: calc(90vh - 50px);}
-.layui-layout-admin *, .layui-layer-content .layui-form *{box-sizing: content-box;}
+.layui-layer-content .layui-form *{box-sizing: content-box;}
 .layui-layer-content .layui-form .layui-btn{box-sizing: border-box;}
 .layui-form .layui-input, .layui-form .layui-textarea, .layui-form .layui-row > *{box-sizing: border-box;}
 .layui-form-label{width: 105px;}
@@ -105,6 +105,9 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 .margin-bottom{margin-bottom: 15px;}
 .margin-top{margin-top: 15px;}
 .margin-top-xs{margin-top: 5px;}
+.margin-top-sm{margin-top: 10px}
+.margin-top-lg{margin-top: 20px;}
+.margin-top-xl{margin-top: 30px;}
 .margin-bottom-xl{margin-bottom: 30px;}
 .margin-right{margin-right: 15px;}
 .margin-right-xs{margin-right: 5px;}
@@ -196,7 +199,7 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 .fui-tab .layui-tab-title a{color: #353535; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 1; max-width: 150px; padding: 0; white-space: nowrap;}
 .fui-tab .layui-tab-title .layui-this:after{border: none; border-bottom: 2px solid #07c160; height: 40px;}
 
-.fui-card{padding: 25px; box-shadow: 0 1px 5px 0 rgb(0 0 0 / 5%); margin-bottom: 30px; border-radius: 3px;}
+.fui-card{padding: 25px; box-shadow: 0 0 8px 0 rgb(0 0 0 / 2%); margin-bottom: 30px; border-radius: 8px !important;}
 .fui-card .layui-card-header{height: auto; min-height: 42px;}
 .fui-card .layui-card-header .title{font-size: 20px; font-weight: 400; line-height: 1;}
 .fui-card .layui-form-label{text-align: left;}
@@ -252,6 +255,16 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 .fui-side-menu .layui-nav-tree .layui-this, .fui-side-menu .layui-nav-tree .layui-this a{background-color: unset;}
 .fui-side-menu .layui-nav-tree .layui-nav-itemed > a{font-weight: bold;}
 .fui-side-menu .list{border: none;}
+
+.fui-item-sm .fui-content{padding: 10px 15px}
+.fui-list.card .fui-item-sm .card-name{line-height: 26px;}
+.fui-item.arrow .fui-content{padding-right: 28px; position: relative;}
+.fui-item.arrow .fui-content:after{content: "\e602"; font-family: layui-icon !important; font-size: 28px; position: absolute; right: 5px; top: 50%; margin-top: -14px; color: #bebebe;}
+
+.fui-flex{display: flex;}
+.fui-flex-stretch{align-items: stretch;}
+.fui-flex-stretch > * {flex: 1}
+.fui-flex-stretch .fui-card{height: 100%; box-sizing: border-box;}
 
 @media screen and (max-width:992px){
     .layui-layout-admin .layui-side{transform:translate3d(-220px,0,0);-webkit-transform:translate3d(-220px,0,0);width:220px}

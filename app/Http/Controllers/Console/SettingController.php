@@ -261,6 +261,7 @@ class SettingController extends Controller
 
     public function index($op='main'){
         global $_W,$_GPC;
+        $_W['inSetting'] = true;
         if ($_W['config']['site']['id']==0){
             return redirect("console/active");
         }

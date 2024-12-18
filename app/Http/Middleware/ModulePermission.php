@@ -22,6 +22,8 @@ class ModulePermission
     public function handle($request, Closure $next)
     {
         global $_W;
+        $_W['inSetting'] = $_W['inReport'] = $_W['inAccount'] = false;
+        $_W['inUser'] = false;
         //查询平台权限
         if (empty($_W['uniacid'])){
             //最后使用

@@ -18,15 +18,11 @@ class AccountController extends Controller
     public $uniacid = 0;
     public $role = 'operator';
     public $account = null;
-    public $entrance;
-
-    function __construct(){
-        $this->entrance = array(
-            'account'=>'平台管理',
-            'module'=>'application',
-            'server'=>'功能与服务'
-        );
-    }
+    public $entrance = array(
+        'account'=>'平台管理',
+        'module'=>'应用模块',
+        'server'=>'功能与服务'
+    );
 
     function accInit($check=false){
         global $_W,$_GPC;
@@ -179,11 +175,17 @@ class AccountController extends Controller
     }
 
     public function doFunctions(){
-        global $_W;
         $account = $this->account;
         $return = array('title'=>__('manageData', array('data'=>__('platform'))),'account'=>$account,'uniacid'=>$this->uniacid);
         $return['role'] = $this->role;
         session()->put('uniacid', $account['uniacid']);
+        list($return['components'], $return['servers']) = $this->getComponents();
+
+        return $this->globalView('console.account.functions',$return);
+    }
+
+    public function getComponents(){
+        global $_W;
         //读取可用服务
         $servers = pdo_getall("microserver_unilink", array('status'=>1));
         if (!empty($servers)){
@@ -196,9 +198,7 @@ class AccountController extends Controller
                 $servers[$key]['entrance'] = $service->url($server['entry']);
             }
         }
-        //判断微服务权限，待完善
-        $return['servers'] = $servers?:[];
-        $return['components'] = [];
+        $return = ['servers'=>$servers?:[], 'components'=>[]];
 
         //读取可用模块
         $components = AccountService::ExtraModules($this->uniacid);
@@ -240,7 +240,8 @@ class AccountController extends Controller
                 }
             }
         }
-        return $this->globalView('console.account.functions',$return);
+
+        return array($return['components'], $return['servers']);
     }
 
     public function doModules(Request $request){
@@ -271,7 +272,7 @@ class AccountController extends Controller
             }
             DB::table('uni_account_extra_modules')->updateOrInsert(array('uniacid'=>$this->uniacid), array('modules'=>serialize($modules)));
             CacheService::flush();
-            return $this->message('successful',wurl('account/functions',array('uniacid'=>$this->uniacid),true), 'success');
+            return $this->message('successful', referer(), 'success');
         }
         $return = array('title'=>__('manageData', array('data'=>__('application'))), 'modules'=>[]);
         $return['extras'] = AccountService::ExtraModules($_W['uniacid']);
@@ -313,7 +314,7 @@ class AccountController extends Controller
         list($controller, $method) = AccountService::GetEntrance($_W['uid'], $this->uniacid);
         $entrances = AccountService::GetAllEntrances($this->uniacid);
         return $this->globalView('console.account.entry',array(
-            'title'=>__('defaultEntry'),
+            'title'=>__('默认入口'),
             'uniacid'=>$this->uniacid,
             'ctrl'=>$controller,
             'method'=>$method,
@@ -351,7 +352,7 @@ class AccountController extends Controller
                     $data = array('endtime'=>0);
                     $expire = (string)$request->input('expire','');
                     if ($expire!=''){
-                        $data['endtime'] = strtotime($expire);
+                        $data['endtime'] = strtotime($expire." 23:59:59");
                     }
                     $complete = DB::table('account')->where('acid',$account['acid'])->update($data);
                     if (!$complete) return $this->message('saveFailed');
@@ -367,6 +368,7 @@ class AccountController extends Controller
         $return['entrance'] = __($this->entrance[$entry]). "&nbsp;&gt;&nbsp;";
         $return['entrance'] .= __($entrances[$entry][$method]);
         $return['settings'] = $uni_settings;
+        list($return['components'], $return['servers']) = $this->getComponents();
         return $this->globalView('console.account.profile',$return);
     }
 

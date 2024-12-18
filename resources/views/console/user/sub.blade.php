@@ -17,7 +17,7 @@
 
     <div class="fui-card layui-card">
         <div class="layui-card-header nobd">
-            <a href="{{ wurl('user/create',array('uid'=>0),true) }}" class="fr layui-btn layui-btn-sm layui-btn-normal ajaxshow">{{ __('newData', array('data'=>__('subAccount'))) }}</a>
+            <a href="{{ wurl('user/create',array('uid'=>0),true) }}" class="fr layui-btn layui-btn-sm layui-btn-normal ajaxshow">@lang('新增子账户')</a>
             <span class="title">{{ __('manageData', array('data'=>__('subAccount'))) }}</span>
         </div>
         <div class="layui-card-body">

@@ -10,7 +10,7 @@
                     <a href="{{ wurl('setting') }}">@lang('siteInformation')</a>
                 </li>
                 <li>
-                    <a href="{{ wurl('server') }}">@lang('microServers')</a>
+                    <a href="{{ wurl('server') }}">@lang('服务管理')</a>
                 </li>
                 <li>
                     <a href="{{ wurl('module') }}">@lang('applications')</a>
@@ -26,8 +26,7 @@
 
         <div class="fui-card layui-card">
             <div class="layui-card-header nobd">
-                <a href="{{ wurl('setting/pageset') }}" class="fr text-blue ajaxshow" title="{{ __('modifyData', array('data'=>__('siteInformation'))) }}"><i
-                        class="fa fa-edit"></i></a>
+                <a href="{{ wurl('setting/pageset') }}" class="fr text-blue ajaxshow" title="{{ __('modifyData', array('data'=>__('siteInformation'))) }}">@lang('edit')</a>
                 <span class="title">@lang('siteInformation')</span>
             </div>
             <div class="layui-card-body">
@@ -134,7 +133,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <td><span class="fui-table-lable">@lang('versionSystem')</span></td>
+                            <td><span class="fui-table-lable">@lang('系统版本')</span></td>
                             <td class="soild-after">
                                 V{{ QingVersion }} Release{{ QingRelease }}
                                 @if($cloudInfo['upgradable'])
@@ -146,13 +145,13 @@
                             <td class="text-right soild-after" style="line-height: 28px">
                                 @if($cloudInfo['upgradable'])
                                     <a href="{{ wurl('setting/selfupgrade') }}" class="text-red js-terminal" data-text="@lang('upgradeConfirm')">@lang('upgradeNow')</a>&nbsp;&nbsp;
-                                    <a href="{{ wurl('setting/updateLog') }}" class="text-blue ajaxshow">@lang('cloudComparison')</a><br/>
+                                    <a href="{{ wurl('setting/updateLog') }}" class="text-blue ajaxshow">@lang('云端对比')</a><br/>
                                 @elseif($cloudInfo['hasDifference'])
                                     <a href="{{ wurl('setting/selfupgrade') }}" class="text-red js-terminal" data-text="@lang('upgradeConfirm')">@lang('同步云端')</a>&nbsp;&nbsp;
                                     <a href="{{ wurl('setting/updateLog') }}" class="text-blue ajaxshow">@lang('cloudComparison')</a><br/>
                                 @endif
                                 <a href="{{ wurl('setting/detection') }}" class="text-green ajaxshow">@lang('检测更新')</a>&nbsp;&nbsp;
-                                <a href="https://www.yuque.com/shenwa/qingru/bggtv6hgvtf4ieun" target="_blank" class="text-blue">@lang('updateLog')</a>
+                                <a href="https://www.yuque.com/shenwa/qingru/bggtv6hgvtf4ieun" target="_blank" class="text-blue">@lang('更新日志')</a>
                             </td>
                         </tr>
                         </tbody>
@@ -207,7 +206,7 @@
                                 </td>
                             </tr>
                             <tr>
-                                <td><span class="fui-table-lable">@lang('systemKernel')</span></td>
+                                <td><span class="fui-table-lable">@lang('系统内核')</span></td>
                                 <td class="soild-after">@lang('轻如云系统') v{{ QingVersion }} (Based on <a href="https://laravel.com/" class="text-blue" target="_blank">Laravel</a> v6.2.0)</td>
                                 <td class="text-right soild-after"></td>
                             </tr>

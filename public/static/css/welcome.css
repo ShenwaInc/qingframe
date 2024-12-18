@@ -77,12 +77,13 @@ html, body {
 }
 
 .title {
-    font-size: 84px;
+    font-size: 36px;
 }
 
 .links > a {
     color: #636b6f;
-    padding: 0 25px;
+    padding: 0 8px;
+    line-height: 36px;
     font-size: 13px;
     font-weight: 600;
     letter-spacing: .1rem;
@@ -95,3 +96,8 @@ html, body {
 }
 
 .text-black{color: #1d1d1f;}
+
+@media (min-width: 768px) {
+    .title{font-size: 84px;}
+    .links > a{padding: 0 25px;}
+}

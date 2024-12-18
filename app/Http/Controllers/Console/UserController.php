@@ -13,6 +13,8 @@ class UserController extends Controller
 {
     //
     public function index(Request $request,$op='profile'){
+        global $_W;
+        $_W['inUser'] = true;
         $method = "do".ucfirst($op);
         if (!method_exists($this,$method)){
             return $this->message();

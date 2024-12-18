@@ -10,7 +10,7 @@
                     <a href="{{ wurl('setting') }}">@lang('siteInformation')</a>
                 </li>
                 <li>
-                    <a href="{{ wurl('server') }}">@lang('microServers')</a>
+                    <a href="{{ wurl('server') }}">@lang('服务管理')</a>
                 </li>
                 <li class="layui-this">
                     <a href="{{ wurl('module') }}">@lang('applications')</a>

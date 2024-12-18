@@ -4,7 +4,7 @@
     <form class="layui-form" method="POST" action="{{ wurl('account/entry',array('uniacid'=>$uniacid)) }}">
         @csrf
         <div class="layui-form-item must">
-            <label class="layui-form-label">{{ __('chooseData', array('data'=>__('defaultEntry'))) }}</label>
+            <label class="layui-form-label">{{ __('chooseData', array('data'=>__('默认入口'))) }}</label>
             <div class="layui-input-block">
                 @foreach($titles as $key=>$item)
                     <input type="radio" lay-filter="ctrls" data-target=".ctrls" value="{{ $key }}" name="ctrl" title="@lang($item)"{{ $ctrl==$key ? ' checked' : '' }} />

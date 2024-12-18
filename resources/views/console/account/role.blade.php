@@ -54,7 +54,7 @@
                                         <a href="javascript:;" onclick="showWindow(this)" data-id="#role-setowner" title="@lang('switchOwner')" class="text-blue">@lang('modify')</a>
                                     @endif
                                 @else
-                                    <a href="{{ wurl('account/permission',array('uniacid'=>$uniacid,'uid'=>$value['uid']),true) }}" class="text-blue margin-right-sm">@lang('setting')</a>
+                                    <a href="{{ wurl('account/permission',array('uniacid'=>$uniacid,'uid'=>$value['uid']),true) }}" class="text-blue margin-right-sm">@lang('modify')</a>
                                     <a href="{{ wurl('account/role',array('uniacid'=>$uniacid,'uid'=>$value['uid'],'op'=>'remove'),true) }}" class="text-red confirm" data-text="@lang('removeOperatorConfirm')">@lang('delete')</a>
                                 @endif
                             </td>

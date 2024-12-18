@@ -49,11 +49,11 @@
                 <div class="links">
                     <a href="https://www.yuque.com/shenwa/qingru" target="_blank">@lang('开发文档')</a>
                     <a href="https://www.yuque.com/shenwa/qingru/bggtv6hgvtf4ieun" target="_blank">@lang('更新日志')</a>
-                    <a href="https://www.yuque.com/shenwa/qingru/ze9hby" target="_blank">@lang('使用指南')</a>
+                    <a href="https://www.yuque.com/shenwa/qingru/wq6gs0omqb3gb82h" target="_blank">@lang('使用指南')</a>
                     <a href="https://www.gxit.org/" target="_blank">@lang('技术支持')</a>
                     <a href="https://www.gxit.org/forum.php?mod=forumdisplay&fid=44" target="_blank">@lang('产品论坛')</a>
                     <a href="/console/module" target="_blank">@lang('应用市场')</a>
-                    <a href="/console/report" target="_blank">@lang('workOrders')</a>
+                    <a href="/console/report" target="_blank">@lang('提交工单')</a>
                 </div>
             </div>
         </div>

@@ -30,7 +30,7 @@
                         <div class="layui-input-block">
                             <div class="input-group">
                                 <input type="text" name="site[mobile]" id="mobile" required lay-verify="required" placeholder="@lang('typeYourPhone')" @if(!empty($siteinfo['mobile'])) readonly @endif class="layui-input radius" value="{{ $siteinfo['mobile'] }}" />
-                                <span class="js-sendcode input-group-addon radius"><span class="text-blue">@lang('getVerifyCode')</span></span>
+                                <span class="js-sendcode input-group-addon radius"><span class="text-blue">@lang('获取验证码')</span></span>
                             </div>
                             @if(!empty($siteinfo['mobile']))
                             <div class="layui-word-aux">@lang('phoneNumberModify')</div>
@@ -51,7 +51,7 @@
                     </div>
                     <div class="layui-form-item">
                         <div class="layui-input-block">
-                            <button type="submit" lay-submit class="layui-btn layui-btn-fluid radius layui-btn-normal layui-btn-lg margin-top" lay-filter="cloud_active_submit">{{ __('doItNot', array('todo'=>__('activation'))) }}</button>
+                            <button type="submit" lay-submit class="layui-btn layui-btn-fluid radius layui-btn-normal layui-btn-lg margin-top" lay-filter="cloud_active_submit">{{ __('doItNot', array('todo'=>__('激活'))) }}</button>
                         </div>
                     </div>
                 </form>

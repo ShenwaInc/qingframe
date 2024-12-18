@@ -76,10 +76,4 @@
     </div>
 
 </div>
-<style>
-.fui-item-sm .fui-content{padding: 10px 15px}
-.fui-list.card .fui-item-sm .card-name{line-height: 26px;}
-.fui-item.arrow .fui-content{padding-right: 28px; position: relative;}
-.fui-item.arrow .fui-content:after{content: "\e602"; font-family: layui-icon !important; font-size: 28px; position: absolute; right: 5px; top: 50%; margin-top: -14px; color: #bebebe;}
-</style>
 @include('common.footer')

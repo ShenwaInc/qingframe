@@ -20,101 +20,173 @@
         </ul>
     </div>
 
-    <div class="fui-card layui-card">
+    <div class="layui-row layui-col-space20 fui-flex fui-flex-stretch">
+        <div class="layui-col-md6 layui-col-sm12">
+            <div class="fui-card layui-card">
+                <div class="layui-card-header nobd">
+                    @if(in_array($role,['founder','owner', 'manager']) || $_W['isfounder'])
+                        <a href="{{ wurl('account/edit',array('uniacid'=>$uniacid), true) }}" class="fr text-blue ajaxshow" title="@lang('EditPlatformInformation')">@lang('edit')</a>
+                    @endif
+                    <span class="title">@lang('基础信息')</span>
+                </div>
+                <div class="layui-card-body">
+                    <div class="un-padding">
+                        <table class="layui-table fui-table lines" lay-skin="nob">
+                            <colgroup>
+                                <col width="100" />
+                                <col />
+                                <col width="150" />
+                            </colgroup>
+                            <tbody>
+                            <tr>
+                                <td><span class="fui-table-lable">{{ __('IDofData', array('data'=>__('platform'))) }}</span></td>
+                                <td class="soild-after">{{ $uniacid }}&nbsp;&nbsp;<a href="javascript:;" data-url="{{ $uniacid }}" class="text-blue js-clip"><i class="fa fa-copy"></i></a></td>
+                                <td class="text-right soild-after">
+                                    <a href="javascript:;" data-url="{{ $_W['siteroot']."login/".$account['uniacid'] }}" class="text-blue js-clip">@lang('copyPlatformEntry')</a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><span class="fui-table-lable">{{ __('nameOfData', array('data'=>__('platform'))) }}</span></td>
+                                <td class="soild-after">{{ __($account['name']) }}</td>
+                                <td class="text-right soild-after">
+                                    <span id="expiretext" class="text-gray">{{ $account['expirdate'] }}</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><span class="fui-table-lable">@lang('platformLOGO')</span></td>
+                                <td class="soild-after">
+                                    <img class="radius" src="{{ globalMedia($account['logo']) }}" width="120" />
+                                </td>
+                                <td class="text-right soild-after"></td>
+                            </tr>
+                            @if($account['description'])
+                            <tr>
+                                <td><span class="fui-table-lable">@lang('platformIntroduction')</span></td>
+                                <td class="soild-after">{{ $account['description'] }}</td>
+                                <td class="text-right soild-after"></td>
+                            </tr>
+                            @endif
+                            <tr>
+                                <td>
+                                    <span class="fui-table-lable">@lang('平台工具')</span>
+                                </td>
+                                <td colspan="2">
+                                    <div class="layui-row layui-col-space20">
+                                        @if($_W['isfounder'])
+                                        <div class="fui-icon-list" lay-tips="@lang('清空表示设为长期有效')">
+                                            <a href="javascript:;">
+                                                <div class="fui-icon-item">
+                                                    <span class="layui-icon-date layui-icon"></span>
+                                                </div>
+                                                @lang('expireDate')
+                                            </a>
+                                            <input type="text" id="expirdate" style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;" name="expire" value="" />
+                                        </div>
+                                        @endif
+                                        <div class="fui-icon-list" lay-tips="@lang('interfaceFileRemain')">
+                                            <a href="javascript:" class="js-api-verify">
+                                                <div class="fui-icon-item">
+                                                    <span class="layui-icon-upload layui-icon"></span>
+                                                </div>
+                                                @lang('接口文件')
+                                            </a>
+                                        </div>
+                                        @if(in_array($role,['founder','owner']) || $_W['isfounder'])
+                                        <div class="fui-icon-list" @if(!empty($settings['bind_domain'])) lay-tips="{{ __('已绑定域名：:domain', ['domain'=>$settings['bind_domain']]) }}" @endif>
+                                            <a href="javascript:setDomain('{{$settings['bind_domain']}}');">
+                                                <div class="fui-icon-item @if(!empty($settings['bind_domain'])) selected @endif">
+                                                    <span class="layui-icon-website layui-icon"></span>
+                                                </div>
+                                                @lang('绑定域名')
+                                            </a>
+                                        </div>
+                                        @endif
+                                        <div class="fui-icon-list" lay-tips="{{$entrance}}">
+                                            <a href="{{ wurl('account/entry',array('uniacid'=>$uniacid)) }}" title="{{ __('modifyData', array('data'=>__('默认入口'))) }}" class="ajaxshow">
+                                                <div class="fui-icon-item">
+                                                    <span class="layui-icon-console layui-icon"></span>
+                                                </div>
+                                                @lang('默认入口')
+                                            </a>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="layui-col-md6 layui-col-sm12">
+            <div class="fui-card layui-card" style="height: 100%;">
+                <div class="layui-card-header nobd">
+                    @if($_W['isfounder'] || $role=='founder')
+                        <a href="{{ wurl('account/modules',array('uniacid'=>$uniacid), true) }}" class="fr text-blue ajaxshow" title="{{ __('manageData', array('data'=>__('application'))) }}">@lang('manage')</a>
+                    @endif
+                    <span class="title">@lang('application')</span>
+                </div>
+                <div class="layui-card-body">
+                    @if(empty($components))
+                        <div class="fui-empty text-center" style="line-height: 150px;">
+                            <span class="text-gray" style="font-size: 16px;">@lang('NoAppsAvailable')</span>
+                        </div>
+                    @else
+                        <div class="layui-row layui-col-space15 fui-list card">
+                            @foreach($components as $item)
+                                <div class="layui-col-lg6 layui-col-sm12 fui-item arrow">
+                                    <a target="_blank" href="{{ wurl("m/".$item['identity']) }}" class="fui-content">
+                                        <div class="fui-info">
+                                            <img alt="{{ $item['name'] }}" class="radius" src="{{ $item['logo'] }}" />
+                                            <strong class="card-name">@lang($item['name'])</strong>
+                                        </div>
+                                    </a>
+                                    @if($_W['isfounder'])
+                                        <a class="js-dropdown" target="_blank" href="{{ wurl("m/".$item['identity']."/system_setting") }}">
+                                            <span class="layui-icon layui-icon-set text-blue"></span>
+                                        </a>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="fui-card layui-card margin-top-lg">
         <div class="layui-card-header nobd">
-            @if(in_array($role,['founder','owner', 'manager']) || $_W['isfounder'])
-            <a href="{{ wurl('account/edit',array('uniacid'=>$uniacid), true) }}" class="fr text-blue ajaxshow" title="@lang('EditPlatformInformation')"><i class="fa fa-edit"></i></a>
-            @endif
-            <span class="title">@lang('基础信息')</span>
+            <span class="title">@lang('功能与服务')</span>
         </div>
         <div class="layui-card-body">
-            <div class="un-padding">
-                <table class="layui-table fui-table lines" lay-skin="nob">
-                    <colgroup>
-                        <col width="120" />
-                        <col />
-                        <col width="200" />
-                    </colgroup>
-                    <tbody>
-                    <tr>
-                        <td><span class="fui-table-lable">{{ __('IDofData', array('data'=>__('platform'))) }}</span></td>
-                        <td class="soild-after">{{ $uniacid }}&nbsp;&nbsp;<a href="javascript:;" data-url="{{ $uniacid }}" class="text-blue js-clip"><i class="fa fa-copy"></i></a></td>
-                        <td class="text-right soild-after">
-                            <a href="javascript:;" data-url="{{ $_W['siteroot']."login/".$account['uniacid'] }}" class="text-blue js-clip">@lang('copyPlatformEntry')</a>
-                        </td>
-                    </tr>
-                        <tr>
-                            <td><span class="fui-table-lable">{{ __('nameOfData', array('data'=>__('platform'))) }}</span></td>
-                            <td class="soild-after">{{ __($account['name']) }}</td>
-                            <td class="text-right soild-after"></td>
-                        </tr>
-                        <tr>
-                            <td><span class="fui-table-lable">@lang('platformLOGO')</span></td>
-                            <td class="soild-after">
-                                <img class="radius" src="{{ globalMedia($account['logo']) }}" width="120" />
-                            </td>
-                            <td class="text-right soild-after"></td>
-                        </tr>
-                        <tr>
-                            <td><span class="fui-table-lable">@lang('platformIntroduction')</span></td>
-                            <td class="soild-after">{{ $account['description'] }}</td>
-                            <td class="text-right soild-after"></td>
-                        </tr>
-                        <tr>
-                            <td><span class="fui-table-lable">@lang('interfaceFile')</span></td>
-                            <td class="soild-after"><span class="text-gray">@lang('interfaceFileRemain')</span></td>
-                            <td class="text-right soild-after">
-                                <a href="javascript:" class="text-blue js-api-verify">@lang('upload')</a>
-                            </td>
-                        </tr>
-                        @if($_W['isfounder'])
-                        <tr>
-                            <td><span class="fui-table-lable">@lang('expireDate')</span></td>
-                            <td class="soild-after">
-                                <span id="expiretext">{{ $account['expirdate'] }}</span>
-                            </td>
-                            <td class="text-right soild-after">
-                                <span style="position: relative;">
-                                    <a href="javascript:;" class="text-blue">@lang('chooseDate')</a>
-                                    <input type="text" id="expirdate" style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;" name="expire" value="" />
-                                </span>
-                                @if($account['endtime']>0)
-                                <a href="javascript:setForever();" class="text-red margin-left-sm">@lang('长期')</a>
-                                @endif
-                            </td>
-                        </tr>
-                        @endif
-                        <tr>
-                            <td><span class="fui-table-lable">@lang('defaultEntry')</span></td>
-                            <td class="soild-after">
-                                <span id="expiretext">{!! $entrance !!}</span>
-                            </td>
-                            <td class="text-right soild-after">
-                                <a href="{{ wurl('account/entry',array('uniacid'=>$uniacid)) }}" title="{{ __('modifyData', array('data'=>__('defaultEntry'))) }}" class="ajaxshow text-blue">@lang('modify')</a>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><span class="fui-table-lable">@lang('绑定域名')</span></td>
-                            <td class="soild-after">
-                                @if(!empty($settings['bind_domain']))
-                                <span id="bind_domain">{{ $settings['bind_domain'] }}</span><span class="fa fa-copy js-clip margin-left-sm text-blue" data-url="{{ $settings['bind_domain'] }}"></span>
-                                @else
-                                <span id="bind_domain">@lang('暂未绑定')</span>
-                                @endif
-                            </td>
-                            <td class="text-right soild-after">
-                                @if(in_array($role,['founder','owner']) || $_W['isfounder'])
-                                <a href="javascript:setDomain('{{$settings['bind_domain']}}');" class="text-blue">@lang('modify')</a>
-                                @endif
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div class="layui-row layui-col-space15 fui-list card">
+                @foreach($servers as $value)
+                    <div class="layui-col-lg3 layui-col-md4 layui-col-sm6 layui-col-xs12 fui-item fui-item-sm arrow">
+                        <a target="_blank" href="{{ $value['entrance'] }}" title="@lang('manage')" class="fui-content">
+                            <div class="fui-info">
+                                <img alt="@lang($value['title'])" class="radius" src="{{ assets($value['cover']) }}" />
+                                <strong class="card-name">@lang($value['title'])</strong>
+                                <p class="text-cut">@lang($value['summary'])</p>
+                            </div>
+                        </a>
+                    </div>
+                @endforeach
             </div>
         </div>
     </div>
 
 </div>
+
+<style>
+    .fui-icon-list{float: left; padding: 10px; position: relative;}
+    .fui-icon-list a{display: block; width: 100%; height: 100%; text-align: center;}
+    .fui-icon-item{border: 1px solid #EEEEEE; border-radius: 15px; width: 45px; height: 45px; line-height: 45px; padding: 5px; margin: 0 auto 8px; overflow: hidden; position: relative;}
+    .fui-icon-item.selected:before{content: ''; width: 0; height: 0; border-bottom: 34px solid #2ABA8E; border-left: 34px solid transparent; position: absolute; display: block; right: -1px; bottom: -1px}
+    .fui-icon-item.selected:after{position: absolute; font-family: layui-icon!important; content: "\e605"; right: 0; bottom: 0; font-size: 16px; font-weight: bold; color: #fff; line-height: 24px;}
+    .fui-icon-item .layui-icon{font-size: 32px;}
+</style>
 
 @include('common.footer')
 
@@ -149,7 +221,7 @@
     });
     @if(in_array($role,['founder','owner']) || $_W['isfounder'])
         function setDomain(domain='') {
-            layer.prompt({title: '{{ __('请输入要绑定的域名') }}', value: domain, maxlength:50, placeholder:"{{ __('仅支持单个域名，只填写host部分') }}"}, function(value, index, elem){
+            layer.prompt({title: '{{ __('请输入要绑定的域名') }}', value: domain, maxlength:50, btn:['@lang("确定")', '@lang("取消")'], placeholder:"{{ __('仅支持单个域名，只填写host部分') }}"}, function(value, index, elem){
                 if(value === '') return elem.focus();
                 let regex = /^(?:[a-zA-Z0-9_-]+\.)*[a-z]{2,6}$/;
                 if(!regex.test(value)){
@@ -167,15 +239,20 @@
         }
     @endif
     @if($_W['isfounder'])
-    function setExpire(expiredata=''){
+    function setExpire(expired){
+        if(expired===''){
+            return setForever();
+        }
         Core.post('console.account.profile',function (res){
             Core.report(res);
-        },{expire:expiredata,op:"setExpire",uniacid:{{ $uniacid }}},'json',true)
+        },{expire:expired,op:"setExpire",uniacid:{{ $uniacid }}},'json',true)
     }
     function setForever(){
         Core.confirm('@lang("modifyExpireDateConfirm")',function (){
             $('#expiretext').text('@lang("长期")');
-            setExpire('');
+            Core.post('console.account.profile',function (res){
+                Core.report(res);
+            },{expire:'',op:"setExpire",uniacid:{{ $uniacid }}},'json',true)
         },false,{title:'{{ __("modifyData", array("data"=>__("expireDate"))) }}'})
     }
     @endif

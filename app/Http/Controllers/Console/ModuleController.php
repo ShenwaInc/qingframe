@@ -41,6 +41,7 @@ class ModuleController extends Controller
         if (empty($_W['config']['site']['id'])){
             return redirect("console/active");
         }
+        $_W['inSetting'] = true;
         $method = "do".ucfirst($option);
         if (method_exists($this, $method)){
             return $this->$method($request);
