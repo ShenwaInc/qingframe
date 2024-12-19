@@ -81,7 +81,7 @@
                                             </a>
                                         </div>
                                         <div class="fui-icon-list" lay-tips="@lang('interfaceFileRemain')">
-                                            <a href="javascript:" class="js-api-verify">
+                                            <a href="javascript:" class="js-api-verify" title="@lang('接口文件')">
                                                 <div class="fui-icon-item">
                                                     <span class="layui-icon-upload layui-icon"></span>
                                                 </div>
@@ -90,7 +90,7 @@
                                         </div>
                                         @if(in_array($role,['founder','owner']) || $_W['isfounder'])
                                         <div class="fui-icon-list">
-                                            <a href="javascript:setDomain('{{$settings['bind_domain']}}');">
+                                            <a href="javascript:setDomain('{{$settings['bind_domain']}}');" title="@lang('绑定域名')">
                                                 <div class="fui-icon-item @if(!empty($settings['bind_domain'])) selected @endif">
                                                     <span class="layui-icon-website layui-icon"></span>
                                                 </div>
@@ -98,7 +98,7 @@
                                             </a>
                                         </div>
                                         <div class="fui-icon-list">
-                                            <a href="{{ wurl('account/role',array('uniacid'=>$uniacid)) }}">
+                                            <a href="{{ wurl('account/role',array('uniacid'=>$uniacid)) }}" class="ajaxshow" title="@lang('操作权限')">
                                                 <div class="fui-icon-item">
                                                     <span class="layui-icon-group layui-icon"></span>
                                                 </div>
@@ -114,10 +114,10 @@
                                                     </div>
                                                     @lang('expireDate')
                                                 </a>
-                                                <input type="text" id="expirdate" style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;" name="expire" value="" />
+                                                <input type="text" id="expirdate" style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;" name="expire" title="@lang('expireDate')" value="" />
                                             </div>
                                             <div class="fui-icon-list">
-                                                <a href="https://www.yuque.com/shenwa/qingru/wq6gs0omqb3gb82h" target="_blank">
+                                                <a href="https://www.yuque.com/shenwa/qingru/wq6gs0omqb3gb82h" target="_blank" title="@lang('使用指南')">
                                                     <div class="fui-icon-item">
                                                         <span class="layui-icon-about text-orange layui-icon"></span>
                                                     </div>
@@ -196,8 +196,8 @@
 </div>
 
 <style>
-    .fui-icon-list{float: left; padding: 10px; position: relative;}
-    .fui-icon-list a{display: block; width: 100%; height: 100%; text-align: center;}
+    .fui-icon-list{float: left; padding: 10px; position: relative; max-width: 120px; box-sizing: border-box;}
+    .fui-icon-list a{display: block; width: 100%; height: 100%; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
     .fui-icon-item{border: 1px solid #EEEEEE; border-radius: 15px; width: 45px; height: 45px; line-height: 45px; padding: 5px; margin: 0 auto 8px; overflow: hidden; position: relative;}
     .fui-icon-item.selected:before{content: ''; width: 0; height: 0; border-bottom: 34px solid #2ABA8E; border-left: 34px solid transparent; position: absolute; display: block; right: -1px; bottom: -1px}
     .fui-icon-item.selected:after{position: absolute; font-family: layui-icon!important; content: "\e605"; right: 0; bottom: 0; font-size: 16px; font-weight: bold; color: #fff; line-height: 24px;}

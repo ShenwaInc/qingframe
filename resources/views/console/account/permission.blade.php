@@ -18,7 +18,7 @@
     <div class="main-content">
         <div class='title'>
             <h2>@lang('操作权限')</h2>
-            <a href='javascript:;' onClick="javascript:history.back()">@lang('back')</a>
+            <a href='javascript:history.back()'>@lang('back')</a>
         </div>
         <div class="fui-card layui-card">
             <div class="layui-card-body">
@@ -26,6 +26,7 @@
                     @endif
                     <form class="layui-form" method="POST" action="{{ wurl('account/permission',array('uniacid'=>$uniacid,'uid'=>$uid)) }}">
                         @csrf
+                        <input type="hidden" name="redirect" value="{{ referer() }}">
                         <div class="layui-form-item permissions">
                             <div class='per-title'>
                                 <div>{{ __('permissions', array('operation'=>__('application'))) }}</div>
@@ -46,9 +47,9 @@
                                                 <td style='width: 120px'>
                                                  <input type="checkbox" class='fj' name="routes[modules][{{$value['name']}}][]" value='{{$val['route']}}' title="{{$val['name']}}" lay-skin="primary"  lay-filter='parent' @if($val['exist']) checked @endif>
                                                 </td>
-                                                <td>
+                                                <td class="son-perm">
                                                     @foreach($val['subPerm'] as $va)
-                                                    <input type="checkbox"  onclick='myOne(this)' name="routes[modules][{{$value['name']}}][]" value='{{$va['route']}}' title="{{$va['name']}}" lay-skin="primary" lay-filter='son'  @if($va['exist']) checked @endif>
+                                                    <input type="checkbox"  onclick='myOne(this)' name="routes[modules][{{$value['name']}}][]" value='{{$val['route']}}.{{$va['route']}}' title="{{$va['name']}}" lay-skin="primary" lay-filter='son'  @if($va['exist']) checked @endif>
                                                     @endforeach
                                                 </td>
                                             </tr>
@@ -93,7 +94,7 @@
                             @endforeach
                         </div>
                         <div class="layui-form-item">
-                            <div style='float: right'>
+                            <div class="text-center">
                                 <button class="layui-btn layui-btn-normal" lay-submit type="submit" value="true" name="savedata">@lang('save')</button>
                             </div>
                         </div>
@@ -105,8 +106,7 @@
     </div>
 @endif
 <script type="text/javascript">
-    layui.use(['form'],function (){
-        var form = layui.form;
+    function FormRender(form) {
         form.on('checkbox(parent)', function(data){
             if(data.elem.checked===true){
                 data.othis.parent().next().find('input').prop('checked',true)
@@ -116,21 +116,25 @@
             form.render();
         });
         form.on('checkbox(son)', function(data){
-            if(data.elem.checked===true){
-                data.othis.parent().prev().find('input').prop('checked',true)
+            let Elem = $(data.elem);
+            let totals = Elem.parent('.son-perm').find('input[type="checkbox"]').length;
+            let checks = Elem.parent('.son-perm').find('input[type="checkbox"]:checked').length;
+            console.log(totals, checks);
+            if(checks === 0){
+                //全部取消
+                Elem.parent().prev().find('input[type="checkbox"]').prop('checked', false);
+                Elem.parent().prev().find('input[type="checkbox"]').prop('indeterminate', false);
+            }else if(totals === checks){
+                //全选
+                Elem.parent().prev().find('input[type="checkbox"]').prop('indeterminate', false);
+                Elem.parent().prev().find('input[type="checkbox"]').prop('checked', true)
             }else{
-                let make=false;
-                data.othis.parent('td').find('input').each(function(){
-                    if(($(this).prop('checked')) === true){
-                        make=true;
-                    }
-                })
-                if (make===false){
-                    data.othis.parent().prev().find('input').prop('checked',false)
-                }
+                //半选
+                Elem.parent().prev().find('input[type="checkbox"]').prop('checked', false)
+                Elem.parent().prev().find('input[type="checkbox"]').prop('indeterminate', true);
             }
-            form.render();
+            form.render('checkbox');
         });
-    });
+    }
 </script>
 @include('common.footer')

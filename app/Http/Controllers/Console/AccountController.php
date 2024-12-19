@@ -83,7 +83,7 @@ class AccountController extends Controller
                     return $this->message('roleValid');
                 }
                 $complete = UserService::AccountRoleUpdate($this->uniacid, $uid, $role);
-                if ($complete) return $this->message('savedSuccessfully', wurl('account/role', array('uniacid' => $this->uniacid)), 'success');
+                if ($complete) return $this->message('savedSuccessfully', referer(), 'success');
             }elseif ($op=='setowner'){
                 if (!$_W['isfounder']){
                     return $this->message(__('暂无权限'));
@@ -92,7 +92,7 @@ class AccountController extends Controller
                 if ($uid==0) return $this->message('userNotfound');
                 DB::table('uni_account_users')->where(array('role'=>'owner','uniacid'=>$this->uniacid))->delete();
                 $complete = UserService::AccountRoleUpdate($this->uniacid, $uid);
-                if ($complete) return $this->message('savedSuccessfully', wurl('account/role', array('uniacid' => $this->uniacid)), 'success');
+                if ($complete) return $this->message('savedSuccessfully', referer(), 'success');
             }
             return $this->message();
         }
@@ -106,7 +106,7 @@ class AccountController extends Controller
             $complete = DB::table('uni_account_users')->where(array('uid'=>$uid,'uniacid'=>$this->uniacid))->delete();
             if ($complete){
                 //删除操作痕迹，待完善
-                return $this->message('successful',wurl('account/role',array('uniacid'=>$this->uniacid)),'success');
+                return $this->message('successful', referer(),'success');
             }
             return $this->message();
         }
@@ -136,6 +136,7 @@ class AccountController extends Controller
             $return['users'] = $users;
         }
         $return['subusers'] = $subs;
+        $return['ownerUid'] = 0;
         $return['account'] = $this->account;
         $return['colors'] = array('owner'=>'orange','manager'=>'green','operator'=>'blue');
         return $this->globalView('console.account.role',$return);
@@ -176,7 +177,7 @@ class AccountController extends Controller
 
     public function doFunctions(){
         $account = $this->account;
-        $return = array('title'=>__('manageData', array('data'=>__('platform'))),'account'=>$account,'uniacid'=>$this->uniacid);
+        $return = array('title'=>__('应用与服务'),'account'=>$account,'uniacid'=>$this->uniacid);
         $return['role'] = $this->role;
         session()->put('uniacid', $account['uniacid']);
         list($return['components'], $return['servers']) = $this->getComponents();
@@ -447,7 +448,8 @@ class AccountController extends Controller
                 $res=DB::table('users_permission')->insert($data);
             }
 
-            if($res) return $this->message('savedSuccessfully',wurl('account/role',array('uniacid'=>$uniacid)),'success');
+            $redirect = $request->input('redirect', wurl('account/profile',array('uniacid'=>$uniacid)));
+            if($res) return $this->message('savedSuccessfully', $redirect,'success');
 
             return $this->message('saveFailed');
         }

@@ -4,10 +4,10 @@
 
     <h2>
         <a href="javascript:window.history.go(-1);" class="pull-right fr layui-btn layui-btn-primary">@lang('back')</a>
-        {{ __('manageData', array('data'=>__('platform'))) }}
+        {{ $title }}
     </h2>
 
-    <div class="fui-card layui-card">
+    <div class="fui-card layui-card margin-top-xl">
         <div class="layui-card-header nobd">
             @if($_W['isfounder'] || $role=='founder')
                 <a href="{{ wurl('account/modules',array('uniacid'=>$uniacid), true) }}" class="fr text-blue ajaxshow" title="{{ __('manageData', array('data'=>__('application'))) }}">@lang('manage')</a>

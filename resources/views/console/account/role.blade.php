@@ -1,16 +1,16 @@
 @include('common.header')
 
-<div class="main-content">
+<div class="main-content unpadding">
 
-    <h2>
+    <h2 class="layui-hide-layer">
         <a href="javascript:window.history.go(-1);" class="pull-right fr layui-btn layui-btn-primary">@lang('back')</a>
         {{ $title }}
     </h2>
 
-    <div class="fui-card layui-card margin-top-xl">
+    <div class="fui-card layui-card @if(!$_W['isajax']) margin-top-xl @endif">
         <div class="layui-card-header nobd">
             <a href="{{ wurl('account/role',array('uniacid'=>$uniacid,'op'=>'add'),true) }}" data-width="750" title="{{ __('newData', array('data'=>__('platformOperator'))) }}" class="fr layui-btn layui-btn-sm layui-btn-normal ajaxshow">{{ __('newData', array('data'=>__('operator'))) }}</a>
-            <span class="title">@lang('操作权限')</span>
+            <span class="title layui-hide-layer">@lang('操作权限')</span>
         </div>
         <div class="layui-card-body">
             <div class="un-padding">
@@ -39,6 +39,9 @@
                             <td class="layui-hide-xs">{{  __(empty($value['permission'])?'allPermissions':'partialPermissions') }}</td>
                             <td class="text-right">
                                 @if($value['role']=='owner')
+                                    @php
+                                    $ownerUid = $value['uid'];
+                                    @endphp
                                     @if($_W['isfounder'])
                                         <a href="javascript:;" onclick="showWindow(this)" data-id="#role-setowner" title="@lang('switchOwner')" class="text-blue">@lang('modify')</a>
                                     @endif
@@ -65,11 +68,11 @@
                 <label class="layui-form-label">{{ __('chooseData', array('data'=>__('user'))) }}</label>
                 <div class="layui-input-block">
                     <div class="layui-input-inline" style="width: 70%">
-                        <select name="uid" lay-search required lay-verify="required">
-                            <option value="">{{ __('type&search', array('input'=>__('username'))) }}</option>
-                            <option value="{{ $_W['uid'] }}">{{ $_W['user']['username'] }}</option>
+                        <select name="uid" lay-search required lay-verify="required" data-uid="{{ $ownerUid }}">
+                            <option value="">{{ __('type&search', array('data'=>__('username'))) }}</option>
+                            <option value="{{ $_W['uid'] }}" @if($ownerUid==$_W['uid']) disabled @endif>{{ $_W['user']['username'] }}</option>
                             @foreach($subusers as $sub)
-                                <option value="{{ $sub['uid'] }}">{{ $sub['username'] }}</option>
+                                <option value="{{ $sub['uid'] }}" @if($ownerUid==$sub['uid']) disabled @endif>{{ $sub['username'] }}</option>
                             @endforeach
                         </select>
                     </div>
