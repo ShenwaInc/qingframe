@@ -57,7 +57,7 @@ html, body {
     left: 0;
     height: 615px;
     max-height: calc(92vh - 223px);
-    background: url("../images/page-top.jpg") no-repeat top center;
+    background: url("../images/page-top.png") no-repeat top center;
     background-size: cover;
     align-items: end;
     display: flex;
@@ -65,7 +65,7 @@ html, body {
     z-index: 0;
 }
 
-.page-top .center{font-size: 1.5em; font-weight: 600; position: absolute; width: 200px; text-align: center; bottom: 0; line-height: 45px; left: 50%; margin-left: -100px;}
+.page-top .center{font-size: 1.5em; font-weight: 600; position: absolute; width: 200px; text-align: center; bottom: -25px; line-height: 45px; left: 50%; margin-left: -100px;}
 
 .content {
     text-align: center;
@@ -100,4 +100,5 @@ html, body {
 @media (min-width: 768px) {
     .title{font-size: 84px;}
     .links > a{padding: 0 25px;}
+    .page-top .center{bottom: -5px;}
 }
