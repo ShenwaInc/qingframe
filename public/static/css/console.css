@@ -198,6 +198,7 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 .fui-tab .layui-tab-title > *{position: relative; margin-right: 24px; margin-bottom: -1px;}
 .fui-tab .layui-tab-title a{color: #353535; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 1; max-width: 150px; padding: 0; white-space: nowrap;}
 .fui-tab .layui-tab-title .layui-this:after{border: none; border-bottom: 2px solid #07c160; height: 40px;}
+.layui-tab-brief>.layui-tab-title .layui-this{color: inherit;}
 
 .fui-card{padding: 25px; box-shadow: 0 0 8px 0 rgb(0 0 0 / 2%); margin-bottom: 30px; border-radius: 8px !important;}
 .fui-card .layui-card-header{height: auto; min-height: 42px;}
@@ -235,8 +236,9 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 .fui-layer .unpadding .main-content{padding-bottom: 0;}
 .fui-layer .unpadding > .layui-table{margin: 0}
 
+.fui-terminal .layui-code{background-color: #000000; color: #FFFFFF;}
 .fui-terminal .layui-code-h3{display: none;}
-.fui-terminal .layui-code-ol li{color: #FFFFFF !important; background: #000000 !important; list-style: none; margin-left: 0;}
+.fui-terminal .layui-code-ol li{color: #FFFFFF !important; background: none !important; list-style: none; margin-left: 0;}
 .fui-terminal .layui-code-ol .err{color: #e54d42 !important;}
 .fui-terminal .layui-code-ol .warm{color: #fbbd08 !important;}
 .fui-terminal .layui-code-ol .success{color: #39b54a !important; font-weight: bold;}

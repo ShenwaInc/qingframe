@@ -17,7 +17,7 @@
     </div>
 </div>
 <script type="text/javascript">
-    var layform, layupload, laydropdown;
+    var layform, layupload, laydropdown, layCode, layElement;
     require.config({
         baseUrl: '/static/js',
         paths:{
@@ -57,6 +57,8 @@
         layform = form;
         layupload = upload;
         laydropdown = dropdown;
+        layCode = layui.code;
+        layElement = element;
     });
     function checkLocale(locale) {
         Core.post('server/language/checkout', function (res) {
@@ -218,6 +220,17 @@
         Obj.find(".js-clip").each(function () {
             ClipInit(this, $(this).attr("data-url"))
         })
+        Obj.find('.layui-code').each(function (index, Elem) {
+            layCode({
+                elem: Elem
+            });
+        });
+        Obj.find('.layui-collapse').each(function (i, Elem) {
+            if($(Elem).attr('lay-filter')){
+                let filter = $(Elem).attr('lay-filter');
+                layElement.render('collapse', filter);
+            }
+        });
         DateInit(Obj);
     }
     function ClipInit(Elem, text=''){

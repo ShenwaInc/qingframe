@@ -314,7 +314,8 @@ class SettingController extends Controller
                 $structures = $this->makeStructure($cloudInfo['difference']);
                 return $this->globalView("console.structure", array(
                     'structures' => $structures,
-                    'total' => count($structures)
+                    'total' => count($structures),
+                    'updateLogs'=>(array)$cloudInfo['updateLogs']
                 ));
             default:
                 $framework = DB::table('gxswa_cloud')->where('type', 0)->first(['id', 'version', 'identity', 'type', 'online', 'releasedate', 'rootpath']);
@@ -338,7 +339,8 @@ class SettingController extends Controller
         if (empty($upgradeInfo)){
             $fromCache = false;
             $data = array(
-                'identity'=>$component['identity']
+                'identity'=>$component['identity'],
+                'withLog'=>1
             );
             $upgradeInfo = CloudService::CloudApi('structure',$data);
             if (is_error($upgradeInfo)) return $upgradeInfo;
