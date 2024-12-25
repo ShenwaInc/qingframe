@@ -77,7 +77,9 @@ class SettingController extends Controller
         $structures = $this->makeStructure($cloudInfo['difference']);
         return $this->globalView("console.structure", array(
             'structures'=>$structures,
-            'total'=>count($structures)
+            'total'=>count($structures),
+            'updateLogs'=>(array)$cloudInfo['updateLogs'],
+            'curShow'=>\request()->input('show', 'compare')
         ));
     }
 
@@ -315,7 +317,8 @@ class SettingController extends Controller
                 return $this->globalView("console.structure", array(
                     'structures' => $structures,
                     'total' => count($structures),
-                    'updateLogs'=>(array)$cloudInfo['updateLogs']
+                    'updateLogs'=>(array)$cloudInfo['updateLogs'],
+                    'curShow'=>\request('show', 'compare')
                 ));
             default:
                 $framework = DB::table('gxswa_cloud')->where('type', 0)->first(['id', 'version', 'identity', 'type', 'online', 'releasedate', 'rootpath']);

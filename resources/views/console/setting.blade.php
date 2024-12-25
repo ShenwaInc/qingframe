@@ -151,7 +151,7 @@
                                     <a href="{{ wurl('setting/updateLog') }}" class="text-blue ajaxshow">@lang('cloudComparison')</a><br/>
                                 @endif
                                 <a href="{{ wurl('setting/detection') }}" class="text-green ajaxshow">@lang('检测更新')</a>&nbsp;&nbsp;
-                                <a href="https://www.yuque.com/shenwa/qingru/bggtv6hgvtf4ieun" target="_blank" class="text-blue">@lang('更新日志')</a>
+                                <a href="{{ wurl('setting/updateLog', ['show'=>'logs']) }}" class="text-blue ajaxshow">@lang('更新日志')</a>
                             </td>
                         </tr>
                         </tbody>

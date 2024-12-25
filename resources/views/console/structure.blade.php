@@ -1,29 +1,31 @@
 @include('common.header')
 <div class="layui-tab layui-tab-brief margin-0">
     <ul class="layui-tab-title">
-        <li class="layui-this">@lang('文件差异')</li>
-        <li>@lang('更新日志')</li>
+        <li @if(empty($curShow) || $curShow=='compare') class="layui-this" @endif>@lang('文件差异')</li>
+        <li @if($curShow=='logs') class="layui-this" @endif >@lang('更新日志')</li>
     </ul>
     <div class="layui-tab-content">
-        <div class="layui-tab-item layui-show">
+        <div class="layui-tab-item @if(empty($curShow) || $curShow=='compare') layui-show @endif">
             <div class="layui-code margin-0 fui-structure" lay-options="{theme: 'dark', encode: false, ln: true, codeStyle:'height: 430px'}">@foreach($structures as $key=>$value)
 {{ $value }}
 @endforeach</div>
         </div>
-        <div class="layui-tab-item">
+        <div class="layui-tab-item bg-gray-light padding @if($curShow=='logs') layui-show @endif ">
             @if(empty($updateLogs))
                 <div class="text-empty">@lang('暂无记录')</div>
             @else
-                <div class="layui-collapse" lay-filter="update-logs">
-                    @foreach($updateLogs as $key=>$logs)
-                    <div class="layui-colla-item">
-                        <div class="layui-colla-title text-bold">{{ $logs['datetime'] }}&nbsp;&nbsp;V{{ $logs['version'] }}&nbsp;Rel{{$logs['versionCode']}}</div>
-                        <div class="layui-colla-content @if($key===0) layui-show @endif">
-                            <p>{!! htmlspecialchars_decode($logs['logs']) !!}</p>
+                @foreach($updateLogs as $key=>$logs)
+                    <div class="layui-card fui-card">
+                        <div class="layui-card-header">
+                            <span class="title">{{ $logs['datetime'] }}&nbsp;&nbsp;v{{ $logs['version'] }}</span>
+                        </div>
+                        <div class="layui-card-body">
+                            <div class="content rich_media_content">
+                                {!! htmlspecialchars_decode($logs['logs']) !!}
+                            </div>
                         </div>
                     </div>
-                    @endforeach
-                </div>
+                @endforeach
             @endif
         </div>
     </div>
