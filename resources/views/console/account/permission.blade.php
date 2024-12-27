@@ -8,7 +8,7 @@
     .per-title a{color: #1E9FFF}
     .per-list-block{display: flex;margin: 10px 0}
     .per-list-block:first-child{padding-top: 10px}
-    .per-list-block .block-head{width: 15%;border: 1px solid #e2e2e2;border-right:none;min-width: 200px }
+    .per-list-block .block-head{width: 20%;border: 1px solid #e2e2e2;border-right:none;min-width: 200px }
     .per-list-block .block-head .block-head-title{position: relative;top: 50%;margin-top: -25px;left: 12%}
     .block-cont{min-height: 80px;width: 85%;display: flex;}
     table{margin: 0!important;}
@@ -28,33 +28,36 @@
                         @csrf
                         <input type="hidden" name="redirect" value="{{ referer() }}">
                         <div class="layui-form-item permissions">
-                            <div class='per-title'>
+                            <div class="per-title">
                                 <div>{{ __('permissions', array('operation'=>__('application'))) }}</div>
                             </div>
                             @foreach($modulesList as $value)
-                            <div class='per-list-block'>
-                                <div class='block-head'>
-                                    <div class='block-head-title'>
-                                        <img width='50' alt="{{ $value['title'] }}" class="radius" src="{{ tomedia($value['logo']) }}">
+                            <div class="per-list-block">
+                                <div class="block-head">
+                                    <div class="block-head-title text-cut">
+                                        <img width="50" alt="{{ $value['title'] }}" class="radius" src="{{ tomedia($value['logo']) }}">
                                         <span>{{ $value['title'] }}</span>
                                     </div>
                                 </div>
-                                <div class='block-cont'>
+                                <div class="block-cont">
                                     <table class="layui-table">
-                                        <tbody>
+                                        <tr>
+                                            <td colspan="2">
+                                                <input type="checkbox" name="perms[modules][{{$value['name']}}]" title="@lang('开启权限')|@lang('关闭权限')" lay-skin="switch">
+                                            </td>
+                                        </tr>
                                         @foreach($value['permissions'] as $val)
                                             <tr>
                                                 <td style='width: 120px'>
-                                                 <input type="checkbox" class='fj' name="routes[modules][{{$value['name']}}][]" value='{{$val['route']}}' title="{{$val['name']}}" lay-skin="primary"  lay-filter='parent' @if($val['exist']) checked @endif>
+                                                 <input type="checkbox" class="fj" name="routes[modules][{{$value['name']}}][]" value="{{$val['route']}}" title="{{$val['name']}}" lay-skin="primary"  lay-filter="parent" @if($val['exist']) checked @endif>
                                                 </td>
                                                 <td class="son-perm">
                                                     @foreach($val['subPerm'] as $va)
-                                                    <input type="checkbox"  onclick='myOne(this)' name="routes[modules][{{$value['name']}}][]" value='{{$val['route']}}.{{$va['route']}}' title="{{$va['name']}}" lay-skin="primary" lay-filter='son'  @if($va['exist']) checked @endif>
+                                                    <input type="checkbox"  onclick="myOne(this)" name="routes[modules][{{$value['name']}}][]" value='{{$val['route']}}.{{$va['route']}}' title="{{$va['name']}}" lay-skin="primary" lay-filter="son"  @if($va['exist']) checked @endif>
                                                     @endforeach
                                                 </td>
                                             </tr>
                                         @endforeach
-                                        </tbody>
                                     </table>
                                 </div>
                             </div>

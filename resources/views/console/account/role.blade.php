@@ -22,7 +22,7 @@
                     </colgroup>
                     <thead>
                     <tr>
-                        <th>@lang('user')</th>
+                        <th>@lang('operator')</th>
                         <th class="layui-hide-xs">@lang('操作权限')</th>
                         <th style="text-align: right">@lang('action')</th>
                     </tr>
