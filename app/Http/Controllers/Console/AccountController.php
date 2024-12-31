@@ -465,22 +465,41 @@ class AccountController extends Controller
                 continue;
             }
 
-            $value['permissions']=unserialize($value['permissions'] ?? '');
-            if(empty($value['permissions'])) continue;
 
-            $currentPermission=$permission['modules'][$key] ?? null;
+            $value['title'] = $components[$key]['name'];
+            $value['permissions'] = unserialize($value['permissions'] ?? '');
+            $value['hasPerm'] = $hasPerm = false;
+            if(empty($value['permissions'])){
+                continue;
+            }
+
+            $currentPermission = $permission['modules'][$key] ?? null;
             if(empty($currentPermission)) continue;
 
             //比较是否已设置权限
             foreach ($value['permissions'] as &$val){
-                $val['exist']= in_array($val['route'],$currentPermission);
+                $val['exist'] = in_array($val['route'],$currentPermission);
+                if ($val['exist']){
+                    $hasPerm = true;
+                }
 
+                $val['indeterminate'] = false;
+                $permissions = 0;
                 //二级权限
                 foreach ($val['subPerm'] ?? [] as $k => $v){
-                    $val['subPerm'][$k]['exist']= in_array($v['route'],$currentPermission);
+                    $route = $val['route'] . "." . $v['route'];
+                    $val['subPerm'][$k]['exist'] = in_array($route,$currentPermission);
+                    if ($val['subPerm'][$k]['exist']){
+                        $hasPerm = true;
+                        $permissions += 1;
+                    }
+                }
+                if ($permissions<count($val['subPerm']??[]) && $hasPerm){
+                    $val['indeterminate'] = true;
                 }
             }
-            unset($val);
+            $value['hasPerm'] = $hasPerm;
+            unset($val, $hasPerm, $permissions);
         }
         unset($value);
         //读取可用服务

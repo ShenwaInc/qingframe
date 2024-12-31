@@ -41,15 +41,22 @@
                                 </div>
                                 <div class="block-cont">
                                     <table class="layui-table">
+                                        <colgroup>
+                                            <col width="120">
+                                            <col>
+                                        </colgroup>
+                                        <tbody>
                                         <tr>
                                             <td colspan="2">
-                                                <input type="checkbox" name="perms[modules][{{$value['name']}}]" title="@lang('开启权限')|@lang('关闭权限')" lay-skin="switch">
+                                                <input type="checkbox" name="perms[modules][{{$value['name']}}]" lay-filter="modulePerm" data-id="{{$value['name']}}" title="@lang('开启权限')|@lang('关闭权限')" @if(!empty($value['hasPerm'])) checked @endif lay-skin="switch">
                                             </td>
                                         </tr>
+                                        </tbody>
+                                        <tbody id="modulePerms_{{ $value['name'] }}" @if(empty($value['hasPerm'])) class="layui-hide" @endif>
                                         @foreach($value['permissions'] as $val)
                                             <tr>
-                                                <td style='width: 120px'>
-                                                 <input type="checkbox" class="fj" name="routes[modules][{{$value['name']}}][]" value="{{$val['route']}}" title="{{$val['name']}}" lay-skin="primary"  lay-filter="parent" @if($val['exist']) checked @endif>
+                                                <td>
+                                                 <input type="checkbox" class="fj @if($val['indeterminate'])indeterminate @endif" name="routes[modules][{{$value['name']}}][]" value="{{$val['route']}}" title="{{$val['name']}}" lay-skin="primary"  lay-filter="parent" @if($val['exist']) checked @endif>
                                                 </td>
                                                 <td class="son-perm">
                                                     @foreach($val['subPerm'] as $va)
@@ -58,6 +65,7 @@
                                                 </td>
                                             </tr>
                                         @endforeach
+                                        </tbody>
                                     </table>
                                 </div>
                             </div>
@@ -71,16 +79,27 @@
                             <div class='per-list-block'>
                                 <div class='block-head'>
                                     <div class='block-head-title'>
-                                        <img width='50' alt="{{ $value['title'] }}" class="radius" src="{{ tomedia($value['cover']) }}">
+                                        <img width='50' alt="{{ $value['title'] }}" class="radius" src="{{ globalMedia($value['cover']) }}">
                                         <span>{{ $value['title'] }}</span>
                                     </div>
                                 </div>
                                 <div class='block-cont'>
                                     <table class="layui-table">
+                                        <colgroup>
+                                            <col width="120">
+                                            <col>
+                                        </colgroup>
                                         <tbody>
+                                        <tr>
+                                            <td colspan="2">
+                                                <input type="checkbox" name="perms[servers][{{$value['name']}}]" lay-filter="serverPerm" data-id="{{$value['name']}}" title="@lang('开启权限')|@lang('关闭权限')" @if(!empty($value['hasPerm'])) checked @endif lay-skin="switch">
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                        <tbody id="serverPerms_{{ $value['name'] }}" @if(empty($value['hasPerm'])) class="layui-hide" @endif>
                                         @foreach($value['perms'] as $val)
                                             <tr>
-                                                <td style='width: 120px'>
+                                                <td>
                                                  <input type="checkbox" class='fj' name="routes[servers][{{$value['name']}}][]" value='{{$val['route']}}' title="{{$val['name']}}" lay-skin="primary"  lay-filter='parent' @if($val['exist']) checked @endif>
                                                 </td>
                                                 <td>
@@ -122,7 +141,6 @@
             let Elem = $(data.elem);
             let totals = Elem.parent('.son-perm').find('input[type="checkbox"]').length;
             let checks = Elem.parent('.son-perm').find('input[type="checkbox"]:checked').length;
-            console.log(totals, checks);
             if(checks === 0){
                 //全部取消
                 Elem.parent().prev().find('input[type="checkbox"]').prop('checked', false);
@@ -138,6 +156,34 @@
             }
             form.render('checkbox');
         });
+        form.on('switch(modulePerm)', function (data) {
+            let Elem = $(data.elem);
+            let id = "#modulePerms_" + Elem.data('id');
+            if(data.elem.checked){
+                $(id).removeClass('layui-hide').find('input[type="checkbox"]').prop('disabled', false);
+            }else{
+                $(id).addClass('layui-hide').find('input[type="checkbox"]').prop('disabled', true);
+            }
+            form.render('checkbox');
+        });
+        form.on('switch(serverPerm)', function (data) {
+            let Elem = $(data.elem);
+            let id = "#serverPerms_" + Elem.data('id');
+            if(data.elem.checked){
+                $(id).removeClass('layui-hide').find('input[type="checkbox"]').prop('disabled', false);
+            }else{
+                $(id).addClass('layui-hide').find('input[type="checkbox"]').prop('disabled', true);
+            }
+            form.render('checkbox');
+        });
+        let indeterminate = $('input.indeterminate');
+        if(indeterminate.length > 0){
+            indeterminate.each(function (i, Elem) {
+                $(Elem).prop('indeterminate', true);
+            });
+            form.render('checkbox');
+        }
+
     }
 </script>
 @include('common.footer')
