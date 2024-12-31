@@ -257,7 +257,7 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 
 .layui-layout-admin .fui-side-menu{width: 225px;box-sizing: border-box; transition: padding-top .3s ease-in-out; padding-top: 28px;}
 .fui-side-menu .layui-nav-tree{margin-left: 48px; width: auto; background-color: unset;}
-.fui-side-menu .layui-nav-tree .layui-nav-item>a{padding-top: 11px; padding-bottom: 11px; text-align: left;padding-left: 48px;}
+.fui-side-menu .layui-nav-tree .layui-nav-item>a{padding-top: 11px; padding-bottom: 11px; text-align: left; padding-left: 48px; box-sizing: content-box}
 .fui-side-menu .layui-nav-item>a cite, .fui-side-menu .layui-nav-item .fa{font-size: 16px;}
 .fui-side-menu .layui-nav-item{border-top: 1px solid #e3e4e5;}
 .fui-side-menu .layui-nav-item:first-child{border-top: none;}
