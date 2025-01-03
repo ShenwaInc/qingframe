@@ -21,7 +21,9 @@
                                         @endforeach
                                     </select>
                                 </div>
-                                <a href="{{ wurl('user/create',array('uid'=>0),true) }}" class="layui-btn ajaxshow">{{ __('newData', array('data'=>__('user'))) }}</a>
+                                <div class="layui-form-mid">
+                                    <a href="{{ wurl('user/create',array('uid'=>0),true) }}" class="text-blue ajaxshow">{{ __('newData', array('data'=>__('user'))) }}</a>
+                                </div>
                             </div>
                         </div>
                         <div class="layui-form-item">

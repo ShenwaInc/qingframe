@@ -8,9 +8,9 @@
     </h2>
 
     <div class="fui-card layui-card @if(!$_W['isajax']) margin-top-xl @endif">
-        <div class="layui-card-header nobd">
+        <div class="layui-card-header nobd layui-hide-layer">
             <a href="{{ wurl('account/role',array('uniacid'=>$uniacid,'op'=>'add'),true) }}" data-width="750" title="{{ __('newData', array('data'=>__('platformOperator'))) }}" class="fr layui-btn layui-btn-sm layui-btn-normal ajaxshow">{{ __('newData', array('data'=>__('operator'))) }}</a>
-            <span class="title layui-hide-layer">@lang('操作权限')</span>
+            <span class="title">@lang('操作权限')</span>
         </div>
         <div class="layui-card-body">
             <div class="un-padding">
@@ -28,11 +28,6 @@
                     </tr>
                     </thead>
                     <tbody>
-                    @if(empty($users))
-                    <tr>
-                        <td colspan="3" class="text-center">@lang('empty')</td>
-                    </tr>
-                    @endif
                     @foreach($users as $key=>$value)
                         <tr>
                             <td><span{{ $value['expired'] ? ' class=text-gray' : '' }}>{{ $value['username'] }}</span>&nbsp;<span class="layui-badge layui-bg-{{ $colors[$value['role']] }}">{{ $value['roler'] }}</span></td>
@@ -52,6 +47,17 @@
                             </td>
                         </tr>
                     @endforeach
+                    @if(empty($users))
+                        <tr>
+                            <td colspan="3" class="text-center">@lang('empty')</td>
+                        </tr>
+                    @elseif($_W['isajax'])
+                        <tr>
+                            <td colspan="3" class="text-center">
+                                <a href="{{ wurl('account/role',array('uniacid'=>$uniacid,'op'=>'add'),true) }}" data-width="750" title="{{ __('newData', array('data'=>__('platformOperator'))) }}" class="layui-btn layui-btn-normal ajaxshow">{{ __('newData', array('data'=>__('operator'))) }}</a>
+                            </td>
+                        </tr>
+                    @endif
                     </tbody>
                 </table>
             </div>

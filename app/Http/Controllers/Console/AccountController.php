@@ -430,7 +430,7 @@ class AccountController extends Controller
         $uid=$request->input('uid');
         $uniacid=$request->input('uniacid');
         //获取权限
-        $permissionInfo= DB::table('users_permission')->where(['uid'=>$uid,'uniacid'=>$this->uniacid])->first();
+        $permissionInfo = DB::table('users_permission')->where(['uid'=>$uid,'uniacid'=>$this->uniacid])->first();
 
         //保存权限
         if ($request->isMethod('post')){
