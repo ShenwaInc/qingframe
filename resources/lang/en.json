@@ -337,6 +337,7 @@
     "平台管理": "Platform management",
     "找不到授权记录": "No authorization record found",
     "授权已到期": "Authorization has expired",
+    "没有访问权限": "No access permission",
     "该应用已升级到最新版本": "The app is up to date",
     "找不到该服务组件": "The service component cannot be found.",
     "文件写入失败，请检查根目录权限": "File write failed, please check root directory permissions.",

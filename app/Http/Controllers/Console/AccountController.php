@@ -28,13 +28,9 @@ class AccountController extends Controller
         global $_W,$_GPC;
         $uniacid = intval($_GPC['uniacid']);
         $this->account = Account::getByUniacid($uniacid);
+        $this->role = $_W['accountRole'];
         if (!empty($this->account)){
             $this->uniacid = $uniacid;
-            $this->role = UserService::AccountRole($_W['uid'],$uniacid);
-        }
-        if (empty($this->role)){
-            //暂无权限
-            return error(-1, __('暂无权限'));
         }
         if ($check){
             if ($this->uniacid==0 || $this->account['isdeleted']==1) return error(-1, __('platformNotFound'));
@@ -180,69 +176,9 @@ class AccountController extends Controller
         $return = array('title'=>__('应用与服务'),'account'=>$account,'uniacid'=>$this->uniacid);
         $return['role'] = $this->role;
         session()->put('uniacid', $account['uniacid']);
-        list($return['components'], $return['servers']) = $this->getComponents();
+        list($return['components'], $return['servers']) = UserService::AccountPermission($this->uniacid);
 
         return $this->globalView('console.account.functions',$return);
-    }
-
-    public function getComponents(){
-        global $_W;
-        //读取可用服务
-        $servers = pdo_getall("microserver_unilink", array('status'=>1));
-        if (!empty($servers)){
-            foreach ($servers as $key=>$server){
-                $service = serv($server['name'], $this->uniacid);
-                if (!$service->enabled){
-                    unset($servers[$key]);
-                    continue;
-                }
-                $servers[$key]['entrance'] = $service->url($server['entry']);
-            }
-        }
-        $return = ['servers'=>$servers?:[], 'components'=>[]];
-
-        //读取可用模块
-        $components = AccountService::ExtraModules($this->uniacid);
-        if (empty($components) && !empty($_W['config']['defaultModule'])){
-            $defaultModule = pdo_get("modules", array('name'=>$_W['config']['defaultModule']));
-            if (!empty($defaultModule)){
-                $components = [['name'=>$defaultModule['title'],'identity'=>$defaultModule['name'],'logo'=>$defaultModule['logo'],'application_type'=>$defaultModule['application_type']]];
-                DB::table('uni_account_extra_modules')->updateOrInsert(array('uniacid'=>$this->uniacid), array('modules'=>serialize($components)));
-                $return['components'] = $components;
-            }
-        }else{
-            foreach ($components as $component){
-                //判断模块是否可用
-                $module = ModuleService::fetch($component['identity']);
-                if (empty($module)) continue;
-                $component['logo'] = tomedia($component['logo']);
-                $component['application_type'] = $module['application_type'];
-                $return['components'][] = $component;
-            }
-        }
-        //判断当前用户模块权限（操作员/管理员）
-        if (!$_W['isfounder']){
-            //获取权限
-            $permission= DB::table('users_permission')->where(['uid'=>$_W['uid'],'uniacid'=>$this->uniacid])->value('permission');
-            //为空默认有全部权限(未设置过权限)
-            if(!empty($permission)){
-                $permission=unserialize($permission);
-                foreach ($return['components'] as $key => $value){
-                    //没有权限，移除本应用模块
-                    if(empty($permission['modules'][$value['identity']])){
-                        unset($return['components'][$key]);
-                    }
-                }
-                foreach ($return['servers'] as $key => $value){
-                    //没有权限，移除本服务
-                    if(empty($permission['servers'][$value['name']])){
-                        unset($return['servers'][$key]);
-                    }
-                }
-            }
-        }
-
-        return array($return['components'], $return['servers']);
     }
 
     public function doModules(Request $request){
@@ -372,7 +308,7 @@ class AccountController extends Controller
         $return['entrance'] = __($this->entrance[$entry]). "&nbsp;&gt;&nbsp;";
         $return['entrance'] .= __($entrances[$entry][$method]);
         $return['settings'] = $uni_settings;
-        list($return['components'], $return['servers']) = $this->getComponents();
+        list($return['components'], $return['servers']) = UserService::AccountPermission($this->uniacid, $_W['uid']);
         return $this->globalView('console.account.profile',$return);
     }
 
@@ -434,28 +370,42 @@ class AccountController extends Controller
 
         //保存权限
         if ($request->isMethod('post')){
-            $routesData=$request->input('routes');
-            $permission=serialize($routesData);
+            $routesData = $request->input('routes');
+            $servers = $request->input('servers', []);
+            $modules = $request->input('modules', []);
+
+            $permissionData = ['modules'=>[], 'servers'=>[]];
+            foreach ($modules ?? [] as $module=>$value){
+                $permissionData['modules'][$module] = $routesData['modules'][$module] ?: [];
+            }
+            foreach ($servers ?? [] as $server=>$value){
+                $permissionData['servers'][$server] = $routesData['servers'][$server] ?: [];
+            }
+
+            $permission = serialize($permissionData);
 
             if(!empty($permissionInfo)){
-                $res=DB::table('users_permission')->where(['id'=>$permissionInfo['id']])->update(['permission'=>$permission]);
+                $res = DB::table('users_permission')->where(['id'=>$permissionInfo['id']])->update(['permission'=>$permission]);
             }else{
-                $data=[
+                $data = [
                     'uniacid'=>$uniacid,
                     'uid'=>$uid,
                     'permission'=>$permission
                 ];
-                $res=DB::table('users_permission')->insert($data);
+                $res = DB::table('users_permission')->insert($data);
             }
 
-            $redirect = $request->input('redirect', wurl('account/profile',array('uniacid'=>$uniacid)));
-            if($res) return $this->message('savedSuccessfully', $redirect,'success');
+            if($res){
+                UserService::AccountPermission($this->uniacid, $uid, false);
+                $redirect = $request->input('redirect', wurl('account/profile',array('uniacid'=>$uniacid)));
+                return $this->message('savedSuccessfully', $redirect,'success');
+            }
 
             return $this->message('saveFailed');
         }
         //获取已安装应用
         $modulesList = ModuleService::moduleList();
-        $permission=unserialize($permissionInfo['permission'] ?? []);
+        $permission = empty($permissionInfo['permission']) ? [] : unserialize($permissionInfo['permission']);
         $components = AccountService::ExtraModules($uniacid);
 
         foreach ($modulesList as $key  => &$value){
@@ -468,7 +418,7 @@ class AccountController extends Controller
 
             $value['title'] = $components[$key]['name'];
             $value['permissions'] = unserialize($value['permissions'] ?? '');
-            $value['hasPerm'] = $hasPerm = false;
+            $value['hasPerm'] = isset($permission['modules'][$key]);
             if(empty($value['permissions'])){
                 continue;
             }
@@ -478,35 +428,36 @@ class AccountController extends Controller
 
             //比较是否已设置权限
             foreach ($value['permissions'] as &$val){
-                $val['exist'] = in_array($val['route'],$currentPermission);
-                if ($val['exist']){
-                    $hasPerm = true;
-                }
-
+                $val['exist'] = in_array($val['route'], $currentPermission);
                 $val['indeterminate'] = false;
+                if (empty($val['subPerm'])){
+                    $val['subPerm'] = array(
+                        ['route'=>'index', 'name'=>$value['name'], 'exist'=>false]
+                    );
+                    continue;
+                }
                 $permissions = 0;
                 //二级权限
-                foreach ($val['subPerm'] ?? [] as $k => $v){
+                foreach ($val['subPerm'] as $k => $v){
                     $route = $val['route'] . "." . $v['route'];
-                    $val['subPerm'][$k]['exist'] = in_array($route,$currentPermission);
+                    $val['subPerm'][$k]['exist'] = in_array($route, $currentPermission);
                     if ($val['subPerm'][$k]['exist']){
-                        $hasPerm = true;
                         $permissions += 1;
                     }
                 }
-                if ($permissions<count($val['subPerm']??[]) && $hasPerm){
+                if ($permissions < count($val['subPerm'])){
                     $val['indeterminate'] = true;
                 }
             }
-            $value['hasPerm'] = $hasPerm;
-            unset($val, $hasPerm, $permissions);
+            unset($val, $permissions);
         }
         unset($value);
         //读取可用服务
         $serversList = pdo_getall("microserver_unilink", array('status'=>1));
         foreach ($serversList as &$value){
 
-            $value['perms']=$value['perms']?unserialize($value['perms']):[];
+            $value['perms'] = $value['perms']?unserialize($value['perms']):[];
+            $value['hasPerm'] = isset($permission['servers'][$value['name']]);
 
             if(empty($value['perms'])){
                 $value['perms']=['name'=>__('serviceEntry'),'route'=>'entrance'];

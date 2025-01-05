@@ -48,7 +48,7 @@
                                         <tbody>
                                         <tr>
                                             <td colspan="2">
-                                                <input type="checkbox" name="perms[modules][{{$value['name']}}]" lay-filter="modulePerm" data-id="{{$value['name']}}" title="@lang('开启权限')|@lang('关闭权限')" @if(!empty($value['hasPerm'])) checked @endif lay-skin="switch">
+                                                <input type="checkbox" name="modules[{{$value['name']}}]" lay-filter="modulePerm" data-id="{{$value['name']}}" title="@lang('开启权限')|@lang('关闭权限')" @if(!empty($value['hasPerm'])) checked @endif lay-skin="switch">
                                             </td>
                                         </tr>
                                         </tbody>
@@ -92,7 +92,7 @@
                                         <tbody>
                                         <tr>
                                             <td colspan="2">
-                                                <input type="checkbox" name="perms[servers][{{$value['name']}}]" lay-filter="serverPerm" data-id="{{$value['name']}}" title="@lang('开启权限')|@lang('关闭权限')" @if(!empty($value['hasPerm'])) checked @endif lay-skin="switch">
+                                                <input type="checkbox" name="servers[{{$value['name']}}]" lay-filter="serverPerm" data-id="{{$value['name']}}" title="@lang('开启权限')|@lang('关闭权限')" @if(!empty($value['hasPerm'])) checked @endif lay-skin="switch">
                                             </td>
                                         </tr>
                                         </tbody>

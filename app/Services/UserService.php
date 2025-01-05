@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\UniAccountUser;
 use App\User;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 
@@ -238,6 +239,76 @@ class UserService
             ['uniacid' => $uniacid, 'uid' => $uid],
             ['role'=>trim($role)]
         );
+    }
+
+    static function AccountPermission($uniacid, $uid=0, $cache=true){
+        global $_W;
+        if (empty($uid)){
+            $uid = $_W['uid'];
+        }
+        $cacheKey = "uni_account_permission_" . $uniacid . "_" . $uid;
+        if ($cache){
+            $data = Cache::get($cacheKey);
+            if (!empty($data)) return $data;
+        }
+        $modules = $servers = [];
+        //读取可用服务
+        $serverList = pdo_getall("microserver_unilink", array('status'=>1));
+        if (!empty($serverList)){
+            foreach ($serverList as $key=>$server){
+                $service = serv($server['name'], $uniacid);
+                if (!$service->enabled){
+                    unset($servers[$key]);
+                    continue;
+                }
+                $server['entrance'] = $service->url($server['entry']);
+                $servers[$server['name']] = $server;
+            }
+        }
+
+        //读取可用模块
+        $components = AccountService::ExtraModules($uniacid);
+        if (empty($components) && !empty($_W['config']['defaultModule'])){
+            $defaultModule = pdo_get("modules", array('name'=>$_W['config']['defaultModule']));
+            if (!empty($defaultModule)){
+                $modules = [['name'=>$defaultModule['title'],'identity'=>$defaultModule['name'],'logo'=>$defaultModule['logo'],'application_type'=>$defaultModule['application_type']]];
+                DB::table('uni_account_extra_modules')->updateOrInsert(array('uniacid'=>$uniacid), array('modules'=>serialize($components)));
+            }
+        }else{
+            foreach ($components as $component){
+                //判断模块是否可用
+                $module = ModuleService::fetch($component['identity']);
+                if (empty($module)) continue;
+                $component['logo'] = tomedia($component['logo']);
+                $component['application_type'] = $module['application_type'];
+                $modules[$component['identity']] = $component;
+            }
+        }
+        //判断当前用户模块权限（操作员/管理员）
+        $role = UserService::AccountRole($uid, $uniacid);
+        if (in_array($role, ['manager', 'operator'])){
+            //获取权限
+            $permission= DB::table('users_permission')->where(['uid'=>$uid, 'uniacid'=>$uniacid])->value('permission');
+            //为空默认有全部权限(未设置过权限)
+            if(!empty($permission)){
+                $permission=unserialize($permission);
+                foreach ($modules as $key => $value){
+                    //没有权限，移除本应用模块
+                    if(!isset($permission['modules'][$key])){
+                        unset($modules[$key]);
+                    }
+                }
+                foreach ($servers as $key => $value){
+                    //没有权限，移除本服务
+                    if(!isset($permission['servers'][$key])){
+                        unset($servers[$key]);
+                    }
+                }
+            }
+        }
+
+        Cache::forever($cacheKey, array($modules, $servers));
+        return array($modules, $servers);
     }
 
 }
