@@ -288,7 +288,7 @@ class UserService
         $role = UserService::AccountRole($uid, $uniacid);
         if (in_array($role, ['manager', 'operator'])){
             //获取权限
-            $permission= DB::table('users_permission')->where(['uid'=>$uid, 'uniacid'=>$uniacid])->value('permission');
+            $permission = DB::table('users_permission')->where(['uid'=>$uid, 'uniacid'=>$uniacid])->value('permission');
             //为空默认有全部权限(未设置过权限)
             if(!empty($permission)){
                 $permission=unserialize($permission);
@@ -307,8 +307,8 @@ class UserService
             }
         }
 
-        Cache::forever($cacheKey, array($modules, $servers));
-        return array($modules, $servers);
+        Cache::forever($cacheKey, array($modules, $servers, $role));
+        return array($modules, $servers, $role);
     }
 
 }

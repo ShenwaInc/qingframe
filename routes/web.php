@@ -14,7 +14,6 @@
 use App\Http\Middleware\App;
 use App\Http\Middleware\Authenticate;
 use App\Http\Middleware\ConsolePermission;
-use App\Http\Middleware\ModulePermission;
 use App\Services\SettingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
@@ -78,7 +77,7 @@ Route::group(['prefix' => 'console', 'namespace' => 'Console', 'middleware'=>[Au
     Route::get('/account/{uniacid}', 'PlatformController@checkout')->where('uniacid','[0-9]+');
     Route::match(['get', 'post'],'/account/{action}', 'AccountController@index')->where('action','[a-z]+');
     Route::match(['get', 'post'],'/user/{op?}', 'UserController@index');
-    Route::match(['get', 'post'],'/m/{modulename}/{do?}', 'ModuleController@entry')->middleware(ModulePermission::class);
+    Route::match(['get', 'post'],'/m/{modulename}/{do?}', 'ModuleController@entry');
     Route::match(['get', 'post'],'/module/{option?}', 'ModuleController@index');
     Route::get('/server', 'ServerController@index');
     Route::get('/server/account', 'ServerController@checkout');

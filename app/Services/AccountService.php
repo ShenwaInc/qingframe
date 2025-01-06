@@ -98,18 +98,6 @@ class AccountService {
         return $account_api;
     }
 
-    static function Create_info() {
-        global $_W;
-        $account_create_info = PermissionService::UserAccountNum();
-        $can_create = false;
-        if ($_W['isadmin'] || (!empty($account_create_info['account_limit']) && (!empty($account_create_info['founder_account_limit']) && $_W['user']['owner_uid'] || empty($_W['user']['owner_uid'])) || !empty($account_create_info['store_account_limit']))){
-            $can_create = true;
-        }
-        $all_account_type_sign = self::GetTypeSign();
-        $all_account_type_sign['account']['can_create'] = $can_create;
-        return $all_account_type_sign;
-    }
-
     static function GroupModules($uniacid){
         $packageids = DB::table('uni_account_group')->where('uniacid', $uniacid)->select(['groupid'])->get()->keyBy('groupid')->toArray();
         $packageids = empty($packageids) ? array() : array_keys($packageids);
@@ -305,6 +293,34 @@ class AccountService {
             }
         }
         return $oauth_url;
+    }
+
+    static function moduleAuthenticate($uid, $name, $route, $uniacid=0, $isServer=false){
+        global $_W;
+        if ($_W['isfounder']) return true;
+        if (empty($uniacid)){
+            if (empty($_W['uniacid']))
+            $uniacid = $_W['uniacid'];
+        }
+        list($modules, $servers, $role) = UserService::AccountPermission($uniacid, $uid);
+        if (empty($role)){
+            abort(403, __('没有访问权限'));
+        }
+        $hasPerm = $isServer ? isset($servers[$name]) : isset($modules[$name]);
+        if (!$hasPerm){
+            abort(403, __('没有访问权限'));
+        }
+        if (!empty($route)){
+            $permission = $isServer ? ($servers[$name]?:[]) : ($modules[$name]?:[]);
+            if (!in_array($route, $permission)){
+                abort(403, __('没有访问权限'));
+            }
+        }
+        return true;
+    }
+
+    static function serverAuthenticate($uid, $name, $route, $uniacid=0){
+        return self::moduleAuthenticate($uid, $name, $route, $uniacid, true);
     }
 
     static function GlobalOauth(){

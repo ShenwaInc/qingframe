@@ -108,7 +108,7 @@ class AccountController extends Controller
         }
         $users = DB::table('users')->leftJoin('uni_account_users','uni_account_users.uid','=','users.uid')
             ->where('uni_account_users.uniacid',$this->uniacid)
-            ->whereIn('uni_account_users.role',array('owner','manager','operator'))->get()->toArray();
+            ->whereIn('uni_account_users.role',array('owner','manager','operator'))->orderBy('id')->get()->toArray();
         if (!empty($users)){
             $roles = array('owner'=>__('owner'),'manager'=>__('manager'),'operator'=>__('operator'));
             foreach ($users as &$user){
