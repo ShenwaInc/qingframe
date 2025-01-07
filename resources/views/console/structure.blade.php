@@ -6,9 +6,13 @@
     </ul>
     <div class="layui-tab-content">
         <div class="layui-tab-item @if(empty($curShow) || $curShow=='compare') layui-show @endif">
+            @if(empty($structures))
+                <div class="text-empty">@lang('所有文件与云端对比没有差异')</div>
+            @else
             <div class="layui-code margin-0 fui-structure" lay-options="{theme: 'dark', encode: false, ln: true, codeStyle:'height: 430px'}">@foreach($structures as $key=>$value)
 {{ $value }}
 @endforeach</div>
+            @endif
         </div>
         <div class="layui-tab-item bg-gray-light padding @if($curShow=='logs') layui-show @endif ">
             @if(empty($updateLogs))

@@ -28,7 +28,7 @@
                         <col />
                         <col width="120" />
                         <col width="120" />
-                        <col width="200" />
+                        <col width="230" />
                     </colgroup>
                     <thead>
                     <tr>
@@ -53,8 +53,8 @@
                             @if(!empty($value['remark']))
                                 <span class="text-gray">({{$value['remark']}})</span>
                             @endif
-                        <td>{{ $value['createdate'] }}</td>
-                        <td class="text-center{{ $value['expire'] ? ' text-red' : '' }}">{{ $value['expiredate'] }}</td>
+                        <td>{{ $value['createDate'] }}</td>
+                        <td class="text-center{{ $value['expire'] ? ' text-red' : '' }}">{{ $value['expireDate'] }}</td>
                         <td class="text-right">
                             <a href="{{ wurl('user/checkout',array('uid'=>$value['uid']),true) }}" class="text-blue margin-right-sm confirm" data-text="@lang('subAccountSwitch')">@lang('switch')</a>
                             <a href="{{ wurl('user/create',array('uid'=>$value['uid']),true) }}" class="text-blue ajaxshow margin-right-sm">@lang('modify')</a>

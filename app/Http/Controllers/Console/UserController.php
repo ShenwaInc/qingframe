@@ -138,15 +138,15 @@ class UserController extends Controller
         $users = UserService::GetSubs($_W['uid']);
         if (!empty($users)){
             foreach ($users as &$value){
-                $value['expiredate'] = __('longtime');
+                $value['expireDate'] = __('长期');
                 $value['expire'] = false;
                 if ($value['endtime']>0){
-                    $value['expiredate'] = date('Y-m-d',$value['endtime']);
+                    $value['expireDate'] = date('Y-m-d',$value['endtime']);
                     if ($value['endtime']<=TIMESTAMP){
                         $value['expire'] = true;
                     }
                 }
-                $value['createdate'] = date('Y-m-d',$value['joindate']);
+                $value['createDate'] = date('Y-m-d',$value['joindate']);
             }
             $data['users'] = $users;
         }

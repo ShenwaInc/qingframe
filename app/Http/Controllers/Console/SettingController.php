@@ -73,13 +73,14 @@ class SettingController extends Controller
         $component = DB::table('gxswa_cloud')->where('type',0)->first(['id','identity','type','online','releasedate','rootpath']);
         if (empty($component)) return $this->message('系统出现致命错误');
         $cloudInfo = $this->checkCloud($component,1,true);
-        if (empty($cloudInfo['difference'])) return $this->message('当前系统已经是最新版本');
+        $curShow = \request('show', 'compare');
+        if (empty($cloudInfo['difference']) && $curShow=='compare') return $this->message('当前系统已经是最新版本');
         $structures = $this->makeStructure($cloudInfo['difference']);
         return $this->globalView("console.structure", array(
             'structures'=>$structures,
             'total'=>count($structures),
             'updateLogs'=>(array)$cloudInfo['updateLogs'],
-            'curShow'=>\request()->input('show', 'compare')
+            'curShow'=>$curShow
         ));
     }
 
@@ -312,7 +313,7 @@ class SettingController extends Controller
                 if (is_error($cloudInfo)) {
                     return $this->message($cloudInfo['message']);
                 }
-                if (empty($cloudInfo['difference'])) return $this->message('该应用已升级到最新版本', "", "success");
+                //if (empty($cloudInfo['difference'])) return $this->message('该应用已升级到最新版本', "", "success");
                 $structures = $this->makeStructure($cloudInfo['difference']);
                 return $this->globalView("console.structure", array(
                     'structures' => $structures,
