@@ -342,6 +342,7 @@
     "该应用已升级到最新版本": "The app is up to date",
     "找不到该服务组件": "The service component cannot be found.",
     "文件写入失败，请检查根目录权限": "File write failed, please check root directory permissions.",
+    "请通过安全入口访问控制台": "Please access the console through the secure entrance.",
     "重置云服务": "Reset cloud services",
     "欢迎页": "Welcome page",
     "开启权限": "Enable permissions",

@@ -28,8 +28,9 @@ if (empty($socket)){
     }
     function terminalInit(url="", show=false){
         if(terminalState) return true;
+        window.Swaws.init("{{ $socket['userSign'] }}", "{{ $socket['server'] }}", SocketReceive);
         terminalState = true;
-        let html = '<div class="layui-code layui-code-notepad unpadding" id="TerminalInfo" style="margin: 0; height: 480px; width: 960px;">'+terminalPrefix+'正在连接终端服务器...</div>';
+        let html = '<div class="layui-code layui-code-notepad unpadding" id="TerminalInfo" style="margin: 0; height: 480px; width: 960px;">'+terminalPrefix+"正在连接终端服务器...</div>";
         layer.open({
             type: 1,
             skin: 'fui-layer fui-terminal', //样式类名
@@ -40,13 +41,13 @@ if (empty($socket)){
             content: html,
             success:function (layero, index){
                 terminalRunning = true;
-                layui.code();
+                layCode({elem: '#TerminalInfo', copy: false});
                 if(show){
                     terminalShow(show.message, show.mode);
                 }else{
                     terminalShow("请不要关闭或刷新浏览器，否则可能会造成进程中断。如果因超时而失去响应，请增大程序最大运行时间（当前设置：{{ ini_get('max_execution_time') }}秒）", "warm");
                 }
-                if(url){
+                if(url && url!==""){
                     Core.request(url, 'GET', {inajax:1, _token:"{{ $_W['token'] }}"}, 'json', function (res){
                         terminalRunning = false;
                         $(layero).find('span.layui-icon-loading').addClass('layui-hide');
@@ -74,13 +75,13 @@ if (empty($socket)){
         }else{
             $(".fui-layer.fui-terminal").find('span.layui-icon-loading').addClass('layui-hide');
         }
-        let TerminalOl = $("#TerminalInfo").find('ol.layui-code-ol');
         let terminalText = terminalPrefix+message;
         if(mode==='cmd'){
             terminalText = "> " + message;
         }
-        TerminalOl.append('<li class="'+mode+'">'+terminalText+'</li>');
-        $('.fui-terminal .layui-layer-content').scrollTop(TerminalOl.height());
+        let TerminalCodes = $("#TerminalInfo").find('.layui-code-wrap');
+        TerminalCodes.append('<div class="layui-code-line"><div class="layui-code-line-content '+mode+'">'+terminalText+'</div></div>');
+        $('.fui-terminal .layui-layer-content').scrollTop(TerminalCodes.height());
     }
     $(function (){
         $('.js-terminal').click(function (Elem){
@@ -89,8 +90,9 @@ if (empty($socket)){
             if(typeof(confirmText)=='undefined' || !confirmText){
                 terminalInit(postUrl);
             }else {
-                window.Swaws.init("{{ $socket['userSign'] }}", "{{ $socket['server'] }}", SocketReceive);
-                Core.confirm(confirmText, function (){terminalInit(postUrl);}, false, {
+                Core.confirm(confirmText, function (){
+                    terminalInit(postUrl);
+                }, false, {
                     title: '@lang("confirm")',
                     btn:['@lang("确定")', '@lang("取消")']
                 });

@@ -39,7 +39,7 @@ class LoginController extends Controller
         if (!empty($appSecurityEntrance) && $appSecurityEntrance!="/"){
             $securityEntrance = session()->get("securityEntrance");
             if (empty($securityEntrance)){
-                abort(413, "Please log in through the secure entrance");
+                abort(403, __('请通过安全入口访问控制台'));
             }
         }
         $this->middleware('app')->except('handle');
