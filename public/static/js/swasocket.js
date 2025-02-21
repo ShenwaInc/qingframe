@@ -10,7 +10,8 @@
         init: function (UserSign, Server, Receive = false, Fail = false) {
             this.UserSign = UserSign;
             if (this.io != null) {
-                this.io.close(10001);
+                this.io.close(3089);
+                this.io = null;
                 return this.init(UserSign, Server, Receive, Fail);
             }
             let WsSocket = new WebSocket(Server);

@@ -62,6 +62,7 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 .layui-btn-normal{background-color: #0081ff;}
 .layui-btn-warm{background-color: #fbbd08; color: #333;}
 .layui-btn-primary{background-color: #FFFFFF;}
+.layui-btn-danger{background-color: #e54d42;}
 .layui-btn-group .layui-btn:first-child{border-radius: 3px 0 0 3px;}
 .layui-btn-group .layui-btn:last-child{border-radius: 0 3px 3px 0;}
 .layui-btn-group .layui-btn:only-child{border-radius: 3px;}
@@ -247,7 +248,7 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 .fui-layer .unpadding .main-content{padding-bottom: 0;}
 .fui-layer .unpadding > .layui-table{margin: 0}
 
-.fui-terminal .layui-code{background-color: #000000; color: #FFFFFF; white-space: pre-line;}
+.fui-terminal .layui-code, .fui-terminal .layui-code-wrap{background-color: #000000; color: #FFFFFF; white-space: pre-line;}
 .fui-terminal .layui-code-line{padding-left: 0 !important;}
 .fui-terminal .layui-code-line-number, .fui-terminal .layui-code-ln-side{display: none;}
 .fui-terminal .layui-code-h3{display: none;}

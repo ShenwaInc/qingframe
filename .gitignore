@@ -33,3 +33,6 @@ yarn-error.log
 /*.bat
 /detection/
 /resources/views/welcomeCustom.blade.php
+/public/.user.ini
+/public/*.html
+/*.html
