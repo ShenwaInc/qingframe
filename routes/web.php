@@ -16,6 +16,8 @@ use App\Http\Middleware\Authenticate;
 use App\Http\Middleware\ConsolePermission;
 use App\Services\SettingService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 $appSecurityEntrance = env("APP_SECURITY_ENTRANCE");
@@ -43,6 +45,15 @@ Route::get('/', function (Request $request){
     global $_W;
     $App = new App();
     $App->initialize($request);
+
+    $uniacid = (int)DB::table('uni_settings')->where('bind_domain', $request->server('HTTP_HOST'))->value('uniacid');
+    if (!empty($uniacid)){
+        if (Auth::check()){
+            return redirect("/console/account/{$uniacid}");
+        }else{
+            return redirect("/login/{$uniacid}");
+        }
+    }
     $locale = $request->input('lang', $_W['locale']);
     if (!empty($locale) && $locale!=$_W['locale']){
         \Illuminate\Support\Facades\App::setLocale($locale);

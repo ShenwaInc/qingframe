@@ -22,12 +22,48 @@
 
     <div class="layui-row layui-col-space20 fui-flex fui-flex-stretch">
         <div class="layui-col-md6 layui-col-sm12">
+            <div class="fui-card layui-card" style="height: 100%;">
+                <div class="layui-card-header nobd">
+                    @if($_W['isfounder'] || $role=='founder')
+                        <a href="{{ wurl('account/modules',array('uniacid'=>$uniacid), true) }}" class="fr text-blue ajaxshow" title="{{ __('manageData', array('data'=>__('application'))) }}">@lang('manage')</a>
+                    @endif
+                    <span class="title">@lang('application')</span>
+                </div>
+                <div class="layui-card-body">
+                    @if(empty($components))
+                        <div class="fui-empty text-center" style="line-height: 150px;">
+                            <span class="text-gray" style="font-size: 16px;">@lang('NoAppsAvailable')</span>
+                        </div>
+                    @else
+                        <div class="layui-row layui-col-space15 fui-list card">
+                            @foreach($components as $item)
+                                <div class="layui-col-lg6 layui-col-sm12 fui-item arrow">
+                                    <a target="_blank" href="{{ wurl("m/".$item['identity']) }}" class="fui-content margin-0">
+                                        <div class="fui-info">
+                                            <img alt="{{ $item['name'] }}" class="radius" src="{{ $item['logo'] }}" />
+                                            <strong class="card-name">@lang($item['name'])</strong>
+                                        </div>
+                                    </a>
+                                    @if($_W['isfounder'])
+                                        <a class="js-dropdown" target="_blank" href="{{ wurl("m/".$item['identity']."/system_setting") }}">
+                                            <span class="layui-icon layui-icon-set text-blue"></span>
+                                        </a>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+
+        <div class="layui-col-md6 layui-col-sm12">
             <div class="fui-card layui-card">
                 <div class="layui-card-header nobd">
                     @if(in_array($role,['founder','owner', 'manager']) || $_W['isfounder'])
                         <a href="{{ wurl('account/edit',array('uniacid'=>$uniacid), true) }}" class="fr text-blue ajaxshow" title="@lang('EditPlatformInformation')">@lang('edit')</a>
                     @endif
-                    <span class="title">@lang('基础信息')</span>
+                    <span class="title">@lang('平台信息')</span>
                 </div>
                 <div class="layui-card-body">
                     <div class="un-padding">
@@ -91,7 +127,7 @@
                                         @if(in_array($role,['founder','owner']) || $_W['isfounder'])
                                         <div class="fui-icon-list">
                                             <a href="javascript:setDomain('{{$settings['bind_domain']}}');" title="@lang('绑定域名')">
-                                                <div class="fui-icon-item @if(!empty($settings['bind_domain'])) selected @endif">
+                                                <div class="fui-icon-item js-domain @if(!empty($settings['bind_domain'])) selected @endif">
                                                     <span class="layui-icon-website layui-icon"></span>
                                                 </div>
                                                 @lang('绑定域名')
@@ -131,42 +167,6 @@
                             </tbody>
                         </table>
                     </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="layui-col-md6 layui-col-sm12">
-            <div class="fui-card layui-card" style="height: 100%;">
-                <div class="layui-card-header nobd">
-                    @if($_W['isfounder'] || $role=='founder')
-                        <a href="{{ wurl('account/modules',array('uniacid'=>$uniacid), true) }}" class="fr text-blue ajaxshow" title="{{ __('manageData', array('data'=>__('application'))) }}">@lang('manage')</a>
-                    @endif
-                    <span class="title">@lang('application')</span>
-                </div>
-                <div class="layui-card-body">
-                    @if(empty($components))
-                        <div class="fui-empty text-center" style="line-height: 150px;">
-                            <span class="text-gray" style="font-size: 16px;">@lang('NoAppsAvailable')</span>
-                        </div>
-                    @else
-                        <div class="layui-row layui-col-space15 fui-list card">
-                            @foreach($components as $item)
-                                <div class="layui-col-lg6 layui-col-sm12 fui-item arrow">
-                                    <a target="_blank" href="{{ wurl("m/".$item['identity']) }}" class="fui-content margin-0">
-                                        <div class="fui-info">
-                                            <img alt="{{ $item['name'] }}" class="radius" src="{{ $item['logo'] }}" />
-                                            <strong class="card-name">@lang($item['name'])</strong>
-                                        </div>
-                                    </a>
-                                    @if($_W['isfounder'])
-                                        <a class="js-dropdown" target="_blank" href="{{ wurl("m/".$item['identity']."/system_setting") }}">
-                                            <span class="layui-icon layui-icon-set text-blue"></span>
-                                        </a>
-                                    @endif
-                                </div>
-                            @endforeach
-                        </div>
-                    @endif
                 </div>
             </div>
         </div>
@@ -218,7 +218,8 @@
             done:function (value, date, endDate){
                 $('#expiretext').text(value);
                 setExpire(value);
-            }
+            },
+            lang:"{{ $_W['locale']=='zh' ? 'cn' : 'en' }}"
         });
         @endif
         @if(in_array($role,['founder','owner', 'manager']) || $_W['isfounder'])
@@ -237,7 +238,27 @@
     });
     @if(in_array($role,['founder','owner']) || $_W['isfounder'])
         function setDomain(domain='') {
-            layer.prompt({title: '{{ __('请输入要绑定的域名') }}', value: domain, maxlength:50, btn:['@lang("确定")', '@lang("取消")'], placeholder:"{{ __('仅支持单个域名，只填写host部分') }}"}, function(value, index, elem){
+            let options = {title: '{{ __('请输入要绑定的域名') }}', value: domain, maxlength:50, btn:['@lang("确定")', '@lang("取消")'], placeholder:"{{ __('仅支持单个域名，只填写host部分') }}"};
+            if (domain && domain!==""){
+                options.btn = ['@lang("确定")', '@lang("解除绑定")', '@lang("取消")'];
+                options.btn2 = function (index) {
+                    layer.confirm('@lang("确定要解除绑定吗？")', {icon: 3, title:'@lang("解除域名绑定")'}, function (e) {
+                        Core.post('console.account.profile',function (res){
+                            Core.report(res);
+                            if(res.type==='success'){
+                                $('.js-domain').removeClass('selected');
+                                window.location.reload();
+                            }else{
+                                layer.close(e);
+                            }
+                        },{domain:"",op:"setDomain",uniacid:{{ $uniacid }}},'json',true)
+                    }, function () {
+                        layer.close(index);
+                    });
+                    return false;
+                };
+            }
+            layer.prompt(options, function(value, index, elem){
                 if(value === '') return elem.focus();
                 let regex = /^(?:[a-zA-Z0-9_-]+\.)*[a-z]{2,6}$/;
                 if(!regex.test(value)){
@@ -247,8 +268,11 @@
                 Core.post('console.account.profile',function (res){
                     Core.report(res);
                     if(res.type==='success'){
-                        $('#bind_domain').text(value);
+                        $('.js-domain').addClass('selected');
                         layer.close(index);
+                        window.location.reload();
+                    }else{
+                        elem.focus();
                     }
                 },{domain:value,op:"setDomain",uniacid:{{ $uniacid }}},'json',true)
             });

@@ -205,18 +205,18 @@ class SettingController extends Controller
                         //已安装
                         $application = $module->application;
                         if (version_compare($release['version'], $application['version'], '>') || $releaseDate>$application['releasedate']){
-                            $com['action'] .= '<a href="'.wurl('module/update').'?nid='.$identifie.'" class="layui-btn layui-btn-sm layui-btn-danger confirm" data-text="升级前请做好源码和数据备份，避免升级故障导致系统无法正常运行">升级</a>';
+                            $com['action'] .= '<a href="'.wurl('module/update').'?nid='.$identifie.'" class="layui-btn layui-btn-sm layui-btn-danger confirm" data-text="'.__('升级前请做好数据备份').'">'.__('升级').'</a>';
                         }
-                        $com['action'] .= '<a href="'.wurl('module/remove').'?nid='.$identifie.'" class="layui-btn layui-btn-sm layui-btn-primary confirm" data-text="即将卸载该应用并删除应用产生的所有数据，是否确定要卸载？">卸载</a></div>';
+                        $com['action'] .= '<a href="'.wurl('module/remove').'?nid='.$identifie.'" class="layui-btn layui-btn-sm layui-btn-primary confirm" data-text="'.__('uninstallConfirm').'">'.__('uninstall').'</a></div>';
                     }else{
                         if ($module['errno']!=-1){
                             //已存在但未安装
                         }else{
-                            $com['action'] = '<a href="'.wurl('module/require', array('nid'=>$value['identity'])).'" class="layui-btn layui-btn-sm layui-btn-normal confirm" data-text="确定要安装该应用？">安装</a>';
+                            $com['action'] = '<a href="'.wurl('module/require', array('nid'=>$value['identity'])).'" class="layui-btn layui-btn-sm layui-btn-normal confirm" data-text="'.__('installConfirm').'">'.__('install').'</a>';
                         }
                     }
                 }else{
-                    $com['action'] = '<a href="'.wurl('module/require', array('nid'=>$value['identity'])).'" class="layui-btn layui-btn-sm layui-btn-normal confirm" data-text="确定要安装该应用？">安装</a>';
+                    $com['action'] = '<a href="'.wurl('module/require', array('nid'=>$value['identity'])).'" class="layui-btn layui-btn-sm layui-btn-normal confirm" data-text="'.__('installConfirm').'">'.__('install').'</a>';
                 }
                 $plugins[$identifie] = $com;
             }

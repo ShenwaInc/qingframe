@@ -63,7 +63,7 @@ class AccountController extends Controller
 
     public function doRole(Request $request){
         global $_W;
-        if ($this->role!='owner' && !$_W['isfounder'])return $this->message(__('暂无权限'));
+        if ($this->role!='owner' && !$_W['isfounder'])return $this->message('暂无权限');
         $return = array('title'=>__('操作权限'),'users'=>array(),'uniacid'=>$this->uniacid,'role'=>$this->role);
         $subs = UserService::GetSubs($_W['uid']);
         $op = $request->input('op','');
@@ -82,7 +82,7 @@ class AccountController extends Controller
                 if ($complete) return $this->message('savedSuccessfully', referer(), 'success');
             }elseif ($op=='setowner'){
                 if (!$_W['isfounder']){
-                    return $this->message(__('暂无权限'));
+                    return $this->message('暂无权限');
                 }
                 $uid = (int)$request->input('uid',0);
                 if ($uid==0) return $this->message('userNotfound');
@@ -276,12 +276,14 @@ class AccountController extends Controller
             switch ($op){
                 case 'setDomain' : {
                     $domain = trim($request->input('domain', ''));
-                    if (empty($domain) || !preg_match('/^(?:[a-zA-Z\d_-]+\.)*[a-z]{2,6}$/i', $domain)){
-                        return $this->message(__('请输入正确格式的域名'));
-                    }
                     if ($domain==$uni_settings['bind_domain']) return $this->success();
-                    if (DB::table('uni_settings')->where('bind_domain', $domain)->exists()){
-                        return $this->message(__('该域名已被其它平台绑定'));
+                    if (!empty($domain)){
+                        if (!preg_match('/^(?:[a-zA-Z\d_-]+\.)*[a-z]{2,6}$/i', $domain)){
+                            return $this->message('请输入正确格式的域名');
+                        }
+                        if (DB::table('uni_settings')->where('bind_domain', $domain)->exists()){
+                            return $this->message('该域名已被其它平台绑定');
+                        }
                     }
                     if (!DB::table('uni_settings')->where('uniacid', $this->uniacid)->update(['bind_domain'=>$domain])){
                         return $this->message('saveFailed');

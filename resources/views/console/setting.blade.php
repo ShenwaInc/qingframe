@@ -26,58 +26,6 @@
 
         <div class="fui-card layui-card">
             <div class="layui-card-header nobd">
-                <a href="{{ wurl('setting/pageset') }}" class="fr text-blue ajaxshow" title="{{ __('modifyData', array('data'=>__('siteInformation'))) }}">@lang('edit')</a>
-                <span class="title">@lang('siteInformation')</span>
-            </div>
-            <div class="layui-card-body">
-                <div class="un-padding">
-                    <table class="layui-table fui-table lines" lay-skin="nob">
-                        <colgroup>
-                            <col width="120"/>
-                            <col/>
-                        </colgroup>
-                        <tbody>
-                        <tr>
-                            <td><span class="fui-table-lable">@lang('siteName')</span></td>
-                            <td class="soild-after">@lang($_W['setting']['page']['title'])</td>
-                        </tr>
-                        <tr>
-                            <td><span class="fui-table-lable">LOGO</span></td>
-                            <td class="soild-after">
-                                <img class="radius" src="{{ tomedia($_W['setting']['page']['logo']) }}" width="128"/>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><span class="fui-table-lable">@lang('icon')</span></td>
-                            <td class="soild-after">
-                                <img class="radius" src="{{ tomedia($_W['setting']['page']['icon']) }}" width="48"/>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><span class="fui-table-lable">@lang('SEOKeywords')</span></td>
-                            <td class="soild-after">{{ $_W['setting']['page']['keywords'] }}</td>
-                        </tr>
-                        <tr>
-                            <td><span class="fui-table-lable">@lang('SEODescription')</span></td>
-                            <td class="soild-after">{{ $_W['setting']['page']['description'] }}</td>
-                        </tr>
-                        <tr>
-                            <td><span class="fui-table-lable">@lang('copyright')</span></td>
-                            <td class="soild-after fui-footer-copyright">{!! $_W['setting']['page']['copyright'] !!}</td>
-                        </tr>
-                        <tr>
-                            <td><span class="fui-table-lable">@lang('bottomNavigation')</span></td>
-                            <td class="soild-after">
-                                {!! $_W['setting']['page']['links'] !!}
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-        <div class="fui-card layui-card">
-            <div class="layui-card-header nobd">
                 <span class="title">@lang('systemSettings')</span>
             </div>
             <div class="layui-card-body">
@@ -159,6 +107,60 @@
                 </div>
             </div>
         </div>
+
+        <div class="fui-card layui-card">
+            <div class="layui-card-header nobd">
+                <a href="{{ wurl('setting/pageset') }}" class="fr text-blue ajaxshow" title="{{ __('modifyData', array('data'=>__('siteInformation'))) }}">@lang('edit')</a>
+                <span class="title">@lang('siteInformation')</span>
+            </div>
+            <div class="layui-card-body">
+                <div class="un-padding">
+                    <table class="layui-table fui-table lines" lay-skin="nob">
+                        <colgroup>
+                            <col width="120"/>
+                            <col/>
+                        </colgroup>
+                        <tbody>
+                        <tr>
+                            <td><span class="fui-table-lable">@lang('siteName')</span></td>
+                            <td class="soild-after">@lang($_W['setting']['page']['title'])</td>
+                        </tr>
+                        <tr>
+                            <td><span class="fui-table-lable">LOGO</span></td>
+                            <td class="soild-after">
+                                <img class="radius" src="{{ tomedia($_W['setting']['page']['logo']) }}" width="128"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><span class="fui-table-lable">@lang('icon')</span></td>
+                            <td class="soild-after">
+                                <img class="radius" src="{{ tomedia($_W['setting']['page']['icon']) }}" width="48"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><span class="fui-table-lable">@lang('SEOKeywords')</span></td>
+                            <td class="soild-after">{{ $_W['setting']['page']['keywords'] }}</td>
+                        </tr>
+                        <tr>
+                            <td><span class="fui-table-lable">@lang('SEODescription')</span></td>
+                            <td class="soild-after">{{ $_W['setting']['page']['description'] }}</td>
+                        </tr>
+                        <tr>
+                            <td><span class="fui-table-lable">@lang('copyright')</span></td>
+                            <td class="soild-after fui-footer-copyright">{!! $_W['setting']['page']['copyright'] !!}</td>
+                        </tr>
+                        <tr>
+                            <td><span class="fui-table-lable">@lang('bottomNavigation')</span></td>
+                            <td class="soild-after">
+                                {!! $_W['setting']['page']['links'] !!}
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
         <div class="fui-card layui-card @if(!$_W['isfounder']) layui-hide @endif ">
             <div class="layui-card-header nobd">
                 <span class="title">@lang('系统参数')</span>

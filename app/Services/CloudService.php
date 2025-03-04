@@ -279,7 +279,9 @@ class CloudService
         if (!empty($isJson)){
             $result = error(-1, $isJson['message']);
             $result['redirect'] = trim($isJson['redirect']);
-            dd($result);
+            if (DEVELOPMENT){
+                dd($result);
+            }
             return $result;
         }
         if (!$patch){
@@ -327,6 +329,12 @@ class CloudService
         $upgradeInfo = self::CloudApi('structure',$data);
         if (is_error($upgradeInfo)) return $upgradeInfo;
         MSService::TerminalSend(['mode'=>'info', 'message'=>'获取到云端程序信息：V'.$upgradeInfo['version']]);
+        if (!empty($upgradeInfo['versionBase'])){
+            if (version_compare($upgradeInfo['versionBase'], QingVersion, '>')){
+                $upgradeText = '&nbsp;&nbsp;<a href="/console/setting" class="text-blue">'.__('upgradeNow').'</a>';
+                return error(-1, __('应用最低兼容版本', array('version'=>$upgradeInfo['versionBase'])) . $upgradeText);
+            }
+        }
         $structures = json_decode(base64_decode($upgradeInfo['structure']), true);
         $difference = self::CloudCompare($structures,$targetpath);
         if (empty($difference)) return true;
@@ -483,6 +491,7 @@ class CloudService
         $data['siteroot'] = $_W['siteroot'];
         $data['siteid'] = $_W['config']['site']['id'];
         $data['devmode'] = env('APP_DEVELOPMENT',0);
+        $data['versionBase'] = QingVersion;
         $data['sign'] = self::GetSignature($data['appsecret'],$data);
         $CloudApi = env('APP_CLOUD_API', self::$cloudApi);
         $res = HttpService::ihttp_post($CloudApi,$data);
