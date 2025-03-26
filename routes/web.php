@@ -47,14 +47,11 @@ Route::get('/', function (Request $request){
     $App->initialize($request);
 
     $uniacid = (int)DB::table('uni_settings')->where('bind_domain', $request->server('HTTP_HOST'))->value('uniacid');
-    if (!empty($uniacid)){
-        $forceDomain = env('APP_FORCE_DOMAIN', false);
-        if($forceDomain){
-            if (Auth::check()){
-                return redirect("/console/account/{$uniacid}");
-            }else{
-                return redirect("/login/{$uniacid}");
-            }
+    if (!empty($uniacid) && env('APP_FORCE_DOMAIN', false)){
+        if (Auth::check()){
+            return redirect("/console/account/{$uniacid}");
+        }else{
+            return redirect("/login/{$uniacid}");
         }
     }
     $locale = $request->input('lang', $_W['locale']);
