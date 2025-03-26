@@ -7,6 +7,7 @@
             @if(empty($modules))
                 <div class="fui-empty text-center" style="line-height: 150px;">
                     <span class="text-gray" style="font-size: 16px;">@lang('NoAppsAvailable')</span>
+                    &nbsp;<a href="{{ wurl('setting/market') }}" class="layui-btn layui-btn-sm layui-btn-normal ajaxshow">@lang('应用市场')</a>
                 </div>
             @else
                 <form lay-filter="extramodules" action="{{ wurl('account/modules',array('uniacid'=>$_W['uniacid'], 'post'=>1)) }}" method="post">

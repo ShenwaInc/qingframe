@@ -215,7 +215,7 @@ class MSService
                     'version'=>$value['release']['version'],
                     'releases'=>$value['release']['releasedate']
                 );
-                $service['actions'] = '<a class="layui-btn layui-btn-sm layui-btn-normal js-terminal" data-text="确定要安装该服务？" href="'.wurl('server', array("op"=>"cloudInstall", "nid"=>$identity)).'">安装</a>';
+                $service['actions'] = '<a class="layui-btn layui-btn-sm layui-btn-normal js-terminal" id="install_' . $identity . '" data-text="确定要安装该服务？" href="'.wurl('server', array("op"=>"cloudInstall", "nid"=>$identity)).'">安装</a>';
                 $servers[] = $service;
             }
         }
@@ -955,18 +955,18 @@ class MSService
 
     public static function getlocal($path=''){
         $servers = array();
-        $serverpath = MICRO_SERVER;
+        $serverPath = MICRO_SERVER;
         if(!empty($path)){
-            $serverpath = $path;
+            $serverPath = $path;
         }
-        $manifests = FileService::file_tree($serverpath,array('*/manifest.json'));
+        $manifests = FileService::file_tree($serverPath,array('*/manifest.json'));
         if ($manifests){
             foreach ($manifests as $manifest){
                 $service = json_decode(@file_get_contents($manifest), true);
                 if (!empty($service) && isset($service['application'])){
                     if (self::isExist($service['application']['identity'])) continue;
                     $serv = $service['application'];
-                    $serv['actions'] = '<a class="layui-btn layui-btn-sm layui-btn-normal js-terminal" data-text="'.__('installConfirm').'" href="'.wurl('server', array("op"=>"install", "nid"=>$serv['identity'])).'">'.__('install').'</a>';
+                    $serv['actions'] = '<a class="layui-btn layui-btn-sm layui-btn-normal js-terminal" id="install_' . $serv['identity'] . '" data-text="'.__('installConfirm').'" href="'.wurl('server', array("op"=>"install", "nid"=>$serv['identity'])).'">'.__('install').'</a>';
                     $serv['status'] = -1;
                     $serv['isdelete'] = false;
                     $servers[$serv['identity']] = $serv;
@@ -974,8 +974,8 @@ class MSService
             }
         }
         if (empty($path) && defined('MSERVER_EXTRA')){
-            $extraserver = self::getlocal(MSERVER_EXTRA);
-            return array_merge($extraserver, $servers);
+            $extraServer = self::getlocal(MSERVER_EXTRA);
+            return array_merge($extraServer, $servers);
         }
         return $servers;
     }

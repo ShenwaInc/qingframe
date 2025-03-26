@@ -116,6 +116,12 @@
             });
         });
         @endif
+        @if(!empty($needServer))
+        const serverId = "#install_{{ $needServer }}";
+        layer.tips('@lang("需要安装该服务")', serverId, {
+            tips: [1, '#ff5722']
+        });
+        @endif
     })
 </script>
 @include('common.footer')

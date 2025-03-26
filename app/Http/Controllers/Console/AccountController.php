@@ -168,6 +168,10 @@ class AccountController extends Controller
             if (!$complete) return $this->message('saveFailed');
             return $this->message('savedSuccessfully',wurl('account/profile',array('uniacid'=>$this->uniacid),true), 'success');
         }
+        $storage = serv('storage', 0);
+        if (!$storage->enabled){
+            return $this->message($storage->error, wurl('server', ['op'=>'local', 'need'=>'storage']));
+        }
         return $this->globalView('console.account.edit',array('title'=>__('EditPlatformInformation'),'account'=>$this->account));
     }
 
@@ -360,6 +364,10 @@ class AccountController extends Controller
                 return $this->message('createSuccessfully',wurl('account/profile',array('uniacid'=>$uniacid)),'success');
             }
             return $this->message('saveFailed');
+        }
+        $storage = serv('storage', 0);
+        if (!$storage->enabled){
+            return $this->message($storage->error, wurl('server', ['op'=>'local', 'need'=>'storage']));
         }
         return $this->globalView('console.account.create', array('title'=>__('platformCreate')));
     }

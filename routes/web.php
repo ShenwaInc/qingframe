@@ -48,10 +48,13 @@ Route::get('/', function (Request $request){
 
     $uniacid = (int)DB::table('uni_settings')->where('bind_domain', $request->server('HTTP_HOST'))->value('uniacid');
     if (!empty($uniacid)){
-        if (Auth::check()){
-            return redirect("/console/account/{$uniacid}");
-        }else{
-            return redirect("/login/{$uniacid}");
+        $forceDomain = env('APP_FORCE_DOMAIN', false);
+        if($forceDomain){
+            if (Auth::check()){
+                return redirect("/console/account/{$uniacid}");
+            }else{
+                return redirect("/login/{$uniacid}");
+            }
         }
     }
     $locale = $request->input('lang', $_W['locale']);
@@ -61,7 +64,11 @@ Route::get('/', function (Request $request){
     }
     SettingService::Load();
     $language = serv('language');
-    return response()->view(['welcomeCustom', 'welcome'], array('title'=>__($_W['setting']['page']['title']), 'Multilingual'=>$language->enabled, 'locale'=>$locale));
+    $views = ['welcomeCustom', 'welcome'];
+    if (!empty($uniacid)){
+        $views = ['welcomeCustom'.$uniacid, 'welcomeCustom', 'welcome'];
+    }
+    return response()->view($views, array('title'=>__($_W['setting']['page']['title']), 'Multilingual'=>$language->enabled, 'locale'=>$locale));
 });
 
 Route::group(['prefix' => 'auth','namespace'=>'Auth', 'middleware'=>['app']],function (){

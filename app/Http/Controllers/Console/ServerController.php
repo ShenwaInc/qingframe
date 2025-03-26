@@ -101,10 +101,11 @@ class ServerController extends Controller
             case "local" : {
                 $return['title'] .= " - ". __('moreServices');
                 $return['servers'] = MSService::getlocal();
-                $cloudservers = MSService::cloudServers();
-                if (!empty($cloudservers)){
-                    $return['servers'] = array_merge($cloudservers, $return['servers']);
+                $cloudServers = MSService::cloudServers();
+                if (!empty($cloudServers)){
+                    $return['servers'] = array_merge($cloudServers, $return['servers']);
                 }
+                $return['needServer'] = $request->input('need', '');
                 break;
             }
             case "install" : {
