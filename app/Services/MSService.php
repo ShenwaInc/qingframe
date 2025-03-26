@@ -307,7 +307,7 @@ class MSService
             }elseif(file_exists($serverPath . "composer.error")){
                 $server['actions'] .= '<a class="layui-btn layui-btn-sm layui-btn-danger js-terminal" href="'.wurl('server', array('op'=>'composer', 'nid'=>$server['identity'])).'">'.__('修复').'</a>';
             }elseif (!$service->enabled){
-                $server['actions'] .= '<a class="layui-btn layui-btn-sm layui-btn-danger js-clip" data-url="'.$service->error.'" lay-tips="'.$service->error.'" href="javascript:" >'.__('修复').'</a>';
+                $server['actions'] .= '<a class="layui-btn layui-btn-sm layui-btn-danger" lay-tips="'.$service->error.'" href="javascript:" >'.__('不可用').'</a>';
             }
             $allServers[$key] = $server;
         }

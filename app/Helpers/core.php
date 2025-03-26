@@ -30,22 +30,29 @@ class CatchCall {
  */
 function serv(...$params){
     static $_servers;
-    $name = ucfirst($params[0]);
-    if (empty($_servers)) $_servers = array();
+    $serviceName = ucfirst($params[0]);
+    if (!isset($_servers)) {
+        $_servers = [];
+    }
     $serverId = md5(base64_encode(json_encode($params)));
     if (isset($_servers[$serverId])){
         return $_servers[$serverId];
     }
-    $identity = strtolower($name);
+    $identity = strtolower($serviceName);
     try {
-        $className = "\Server\\{$identity}\\{$name}Service";
-        if (!class_exists($className)){
-            $service = MICRO_SERVER.$identity."/{$name}Service.php";
-            if (!file_exists($service)){
-                return new CatchCall("Service $name Not Found.");
+        $className = $serviceName . "Service";
+        if (!class_exists($className)) {
+            $className = "\Server\\{$identity}\\{$serviceName}Service";
+        }
+        if (!class_exists($className)) {
+            $servicePath = MICRO_SERVER . $identity . "/{$serviceName}Service.php";
+            if (file_exists($servicePath)) {
+                require_once $servicePath;
+                $className = class_exists($serviceName . 'Service') ? $serviceName . 'Service' : MICRO_SERVER . $identity . "/{$serviceName}Service.php";
             }
-            require_once $service;
-            $className = $name . 'Service';
+            if (!class_exists($className)){
+                return new CatchCall("Service $serviceName Not Found.");
+            }
         }
         if (count($params)>1){
             array_splice($params, 0, 1);
