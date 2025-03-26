@@ -93,10 +93,6 @@ class InstallController extends Controller
             return $this->message('数据库连接失败，请检查配置信息是否正确');
         }
         $installer = $this->installer;
-        $authKey = env('APP_AUTHKEY', "");
-        if (empty($authKey)){
-            $authKey = \Str::random(12);
-        }
         $databaseCFG = config('database.connections.mysql');
         if ($installer['dbconnect']==0){
             //全新安装
@@ -118,7 +114,7 @@ class InstallController extends Controller
             Config::set('database.connections.mysql',$databaseCFG);
 
             try {
-                Artisan::call('self:setup', array('user'=>trim($manager['username']), 'pwd'=>$founderPWD, 'appName'=>$appName, 'manual'=>1, '--authKey'=>$authKey));
+                Artisan::call('self:setup', array('user'=>trim($manager['username']), 'pwd'=>$founderPWD, 'appName'=>$appName));
             }catch (\Exception $exception){
                 if(DEVELOPMENT){
                     throw $exception;
@@ -133,7 +129,6 @@ class InstallController extends Controller
         $database = $databaseCFG;
         $envText = file_get_contents(base_path(".env"));
         $replaces = array(
-            "APP_AUTHKEY"=>$authKey,
             "APP_URL"=>$baseurl,
             "APP_VERSION"=>QingVersion,
             "APP_RELEASE"=>QingRelease,

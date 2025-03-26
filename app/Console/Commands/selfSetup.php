@@ -19,7 +19,7 @@ class selfSetup extends Command
      *
      * @var string
      */
-    protected $signature = 'self:setup {user=admin} {pwd=123456} {manual?} {appName?} {--authKey=default}';
+    protected $signature = 'self:setup {user=admin} {pwd=123456} {appName?} {--authKey=default}';
 
     /**
      * The console command description.
@@ -84,11 +84,9 @@ class selfSetup extends Command
             return $this->message($_W['config']['debugMode']?$exception->getMessage():'Database migrate failed.');
         }
         //2.创建默认账户
-        $manualControl = (bool)$params['manual'];
         $authKey = $this->option("authKey");
         if (empty($authKey) || $authKey=="default"){
             $authKey = \Str::random(12);
-            $manualControl = false;
         }
         $salt = \Str::random(8);
         $username = $params['user'] ?: "admin";
@@ -178,7 +176,7 @@ class selfSetup extends Command
         }
 
         //6.更新环境变量
-        if (!$manualControl){
+        if (!empty($authKey)){
             $oldKey = env("APP_AUTHKEY");
             CloudService::CloudEnv("APP_AUTHKEY=$oldKey", "APP_AUTHKEY=$authKey");
         }
