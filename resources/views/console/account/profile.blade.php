@@ -78,7 +78,7 @@
                                 <td><span class="fui-table-lable">{{ __('IDofData', array('data'=>__('platform'))) }}</span></td>
                                 <td class="soild-after">{{ $uniacid }}&nbsp;&nbsp;<a href="javascript:;" data-url="{{ $uniacid }}" class="text-gray js-clip"><i class="fa fa-copy"></i></a></td>
                                 <td class="text-right soild-after">
-                                    <a href="javascript:;" data-url="{{ $_W['siteroot']."login/".$account['uniacid'] }}" class="text-blue js-clip">@lang('copyPlatformEntry')</a>
+                                    <a href="javascript:;" data-url="{{ $loginUrl }}" class="text-blue js-clip">@lang('copyPlatformEntry')</a>
                                 </td>
                             </tr>
                             <tr>

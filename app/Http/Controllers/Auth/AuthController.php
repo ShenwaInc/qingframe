@@ -35,7 +35,7 @@ class AuthController extends Controller
         if (!empty($appSecurityEntrance) && $appSecurityEntrance!="/"){
             $securityEntrance = session()->get("securityEntrance");
             if (empty($securityEntrance)){
-                abort(413, "Please log in through the secure entrance");
+                abort(403, __('请通过安全入口访问控制台'));
             }
         }
         $username = trim((string)$request->input('username'));
@@ -83,6 +83,13 @@ class AuthController extends Controller
     }
 
     public function Entry(Request $request, $uniacid){
+        $appSecurityEntrance = env("APP_SECURITY_ENTRANCE", "/");
+        if (!empty($appSecurityEntrance) && $appSecurityEntrance!="/"){
+            $securityEntrance = session()->get("securityEntrance");
+            if (empty($securityEntrance)){
+                abort(403, __('请通过安全入口访问控制台'));
+            }
+        }
         $account = AccountService::FetchUni($uniacid);
         if (is_error($account) || empty($account)){
             abort(404);

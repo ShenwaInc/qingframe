@@ -314,6 +314,15 @@ class AccountController extends Controller
         $return['entrance'] = __($this->entrance[$entry]). "&nbsp;&gt;&nbsp;";
         $return['entrance'] .= __($entrances[$entry][$method]);
         $return['settings'] = $uni_settings;
+        $siteUrl = $_W['siteroot'];
+        if (!empty($uni_settings['bind_domain'])){
+            $siteUrl = $_W['sitescheme'] . $uni_settings['bind_domain'] . "/";
+        }
+        $return['loginUrl'] = $siteUrl . "login/".$account['uniacid'];
+        $appSecurityEntrance = env("APP_SECURITY_ENTRANCE", "");
+        if (!empty($appSecurityEntrance)){
+            $return['loginUrl'] = $siteUrl . $appSecurityEntrance . "/" . $account['uniacid'];
+        }
         list($return['components'], $return['servers']) = UserService::AccountPermission($this->uniacid, $_W['uid']);
         return $this->globalView('console.account.profile',$return);
     }

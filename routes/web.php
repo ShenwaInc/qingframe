@@ -26,6 +26,10 @@ if (!empty($appSecurityEntrance) && $appSecurityEntrance!="/"){
         $request->session()->put("securityEntrance", random(12));
         return redirect("/login");
     });
+    Route::get("/{$appSecurityEntrance}/{uniacid}", function (Request $request, $uniacid){
+        $request->session()->put("securityEntrance", random(12));
+        return redirect("/login/" . $uniacid);
+    })->where('uniacid','[0-9]+');
 }
 
 Route::get('/', function (Request $request){
