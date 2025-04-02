@@ -147,20 +147,22 @@ class AccountService {
 
     static function ExtraModules($uniacid, $cache=true){
         $cacheKey = CacheService::system_key("unimodules", array('uniacid'=>$uniacid));
+        $modules = [];
         $default = error(-1, 'nothing');
-        $modules = $cache ? Cache::get($cacheKey, $default) : $default;
-        if (is_error($modules)){
-            $modules = [];
-            $_modules = DB::table('uni_account_extra_modules')->where('uniacid', $uniacid)->value('modules');
-            $extra_modules = $_modules ? unserialize($_modules) : [];
-            if (!empty($extra_modules)){
-                foreach ($extra_modules as $val){
-                    $modules[$val['identity']] = $val;
-                }
+        if ($cache){
+            $modules = Cache::get($cacheKey, []);
+            if (!empty($modules)){
+                return is_error($modules) ? [] : $modules;
             }
-            Cache::put($cacheKey, $modules, 7*86400);
-            return $modules;
         }
+        $_modules = DB::table('uni_account_extra_modules')->where('uniacid', $uniacid)->value('modules');
+        $extra_modules = $_modules ? unserialize($_modules) : [];
+        if (!empty($extra_modules)){
+            foreach ($extra_modules as $val){
+                $modules[$val['identity']] = $val;
+            }
+        }
+        Cache::put($cacheKey, empty($modules)?$default:$modules, 7*86400);
         return $modules;
     }
 

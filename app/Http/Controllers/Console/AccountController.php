@@ -274,6 +274,7 @@ class AccountController extends Controller
         if ($account['endtime']>0 && $account['endtime']<TIMESTAMP && !$_W['isfounder']){
             return $this->message('platformExpired');
         }
+        session()->put('uniacid', $this->uniacid);
         $uni_settings = DB::table('uni_settings')->where('uniacid', $this->uniacid)->select(['jsauth_acid', 'bind_domain'])->first();
         if ($request->isMethod('post')){
             $op = $request->input('op');

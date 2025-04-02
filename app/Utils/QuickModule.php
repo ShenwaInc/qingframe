@@ -4,7 +4,9 @@ namespace App\Utils;
 
 use App\Services\AccountService;
 use App\Services\CacheService;
+use App\Services\ModuleService;
 use Exception;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\View;
 
@@ -81,6 +83,8 @@ class QuickModule
             $WeModule = new WeModule();
             $WeModule->modulename = $this->modulename;
             $WeModule->saveSettings($data);
+            $cacheKey = CacheService::system_key('module_info', array('module_name' => $this->modulename));
+            Cache::forget($cacheKey);
             return redirect(wurl("m/".$this->modulename));
         }
         $modules = AccountService::ExtraModules($this->uniacid);

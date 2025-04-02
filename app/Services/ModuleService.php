@@ -220,8 +220,8 @@ class ModuleService
 
     static function fetch($name, $enabled = true) {
         global $_W;
-        $cachekey = CacheService::system_key('module_info', array('module_name' => $name));
-        $module = Cache::get($cachekey,array());
+        $cacheKey = CacheService::system_key('module_info', array('module_name' => $name));
+        $module = Cache::get($cacheKey,array());
         if (empty($module)) {
             $module_info = Module::where('name',$name)->first();
             if (empty($module_info)) {
@@ -265,22 +265,20 @@ class ModuleService
                 $module_info['is_delete'] = $is_delete; 		}
 
             $module = $module_info;
-            Cache::put($cachekey, $module_info);
+            cache_write($cacheKey, $module_info);
         }
 
-        if (!empty($enabled)) {
-            if (!empty($module['is_delete'])) {
-                return array();
-            }
+        if (!$enabled && !empty($module['is_delete'])) {
+            return array();
         }
 
         if (!empty($module) && !empty($_W['uniacid'])) {
-            $setting_cachekey = CacheService::system_key('module_setting', array('module_name' => $name, 'uniacid' => $_W['uniacid']));
-            $setting = Cache::get($setting_cachekey,array());
+            $setting_cacheKey = CacheService::system_key('module_setting', array('module_name' => $name, 'uniacid' => $_W['uniacid']));
+            $setting = Cache::get($setting_cacheKey,array());
             if (!isset($setting['settings'])) {
                 $setting = DB::table('uni_account_modules')->where(array('module'=>$name,'uniacid'=>$_W['uniacid']))->first();
                 $setting = empty($setting) ? array('module' => $name, 'shortcut'=>'', 'module_shortcut'=>'', 'displayorder'=>0, 'uniacid'=>$_W['uniacid'], 'settings'=>'') : $setting;
-                Cache::put($setting_cachekey, $setting, 86400*7);
+                Cache::put($setting_cacheKey, $setting, 86400*7);
             }
             $module['config'] = unserialize($setting['settings']);
             $module['enabled'] = $module['issystem'] || !isset($setting['enabled']) ? 1 : $setting['enabled'];
