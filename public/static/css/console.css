@@ -64,7 +64,7 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 .layui-btn-primary{background-color: #FFFFFF;}
 .layui-btn-danger{background-color: #e54d42;}
 .layui-btn-group .layui-btn:first-child{border-radius: 3px 0 0 3px;}
-.layui-btn-group .layui-btn:last-child{border-radius: 0 3px 3px 0;}
+.layui-btn-group .layui-btn:not(.layui-hide):last-of-type{border-radius: 0 3px 3px 0;}
 .layui-btn-group .layui-btn:only-child{border-radius: 3px;}
 
 /* common */
