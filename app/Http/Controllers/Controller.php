@@ -45,10 +45,11 @@ class Controller extends BaseController
         if (empty($data)) $data = [];
         $data['_W'] = $_W;
         $data['_GPC'] = $_GPC;
+        \view()->share($data);
         if (is_array($view)){
-            return view()->first($view, $data);
+            return view()->first($view);
         }
-        return \view($view, $data);
+        return \view($view);
     }
 
 }
