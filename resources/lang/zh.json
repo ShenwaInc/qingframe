@@ -43,7 +43,7 @@
     "getCloud": "轻松上云，一步之遥",
     "domain": "站点域名",
     "domainModify": "您还有<strong>:times</strong>次修改域名额度",
-    "domainNotify": "当前的域名:domain与站点激活信息不符，云服务使用可能受限",
+    "domainNotify": "当前的域名 <strong>:domain</strong> 与站点激活信息不符，云服务使用可能受限。",
     "domainModifyNotify": "您的域名修改额度不足，请联系客服",
     "phoneNumber": "手机号",
     "typeSomething": "请输入:data",

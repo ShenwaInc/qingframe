@@ -20,12 +20,13 @@
 
         @if(empty($activeState['hasDomain']))
             <div class="layui-elem-quote margin-bottom-xl" style="border-color: #FF5722; background-color: #fadbd9;">
-                <p class="text-red">当前域名不是系统授权域名，请<a href="{{ $activeState['siteroot'] }}" class="text-blue">使用授权域名登录</a>以使用云服务。或者<a href="{{ wurl('active') }}" class="text-blue">重置云服务授权</a></p>
+                <p class="text-red">{!! __('domainNotify', ['domain'=>$_SERVER['HTTP_HOST']]) !!}&nbsp;&nbsp;<a href="{{ wurl('active') }}" class="text-blue">@lang('重置云服务')</a></p>
             </div>
         @endif
 
         <div class="fui-card layui-card">
             <div class="layui-card-header nobd">
+                <a href="{{ wurl('module/passcode') }}" data-width="680" class="fr layui-btn layui-btn-sm layui-btn-danger ajaxshow margin-left-sm">@lang('卡密安装')</a>
                 @if($activeState['hasDomain'] && $activeState['status'])
                 <a href="{{ wurl('setting/market') }}" data-width="1340" class="fr layui-btn layui-btn-sm layui-btn-normal ajaxshow">@lang('appStore')</a>
                 @endif

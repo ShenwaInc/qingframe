@@ -62,6 +62,29 @@ class ModuleController extends Controller
         return $this->globalView('console.module', $return);
     }
 
+    //通过卡密安装
+    public function doPasscode(Request $request){
+        switch ($request->input('op', '')){
+            case 'query':
+                $passcode = $request->input('code');
+                if (empty($passcode)) return $this->message('无效的卡密或兑换码');
+                $data = array(
+                    'r'=>'cloud.package',
+                    'identity'=>"laravel_module_swa_mall",
+                    'frompage'=>'passcode',
+                    'code'=>$passcode
+                );
+                $res = CloudService::CloudApi("", $data);
+                if(is_error($res) || !isset($res['application'])){
+                    return $this->message(is_error($res)?$res['message']:"应用解析失败");
+                }
+                return $this->message($res, "", "success");
+            default :
+                break;
+        }
+        return $this->globalView('console.module.passcode', ['title'=>__('卡密安装')]);
+    }
+
     /**
      * 停用云服务
     */

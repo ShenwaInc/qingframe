@@ -18,7 +18,7 @@
 
         @if(empty($activeState['hasDomain']))
             <div class="layui-elem-quote margin-bottom-xl" style="border-color: #FF5722; background-color: #fadbd9;">
-                <p class="text-red">当前域名不是系统授权域名，请<a href="{{ $activeState['siteroot'] }}" class="text-blue">使用授权域名登录</a>以使用云服务。或者<a href="{{ wurl('active') }}" class="text-blue">@lang('重置云服务')</a></p>
+                <p class="text-red">{!! __('domainNotify', ['domain'=>$_SERVER['HTTP_HOST']]) !!}&nbsp;&nbsp;<a href="{{ wurl('active') }}" class="text-blue">@lang('重置云服务')</a></p>
             </div>
         @endif
 
