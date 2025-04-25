@@ -26,7 +26,7 @@
 
         <div class="fui-card layui-card">
             <div class="layui-card-header nobd">
-                <a href="{{ wurl('module/passcode') }}" data-width="680" class="fr layui-btn layui-btn-sm layui-btn-danger ajaxshow margin-left-sm">@lang('卡密安装')</a>
+                <a href="{{ wurl('module/passcode') }}" data-width="680" class="fr layui-btn layui-btn-sm layui-btn-danger ajaxshow margin-left-sm">@lang('兑换券')</a>
                 @if($activeState['hasDomain'] && $activeState['status'])
                 <a href="{{ wurl('setting/market') }}" data-width="1340" class="fr layui-btn layui-btn-sm layui-btn-normal ajaxshow">@lang('appStore')</a>
                 @endif

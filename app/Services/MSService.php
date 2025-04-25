@@ -881,9 +881,7 @@ class MSService
     public static function ComposerPage($params, $inService=null){
         $params['title'] = __('installVendor');
         global $_W;
-        if ($inService){
-            $_W['inService'] = true;
-        }
+        $_W['inService'] = !empty($inService);
         $html = \view('console.composer', array_merge($params, array('_W'=>$_W, 'inService'=>$inService)))->toHtml();
         session_exit($html);
     }

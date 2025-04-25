@@ -64,25 +64,51 @@ class ModuleController extends Controller
 
     //通过卡密安装
     public function doPasscode(Request $request){
-        switch ($request->input('op', '')){
-            case 'query':
-                $passcode = $request->input('code');
-                if (empty($passcode)) return $this->message('无效的卡密或兑换码');
-                $data = array(
-                    'r'=>'cloud.package',
-                    'identity'=>"laravel_module_swa_mall",
-                    'frompage'=>'passcode',
-                    'code'=>$passcode
-                );
-                $res = CloudService::CloudApi("", $data);
-                if(is_error($res) || !isset($res['application'])){
-                    return $this->message(is_error($res)?$res['message']:"应用解析失败");
-                }
-                return $this->message($res, "", "success");
-            default :
-                break;
+        $operation = $request->input('op', '');
+        if (!empty($operation)){
+            switch ($operation){
+                case 'query':
+                    $passcode = $request->input('code');
+                    if (empty($passcode)) return $this->message('无效的卡密或兑换码');
+                    $data = array(
+                        'r'=>'cloud.package',
+                        'identity'=>'',
+                        'frompage'=>'passcode',
+                        'code'=>$passcode
+                    );
+                    $res = CloudService::CloudApi("", $data);
+                    if(is_error($res) || !isset($res['application'])){
+                        return $this->message(is_error($res)?$res['message']:"应用解析失败");
+                    }
+                    return $this->message($res, "", "success");
+                case 'consume' :
+                    $passcode = $request->input('code');
+                    if (empty($passcode)) return $this->message('无效的卡密或兑换码');
+                    $data = array(
+                        'r'=>'cloud.package.consume',
+                        'identity'=>"",
+                        'remark'=>'Install with a passcode',
+                        'code'=>$passcode
+                    );
+                    $res = CloudService::CloudApi("", $data);
+                    if(is_error($res) || !isset($res['application'])){
+                        return $this->message(is_error($res)?$res['message']:"应用解析失败");
+                    }
+                    $moduleId = $res['moduleId'];
+                    //判断本地是否已安装
+                    $res['terminalUrl'] = wurl('module/require', ['nid'=>$moduleId]);
+                    $moduleIdLocal = str_replace(ModuleService::SysPrefix(), "", $moduleId);
+                    $ManiFest = ModuleService::installCheck($moduleIdLocal);
+                    if (!is_error($ManiFest)){
+                        //已安装
+                        $res['terminalUrl'] = wurl('module/update', ['nid'=>$moduleIdLocal]);
+                    }
+                    return $this->message($res, "", "success");
+                default :
+                    return $this->message();
+            }
         }
-        return $this->globalView('console.module.passcode', ['title'=>__('卡密安装')]);
+        return $this->globalView('console.module.passcode', ['title'=>__('兑换券')]);
     }
 
     /**

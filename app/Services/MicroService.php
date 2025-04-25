@@ -478,7 +478,7 @@ class MicroService
                 'WorkingDirectory'=>$WorkingDirectory,
                 'requireName'=>$requireName,
                 'composerNext'=>''
-            ));
+            ), $this);
         }
         return true;
     }
