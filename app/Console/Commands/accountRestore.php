@@ -47,8 +47,9 @@ class accountRestore extends Command
         $complete = DB::table('account')->where('uniacid', $uniacid)->update(array('isdeleted'=>0));
         if ($complete){
             $this->info('Restored successfully');
+        }else{
+            $this->error('Operation failed. Please try again.');
         }
-        $this->error('Operation failed. Please try again.');
         return true;
     }
 }

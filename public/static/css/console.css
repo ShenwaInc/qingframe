@@ -277,10 +277,12 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 .fui-item.arrow .fui-content{padding-right: 28px; position: relative;}
 .fui-item.arrow .fui-content:after{content: "\e602"; font-family: layui-icon !important; font-size: 28px; position: absolute; right: 5px; top: 50%; margin-top: -14px; color: #bebebe;}
 
-.fui-flex{display: flex;}
-.fui-flex-stretch{align-items: stretch;}
-.fui-flex-stretch > * {flex: 1}
-.fui-flex-stretch .fui-card{height: 100%; box-sizing: border-box;}
+@media screen and (min-width:1440px){
+    .fui-flex{display: flex;}
+    .fui-flex-stretch{align-items: stretch;}
+    .fui-flex-stretch > * {flex: 1}
+    .fui-flex-stretch .fui-card{height: 100%; box-sizing: border-box;}
+}
 
 @media screen and (max-width:992px){
     .layui-layout-admin .layui-side{transform:translate3d(-220px,0,0);-webkit-transform:translate3d(-220px,0,0);width:220px}

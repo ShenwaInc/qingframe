@@ -21,7 +21,7 @@
     </div>
 
     <div class="layui-row layui-col-space20 fui-flex fui-flex-stretch">
-        <div class="layui-col-md6 layui-col-sm12">
+        <div class="layui-col-md6 layui-col-sm12 layui-col-xs12">
             <div class="fui-card layui-card" style="height: 100%;">
                 <div class="layui-card-header nobd">
                     @if($_W['isfounder'] || $role=='founder')
@@ -57,7 +57,7 @@
             </div>
         </div>
 
-        <div class="layui-col-md6 layui-col-sm12">
+        <div class="layui-col-md6 layui-col-sm12 layui-col-xs12">
             <div class="fui-card layui-card">
                 <div class="layui-card-header nobd">
                     @if(in_array($role,['founder','owner', 'manager']) || $_W['isfounder'])
