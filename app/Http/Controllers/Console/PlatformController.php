@@ -27,7 +27,7 @@ class PlatformController extends Controller
             return redirect("console/account/".SITEACID);
         }
 
-        session()->forget('uniacid');
+        //session()->forget('uniacid');
         $data = array('creatable'=>true, 'consoleHome'=>true);
         $params = post_var(array('keyword'));
 

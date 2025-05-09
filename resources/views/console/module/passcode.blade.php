@@ -129,7 +129,9 @@
             if(res.type!=='success'){
                 return layer.msg(res.message, {icon: 2});
             }
-            terminalInit(res.data.terminalUrl);
+            if(res.data.terminalUrl){
+                terminalInit(res.data.terminalUrl);
+            }
         }, {
             op:"consume",
             code: passcode

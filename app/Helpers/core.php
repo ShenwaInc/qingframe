@@ -167,11 +167,22 @@ function checksubmit($var='_token'){
 }
 
 function cache_load($key, $unserialize = false, $default=null){
-    $cache = Cache::get($key, $unserialize?array():$default);
-    if (!empty($cache) && $unserialize){
+    $cache = Cache::get($key, $default);
+    if (empty($cache) || $cache===$default){
+        return $cache;
+    }
+    if ($unserialize){
         return unserialize($cache);
     }
     return $cache;
+}
+
+function cache_delete($key){
+    return Cache::forget($key);
+}
+
+function cache_set($key, $data, $expire = null){
+    return cache_write($key, $data, $expire);
 }
 
 function cache_write($key, $data, $expire = null) {
