@@ -11,7 +11,7 @@
 
         <!-- Styles -->
         <link rel="stylesheet" href="{{ assets('/static/css/welcome.css') }}?v={{ QingRelease }}" />
-        <script type="text/javascript" src="//ai.qingruyun.com/addons/swa_quickai/static/quick-ai.min.js?v=2.1"></script>
+        <script type="text/javascript" src="//ai.qingruyun.com/addons/swa_quickai/static/quick-ai.min.js?v=2.2"></script>
     </head>
     <body>
         <div class="flex-bottom position-ref full-height">
@@ -55,7 +55,7 @@
                     <a href="https://www.gxit.org/forum.php?mod=forumdisplay&fid=44" target="_blank">@lang('产品论坛')</a>
                     <a href="/console/module" target="_blank">@lang('应用市场')</a>
                     <a href="/console/report" target="_blank">@lang('提交工单')</a>
-                    <a href="javascript:QuickAI.open('https://ai.qingruyun.com/wem/swa_quickai/quick?i=3&aid=1')"><img src="{{ asset('static/images/ai.png') }}" height="18" alt="QuickAi" /></a>
+                    <a href="javascript:" onclick="QuickAI.open('https://ai.qingruyun.com/wem/swa_quickai/quick?i=3&aid=1')"><img src="{{ asset('static/images/ai.png') }}" height="18" alt="QuickAi" /></a>
                 </div>
             </div>
         </div>

@@ -510,6 +510,7 @@ class MSService
                 return error(-102, "Composer依赖安装失败，请手动安装");
             }
         }
+        CacheService::flush();
         return true;
     }
 
@@ -579,6 +580,7 @@ class MSService
                 //删除安装包文件
                 @unlink(MICRO_SERVER.$identity."/manifest.json");
             }
+            CacheService::flush();
             return true;
         }
         return error(-1,"当前服务已经是最新版本");
