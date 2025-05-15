@@ -29,7 +29,7 @@ class Controller extends BaseController
             $_W['isajax'] = \request()->ajax() || \request('inajax', 0);
         }
         if ($_W['isajax'] || $_W['isapi']){
-            return response()->json($return);
+            return response()->json($return, 200, [], JSON_NUMERIC_CHECK);
         }else{
             $view = defined("IN_MOBILE") ? 'mmessage' : "message";
             return $this->globalView($view, $return);
