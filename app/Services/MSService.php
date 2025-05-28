@@ -728,10 +728,13 @@ class MSService
      */
     public static function ComposerProcess(array $command, $WorkingDirectory): Process
     {
+        $takes = time() - TIMESTAMP;
+        $maxTime = (int) ini_get('max_execution_time');
+        $timeout = $maxTime > 0 ? max(10, $maxTime - $takes) : 300;
         $process = new Process($command);
         $process->setWorkingDirectory($WorkingDirectory);
         $process->setEnv(['COMPOSER_HOME' => self::ComposerHome()]);
-        $process->setTimeout(ini_get('max_execution_time') - 5);
+        $process->setTimeout($timeout);
         $process->run(function ($type, $buffer) {
             self::TerminalSend(["mode" => str_replace('err', 'warm', $type), "message" => $buffer]);
         });
@@ -848,10 +851,13 @@ class MSService
         $startTime = time();
         $WorkingDirectory = base_path()."/";
         try {
+            $takes = time() - TIMESTAMP;
+            $maxTime = (int) ini_get('max_execution_time');
+            $timeout = $maxTime > 0 ? max(10, $maxTime - $takes) : 300;
             $process = new Process(["composer", "remove", $require]);
             $process->setWorkingDirectory($WorkingDirectory);
             $process->setEnv(['COMPOSER_HOME'=>self::ComposerHome()]);
-            $process->setTimeout(ini_get('max_execution_time'));
+            $process->setTimeout($timeout);
             $process->run(function ($type, $buffer) {
                 self::TerminalSend(["mode"=>str_replace('err', 'warm', $type), "message"=>$buffer]);
             });
@@ -889,18 +895,25 @@ class MSService
     }
 
     public static function ComposerHome(){
-        $php_uname = php_uname();
+        $os = PHP_OS_FAMILY;
         $username = get_current_user();
-        if (strexists($php_uname, "Windows")){
-            return "C:\Users\\{$username}\AppData\Roaming\Composer";
-        }elseif (strexists($php_uname, "Linux")){
-            return "/root/.composer";
-        }elseif (strexists($php_uname, "nux")){
-            return "/home/{$username}/.composer";
-        }elseif (strexists($php_uname, 'OSX')){
-            return "/Users/{$username}/.composer";
+
+        if ($os === 'Windows') {
+            $appData = $_ENV['APPDATA'] ?? "C:\\Users\\{$username}\\AppData\\Roaming";
+            return "{$appData}\\Composer";
         }
-        return "";
+
+        if (in_array($os, ['Linux', 'Darwin', 'BSD'])) {
+            $home = $_ENV['HOME'] ?? null;
+
+            if (!$home) {
+                $home = ($username === 'root') ? '/root' : "/home/{$username}";
+            }
+
+            return "{$home}/.composer";
+        }
+
+        return '';
     }
 
     public static function disable($identity){
