@@ -11,7 +11,7 @@ define('QingFrame', true);
 define("MICRO_SERVER", base_path("servers/"));
 define('MAGIC_QUOTES_GPC', (function_exists('get_magic_quotes_gpc') && @get_magic_quotes_gpc()) || @ini_get('magic_quotes_sybase'));
 define('ATTACHMENT_ROOT', storage_path('app/public/'));
-define('TIMESTAMP', time());
+define('TIMESTAMP', (int)LARAVEL_START);
 define('DEVELOPMENT', (bool)env('APP_DEVELOPMENT',0));
 define('SITEACID', env('APP_UNIACID', 0));
 define('QingVersion', env('APP_VERSION'));

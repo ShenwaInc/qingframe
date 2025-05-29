@@ -76,7 +76,7 @@ class selfRepair extends Command
             $process = new Process(['composer','update', '--no-dev']);
             $process->setWorkingDirectory($WorkingDirectory);
             $process->setEnv(['COMPOSER_HOME'=>MSService::ComposerHome()]);
-            $takes = time() - TIMESTAMP;
+            $takes = microtime(true) - LARAVEL_START;
             $maxTime = (int) ini_get('max_execution_time');
             $timeout = $maxTime > 0 ? max(10, $maxTime - $takes) : 300;
             $process->setTimeout($timeout);
@@ -149,8 +149,8 @@ class selfRepair extends Command
 
     public function terminalShow($message, $mode='err', $finish=false){
         if($mode=='success'){
-            $takes = time() - TIMESTAMP;
-            $message .= $message."(耗时{$takes}秒)";
+            $takes = microtime(true) - LARAVEL_START;
+            $message .= $message."({$takes} seconds)";
         }
         if ($this->terminalState=='console'){
             //在终端工具

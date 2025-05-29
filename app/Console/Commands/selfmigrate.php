@@ -84,7 +84,7 @@ class selfmigrate extends Command
                 }
                 if (file_put_contents(base_path('composer.json'), json_encode($composerJson, JSON_UNESCAPED_UNICODE+JSON_PRETTY_PRINT+JSON_UNESCAPED_SLASHES))){
                     $WorkingDirectory = base_path("/");
-                    $takes = time() - TIMESTAMP;
+                    $takes = microtime(true) - LARAVEL_START;
                     $maxTime = (int) ini_get('max_execution_time');
                     $timeout = $maxTime > 0 ? max(10, $maxTime - $takes) : 300;
                     $process = new Process(['composer','update']);

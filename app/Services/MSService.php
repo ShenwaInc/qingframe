@@ -728,7 +728,7 @@ class MSService
      */
     public static function ComposerProcess(array $command, $WorkingDirectory): Process
     {
-        $takes = time() - TIMESTAMP;
+        $takes = microtime(true) - LARAVEL_START;
         $maxTime = (int) ini_get('max_execution_time');
         $timeout = $maxTime > 0 ? max(10, $maxTime - $takes) : 300;
         $process = new Process($command);
@@ -851,7 +851,7 @@ class MSService
         $startTime = time();
         $WorkingDirectory = base_path()."/";
         try {
-            $takes = time() - TIMESTAMP;
+            $takes = microtime(true) - LARAVEL_START;
             $maxTime = (int) ini_get('max_execution_time');
             $timeout = $maxTime > 0 ? max(10, $maxTime - $takes) : 300;
             $process = new Process(["composer", "remove", $require]);
