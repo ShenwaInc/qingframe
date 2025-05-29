@@ -150,7 +150,7 @@ class selfRepair extends Command
     public function terminalShow($message, $mode='err', $finish=false){
         if($mode=='success'){
             $takes = microtime(true) - LARAVEL_START;
-            $message .= $message."({$takes} seconds)";
+            $message .= "({$takes} seconds)";
         }
         if ($this->terminalState=='console'){
             //在终端工具
