@@ -78,6 +78,8 @@
     "应用与服务": "Apps & Services",
     "操作权限": "Operational permission",
     "服务管理": "Service management",
+    "自动修复": "Self-repair",
+    "只有服务出现不可用的情况才需要使用此功能": "Only use when service is unavailable.",
     "EditPlatformInformation": "Edit platform information",
     "IDofData": ":data ID",
     "nameOfData": "Name",

@@ -24,6 +24,7 @@
 
         <div class="fui-card layui-card">
             <div class="layui-card-header nobd">
+                <a href="{{ wurl('server', ['op'=>'repair']) }}" class="fr layui-btn layui-btn-sm layui-btn-danger margin-left-sm js-terminal" data-text="@lang('只有服务出现不可用的情况才需要使用此功能')">@lang('自动修复')</a>
                 <span class="title">{{ $title }}</span>
                 <div class="layui-tab fui-tab">
                     <ul class="layui-tab-title title_tab">

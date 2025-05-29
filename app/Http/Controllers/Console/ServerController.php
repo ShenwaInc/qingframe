@@ -7,6 +7,7 @@ use App\Services\AccountService;
 use App\Services\CloudService;
 use App\Services\MSService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 
 class ServerController extends Controller
 {
@@ -107,6 +108,14 @@ class ServerController extends Controller
                 }
                 $return['needServer'] = $request->input('need', '');
                 break;
+            }
+            case "repair" : {
+                try {
+                    Artisan::call('self:repair');
+                }catch (\Exception $exception){
+                    return $this->message($exception->getMessage());
+                }
+                return $this->message("successful", wurl("server"), "success");
             }
             case "install" : {
                 $res = $MSS->install($identity);
