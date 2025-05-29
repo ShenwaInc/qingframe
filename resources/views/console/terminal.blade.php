@@ -19,6 +19,7 @@ if (empty($socket)){
 @endphp
 <script type="text/javascript">
     var terminalState = false, terminalPrefix = "[{{ $_W['user']['username']."@" }}{{ str_replace(['https://','http://','/'], '', $_W['siteroot']) }}]# ", terminalRunning = false;
+    var terminalTimeout = {{ ini_get('max_execution_time') }}, terminalGuard = null;
     function SocketReceive(data){
         //console.log("接收到终端消息", data);
         if(data.type==="terminal"){
@@ -58,6 +59,11 @@ if (empty($socket)){
                         layer.msg('操作失败', {icon: 2});
                     });
                 }
+                if(terminalTimeout){
+                    terminalGuard = setTimeout(function () {
+                        terminalShow("程序运行超时，请修改PHP最大运行时间或改用其它命令行工具运行该指令。", "err", true);
+                    }, terminalTimeout * 1000);
+                }
             },
             cancel:function (index, layero) {
                 terminalState = false;
@@ -82,6 +88,10 @@ if (empty($socket)){
         let TerminalCodes = $("#TerminalInfo").find('.layui-code-wrap');
         TerminalCodes.append('<div class="layui-code-line"><div class="layui-code-line-content '+mode+'">'+terminalText+'</div></div>');
         $('.fui-terminal .layui-layer-content').scrollTop(TerminalCodes.height());
+        if(finish && terminalGuard){
+            clearTimeout(terminalGuard);
+            terminalGuard = null;
+        }
     }
     $(function (){
         $('.js-terminal').click(function (Elem){
