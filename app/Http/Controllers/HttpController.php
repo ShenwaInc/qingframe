@@ -24,7 +24,11 @@ class HttpController extends Controller
         if (!empty($segment2)){
             $ctrl = implode("/", array($ctrl, trim($segment2)));
         }
-        $service = serv($server);
+        try {
+            $service = serv($server);
+        } catch (\Exception $e) {
+            return $this->message($e->getMessage());
+        }
         if (is_error($service) || !$service->enabled){
             abort(404);
         }

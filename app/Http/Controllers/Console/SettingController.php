@@ -233,6 +233,11 @@ class SettingController extends Controller
      */
     public function doWelcome(){
         $welcomePath = resource_path('views/welcomeCustom.blade.php');
+        $uniacid = (int)DB::table('uni_settings')->where('bind_domain', \request()->server('HTTP_HOST'))->value('uniacid');
+        if (!empty($uniacid) && file_exists(resource_path("views/welcomeCustom{$uniacid}.blade.php"))){
+            $welcomePath = resource_path("views/welcomeCustom{$uniacid}.blade.php");
+        }
+
         if (checksubmit('save')){
             $html = \request()->input('welcomeHTML');
             if (!empty($html)){
@@ -246,6 +251,7 @@ class SettingController extends Controller
             }
             return $this->message('savedSuccessfully', \request()->input('redirect', referer()), 'success');
         }
+
         $welcomeCustom = false;
         if (file_exists($welcomePath)){
             $welcomeCustom = true;
@@ -325,7 +331,12 @@ class SettingController extends Controller
                 $framework = DB::table('gxswa_cloud')->where('type', 0)->first(['id', 'version', 'identity', 'type', 'online', 'releasedate', 'rootpath']);
                 $return['framework'] = $framework;
                 $return['cloudInfo'] = !empty($framework['online']) ? unserialize($framework['online']) : array('upgradable' => false);
-                $return['welcomeCustom'] = file_exists(resource_path('views/welcomeCustom.blade.php'));
+                $uniacid = (int)DB::table('uni_settings')->where('bind_domain', \request()->server('HTTP_HOST'))->value('uniacid');
+                if (!empty($uniacid) && file_exists(resource_path("views/welcomeCustom{$uniacid}.blade.php"))){
+                    $return['welcomeCustom'] = true;
+                }else{
+                    $return['welcomeCustom'] = file_exists(resource_path('views/welcomeCustom.blade.php'));
+                }
                 break;
         }
         $return['activeState'] = CloudService::CloudActive(true);

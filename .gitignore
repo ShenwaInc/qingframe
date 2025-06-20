@@ -36,3 +36,4 @@ yarn-error.log
 /public/.user.ini
 /public/*.html
 /*.html
+/resources/views/welcomeCustom*
