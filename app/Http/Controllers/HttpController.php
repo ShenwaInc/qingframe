@@ -57,25 +57,35 @@ class HttpController extends Controller
     public function ServerRun($server, $segment='index'){
         $controller = trim($segment);
         $method = "main";
-        $serverName = ucfirst($server) . 'Service';
-        if (!class_exists($serverName)){
-            require_once MICRO_SERVER.strtolower($server)."/$serverName.php";
-        }
-        $ctrl = MICRO_SERVER.strtolower($server)."/run/".ucfirst($controller)."Controller.php";
-        if (!file_exists($ctrl)){
-            $ctrl = MICRO_SERVER.strtolower($server)."/run/IndexController.php";
-            $method = $controller;
-            $controller = "index";
-        }
-        if (!file_exists($ctrl)){
-            abort(404);
-            session_exit();
-        }
 
         try {
-            include_once $ctrl;
-            $className = ucfirst($controller)."Controller";
+            $service = serv('payment');
+            if (!$service->enabled){
+                return $this->message($service->error);
+            }
+            $className = "Server\\{$server}\\run\\" . ucfirst($controller) . "Controller";
+            if (!class_exists($className)){
+                $className = "Server\\{$server}\\run\IndexController";
+                $method = $controller;
+            }
+            if (!class_exists($className)){
+                $ctrl = MICRO_SERVER.strtolower($server)."/run/".ucfirst($controller)."Controller.php";
+                if (!file_exists($ctrl)){
+                    $ctrl = MICRO_SERVER.strtolower($server)."/run/IndexController.php";
+                    $method = $controller;
+                    $controller = "index";
+                }
+                if (!file_exists($ctrl)){
+                    abort(404);
+                    session_exit();
+                }
+
+                include_once $ctrl;
+                $className = ucfirst($controller)."Controller";
+            }
+
             if (!class_exists($className)) return $this->message(__('controllerNotFound', array('ctrl'=>$className)));
+
             $instance = new $className();
             return $instance->$method();
         }catch (\Exception $exception){
