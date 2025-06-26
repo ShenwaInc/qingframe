@@ -37,3 +37,4 @@ yarn-error.log
 /public/*.html
 /*.html
 /resources/views/welcomeCustom*
+/public/phpinfo.php

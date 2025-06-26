@@ -265,27 +265,38 @@ class MicroService
         list($controller, $method) = explode("/", $route);
         if (empty($method)) $method = 'main';
 
-        //定义运行目录
-        $basepath = $this->serverPath . $this->identity;
-        //定义控制器
-        $ctrl = "$basepath/$platform/".ucfirst($controller)."Controller.php";
-        if (!file_exists($ctrl)){
-            if ($controller!='index' && !empty($controller) && $method!='main'){
-                throw new \Exception("Warning: include_once(): Failed opening '$ctrl'");
-            }
-            $ctrl = "$basepath/$platform/IndexController.php";
+        $class = "Server\\{$this->identity}\\{$platform}\\" . ucfirst($controller) . "Controller";
+        if (!class_exists($class)){
+            $class = "Server\\{$this->identity}\\{$platform}\IndexController";
             $method = $controller;
             $controller = 'index';
         }
-        if (!file_exists($ctrl)){
-            throw new \Exception("Warning: include_once(): Failed opening '$ctrl'");
+        if (!class_exists($class)){
+            //定义运行目录
+            $basePath = $this->serverPath . $this->identity;
+
+            //定义控制器
+            $ctrl = "$basePath/$platform/".ucfirst($controller)."Controller.php";
+            if (!file_exists($ctrl)){
+                if ($controller!='index' && !empty($controller) && $method!='main'){
+                    throw new \Exception("Warning: include_once(): Failed opening '$ctrl'");
+                }
+                $ctrl = "$basePath/$platform/IndexController.php";
+                $method = $controller;
+                $controller = 'index';
+            }
+            if (!file_exists($ctrl)){
+                throw new \Exception("Warning: include_once(): Failed opening '$ctrl'");
+            }
+
+            //引用控制器
+            include_once $ctrl;
+            $class = ucfirst($controller)."Controller";
         }
+
         $_W['controller'] = $controller;
         $_W['action'] = $method;
 
-        //引用控制器
-        include_once $ctrl;
-        $class = ucfirst($controller)."Controller";
         if (!class_exists($class)) return error(-1,__('controllerNotFound', ['ctrl'=>$class]));
         $instance = new $class();
         if (!method_exists($instance,$method)) return error(-1,"Method $class::$method() dose not exist!");
