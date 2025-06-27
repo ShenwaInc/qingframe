@@ -1,0 +1,59 @@
+<?php
+
+/*
+|--------------------------------------------------------------------------
+| 模块自定义路由
+|--------------------------------------------------------------------------
+|
+| 这里可以定义模块的完全自定义路由，不受 /m/{moduleName} 前缀限制
+| 路由将直接注册到主路由系统中
+|
+*/
+
+use Illuminate\Support\Facades\Route;
+
+// 示例：定义完全自定义的路由
+// Route::get('/custom-page', function () {
+//     return 'This is a custom page from {moduleName} module';
+// });
+
+// 示例：定义带控制器的路由
+// Route::get('/custom/{id}', 'CustomController@show')->name('custom.show');
+
+// 示例：定义API路由
+// Route::group(['prefix' => 'api/v1', 'middleware' => 'auth:api'], function () {
+//     Route::get('/custom-data', 'CustomApiController@getData');
+//     Route::post('/custom-data', 'CustomApiController@storeData');
+// });
+
+// 示例：定义需要认证的路由组
+// Route::group(['middleware' => 'auth'], function () {
+//     Route::get('/dashboard', 'DashboardController@index')->name('dashboard');
+//     Route::get('/profile', 'ProfileController@show')->name('profile');
+// });
+
+// 示例：定义RESTful路由
+// Route::resource('items', 'ItemController');
+
+// 示例：定义带参数的路由
+// Route::get('/user/{id}/posts/{post_id}', 'UserPostController@show');
+
+// 示例：定义多种HTTP方法的路由
+// Route::match(['get', 'post'], '/contact', 'ContactController@handle');
+
+// 示例：定义带中间件的路由
+// Route::get('/admin', 'AdminController@index')->middleware(['auth', 'admin']);
+
+// 示例：定义带域名限制的路由
+// Route::domain('api.example.com')->group(function () {
+//     Route::get('/status', 'StatusController@index');
+// });
+
+// 示例：定义带条件限制的路由
+// Route::get('/feature', 'FeatureController@index')->middleware('feature:enabled');
+
+// 注意：
+// 1. 这些路由将直接注册到主路由系统中，请确保路由名称不冲突
+// 2. 建议使用模块名称作为路由前缀，避免冲突
+// 3. 控制器应该放在模块的 Controllers 目录下
+// 4. 视图应该放在模块的 views 目录下 

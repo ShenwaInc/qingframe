@@ -42,7 +42,69 @@ class RouteServiceProvider extends ServiceProvider
 
         $this->mapAppRoutes();
 
-        //
+        // 加载模块自定义路由
+        $this->mapModuleCustomRoutes();
+    }
+
+    /**
+     * 加载模块自定义路由
+     */
+    protected function mapModuleCustomRoutes()
+    {
+        try {
+            // 加载模块自定义路由
+            $this->loadModuleCustomRoutes();
+            
+            // 加载微服务自定义路由
+            $this->loadServerCustomRoutes();
+        } catch (\Exception $e) {
+            // 记录错误但不中断应用启动
+            \Log::error('Failed to load custom routes: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * 加载模块自定义路由
+     */
+    private function loadModuleCustomRoutes()
+    {
+        $modulesPath = public_path('addons');
+        if (!is_dir($modulesPath)) {
+            return;
+        }
+
+        $modules = glob($modulesPath . '/*', GLOB_ONLYDIR);
+        foreach ($modules as $modulePath) {
+            $moduleName = basename($modulePath);
+            $customRoutesFile = $modulePath . '/custom_routes.php';
+            
+            if (file_exists($customRoutesFile)) {
+                // 加载模块自定义路由文件
+                require $customRoutesFile;
+            }
+        }
+    }
+
+    /**
+     * 加载微服务自定义路由
+     */
+    private function loadServerCustomRoutes()
+    {
+        $serversPath = base_path('servers');
+        if (!is_dir($serversPath)) {
+            return;
+        }
+
+        $servers = glob($serversPath . '/*', GLOB_ONLYDIR);
+        foreach ($servers as $serverPath) {
+            $serverName = basename($serverPath);
+            $customRoutesFile = $serverPath . '/custom_routes.php';
+            
+            if (file_exists($customRoutesFile)) {
+                // 加载微服务自定义路由文件
+                require $customRoutesFile;
+            }
+        }
     }
 
     protected function mapAppRoutes(){
