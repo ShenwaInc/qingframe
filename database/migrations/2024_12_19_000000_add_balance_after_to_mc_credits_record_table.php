@@ -13,6 +13,9 @@ class AddBalanceAfterToMcCreditsRecordTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasColumn('mc_credits_record', 'balance_after')){
+            return;
+        }
         Schema::table('mc_credits_record', function (Blueprint $table) {
             $table->decimal('balance_after', 10, 2)->unsigned()->nullable()->after('num')->comment('积分变动后的账户余额');
         });
@@ -29,4 +32,4 @@ class AddBalanceAfterToMcCreditsRecordTable extends Migration
             $table->dropColumn('balance_after');
         });
     }
-} 
+}
