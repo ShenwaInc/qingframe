@@ -31,6 +31,11 @@
             $(target).addClass('layui-hide');;
             $(target+'.form-item'+data.value).removeClass('layui-hide');
         });
+        layform = form;
+        layupload = upload;
+        laydropdown = dropdown;
+        layCode = layui.code;
+        layElement = element;
         EventInit($('body'));
         if(typeof (FormRender)=='function'){
             FormRender(form);
@@ -54,11 +59,6 @@
             }
         });
         @endif
-        layform = form;
-        layupload = upload;
-        laydropdown = dropdown;
-        layCode = layui.code;
-        layElement = element;
     });
     function checkLocale(locale) {
         Core.post('server/language/checkout', function (res) {
@@ -187,25 +187,45 @@
             let title = typeof($(this).attr('title'))!='undefined' ? $(this).attr('title') : $(this).text();
             let width = typeof($(this).attr('data-width'))!='undefined' ? $(this).attr('data-width') + 'px' : '990px';
             let confirmText = typeof($(this).attr('data-text'))=='undefined' ? '' : $(this).attr('data-text');
+            let ajaxhash = typeof($(this).attr('data-ajaxhash'))!='undefined' ? $(this).attr('data-ajaxhash') : '';
+            if(!ajaxhash || ajaxhash==''){
+                ajaxhash = Wrandom(6);
+            }
+            let WindowId = 'ajaxwindow' + ajaxhash;
             let callBack = function (){
                 Core.get(geturl,function(Html){
                     if(Core.isJsonString(Html)){
                         var obj = jQuery.parseJSON(Html);
                         return Core.report(obj);
                     }else{
-                        let WindowId = 'ajaxwindow' + Wrandom(6);
-                        layer.open({type:1,content:Html,id:WindowId,title:title,shade:0.3,area:width,shadeClose:true,skin:'fui-layer'});
+                        let EventWindow = function(Elem){
+                            if(Elem.find('form.layui-form').length>0){
+                                var filter = Elem.find('form.layui-form').attr('lay-filter');
+                                FormInit(filter);
+                            }
+                            if(Elem.find('.layui-code').length>0){
+                                layui.code();
+                            }
+                            EventInit(Elem);
+                            let functionName = 'FormRender' + ajaxhash;
+                            if(typeof(eval(functionName))=='function'){
+                                eval(functionName)(layform);
+                            }
+                        }
                         let Ajaxwindow = $('#'+WindowId);
-                        if(Ajaxwindow.find('form.layui-form').length>0){
-                            var filter = Ajaxwindow.find('form.layui-form').attr('lay-filter');
-                            FormInit(filter);
+                        if(Ajaxwindow.length==0){
+                            let options = {type:1,content:Html,id:WindowId,title:title,shade:0.3,area:width,shadeClose:true,skin:'fui-layer'};
+                            options.success = function(layero){
+                                EventWindow(layero.find('.layui-layer-content'));
+                            }
+                            layer.open(options);
+                        }else{
+                            Ajaxwindow.html(Html);
+                            EventWindow(Ajaxwindow);
                         }
-                        if(Ajaxwindow.find('.layui-code').length>0){
-                            layui.code();
-                        }
-                        EventInit(Ajaxwindow);
+                           
                     }
-                },{inajax:1},'html',true);
+                },{inajax:1,ajaxhash:ajaxhash},'html',true);
             }
             if(confirmText!==''){
                 layer.confirm(confirmText, {icon: 3, title:'@lang("confirm")'}, function(index){

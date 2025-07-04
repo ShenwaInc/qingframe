@@ -34,7 +34,9 @@
                         <div class="layui-tab-content">
                             @foreach($methods as $key=>$value)
                             <div class="layui-tab-item @if($curview==0) layui-show @php $curview+=1; @endphp @endif">
+                                @if(!empty($value['wiki']) || !empty($value['summary']))
                                 <blockquote class="layui-elem-quote">{{ $value['summary'] }} @if(!empty($value['wiki'])) <a href="{$value['wiki']}" class="layui-btn layui-btn-normal" target="_blank" style="margin-left: 15px">@lang('detailedDescription')</a>@endif</blockquote>
+                                @endif
                                 <pre class="layui-code" lay-title="@lang('callExample')">
 serv('{{ $service['identity'] }}')->{{ $key }}({{ \App\Services\MSService::showparams($value['params']) }});</pre>
                                 <pre class="layui-code" lay-title="@lang('parameterDescription')">
@@ -71,16 +73,6 @@ class {{ $classname }}Service {
         </div>
     </div>
 </div>
-<script type="text/javascript">
-    var Controller = "{$_W['controller']}",Action = "{$_W['action']}";
-    var layform;
-    layui.use(['element','layer','code'], function(){
-        var element=layui.element,layer = layui.layer;
-        layui.code();
-        layer.ready(function(){
-        });
-    });
-</script>
 <style>
     .layui-elem-quote{font-size: inherit;}
 </style>

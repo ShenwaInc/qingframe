@@ -181,7 +181,7 @@ return：Array类型，包含两个元素的数组，分别表示返回的信息
 ```php
 <?php
 
-namespace Server\storage;
+namespace Server\ucenter;
 
 class UcenterService extends MicroService {
 
