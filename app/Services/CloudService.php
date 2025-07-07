@@ -260,7 +260,7 @@ class CloudService
                 }
                 @copy($sourceFile, $destinationFile);
             } else {
-                self::copyDir($sourceFile, $destinationFile . $file, $overwrite);
+                self::copyDir($sourceFile, $destinationFile, $overwrite);
             }
         }
         closedir($dirHandle);
