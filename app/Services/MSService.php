@@ -472,7 +472,7 @@ class MSService
         }
         //复制资源文件
         if (is_dir(MICRO_SERVER.$identity."/res")){
-            $targetPath = public_path("data/resource/server/{$identity}/"); 
+            $targetPath = public_path("resource/server/{$identity}/");
             if(!is_dir($targetPath)){
                 FileService::mkdirs($targetPath);
             }
@@ -553,7 +553,7 @@ class MSService
             }
             //复制资源文件
             if (is_dir(MICRO_SERVER.$identity."/res")){
-                CloudService::copyDir(MICRO_SERVER.$identity."/res", public_path("data/resource/server/{$identity}/"), true);
+                CloudService::copyDir(MICRO_SERVER.$identity."/res", public_path("resource/server/{$identity}/"), true);
             }
             //操作入库
             $application['status'] = 1;

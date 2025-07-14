@@ -207,10 +207,6 @@
                                 layui.code();
                             }
                             EventInit(Elem);
-                            let functionName = 'FormRender' + ajaxhash;
-                            if(typeof(eval(functionName))=='function'){
-                                eval(functionName)(layform);
-                            }
                         }
                         let Ajaxwindow = $('#'+WindowId);
                         if(Ajaxwindow.length==0){
