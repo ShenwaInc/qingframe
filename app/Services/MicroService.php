@@ -152,7 +152,7 @@ class MicroService
     public function res($res): string
     {
         $res = preg_replace('/^\//', '', $res);
-        $realPath = public_path("data/resource/server/" . $this->identity . "/" . $res);
+        $realPath = public_path("resource/server/" . $this->identity . "/" . $res);
         if (!file_exists($realPath) && base_path('servers/'. $this->identity . "/res/" . $res)){
             //自动搬运静态资源文件
             $baseDir = dirname($realPath);
@@ -161,7 +161,7 @@ class MicroService
             }
             @copy(base_path('servers/'. $this->identity . "/res/" . $res), $realPath);
         }
-        return asset("/data/resource/server/" . $this->identity . "/" . $res);
+        return asset("/resource/server/" . $this->identity . "/" . $res);
     }
 
     /**
