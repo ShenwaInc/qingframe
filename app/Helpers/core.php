@@ -1,32 +1,15 @@
 <?php
 
+use App\Services\ExceptionService;
 use App\Services\FileService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-class CatchCall {
-
-    public $error = '';
-    public $errno = -1;
-    public $enabled = false;
-    public function __construct($error, $errno=-1){
-        $this->error = $error;
-        $this->errno = $errno;
-    }
-
-    public function __call($name, $arguments){
-        // TODO: Implement __call() method.
-        return error($this->errno, $this->error);
-    }
-
-}
-
 /**
  * 调用服务方法
  * @param mixed $params 调用参数
  * @return object 服务实例
- * @throws Exception
  */
 function serv(...$params){
     static $_servers;
@@ -51,7 +34,7 @@ function serv(...$params){
                 $className = class_exists($serviceName . 'Service') ? $serviceName . 'Service' : MICRO_SERVER . $identity . "/{$serviceName}Service.php";
             }
             if (!class_exists($className)){
-                return new CatchCall("Service $serviceName Not Found.");
+                return new ExceptionService("Service $serviceName Not Found.");
             }
         }
         if (count($params)>1){
@@ -63,10 +46,10 @@ function serv(...$params){
         $instance->serviceId = $serverId;
         $instance->identity = $identity;
         if ($instance->service['status']!=1 || !$instance->enabled){
-            return new CatchCall("Service $className has stopped.");
+            return new ExceptionService("Service $className has stopped.");
         }
     }catch (Exception $exception){
-        return new CatchCall($exception->getMessage());
+        return new ExceptionService($exception->getMessage());
     }
     $_servers[$serverId] = $instance;
     return $instance;
