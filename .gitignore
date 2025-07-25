@@ -38,3 +38,5 @@ yarn-error.log
 /*.html
 /resources/views/welcomeCustom*
 /public/phpinfo.php
+/.lingma/
+/.vscode/
