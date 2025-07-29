@@ -87,8 +87,8 @@ class selfclear extends Command
             }
         }
         $arguments = $this->argument();
-        if ($arguments['mode']=='release'){
-            $gitIgnores = FileService::file_tree(base_path("/"), array('*/.gitignore','*/*/.gitignore','.gitignore','*/*/*/.gitignore','*/*/*/*/.gitignore'));
+        if ($arguments['mode']=='release' || $arguments['mode']=='res'){
+            $gitIgnores = FileService::file_tree(base_path("/"), array('*/.gitignore','*/*/.gitignore','.gitignore','*/*/*/.gitignore','*/*/*/*/.gitignore', '*/README.md', '*/*/README.md', 'README.md', 'README_*.md'));
             if (!empty($gitIgnores)){
                 foreach ($gitIgnores as $file){
                     if (!file_exists($file)) continue;
@@ -97,6 +97,12 @@ class selfclear extends Command
             }
             if (!FileService::rmdirs(storage_path('framework/testing/'))){
                 $this->error("Remove dir failed: ".storage_path('framework/testing/'));
+            }
+            if (!FileService::rmdirs(storage_path('framework/cache/'), true)){
+                $this->error("Remove dir failed: ".storage_path('framework/cache/'));
+            }
+            if (!FileService::rmdirs(base_path('docs/'))){
+                $this->error("Remove dir failed: ".base_path('docs/'));
             }
             $this->info("Clean ".count($gitIgnores)." files.");
         }

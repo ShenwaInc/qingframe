@@ -389,10 +389,12 @@ function pdo_getall($tablename, $condition = array(), $fields = array(), $keyfie
         $query = $query->select($fields);
     }
     if (!empty($orderBy)){
-        if (!is_array($orderBy)){
-            $orderBy = array($orderBy,'desc');
+        if(is_array($orderBy) && count($orderBy) == 2 && in_array($orderBy[1], ['asc','desc'])){
+            $query = $query->orderBy($orderBy[0],$orderBy[1]);
+        }else{
+            $orderByRaw = is_array($orderBy) ? implode(',',$orderBy) : $orderBy;
+            $query = $query->orderByRaw($orderByRaw);
         }
-        $query = $query->orderBy($orderBy[0],$orderBy[1]);
     }
     if ($limit){
         $query = $query->offset($limit[0])->limit($limit[1]);
