@@ -36,6 +36,56 @@ class ModuleController extends Controller
         return $site->$method($request);
     }
 
+    public function HttpRequest(Request $request, $moduleName, $segment1='index', $segment2='main'){
+        global $_W;
+        $WeModule = new WeModule();
+        try {
+            $site = $WeModule->create($moduleName);
+
+            $className = "Addons\\".$moduleName."\app\Controllers\web\\".$segment1."Controller";
+            $method = $segment2;
+            if (!class_exists($className)){
+                $className = "Addons\\".$moduleName."\app\Controllers\web\IndexController";
+                $method = $segment1;
+                $segment1 = 'index';
+            }
+            if(class_exists($className)){
+                $instance = new $className();
+                $instance->moduleName = $moduleName;
+                $instance->moduleSite = $site;
+                $instance->moduleConfig = (array)$site->module['config'];
+                if (!method_exists($instance, $method)){
+                    abort(404 );
+                }
+                DB::table('users_operate_history')->updateOrInsert(
+                    array('uid'=>$_W['uid'],'uniacid'=>$_W['uniacid'],'module_name'=>$moduleName),
+                    array('createtime'=>TIMESTAMP,'type'=>2)
+                );
+                $_W['moduleController'] = $segment1;
+                $_W['moduleMethod'] = $method;
+                return $instance->$method($request);
+            }else{
+                $method = "doWeb" . ucfirst($segment1);
+                if (!method_exists($site, $method)){
+                    abort(404 );
+                }
+                $_W['moduleController'] = $segment1;
+                $_W['moduleMethod'] = $method;
+                DB::table('users_operate_history')->updateOrInsert(
+                    array('uid'=>$_W['uid'],'uniacid'=>$_W['uniacid'],'module_name'=>$moduleName),
+                    array('createtime'=>TIMESTAMP,'type'=>2)
+                );
+                return $site->$method($request);
+            }
+        }catch (\Exception $exception){
+            if (DEVELOPMENT){
+                throw $exception;
+            }
+            return $this->message($exception->getMessage());
+        }
+    }
+
+
     public function index(Request $request, $option='list'){
         global $_W;
         if (empty($_W['config']['site']['id'])){

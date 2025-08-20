@@ -86,6 +86,7 @@ Route::group(['prefix' => 'console', 'namespace' => 'Console', 'middleware'=>[Au
     Route::match(['get', 'post'],'/account/{action}', 'AccountController@index')->where('action','[a-z]+');
     Route::match(['get', 'post'],'/user/{op?}', 'UserController@index');
     Route::match(['get', 'post'],'/m/{modulename}/{do?}', 'ModuleController@entry');
+    Route::match(['get', 'post'],'/m/{module}/{segment1}/{segment2}', 'ModuleController@HttpRequest');
     Route::match(['get', 'post'],'/module/{option?}', 'ModuleController@index');
     Route::get('/server', 'ServerController@index');
     Route::get('/server/account', 'ServerController@checkout');
