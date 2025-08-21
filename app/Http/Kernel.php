@@ -64,7 +64,8 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'installer' => \App\Http\Middleware\Installer::class,
         'app' => \App\Http\Middleware\App::class,
-        'runtime' => \App\Http\Middleware\AppRuntime::class
+        'runtime' => \App\Http\Middleware\AppRuntime::class,
+        'permission'=> \App\Http\Middleware\ConsolePermission::class,
     ];
 
     /**

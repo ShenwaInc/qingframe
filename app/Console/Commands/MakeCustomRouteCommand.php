@@ -3,16 +3,15 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\File;
 
-class ModuleCustomRouteCommand extends Command
+class MakeCustomRouteCommand extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'module:custom-route {module} {--server}';
+    protected $signature = 'make:custom-route {name} {--server}';
 
     /**
      * The console command description.
@@ -34,13 +33,13 @@ class ModuleCustomRouteCommand extends Command
     /**
      * Execute the console command.
      *
-     * @return int
+     * @return mixed
      */
     public function handle()
     {
-        $moduleName = $this->argument('module');
+        $moduleName = $this->argument('name');
         $isServer = $this->option('server');
-        
+
         if ($isServer) {
             return $this->createServerCustomRoutes($moduleName);
         } else {
@@ -54,24 +53,24 @@ class ModuleCustomRouteCommand extends Command
     private function createModuleCustomRoutes($moduleName)
     {
         $modulePath = public_path("addons/{$moduleName}");
-        
+
         if (!is_dir($modulePath)) {
             $this->error("Module '{$moduleName}' not found in public/addons/");
             return 1;
         }
-        
+
         $customRoutesFile = $modulePath . '/custom_routes.php';
-        
+
         if (file_exists($customRoutesFile)) {
             if (!$this->confirm("Custom routes file already exists. Overwrite?")) {
                 $this->info("Operation cancelled.");
                 return 0;
             }
         }
-        
+
         $template = file_get_contents(resource_path('stub/module.custom_routes.stub'));
         $template = str_replace('{moduleName}', $moduleName, $template);
-        
+
         if (file_put_contents($customRoutesFile, $template)) {
             $this->info("Custom routes file created successfully!");
             $this->info("File: {$customRoutesFile}");
@@ -89,24 +88,24 @@ class ModuleCustomRouteCommand extends Command
     private function createServerCustomRoutes($serverName)
     {
         $serverPath = base_path("servers/{$serverName}");
-        
+
         if (!is_dir($serverPath)) {
             $this->error("Server '{$serverName}' not found in servers/");
             return 1;
         }
-        
+
         $customRoutesFile = $serverPath . '/custom_routes.php';
-        
+
         if (file_exists($customRoutesFile)) {
             if (!$this->confirm("Custom routes file already exists. Overwrite?")) {
                 $this->info("Operation cancelled.");
                 return 0;
             }
         }
-        
+
         $template = file_get_contents(resource_path('stub/module.custom_routes.stub'));
         $template = str_replace('{moduleName}', $serverName, $template);
-        
+
         if (file_put_contents($customRoutesFile, $template)) {
             $this->info("Custom routes file created successfully!");
             $this->info("File: {$customRoutesFile}");
@@ -117,4 +116,6 @@ class ModuleCustomRouteCommand extends Command
             return 1;
         }
     }
-} 
+
+
+}

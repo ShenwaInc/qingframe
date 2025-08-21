@@ -8,7 +8,7 @@ use App\Services\FileService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Schema;
 
-class selfclear extends Command
+class selfClearCommand extends Command
 {
     /**
      * The name and signature of the console command.
@@ -65,7 +65,9 @@ class selfclear extends Command
             resource_path('views/console/account/setting.blade.php'),
             base_path('.docker.env'),
             base_path('manifest.yaml'),
-            resource_path('template/web/composer.html')
+            resource_path('template/web/composer.html'),
+            app_path('Console/Commands/ModuleCustomRouteCommand.php'),
+            app_path('Console/Commands/selfclear.php')
         );
         foreach ($unused as $file){
             if (file_exists($file)){
