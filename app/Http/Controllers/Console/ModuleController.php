@@ -34,7 +34,11 @@ class ModuleController extends Controller
             array('uid'=>$_W['uid'],'uniacid'=>$_W['uniacid'],'module_name'=>$modulename),
             array('createtime'=>TIMESTAMP,'type'=>2)
         );
-        return $site->$method($request);
+        $res = $site->$method($request);
+        if(is_error($res)){
+            return $this->message($res['message']);
+        }
+        return $res;
     }
 
     public function HttpRequest(Request $request, $moduleName, $segment1='index', $segment2='main'){
