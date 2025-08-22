@@ -65,7 +65,7 @@ class ModuleController extends Controller
      */
     public function Api(Request $request, $moduleName, $segment1="index", $segment2="main"){
         define('IN_API', true);
-        global $_W, $_GPC;
+        global $_W;
         $_W['isapi'] = true;
         //判断模块权限，待完善
         try {
@@ -93,7 +93,6 @@ class ModuleController extends Controller
                 $method = "doApi" . ucfirst($segment1);
                 if (!method_exists($site, $method)){
                     $method = "doMobileApi";
-                    $_GPC['route'] = $segment1;
                 }
                 if (!method_exists($site, $method)){
                     return $this->message("模块不支持$method()方法");
