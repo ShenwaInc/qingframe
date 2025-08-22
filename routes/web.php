@@ -27,7 +27,8 @@ Route::group(['namespace'=>'Auth', 'middleware'=>['app']],function (){
 });
 
 Route::group(['prefix' => 'wem','namespace' => 'App', 'middleware'=>['app','runtime']],function (){
-    Route::match(['get', 'post'],'/{modulename}/{do?}', 'ModuleController@entry');
+    Route::match(['get', 'post'],'/{module}/{do?}', 'ModuleController@entry');
+    Route::match(['get', 'post'],'/m/{module}/{segment1}/{segment2}', 'ModuleController@HttpRequest');
     Route::post('/subscribe/{action}', 'ModuleController@subscribe');
 });
 

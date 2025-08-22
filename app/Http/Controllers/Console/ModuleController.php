@@ -43,7 +43,7 @@ class ModuleController extends Controller
         try {
             $site = $WeModule->create($moduleName);
 
-            $className = "Addons\\".$moduleName."\app\Controllers\web\\".$segment1."Controller";
+            $className = "Addons\\".$moduleName."\app\Controllers\web\\".ucfirst($segment1)."Controller";
             $method = $segment2;
             if (!class_exists($className)){
                 $className = "Addons\\".$moduleName."\app\Controllers\web\IndexController";
@@ -52,16 +52,17 @@ class ModuleController extends Controller
             }
             if(class_exists($className)){
                 $instance = new $className();
-                $instance->moduleName = $moduleName;
-                $instance->moduleSite = $site;
-                $instance->moduleConfig = (array)$site->module['config'];
                 if (!method_exists($instance, $method)){
                     abort(404 );
                 }
+                //记录操作日志
                 DB::table('users_operate_history')->updateOrInsert(
                     array('uid'=>$_W['uid'],'uniacid'=>$_W['uniacid'],'module_name'=>$moduleName),
                     array('createtime'=>TIMESTAMP,'type'=>2)
                 );
+                $instance->moduleName = $moduleName;
+                $instance->moduleSite = $site;
+                $instance->moduleConfig = (array)$site->module['config'];
                 $_W['moduleController'] = $segment1;
                 $_W['moduleMethod'] = $method;
                 return $instance->$method($request);

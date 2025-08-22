@@ -16,6 +16,7 @@ define('DEVELOPMENT', (bool)env('APP_DEVELOPMENT',0));
 define('SITEACID', env('APP_UNIACID', 0));
 define('QingVersion', env('APP_VERSION'));
 define('QingRelease', (int)env('APP_RELEASE'));
+define('QingDebug', (bool)env('APP_DEBUG', false));
 
 error_reporting(E_ERROR);
 global $_W,$_GPC;
