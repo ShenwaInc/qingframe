@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Console;
 
 use App\Http\Controllers\Controller;
+use App\Services\AccountService;
 use App\Services\CacheService;
 use App\Services\CloudService;
 use App\Services\ModuleService;
@@ -112,6 +113,64 @@ class ModuleController extends Controller
         return $this->globalView('console.module', $return);
     }
 
+    //分配应用模块到平台
+    public function doAllocate(Request $request){
+        $identity = $request->input('nid', "");
+        if (empty($identity)){
+            return $this->message("无效的应用标识");
+        }
+        $module = ModuleService::fetch($identity);
+        list($platforms, $total) = AccountService::OwnerAccounts([], -1);
+        if ($request->isMethod('post')){
+            if (empty($platforms)){
+                return $this->message(__('noPlatformAvailable'));
+            }
+            $ids = $request->input('ids', []);
+            $moduleInfo = array(
+                'name'=>$module['title'],
+                'identity'=>$module['name'],
+                'logo'=>$module['logo'],
+                'profile'=>'default'
+            );
+            try {
+                foreach ($platforms as $item){
+                    $moduleList = AccountService::ExtraModules($item['uniacid'], false);
+                    $allocated = !empty($ids[$item['uniacid']]);
+                    if ($allocated){
+                        //分配应用
+                        if (!empty($moduleList[$identity])) continue;
+                        $modules = array_values($moduleList);
+                        $modules[] = $moduleInfo;
+                        DB::table('uni_account_extra_modules')->updateOrInsert(array('uniacid'=>$item['uniacid']), array('modules'=>serialize($modules)));
+                    }else{
+                        //取消分配应用
+                        if (empty($moduleList[$identity])) continue;
+                        unset($moduleList[$identity]);
+                        DB::table('uni_account_extra_modules')->updateOrInsert(array('uniacid'=>$item['uniacid']), array('modules'=>serialize(array_values($moduleList))));
+                    }
+                }
+                CacheService::flush();
+            }catch (\Exception $exception){
+                return $this->message($exception->getMessage());
+            }
+            $redirect = $request->input('referer', referer());
+            return $this->message("successful", $redirect, "success");
+        }
+        if (!empty($platforms)){
+            foreach ($platforms as &$item){
+                $moduleList = AccountService::ExtraModules($item['uniacid'], false);
+                $item['moduleExist'] = isset($moduleList[$identity]);
+            }
+        }
+        return $this->globalView('console.module.allocate', [
+            'title'=>__('分配应用权限'),
+            'identity'=>$identity,
+            'platforms'=>$platforms,
+            'total'=>$total,
+            'module'=>$module
+        ]);
+    }
+
     //通过卡密安装
     public function doPasscode(Request $request){
         $operation = $request->input('op', '');
@@ -181,7 +240,7 @@ class ModuleController extends Controller
         if (is_error($install)){
             return $this->TerminalError($install['message']);
         }
-        return $this->message('installSuccessfully', wurl('module'),'success');
+        return $this->message('installSuccessfully', wurl('module/allocate', ['nid'=>$identity]),'success');
     }
 
     /**
@@ -207,7 +266,8 @@ class ModuleController extends Controller
             MSService::TerminalSend(["mode"=>"err", "message"=>$cloudRequire['message']], true);
             return $this->message($cloudRequire['message'], trim($cloudRequire['redirect']));
         }
-        return $this->message('installSuccessfully', wurl('module'),'success');
+        $realNid = str_replace(ModuleService::SysPrefix(), "", $identity);
+        return $this->message('installSuccessfully', wurl('module/allocate', ['nid'=>$realNid]),'success');
     }
 
     /**

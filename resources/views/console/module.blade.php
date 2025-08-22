@@ -35,6 +35,13 @@
             <div class="layui-card-body">
                 <div class="un-padding">
                     <table class="layui-table fui-table lines" lay-even lay-skin="nob">
+                        <colgroup>
+                            <col>
+                            <col width="180">
+                            <col width="180">
+                            <col width="250">
+                            <col width="320">
+                        </colgroup>
                         <thead>
                         <tr>
                             <th>@lang('app')</th>

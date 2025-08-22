@@ -12,7 +12,7 @@
             @else
                 <form lay-filter="extramodules" action="{{ wurl('account/modules',array('uniacid'=>$_W['uniacid'], 'post'=>1)) }}" method="post">
                     <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                    <div class="layui-row layui-col-space15 fui-list card" id="extraModules">
+                    <div class="layui-row layui-col-space15 fui-list radio card" id="extraModules">
                         @foreach($modules as $key=>$item)
                             <div class="layui-col-md4 layui-col-sm6 layui-col-xs12 fui-item">
                                 <div class="fui-content{{ empty($extras[$key])?'':' checked' }}">

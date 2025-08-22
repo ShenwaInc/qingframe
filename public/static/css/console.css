@@ -63,9 +63,9 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 .layui-btn-warm{background-color: #fbbd08; color: #333;}
 .layui-btn-primary{background-color: #FFFFFF;}
 .layui-btn-danger{background-color: #e54d42;}
-.layui-btn-group .layui-btn:first-child{border-radius: 3px 0 0 3px;}
-.layui-btn-group .layui-btn:not(.layui-hide):last-of-type{border-radius: 0 3px 3px 0;}
-.layui-btn-group .layui-btn:only-child{border-radius: 3px;}
+.layui-btn-group .layui-btn:first-child{border-top-left-radius: 3px; border-bottom-left-radius: 3px;}
+.layui-btn-group .layui-btn:not(.layui-hide):last-of-type{border-top-right-radius: 3px; border-bottom-right-radius: 3px;}
+.layui-btn-group .layui-btn:only-child{border-radius: 3px !important;}
 
 /* common */
 .fr{float: right;}
@@ -229,8 +229,9 @@ a:hover, a:active, a:link, a:visited{text-decoration: none !important;}
 .fui-list .fui-item{box-sizing: border-box;}
 .fui-list .fui-content{border-radius: 4px; -moz-border-radius: 4px; -webkit-border-radius: 4px; margin: 0 10px 20px 0; padding: 15px 20px; border: 1px solid #e7e7eb; position: relative; cursor: pointer; display: block}
 .fui-list .fui-content.checked{border-color: #2ABA8E;}
-.fui-list .fui-content.checked:before{content: ''; width: 0; height: 0; border-bottom: 36px solid #2ABA8E; border-left: 64px solid transparent; position: absolute; display: block; right: -1px; bottom: -1px}
-.fui-list .fui-content.checked:after{position: absolute; font-family: layui-icon!important; content: "\e605"; right: 0; bottom: 0; font-size: 17px; padding: 4px 6px; font-weight: bold; color: #fff;}
+.fui-list.radio .fui-content:before{content: ''; width: 0; height: 0; border-bottom: 48px solid #e7e7eb; border-left: 56px solid transparent; position: absolute; display: block; right: -1px; bottom: -1px}
+.fui-list.radio .fui-content.checked:before{border-bottom:48px solid #2ABA8E;}
+.fui-list.radio .fui-content:after{position: absolute; font-family: layui-icon!important; content: "\e605"; right: 0; bottom: 0; font-size: 17px; padding: 4px 6px; font-weight: bold; color: #fff;}
 .fui-list .fui-info{padding: 10px 0; padding-left: 66px; min-height: 50px; position: relative;}
 .fui-list .fui-info img{width: 50px; height: 50px;  position: absolute; top: 10px; left: 0;}
 .fui-list.card .fui-item{position: relative;}
