@@ -41,7 +41,7 @@ Route::group(['prefix' => 'console', 'namespace' => 'Console', 'middleware'=>['a
     Route::get('/account/{uniacid}', 'PlatformController@checkout')->where('uniacid','[0-9]+');
     Route::match(['get', 'post'],'/account/{action}', 'AccountController@index')->where('action','[a-z]+');
     Route::match(['get', 'post'],'/user/{op?}', 'UserController@index');
-    Route::match(['get', 'post'],'/m/{module}/{do?}', 'ModuleController@entry');
+    Route::match(['get', 'post'],'/m/{module}/{segment1?}', 'ModuleController@entry');
     Route::match(['get', 'post'],'/m/{module}/{segment1}/{segment2}', 'ModuleController@HttpRequest');
     Route::match(['get', 'post'],'/module/{option?}', 'ModuleController@index');
     Route::get('/server', 'ServerController@index');

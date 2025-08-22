@@ -4,7 +4,7 @@ use App\Http\Middleware\App;
 use App\Http\Middleware\AppRuntime;
 
 Route::group(['namespace' => 'App', 'middleware'=>['app', 'runtime']],function (){
-    Route::match(['get', 'post'],'/m/{modulename}/{do?}', 'ModuleController@entry');
+    Route::match(['get', 'post'],'/m/{module}/{segment1?}', 'ModuleController@entry');
     Route::get('auth', 'AuthController@index');
     Route::match(['get', 'post'],'/util/{option}', 'UtilController@Main')->middleware(App::class);
 });

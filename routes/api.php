@@ -18,7 +18,7 @@ Route::group(['prefix'=>'server', 'middleware'=>['app']],function (){
 
 Route::group(['prefix' => 'm/', 'namespace' => 'App','middleware'=>['app','runtime']], function () {
     //模块接口路由
-    Route::match(['get', 'post'],'/{moduleName}/{route?}', 'ModuleController@Api');
+    Route::match(['get', 'post'],'/{module}/{segment1?}', 'ModuleController@Api');
 });
 
 Route::group(['prefix'=>'payment', 'namespace' => 'App', 'middleware'=>['app']],function (){
