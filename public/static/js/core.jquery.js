@@ -158,7 +158,7 @@ if(typeof Basetoken == 'undefined'){
             if(Elem.hasAttribute("multiple")){
                 multi = true;
             }
-            let self = this;
+            let self = this, uploadImage = PickerUrl.indexOf('type=1')!==-1;
             this.get(PickerUrl, function (Html){
                 if(self.isJsonString(Html)){
                     var obj = jQuery.parseJSON(Html);
@@ -175,7 +175,18 @@ if(typeof Basetoken == 'undefined'){
                     shadeClose:true,
                     skin:'fui-layer filepicker',
                     success:function(layero, index){
-                        self.PickerEvent(WindowId, PickerUrl);
+                        let {uploadInstance, UploadBtn, pickerUpload} = self.PickerEvent(WindowId, PickerUrl);
+                        self.pickerUpload = pickerUpload;
+                        if (uploadImage && UploadBtn){
+                            //图片上传，处理剪切板事件监听
+                            document.addEventListener('paste', function (e) {
+                                self.pasteEvent(e, pickerUpload);
+                            });
+                            layer.tips('可使用 Ctrl+V 粘贴图片上传', UploadBtn, {
+                                tips: [1, '#4CAF50'],
+                                time: 3000
+                            });
+                        }
                     },
                     btnAlign:"c",
                     btn:["确定","取消"],
@@ -212,16 +223,21 @@ if(typeof Basetoken == 'undefined'){
                                 });
                             }
                         }
-                        layer.close(layer.index);
+                        layer.close(index);
                     },
                     end:function (){
                         self.storageData = {items:[],aids:[]};
+                        if (uploadImage){
+                            //移出剪切板事件监听
+                            document.removeEventListener('paste');
+                        }
                     }
                 }
                 layer.open(params);
             },{inajax:1,ajaxhash:WindowId},'html',true);
             if (PickerTitle!=="图片选择器") return false;
         },
+        pickerUpload: {gid: 0, url: '', event: null},
         PickerEvent(WindowId, PickerUrl=''){
             let Ajaxwindow = $("#"+WindowId);
             let self = this;
@@ -285,30 +301,33 @@ if(typeof Basetoken == 'undefined'){
                 return false;
             });
             let UploadBtn = Ajaxwindow.find(".attach-uploader"), groupId = 0;
+            const uploadUrl = UploadBtn.data('url');
             if(Ajaxwindow.find('.category .cate-item.layui-border-green').length>0){
                 groupId = Ajaxwindow.find('.category .cate-item.layui-border-green').data('id');
             }
+            const uploadDone = (res)=>{
+                if(res.type!=='success'){
+                    UploadBtn.removeClass("uploading").addClass('uploaderr');
+                    return self.report(res);
+                }
+                let attach = res.data;
+                let Html = '<div class="layui-col-md2 layui-xs-4 attach-item" data-aid="'+attach.id+'" data-path="'+attach.attachment+'" data-url="'+attach.cover+'">' +
+                    '<div class="attach-thumb" style="background-image: url('+attach.cover+')"></div>' +
+                    '<div title="'+attach.filename+'" class="attach-name text-center">'+attach.filename+'</div>' +
+                    '<div class="action attach-check">' +
+                    '    <span class="layui-icon layui-icon-circle"></span>\n' +
+                    '</div></div>';
+                if (Ajaxwindow.find('.attachments').find('.attach-item').length>=18){
+                    Ajaxwindow.find('.attachments').find('.attach-item:last').remove();
+                }
+                Ajaxwindow.find('.attachments').prepend(Html);
+                UploadBtn.removeClass("uploading");
+            }
+            let pickerUpload = {gid: groupId, url: uploadUrl, event: uploadDone};
             let UploadOptions = {
                 elem: UploadBtn.get()[0],
-                url:UploadBtn.data('url'),
-                done:function (res){
-                    if(res.type!=='success'){
-                        UploadBtn.removeClass("uploading").addClass('uploaderr');
-                        return self.report(res);
-                    }
-                    let attach = res.data;
-                    let Html = '<div class="layui-col-md2 layui-xs-4 attach-item" data-aid="'+attach.id+'" data-path="'+attach.attachment+'" data-url="'+attach.cover+'">' +
-                        '<div class="attach-thumb" style="background-image: url('+attach.cover+')"></div>' +
-                        '<div title="'+attach.filename+'" class="attach-name text-center">'+attach.filename+'</div>' +
-                        '<div class="action attach-check">' +
-                        '    <span class="layui-icon layui-icon-circle"></span>\n' +
-                        '</div></div>';
-                    if (Ajaxwindow.find('.attachments').find('.attach-item').length>=18){
-                        Ajaxwindow.find('.attachments').find('.attach-item:last').remove();
-                    }
-                    Ajaxwindow.find('.attachments').prepend(Html);
-                    UploadBtn.removeClass("uploading");
-                },
+                url: uploadUrl,
+                done:uploadDone,
                 before:function (){
                     layui.element.progress('uploadprogress', '0%');
                     UploadBtn.addClass("uploading").removeClass('uploaderr');
@@ -334,7 +353,9 @@ if(typeof Basetoken == 'undefined'){
             if(typeof(UploadBtn.attr("data-exts"))!='undefined' && UploadBtn.attr("data-exts")!==""){
                 UploadOptions.exts = UploadBtn.attr("data-exts");
             }
-            layupload.render(UploadOptions);
+            const uploadInstance = layupload.render(UploadOptions);
+            self.pickerUpload = pickerUpload;
+            return {uploadInstance, UploadBtn, pickerUpload}
         },
         MemberPicker(){
             let self = this;
@@ -400,6 +421,69 @@ if(typeof Basetoken == 'undefined'){
             }
             let img = $(Elem).prev();
             img.attr("src", img.data("val")).addClass("nopic").parent().prev().find('input.layui-input').val("");
+        },
+        pasteEvent: (e, params={}) => {
+            // 阻止事件默认行为
+            e.preventDefault();
+            // 获取剪贴板数据
+            const clipboardData = e.clipboardData || window.clipboardData;
+            let self = this;
+
+            if (!clipboardData) {
+                console.warn('无法访问剪贴板数据');
+                return;
+            }
+
+            // 检查剪贴板中是否有图片
+            const items = clipboardData.items;
+            let imageFile = null;
+
+            // 遍历剪贴板项目，寻找图片
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i];
+
+                // 检查是否是图片类型
+                if (item.type.indexOf('image') !== -1) {
+                    imageFile = item.getAsFile();
+                    break;
+                }
+            }
+
+            // 如果找到图片文件，则上传
+            if (imageFile) {
+                console.log('从剪贴板获取到图片:', imageFile, params);
+
+                // 创建FormData对象，用于上传
+                const formData = new FormData();
+                formData.append('file', imageFile, imageFile.name);
+                formData.append('inputname', 'file');
+                formData.append('frompage', 'picker');
+                formData.append('gid', params.gid||0);
+                formData.append('submit', 1);
+
+                let AjaxObj = {
+                    url: params.url,
+                    type: 'POST',
+                    dataType: 'json',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: params.event,
+                    fail: function (e) {
+                        console.log(e);
+                        layer.msg("上传失败，请重试", {icon:2});
+                    }
+                }
+                if (Basetoken !== '') {
+                    AjaxObj.headers = {
+                        'X-CSRF-TOKEN': Basetoken
+                    }
+                }
+                return jQuery.ajax(AjaxObj);
+
+            } else {
+                console.log('剪贴板中没有图片数据');
+            }
         }
     };
 })(window);
