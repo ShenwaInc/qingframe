@@ -12,6 +12,14 @@ class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
+    /**
+     * 统一抛出响应
+     * @param array|string|null $prompt 抛出内容，可以是提示信息或者数据，支持国际化提示词
+     * @param string $redirect 跳转地址
+     * @param string $type 提示类型，支持success、error、info、redirect
+     * @param array $extra 额外参数
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse|\Illuminate\View\View
+    */
     public function message($prompt='operationFailed', $redirect='', $type='error', $extra=array()){
         global $_W;
         if (is_string($prompt) && preg_match('/^([\w\s.]*)([\x{4e00}-\x{9fa5}]*)$/u', $prompt)){

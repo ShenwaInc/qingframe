@@ -151,18 +151,24 @@ class WeModule
         return wurl("m/$module_name".($do?"/$do":''), $query);
     }
 
-    public function View($data, $template){
+    /**
+     * 获取模块视图
+     * param array $data 视图渲染数据
+     * param string $template 模板名称
+     * return \Illuminate\Contracts\View\View
+    */
+    public function View($data, $template='index'){
         global $_W, $_GPC, $_MODULE_VIEW;
-        $platform = defined('IN_SYS') ? 'web' : 'app';
-        if (empty($template)){
-            $template = tpl_build($_W['controller'], $_W['action'], public_path("addons/".$this->modulename."/views/$platform"));
-        }
-        $source = public_path("addons/" . $this->modulename . "/views/$platform/$template.blade.php");
-        if (!file_exists($source)){
-            $source = str_replace("/views/$platform/", "/views/", $source);
-            if (!file_exists($source)){
-                session()->save();
-                exit("Error: template source '$template' is not exist!");
+        $viewPath = public_path('addons/' . $this->modulename . '/views');
+        try {
+            View::addNamespace($this->modulename, $viewPath);
+        }catch (\Exception $exception){
+            try {
+                app('view')->addNamespace($this->modulename, $viewPath);
+            } catch (\Exception $e2) {
+                // 记录错误
+                error_log("Failed to register module view namespace: " . $e2->getMessage());
+                session_exit($e2->getMessage());
             }
         }
         if (empty($data)){
@@ -172,7 +178,7 @@ class WeModule
         $data['_W'] = $_W;
         $data['_GPC'] = $_GPC;
         View::share($data);
-        return View::file($source);
+        return View::make($this->modulename . ":" .str_replace('/', '.', $template), $data);
     }
 
     public function template($filename, $extra='') {

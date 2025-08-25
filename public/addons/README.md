@@ -2,15 +2,15 @@
 
 注：除了运营产生的附件外，模块运行相关的所有源码和静态文件都应存放在模块目录下或者云存储中，应有清晰的目录结构和层次。
 
-<h2 id="XDc9x">1 安装包</h2>
-<h3 id="vywH0">1.1 安装路径</h3>
+## 1 安装包
+### 1.1 安装路径
 轻如云系统的模块安装包放在项目的` **/public/addons/** `目录下，以模块标识命名。
 
 ![](https://cdn.nlark.com/yuque/0/2023/png/1333431/1677729032002-21b08aef-4447-425e-8e4b-22d9de148198.png)
 
 
 
-<h3 id="g7ubO">1.2 描述文件（manifest.json）</h3>
+### 1.2 描述文件（manifest.json）
 模块的描述文件以JSON格式保存在模块根目录下的  `**manifest.json**` 文件，其固定格式如下：
 
 ```json
@@ -70,7 +70,7 @@
 }
 ```
 
-<h4 id="a0Gtn">字段说明</h4>
+#### 字段说明
 + `**application**`：模块基础信息，如果发布了新版本的应用，需要修改提升对应的版本名称和版本号。
     - `identifie`：唯一标识
     - `name`：应用名称
@@ -89,12 +89,12 @@
 
 
 
-<h3 id="CuWYB">1.3 入口文件（site.php）</h3>
+### 1.3 入口文件（site.php）
 该文件用于定义应用模块的后台和前台控制器，所有的HTTP请求和内置的调用都会先运行该文件的对应方法。
 
 `**site.php**`文件内需要定义模块控制器主类（`<font style="color:#74B602;">class</font> Addons\identifie\site`），开发者可以在这个类编写任何方法逻辑。在命名文件、类名、方法名、路由时，请注意区分大小写，并注意遵循PSR-4规范。
 
-<h4 id="nVHK2">内置应用</h4>
+#### 内置应用
 内置应用的模块主类必须继承内置应用基类`**App\Utils\WeModule**`，该基类定义了模块的初始化方法、模块URL生成方法、内置的视图模板编译方法等，便于应用的快速开发。
 
 ```php
@@ -147,7 +147,7 @@ class site extends WeModule{
 
 
 
-<h4 id="lyQFY">第三方应用</h4>
+#### 第三方应用
 第三方应用的入口文件必须继承第三方应用基类 `**App\Utils\QuickModule**` ，该基类主要实现轻如云系统与第三方应用的跳转和鉴权功能。
 
 <font style="color:#DF2A3F;">原则上第三方英文的入口文件不需要写任何入口方法和控制器，只需要默认生成的文件即可，除非您需要调整自动授权和跳转逻辑。</font>
@@ -183,31 +183,37 @@ class site extends QuickModule{
 
 
 
-<h3 id="Gj2mq">1.4 composer.json（非必须）</h3>
+### 1.4 composer.json（非必须）
 当模块安装包存在 composer.json 文件且不存在 composer.lock 文件时，将自动运行composer依赖包的安装。
 
 开发者需要自行在适当位置引用模块内的 /vendor/autoload.php 文件。
 
 
 
-<h2 id="idStT">2 请求</h2>
+## 2 请求
 模块的所有HTTP请求最终都会运行模块的主类文件 `**site.php**` ，您需要根据模块功能在此文件内定义对应的方法，每个方法都可以视为一个控制器。
 
 您还可以在此文件内创建一个公共方法，然后在此方法根据URL参数来重定义路由-控制器规则。
 
 更多关于请求的说明请参考：[请求](https://learnku.com/docs/laravel/6.x/requests/5139)
 
-<h3 id="bqshO">2.1 内置应用</h3>
-<h4 id="Fw09B">后台路由</h4>
-模块后台请求的路由规则是 `/console/m/<font style="color:#DF2A3F;">{module}</font>/<font style="color:#ED740C;">{route?}</font>` ，访问的是模块主类的 `doWeb<font style="color:#ED740C;">Route</font>()` 方法，默认是 `doWebIndex()` 方法。如果找不到该方法时，系统会尝试读取模块目录下的 `inc/web/<font style="color:#ED740C;">route</font>.inc.php` 文件，如果该文件存在则直接运行该文件。
+### 2.1 内置应用
+#### 后台路由
+模块后台请求的路由规则是 `/console/m/<font style="color:#DF2A3F;">{module}</font>/<font style="color:#ED740C;">{controller?}/{method?}</font>` ，访问的是模块目录下的`app/Controllers/**<font style="color:#DF2A3F;">web</font>**/ControllerController.php` 控制器的 `<font style="color:#ED740C;">method</font>()` 方法，默认是`app/Controllers/**<font style="color:#DF2A3F;">web</font>**/IndexController.php` 控制器的 `<font style="color:#ED740C;">main</font>()` 方法。
 
-<h4 id="K6jPb">前台路由</h4>
-模块前台请求的路由规则是 `/app/m/<font style="color:#DF2A3F;">{module}</font>/<font style="color:#ED740C;">{route?}</font>` ，访问的是模块主类的 `doMobile<font style="color:#ED740C;">Route</font>()` 方法，默认是 `doMobileIndex()` 方法。如果找不到该方法时，系统会尝试读取模块目录下的 `inc/mobile/<font style="color:#ED740C;">route</font>.inc.php` 文件，如果该文件存在则直接运行该文件。
+如果找不到对应的控制器时，系统会尝试运行模块主类的 `doWeb<font style="color:#ED740C;">Controller</font>()` 方法，也就是说可以利用模块主类来重写路由规则。
 
-<h4 id="ll8BD">接口路由</h4>
-模块前台的请求路由规则是`/api/m/<font style="color:#DF2A3F;">{module}</font>/<font style="color:#ED740C;">{route?}</font>`，当`<font style="color:#ED740C;">{route?}</font>`不为空时，运行的是模块主类的`doApi<font style="color:#ED740C;">Route</font>()`方法，否则访问的是`doMobileApi()`方法。
+#### 前台路由
+模块前台请求的路由规则是 `/app/m/<font style="color:#DF2A3F;">{module}</font>/<font style="color:#ED740C;">{controller?}/{method?}</font>` ，访问的是模块目录下的`app/Controllers/**<font style="color:#DF2A3F;">app</font>**/ControllerController.php` 控制器的 `<font style="color:#ED740C;">method</font>()` 方法，默认是`app/Controllers/**<font style="color:#DF2A3F;">app</font>**/IndexController.php` 控制器的 `<font style="color:#ED740C;">main</font>()` 方法。
 
-<h4 id="jDkAr">生成URL</h4>
+如果找不到对应的控制器时，系统会尝试运行模块主类的 `doMobile<font style="color:#ED740C;">Controller</font>()` 方法，也可以利用模块主类的此方法来重写路由规则。
+
+#### 接口路由
+模块前台的请求路由规则是`/api/m/<font style="color:#DF2A3F;">{module}</font>/<font style="color:#ED740C;">{controller?}/{method?}</font>`，访问的是模块目录下的`app/Controllers/**<font style="color:#DF2A3F;">api</font>**/ControllerController.php` 控制器的 `<font style="color:#ED740C;">method</font>()` 方法，默认是`app/Controllers/**<font style="color:#DF2A3F;">api</font>**/IndexController.php` 控制器的 `<font style="color:#ED740C;">main</font>()` 方法。
+
+如果找不到对应的控制器时，系统会尝试运行模块主类的 `doApi<font style="color:#ED740C;">Controller</font>()` 方法，如果都不存在，还会尝试运行 `doMobileApi()` 方法；也可以利用模块主类的此方法来重写路由规则。
+
+#### 生成URL
 在所有继承了内置应用基类`**App\Utils\WeModule**`的方法和控制器中，都可以用`**$this->createWebUrl()**`方法来生成后台URL，用`**$this->createMobileUrl()**`方法来生成前台URL
 
 ```php
@@ -254,14 +260,14 @@ dd($payUrl);
 
 
 
-<h4 id="bwC8q">默认控制器</h4>
+#### 默认公共方法（模块主类）
 **doWebIndex()**
 
-后台默认控制器
+后台默认方法
 
 **doWebMenu()**
 
-后台菜单控制器，默认将根据当前管理员的权限配置返回后台JSON格式的管理菜单数据（二级），可根据实际需要重写此方法。
+后台管理菜单查询方法，默认将根据当前管理员的权限配置返回后台JSON格式的管理菜单数据（二级），可根据实际需要重写此方法。
 
 :::tips
 + **URL**：`/console/m/<font style="color:#DF2A3F;">{module}</font>/menu`
@@ -310,7 +316,7 @@ dd($payUrl);
 
 **doMobileIndex()**
 
-前台默认控制器
+前台默认方法
 
 **payResult()**
 
@@ -320,7 +326,7 @@ dd($payUrl);
 
 系统退款结果回调事件，只有在退款成功才会执行。该方法的更多说明请参考下文：[退款结果通知](#WopAT)
 
-<h3 id="L8KPF">2.2 第三方应用</h3>
+### 2.2 第三方应用
 第三方应用只提供一个默认的控制器方法`<font style="color:#DF2A3F;">doWebIndex()</font>`（路由 /console/m/<font style="color:#DF2A3F;">{module}</font>/index），该方法定义在模块主类继承的系统应用基类`**App\Utils\QuickModule**`内，用于实现轻如云系统与第三方应用的跳转和鉴权功能，默认情况下您无需对该方法做任何改动实现对应功能；前台由第三方应用实现，因此不接收任何请求。
 
 一般情况下，您只需要定义模块主类的公共变量`**$WebIndex**`和`**$SsoMaster**`就可以完成平台对接到第三方系统的工作，只需要在第三方系统实现单点登录的鉴权功能即可实现轻如云系统与第三方系统的无缝对接。
@@ -354,17 +360,86 @@ class site extends QuickModule{
 
 
 
-<h2 id="DqnXS">3 响应</h2>
+## 3 响应
 所有的请求都要求按照 [响应](https://www.yuque.com/shenwa/qingru/gm56u4) 的规范返回数据，可以是视图、HTML/字符串、JSON、重定向或者其它《[响应](https://www.yuque.com/shenwa/qingru/gm56u4)》中约束的实例。
 
 如果是必须要在方法内部强制跳转其它URL或者中断运行（exit()或die()）的情形，请务必在代码中断前运行` **session()->save();** `来保存会话，否则当前会话信息会丢失。
 
 <font style="color:#DF2A3F;">本文档的响应内容仅对内置应用而言，第三方应用的响应由第三方实现。</font>
 
-<h3 id="hkNdh">3.1 视图响应</h3>
-在内置应用的控制器内，通过向请求的外部控制器返回`$this->View($data, $template)`方法来响应[Blade视图](https://learnku.com/docs/laravel/6.x/blade/5147)，通过`include $this->template($template);`方法来引用[HTML视图](https://www.yuque.com/shenwa/qingru/ts8lla)。
+### 3.1 视图响应
+在内置应用继承了模块主类的控制器内，可以通过向外部控制器直接返回`$this->View($data, $view)`方法来响应[Blade视图](https://learnku.com/docs/laravel/6.x/blade/5147)，通过`include $this->template($template);`方法来引用[HTML视图](https://www.yuque.com/shenwa/qingru/ts8lla)。
 
-<h4 id="MCa8I">引用模块子视图（Blade）</h4>
+```php
+
+namespace Addons\swa_service\app\Controllers\web;
+
+use Addons\swa_service\site;
+
+class IndexController extends site{
+
+
+	public function main(){
+		return $this->View([
+		   'title'=>'Hello world.'
+	   ], 'web.index');
+
+		//返回 /public/addons/swa_service/views/web/index.blade.php 视图页面
+	}
+
+	public function foo(){
+		$title = 'Hello world.';
+		include $this->template('web/foo');
+		session_exit();
+
+		//引用 /public/addons/swa_service/template/web/index.html 视图
+	}
+
+}
+
+
+```
+
+也可以在基础控制器中手动封装视图渲染逻辑，并在所有的控制器继承和引用该控制器
+
+```php
+namespace Addons\swa_service\app\Controllers;
+
+class baseController extends Controller{
+
+		public function View($view, $data = [])
+    {
+
+        global $_W, $_GPC;
+
+        $data['_W'] = $_W;
+        $data['_GPC'] = $_GPC;
+
+        $viewPath = public_path('addons/swa_service/views');
+
+        try {
+						//注册当前模块的视图命名空间
+            View::addNamespace('swaService', $viewPath);
+        } catch (\Exception $e) {
+            try {
+								//尝试重新注册
+                app('view')->addNamespace('swaService', $viewPath);
+            } catch (\Exception $e2) {
+                error_log("Failed to register swaService view namespace: " . $e2->getMessage());
+                return $this->message($e2->getMessage());
+            }
+        }
+
+				//共享渲染数据到所有模板
+        View::share($data);
+
+        return View::make("swaService::$view", $data);
+    }
+	
+}
+```
+
+#### 引用模块子视图（Blade）
 Blade 的 `@include` 指令允许你从其它视图中引入 Blade 视图，但该视图仅限系统的公共视图（位于`/resources/views`目录下的视图）。
 
 使用`@moduleView('**{$module}:{$platform}.{$view}**')`指令可以引入模块自带的其它视图。
@@ -387,27 +462,49 @@ Blade 的 `@include` 指令允许你从其它视图中引入 Blade 视图，但�
 @moduleView('header')
 ```
 
-<h3 id="DlHXS">3.2 接口响应</h3>
-在内置应用的控制器内可以通过 `return response()->json($data);`指令直接返回接口数据，强烈建议返回统一格式的JSON数据，请参考：[统一响应结构](https://www.yuque.com/shenwa/qingru/gm56u4#wNjkT)。
+### 3.2 接口响应、抛出响应
+在内置应用的控制器内可以通过 `return response()->json($data);`直接返回接口数据。
 
-<h3 id="oxMrW">3.3 抛出响应</h3>
-应用模块的抛出响应请自行实现，或参考框架的[抛出响应](https://www.yuque.com/shenwa/qingru/gm56u4#SL5ze)。
+<font style="color:#DF2A3F;">强烈建议返回统一格式的JSON数据，请参考：</font>[统一响应结构](https://www.yuque.com/shenwa/qingru/gm56u4#wNjkT)。
+
+在继承了基类控制器`App\Http\Controllers\Controller`的所有控制器方法中可以直接使用系统封装的统一响应方法`$this->message($prompt, $redirect, $type)`。
+
+```php
+/**
+	 * 统一抛出响应方法
+	 * @param array|string|null $prompt 抛出内容，可以是提示信息或者数据，支持国际化提示词
+	 * @param string $redirect 跳转地址
+	 * @param string $type 提示类型，支持success、error、info、redirect
+	 * @param array $extra 额外参数
+	 * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse|\Illuminate\View\View
+	*/
+	public function message($prompt='操作失败，请重试', $redirect='', $type='error', $extra=array()){
+			global $_W;
+			......
+			if ($_W['isajax'] || $_W['isapi']){
+					return response()->json($return, 200, [], JSON_NUMERIC_CHECK);
+			}else{
+					$view = defined("IN_MOBILE") ? 'mmessage' : "message";
+					return $this->globalView($view, $return);
+			}
+	}
+```
 
 
 
-<h2 id="k0bvM">4 用户机制</h2>
+## 4 用户机制
 模块的用户机制和积分机制必须严格使用【用户服务】相关的方法和接口，确保各模块间的用户数据实时同步，同时可以通过总后台管理用户的基本信息。
 
 详细的用户开发文档请参考：[用户服务开发文档](https://www.yuque.com/shenwa/qingwork-dev/wbnmkqyr631e6dut)
 
 
 
-<h2 id="UyhdS">5 支付</h2>
+## 5 支付
 模块的支付依赖微服务【支付服务】，该服务提供多个方法和接口，包括H5支付、APP支付、扫码支付（商户）、刷脸支付、支付分以及退款业务等，同时支持微信支付和支付宝，具备开发能力的开发者可以基于该服务开发更多支付接口，支付服务相关开发文档请参考：[支付服务](https://www.yuque.com/shenwa/tt5ahr/kp6e8h1cw4rxlgb8)。
 
 **<font style="color:#DF2A3F;">第三方应用也可以使用支付服务的统一下单接口快速实现支付功能，详情请参考：</font>**[<font style="color:#117CEE;">统一下单接口</font>](https://www.yuque.com/shenwa/qingwork-dev/kp6e8h1cw4rxlgb8#jBhDt)
 
-<h3 id="B5dhF">5.1 支付流程</h3>
+### 5.1 支付流程
 1. 生成订单（选其一）
     1. [生成系统订单](https://www.yuque.com/shenwa/qingwork-dev/kp6e8h1cw4rxlgb8#SIUX4)（内置应用）
     2. 应用直付（内置应用H5端）
@@ -418,7 +515,7 @@ Blade 的 `@include` 指令允许你从其它视图中引入 Blade 视图，但�
     3. [支付宝下单](https://www.yuque.com/shenwa/qingwork-dev/kp6e8h1cw4rxlgb8#GjhFF)
 3. [支付结果回调](#xE8E4)、[退款结果回调](#WopAT)
 
-<h3 id="AIszb">5.2 应用直付（内置应用）</h3>
+### 5.2 应用直付（内置应用）
 内置应用**在H5端内**可以直接通过 `return $this->pay($params)` 方法一键唤起收银台进入支付流程，只需要提供简单的参数即可。
 
 该方法最终运行[支付服务的统一收银台](https://www.yuque.com/shenwa/qingwork-dev/kp6e8h1cw4rxlgb8#vZXhT)，成功时会返回一个[视图响应对象](https://learnku.com/docs/laravel/6.x/responses/5140#586a91)，将该对象直接返回给Laravel最外层控制器即可进入统一收银台。
@@ -451,7 +548,7 @@ class IdentifieModuleSite extends \App\Utils\WeModule{
 
 <font style="color:#DF2A3F;">注：应用的模块主类必须继承系统应用基类 </font>`<font style="color:#DF2A3F;">\App\Utils\WeModule</font>`
 
-<h3 id="xE8E4">5.3 支付结果通知</h3>
+### 5.3 支付结果通知
 通过支付服务唤起支付的订单，用户支付完成后，将通过应用模块主类的 `payResult($params)` 方法通知应用处理支付结果，只有支付成功才会调用该方法。
 
 ```php
@@ -488,7 +585,7 @@ public function payResult($params){
 + `**$params['tid']**`：内部订单号
 + `**$params['type']**`：支付方式，可能值为 wechat（微信支付）、alipay（支付宝）、credit（余额/积分）
 
-<h3 id="WopAT">5.4 退款结果通知</h3>
+### 5.4 退款结果通知
 通过支付服务唤起支付的订单，退款成功后，将通过应用模块主类的 `refundResult($params)` 方法通知应用处理支付结果，只有退款成功才会调用该方法。
 
 <font style="color:#DF2A3F;">为避免退款信息无法通知到该方法，请务必使用支付服务的 </font>`**<font style="color:#DF2A3F;">Refund()</font>**`<font style="color:#DF2A3F;"> 方法发起退款。</font>

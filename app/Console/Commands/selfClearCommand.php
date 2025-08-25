@@ -23,7 +23,7 @@ class selfClearCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Whotalk framework clean';
+    protected $description = 'Framework unused files clean';
 
     /**
      * Create a new command instance.
