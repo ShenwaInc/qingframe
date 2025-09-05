@@ -47,8 +47,14 @@ class UserController extends Controller
                 if ($uid==0) return $this->message(__("typeSomething", array('data'=>__('username'))));
                 $data['username'] = $user['username'];
             }else{
-                $namelen = mb_strlen($data['username'],'utf-8');
-                if ($namelen<3 || $namelen>15) return $this->message('usernameValid');
+                $nameLen = mb_strlen($data['username'],'utf-8');
+                if ($nameLen<3 || $nameLen>15) return $this->message('usernameValid');
+                $userExist = DB::table('users')->where('username',$username)->first();
+                if (!empty($userExist)){
+                    if (empty($uid) || (!empty($user) && $userExist['uid']!=$user['uid'])){
+                        return $this->message('该用户名已存在');
+                    }
+                }
             }
             if (empty($endtime)){
                 $data['endtime'] = 0;

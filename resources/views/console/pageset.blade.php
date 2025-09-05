@@ -2,7 +2,7 @@
 
 @if(!$_W['isajax'])
     <div class="main-content">
-        <h2>{{ __('modifyData', array('data'=>__('siteInformation'))) }}</h2>
+        <h2>{{ __('modifyData', array('data'=>__('站点信息'))) }}</h2>
         <div class="fui-card layui-card">
             <div class="layui-card-body">
 @else

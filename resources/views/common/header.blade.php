@@ -31,11 +31,11 @@
                             @if($_W['config']['site']['id']==0)
                                 <a href="{{wurl('active')}}">@lang('systemActivation')<span class="layui-badge-dot"></span></a>
                             @else
-                                <a href="{{wurl('setting')}}">@lang('systemManagement')</a>
+                                <a href="{{wurl('setting')}}">@lang('系统管理')</a>
                                 <dl id="layui-admin-sysmenu" class="layui-nav-child layui-anim layui-anim-upbit">
-                                    <dd><a href="{{ wurl('setting') }}">@lang('siteInformation')</a></dd>
+                                    <dd><a href="{{ wurl('setting') }}">@lang('站点信息')</a></dd>
                                     <dd><a href="{{ wurl('server') }}">@lang('服务管理')</a></dd>
-                                    <dd><a href="{{ wurl('module') }}">@lang('applications')</a></dd>
+                                    <dd><a href="{{ wurl('module') }}">@lang('应用管理')</a></dd>
                                 </dl>
                             @endif
                         </li>

@@ -2,18 +2,18 @@
 <div class="layui-fluid">
     <div class="main-content">
 
-        <h2>@lang('systemManagement')</h2>
+        <h2>@lang('系统管理')</h2>
 
         <div class="layui-tab fui-tab margin-bottom-xl">
             <ul class="layui-tab-title title_tab">
                 <li class="layui-this">
-                    <a href="{{ wurl('setting') }}">@lang('siteInformation')</a>
+                    <a href="{{ wurl('setting') }}">@lang('站点信息')</a>
                 </li>
                 <li>
                     <a href="{{ wurl('server') }}">@lang('服务管理')</a>
                 </li>
                 <li>
-                    <a href="{{ wurl('module') }}">@lang('applications')</a>
+                    <a href="{{ wurl('module') }}">@lang('应用管理')</a>
                 </li>
             </ul>
         </div>
@@ -110,8 +110,8 @@
 
         <div class="fui-card layui-card">
             <div class="layui-card-header nobd">
-                <a href="{{ wurl('setting/pageset') }}" class="fr text-blue ajaxshow" title="{{ __('modifyData', array('data'=>__('siteInformation'))) }}">@lang('edit')</a>
-                <span class="title">@lang('siteInformation')</span>
+                <a href="{{ wurl('setting/pageset') }}" class="fr text-blue ajaxshow" title="{{ __('modifyData', array('data'=>__('站点信息'))) }}">@lang('edit')</a>
+                <span class="title">@lang('站点信息')</span>
             </div>
             <div class="layui-card-body">
                 <div class="un-padding">

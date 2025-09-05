@@ -1,11 +1,11 @@
 @include('common.header')
 <div class="layui-fluid">
     <div class="layui-row layui-col-space15 main-content">
-        <h2>@lang('systemManagement')</h2>
+        <h2>@lang('系统管理')</h2>
         <div class="layui-tab fui-tab">
             <ul class="layui-tab-title title_tab">
                 <li>
-                    <a href="{{ wurl('setting') }}">@lang('siteInformation')</a>
+                    <a href="{{ wurl('setting') }}">@lang('站点信息')</a>
                 </li>
                 <li class="layui-this">
                     <a href="{{ wurl('server') }}">@lang('microServers')</a>
