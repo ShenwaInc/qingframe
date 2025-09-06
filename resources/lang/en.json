@@ -376,6 +376,7 @@
     "welcomeTips": "HTML content supports rendering variables. For specific tag syntax, please refer to <a href=\"https://learnku.com/docs/laravel/6.x/blade/5147\" class=\"text-blue\" target=\"_blank\">Blade Template</a>. If you are not familiar with this content, please do not make changes easily to avoid potential security risks to the system.",
     "该用户名已存在": "The username already exists.",
     "系统管理": "System",
+    "应用可升级至V:version": "This application can be upgraded to version V:version.",
     "languageName": "English",
     "languageID": "en"
 }

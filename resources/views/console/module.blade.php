@@ -37,10 +37,10 @@
                     <table class="layui-table fui-table lines" lay-even lay-skin="nob">
                         <colgroup>
                             <col>
-                            <col width="180">
-                            <col width="180">
-                            <col width="250">
-                            <col width="320">
+                            <col class="layui-hide-xs" width="180">
+                            <col class="layui-hide-xs" width="180">
+                            <col class="layui-hide-xs" width="280">
+                            <col width="20%">
                         </colgroup>
                         <thead>
                         <tr>
@@ -69,7 +69,7 @@
                                     <td class="layui-hide-xs">{!! $com['installTime'] !!}</td>
                                     <td class="layui-hide-xs">{!! $com['lastUpdated'] !!}</td>
                                     <td class="layui-hide-xs">
-                                        @if(empty($com['cloudInfo']))
+                                        @if(empty($com['cloudInfo']) || empty($com['cloudInfo']['id']))
                                             -
                                         @else
                                             V{{ $com['cloudInfo']['version'] }}&nbsp;&nbsp;Release {{ $com['cloudInfo']['releasedate'] }}
@@ -94,9 +94,6 @@
                                         <div class="layui-btn-group">
                                             @if(empty($com['maintenance']) && !empty($com['id']))
                                                 <a href="{{ wurl('setting/comcheck', array('cid'=>$com['id'])) }}" class="layui-btn layui-btn-sm layui-btn-normal ajaxshow">@lang('检测更新')</a>
-                                            @endif
-                                            @if($com['cloudInfo']['upgradable'])
-                                                <a href="{{ wurl(empty($com['cloudInfo']['isLocal'])?'module/update':'module/upgrade', array('nid'=>$com['modulename'])) }}" data-text="@lang('upgradeConfirm')" class="layui-btn layui-btn-sm layui-btn-danger js-terminal">@lang('upgrade')</a>
                                             @endif
                                             {!! $com['action'] !!}
                                         </div>

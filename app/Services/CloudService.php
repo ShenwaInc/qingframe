@@ -40,29 +40,17 @@ class CloudService
                 $cloudInfo['expired'] = false;
                 $cloudInfo['upgradable'] = (bool)$cloudInfo['upgradable'];
                 $selfMaintenance = (bool)$com['maintenance'];
+                $com['action'] = '';
                 if (!empty($com['modulename'])){
                     $local = ModuleService::installCheck($com['modulename']);
                     if (is_error($local)){
                         $com['isDelete'] = true;
-                    }elseif(DEVELOPMENT && empty($cloudInfo['upgradable'])){
-                        //判断是否可以升级（本地升级）
-                        $application = $local->application;
-                        if (version_compare($application['version'], $com['version'], '>') || $application['releasedate']>$com['releasedate']){
-                            $cloudInfo = array_merge($cloudInfo, array(
-                                'version'=>$application['version'],
-                                'releasedate'=>$application['releasedate'],
-                                'isLocal'=>true,
-                                'expired'=>false,
-                                'upgradable'=>true
-                            ));
-                        }
                     }
                 }
                 $com['logo'] = asset($com['logo']);
                 $com['lastUpdated'] = $com['updatetime'] ? date('Y/m/d H:i',$com['updatetime']) : __('installFirstTime');
                 $com['installTime'] = date('Y/m/d H:i',$com['addtime']);
                 $com['expireDate'] = '';
-                $com['action'] = '';
                 $com['cloudInfo'] = $cloudInfo;
                 $com['maintenance'] = $selfMaintenance;
                 $com['installed'] = true;
@@ -92,28 +80,28 @@ class CloudService
                 $com['addtime'] = 0;
                 $com['installed'] = !empty($comCloud);
                 $com['expireDate'] = !empty($comCloud) ? $comCloud['expireDate'] : '';
-                $actions = $comCloud?$comCloud['action']:'';
+                $actions = $comCloud['action']??'';
                 //已安装
                 if ($ManiFest['installed']){
                     $com['installed'] = true;
                     if (!empty($comCloud)){
+                        //从云端安装
                         $com['installTime'] = $comCloud['installTime'];
                         $com['lastUpdated'] = $comCloud['lastUpdated'];
                         $com['cloudInfo'] = $comCloud['cloudInfo'];
                     }else{
+                        //从本地安装
                         $com['installTime'] = __('appLocal');
                         $com['lastUpdated'] = '-';
-                        $com['cloudInfo'] = array('upgradable'=>false, 'expired'=>false, 'isLocal'=>true,'version'=>$com['version'],'releasedate'=>$com['releasedate']);
+                        $com['cloudInfo'] = $comCloud ? $comCloud['cloudInfo'] : array('upgradable'=>false, 'isLocal'=>true);
                     }
                     $com['addtime'] = $com['releasedate'];
                     if (DEVELOPMENT){
                         $Module = ModuleService::fetch($com['identifie']);
                         if (!empty($Module) && !is_error($Module)){
                             if (version_compare($com['version'], $Module['version'], '>')){
-                                $com['cloudInfo']['version'] = $com['version'];
-                                $com['cloudInfo']['releasedate'] = $com['releasedate'];
-                                $com['cloudInfo']['upgradable'] = true;
-                                $com['version'] = $Module['version'];
+                                $tips = __('应用可升级至V:version', ['version'=>$com['version']]);
+                                $actions .= '<a href="'. wurl('module/upgrade', ['nid'=>$com['modulename']]) .'" data-text="'. __('upgradeConfirm') .'" class="layui-btn layui-btn-sm layui-btn-warm js-terminal" lay-tips="'.$tips.'">'. __('本地升级') .'</a>';
                             }
                         }
                     }
@@ -148,13 +136,14 @@ class CloudService
             $modulePre = ModuleService::SysPrefix();
             foreach ($res['servers'] as $value){
                 $identify = str_replace($modulePre, "", $value['identity']);
-                if (empty($identify)) continue;
+                if (empty($identify) || empty($value['release'])) continue;
                 $releaseDate = intval($value['release']['releasedate']);
                 if (isset($plugins[$identify])){
                     //已安装
                     $local = $plugins[$identify];
                     if ($local['addtime']==0 || !empty($local['maintenance'])) continue;
                     $cloudInfo = array('upgradable'=>$local['cloudInfo']['upgradable'], 'expired'=>false, 'isLocal'=>$local['cloudInfo']['isLocal'],'version'=>$value['release']['version'],'releasedate'=>$releaseDate);
+                    $cloudInfo['id'] = $value['identity'];
                     $local['expireDate'] = '';
                     if (!$cloudInfo['isLocal']){
                         if (!is_error($value['authorize'])){
@@ -174,6 +163,9 @@ class CloudService
                     if (version_compare($local['version'], $value['release']['version'], '<') || $local['releasedate']<$releaseDate){
                         //可升级至云端最新版本
                         $cloudInfo['upgradable'] = true;
+                        $tips = __('应用可升级至V:version', ['version'=>$value['release']['version']]);
+                        $action = '<a href="'. wurl('module/update', ['nid'=>$local['modulename']]) .'" data-text="'. __('upgradeConfirm') .'" class="layui-btn layui-btn-sm layui-btn-danger js-terminal" lay-tips="'.$tips.'">'. __('upgrade') .'</a>';
+                        $local['action'] = $action . $local['action'];
                     }
                     $local['cloudInfo'] = $cloudInfo;
                     $local['installed'] = true;
@@ -196,6 +188,7 @@ class CloudService
                     $com['lastUpdated'] = '-';
                     $com['expireDate'] = '';
                     $com['cloudInfo'] = array(
+                        'id'=>$value['identity'],
                         'version'=>$value['release']['version'],
                         'releasedate'=>$releaseDate,
                         'upgradable'=>false,
@@ -208,6 +201,7 @@ class CloudService
                 }
             }
         }
+        //dd($plugins);
         return $plugins;
     }
 
