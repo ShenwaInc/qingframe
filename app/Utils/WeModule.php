@@ -28,23 +28,27 @@ class WeModule
      */
     public function create($name){
         static $file;
-        $classname = "{$name}ModuleSite";
-        if (!class_exists($classname)) {
-            $file = public_path("/addons/{$name}/site.php");
-            if (!file_exists($file)) {
-                throw new \Exception('ModuleSite Definition File Not Found ' . $name, E_USER_WARNING);
+        $classname = "\\Addons\\{$name}\\site";
+        $file = public_path("/addons/{$name}/site.php");
+        try {
+            if (class_exists($classname)) {
+                $Instance =   self::createModuleInstance($classname, $name);
+            }else{
+                if (!file_exists($file)) {
+                    throw new \Exception('ModuleSite Definition File Not Found ' . $name, E_USER_WARNING);
+                }
+                require_once $file;
+                $classname = "{$name}ModuleSite";
+                if (!class_exists($classname)) {
+                    trigger_error('ModuleSite Definition Class Not Found', E_USER_WARNING);
+                    return null;
+                }
+                $Instance = self::createModuleInstance($classname, $name);
             }
-            require $file;
+        }catch (\Exception $e){
+            trigger_error($e->getMessage(), E_USER_WARNING);
+            return null;
         }
-        if (!class_exists($classname)) {
-            if (class_exists("\\Addons\\{$name}\\site")) {
-                $classname = "\\Addons\\{$name}\\site";
-            } else {
-                trigger_error('ModuleSite Definition Class Not Found', E_USER_WARNING);
-                return null;
-            }
-        }
-        $Instance = self::createModuleInstance($classname, $name);
         $Instance->__define = $file;
         return $Instance;
     }

@@ -421,7 +421,7 @@ class MicroService
         return response()->json($data);
     }
 
-    public function message($msg='', $redirect = '', $type = 'error'){
+    public static function message($msg='', $redirect = '', $type = 'error'){
         global $_W, $_GPC;
         if (empty($msg)){
             $msg = $type=='success' ? ($_W['isapi']?'OK':'successful') : 'operationFailed';
@@ -442,7 +442,8 @@ class MicroService
         }else{
             View::share('_W',$_W);
             View::share('_GPC',$_GPC);
-            return response()->view('message',$data)->content();
+            $view = defined('IN_SYS') ? 'message' : 'mmessage';
+            return response()->view($view, $data)->content();
         }
     }
 

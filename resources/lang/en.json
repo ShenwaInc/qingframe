@@ -377,6 +377,8 @@
     "该用户名已存在": "The username already exists.",
     "系统管理": "System",
     "应用可升级至V:version": "This application can be upgraded to version V:version.",
+    "该服务可升级至V:version版本": "This service can be upgraded to version V:version.",
+    "本地升级": "Upgrade locally",
     "languageName": "English",
     "languageID": "en"
 }

@@ -278,7 +278,8 @@ class MSService
                     if(version_compare($manifest['version'], $server['version'], '>') || $manifest['releases']>$server['releases']){
                         //本地可升级
                         $server['upgrade'] = array('version'=>$manifest['version'],'canup'=>true);
-                        $upgradeAction = '<a class="layui-btn layui-btn-sm layui-btn-danger js-terminal" data-text="'.__('升级前请做好数据备份').'" lay-tips="该服务可升级至V'.$manifest['version'].'版本" href="'.wurl('server', array("op"=>"upgrade", "nid"=>$server['identity'])).'">'.__('upgrade').'</a>';
+                        $tips = __("该服务可升级至V:version版本", ['version'=>$manifest['version']]);
+                        $upgradeAction = '<a class="layui-btn layui-btn-sm layui-btn-danger js-terminal" data-text="'.__('升级前请做好数据备份').'" lay-tips="'.$tips.'" href="'.wurl('server', array("op"=>"upgrade", "nid"=>$server['identity'])).'">'.__('本地升级').'</a>';
                     }
                 }
                 if (mb_strlen($server['summary'],'utf8')>30){
@@ -292,7 +293,8 @@ class MSService
                 }elseif (!empty($cloudServer)){
                     $release = $cloudServer['release'];
                     if (version_compare($release['version'], $server['version'], '>') || $release['releasedate']>$server['releases']){
-                        $upgradeAction = '<a class="layui-btn layui-btn-sm layui-btn-danger js-terminal" data-text="升级前请做好数据备份" lay-tips="该服务可升级至V'.$release['version'].'Release'.$release['releasedate'].'" href="'.wurl('server', array('op'=>'cloudup', 'nid'=>$server['identity'])).'">'.__('upgrade').'</a>';
+                        $tips = __("该服务可升级至V:version版本", ['version'=>$release['version']]);
+                        $upgradeAction = '<a class="layui-btn layui-btn-sm layui-btn-danger js-terminal" data-text="升级前请做好数据备份" lay-tips="'.$tips.'" href="'.wurl('server', array('op'=>'cloudup', 'nid'=>$server['identity'])).'">'.__('upgrade').'</a>';
                         $server['upgrade'] = array('version'=>$release['version'],'canup'=>true);
                     }else{
                         $upgradeAction = "";

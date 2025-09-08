@@ -103,6 +103,7 @@ class CloudService
                                 $tips = __('应用可升级至V:version', ['version'=>$com['version']]);
                                 $actions .= '<a href="'. wurl('module/upgrade', ['nid'=>$com['modulename']]) .'" data-text="'. __('upgradeConfirm') .'" class="layui-btn layui-btn-sm layui-btn-warm js-terminal" lay-tips="'.$tips.'">'. __('本地升级') .'</a>';
                             }
+                            $com['version'] = $Module['version'];
                         }
                     }
                     $actions .= '<a href="'.wurl('module/allocate', array('nid'=>$identity)).'" title="'.__('分配应用权限').'" class="layui-btn layui-btn-sm ajaxshow">'.__('分配').'</a>';

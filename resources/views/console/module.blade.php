@@ -40,7 +40,7 @@
                             <col class="layui-hide-xs" width="180">
                             <col class="layui-hide-xs" width="180">
                             <col class="layui-hide-xs" width="280">
-                            <col width="20%">
+                            <col width="23%">
                         </colgroup>
                         <thead>
                         <tr>
