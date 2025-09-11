@@ -44,11 +44,18 @@ class SettingController extends Controller
             $redirect = "";
             if ($res['type']=="success"){
                 if ($_W['config']['site']['id']==0){
+                    //首次激活
                     $_W['config']['site']['id'] = $activeState['siteid'];
                     if (!CloudService::CloudEnv('APP_SITEID=0', "APP_SITEID={$activeState['siteid']}")){
                         return $this->message('文件写入失败，请检查根目录权限');
                     }
+                    //自动安装默认微服务
                     Artisan::call('server:update');
+                    //自动安装默认应用
+                    $defaultModule = env("APP_MODULE", "");
+                    if (!empty($defaultModule) && file_exists(public_path("addons/$defaultModule/manifest.json"))){
+                        ModuleService::install($defaultModule);
+                    }
                     CacheService::flush();
                 }
                 $res['message'] = '恭喜您，激活成功！';
@@ -56,7 +63,7 @@ class SettingController extends Controller
             }
             return $this->message($res['message'], $redirect, $res["type"]);
         }
-        return $this->globalView("console.active", ["siteinfo"=>$activeState, "title"=>"云服务激活"]);
+        return $this->globalView("console.active", ["siteinfo"=>$activeState, "title"=>__('云服务激活')]);
     }
 
     public function detection(){

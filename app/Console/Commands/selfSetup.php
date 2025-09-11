@@ -193,11 +193,7 @@ class selfSetup extends Command
             @unlink(storage_path("defaultParams.json"));
         }
 
-        //8.自动安装应用
-        $defaultModule = env("APP_MODULE", "");
-        if (!empty($defaultModule) && file_exists(public_path("addons/$defaultModule/manifest.json"))){
-            ModuleService::install($defaultModule);
-        }
+        //8.自动安装应用（取消该步骤，调整为激活后安装，避免微服务安装授权验证失败）
 
         //9.指定唯一平台
         if (!empty($this->defaultParams['accountId'])){

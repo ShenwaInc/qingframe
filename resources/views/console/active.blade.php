@@ -103,7 +103,7 @@
                         if(timeout===0){
                             clearInterval(codeInterval);
                             codeInterval = null;
-                            $(codeBtn).removeClass('layui-disabled').find('span').text('@lang("getVerifyCode")');
+                            $(codeBtn).removeClass('layui-disabled').find('span').text('@lang("获取验证码")');
                             return;
                         }else{
                             $(codeBtn).find('span').text(timeout+'s');
@@ -111,7 +111,7 @@
                         timeout--
                     },1e3);
                 }else{
-                    $(codeBtn).removeClass('layui-disabled').find('span').text('@lang("getVerifyCode")');
+                    $(codeBtn).removeClass('layui-disabled').find('span').text('@lang("获取验证码")');
                     layer.msg(res.message,{icon:2});
                 }
             }, data, 'json', true)

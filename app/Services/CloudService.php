@@ -111,7 +111,7 @@ class CloudService
                 }else{
                     $com['lastUpdated'] = '-';
                     if(DEVELOPMENT){
-                        $actions .= '<a href="'.wurl('module/install', array('nid'=>$identity)).'" class="layui-btn layui-btn-sm layui-btn-normal js-terminal" data-text="'.__('installConfirm').'">'.__('install').'</a>';
+                        $actions .= '<a href="'.wurl('module/install', array('nid'=>$identity)).'" class="layui-btn layui-btn-sm layui-btn-normal js-terminal" data-text="'.__('installConfirm').'">'.__('本地安装').'</a>';
                     }
                 }
                 $com = array_merge($comCloud, $com);

@@ -20,6 +20,9 @@ class ModuleController extends Controller
      */
     public function entry(Request $request, $modulename, $do='index'){
         global $_W;
+        if (empty($_W['uniacid'])){
+            return $this->account($request, $modulename);
+        }
         $WeModule = new WeModule();
         try {
             $site = $WeModule->create($modulename);
@@ -57,7 +60,7 @@ class ModuleController extends Controller
             if(class_exists($className)){
                 $instance = new $className();
                 if (!method_exists($instance, $method)){
-                    abort(404 );
+                    abort(404, "Call to undefined member {$method} of {$className}");
                 }
                 //记录操作日志
                 DB::table('users_operate_history')->updateOrInsert(
@@ -67,6 +70,7 @@ class ModuleController extends Controller
                 $instance->moduleName = $moduleName;
                 $instance->moduleSite = $site;
                 $instance->moduleConfig = (array)$site->module['config'];
+                $instance->uniacid = $_W['uniacid'];
                 $_W['moduleController'] = $segment1;
                 $_W['moduleMethod'] = $method;
                 return $instance->$method($request);
@@ -91,6 +95,16 @@ class ModuleController extends Controller
         }
     }
 
+    public function account(Request $request, $moduleName)
+    {
+        global $_W;
+        $data = array(
+            'refresh'=>$_W['siteurl'],
+            'uniacid'=>intval($_W['uniacid']),
+            'platforms'=>AccountService::OwnerAccounts(array(), -1, true),
+        );
+        return $this->globalView("console.server.platform",$data);
+    }
 
     public function index(Request $request, $option='list'){
         global $_W;

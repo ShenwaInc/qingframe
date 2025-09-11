@@ -159,6 +159,9 @@ if(typeof Basetoken == 'undefined'){
                 multi = true;
             }
             let self = this, uploadImage = PickerUrl.indexOf('type=1')!==-1;
+            const clipEvent = function (e){
+                self.pasteEvent(e, self.pickerUpload);
+            }
             this.get(PickerUrl, function (Html){
                 if(self.isJsonString(Html)){
                     var obj = jQuery.parseJSON(Html);
@@ -179,10 +182,8 @@ if(typeof Basetoken == 'undefined'){
                         self.pickerUpload = pickerUpload;
                         if (uploadImage && UploadBtn){
                             //图片上传，处理剪切板事件监听
-                            document.addEventListener('paste', function (e) {
-                                self.pasteEvent(e, pickerUpload);
-                            });
-                            layer.tips('可使用 Ctrl+V 粘贴图片上传', UploadBtn, {
+                            document.addEventListener('paste', clipEvent);
+                            layer.tips('支持 Ctrl+V 粘贴图片上传', UploadBtn, {
                                 tips: [1, '#4CAF50'],
                                 time: 3000
                             });
@@ -229,7 +230,7 @@ if(typeof Basetoken == 'undefined'){
                         self.storageData = {items:[],aids:[]};
                         if (uploadImage){
                             //移出剪切板事件监听
-                            document.removeEventListener('paste');
+                            document.removeEventListener('paste', clipEvent);
                         }
                     }
                 }
@@ -422,12 +423,11 @@ if(typeof Basetoken == 'undefined'){
             let img = $(Elem).prev();
             img.attr("src", img.data("val")).addClass("nopic").parent().prev().find('input.layui-input').val("");
         },
-        pasteEvent: (e, params={}) => {
+        pasteEvent: (e, params) => {
             // 阻止事件默认行为
             e.preventDefault();
             // 获取剪贴板数据
             const clipboardData = e.clipboardData || window.clipboardData;
-            let self = this;
 
             if (!clipboardData) {
                 console.warn('无法访问剪贴板数据');

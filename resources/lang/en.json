@@ -142,7 +142,7 @@
     "newData": "Add :data",
     "operator": "Operator",
     "platformOperator": "platform operator",
-    "platformDistinguish": "The operation of current services requires distinguishing between different platforms",
+    "当前应用的运行需要区分不同平台": "The operation of current application requires distinguishing between different platforms",
     "platformCreate": "Create a platform",
     "user": "User",
     "username": "Username",
@@ -379,6 +379,9 @@
     "应用可升级至V:version": "This application can be upgraded to version V:version.",
     "该服务可升级至V:version版本": "This service can be upgraded to version V:version.",
     "本地升级": "Upgrade locally",
+    "本地安装": "Install locally",
+    "云服务激活": "Cloud Service Activation",
+    "恭喜您，激活成功！": "Congratulations！Your activation is successful!",
     "languageName": "English",
     "languageID": "en"
 }

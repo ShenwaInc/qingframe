@@ -4,7 +4,7 @@
         <div class="{{ $_GPC['inajax'] ? '' : 'layui-card fui-card' }}">
             <div class="layui-card-header layui-hide-layer">
                 <span class="title">{{ __('chooseData', array('data'=>__('platform'))) }}</span>
-                <p class="layui-word-aux">@lang('platformDistinguish')</p>
+                <p class="layui-word-aux">@lang('当前应用的运行需要区分不同平台')</p>
             </div>
             <div class="layui-card-body">
                 @if(empty($platforms) && !$creatable)
