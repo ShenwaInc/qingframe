@@ -165,7 +165,7 @@ class CloudService
                         //可升级至云端最新版本
                         $cloudInfo['upgradable'] = true;
                         $tips = __('应用可升级至V:version', ['version'=>$value['release']['version']]);
-                        $action = '<a href="'. wurl('module/update', ['nid'=>$local['modulename']]) .'" data-text="'. __('upgradeConfirm') .'" class="layui-btn layui-btn-sm layui-btn-danger js-terminal" lay-tips="'.$tips.'">'. __('upgrade') .'</a>';
+                        $action = '<a href="'. wurl('module/update', ['nid'=>$local['modulename']]) .'" data-text="'. __('upgradeConfirm') .'" class="layui-btn layui-btn-sm layui-btn-danger js-terminal" lay-tips="'.$tips.'">'. __('云端升级') .'</a>';
                         $local['action'] = $action . $local['action'];
                     }
                     $local['cloudInfo'] = $cloudInfo;
