@@ -18,14 +18,17 @@ class ModuleController extends Controller
     /**
      * @throws \Exception
      */
-    public function entry(Request $request, $modulename, $do='index'){
+    public function entry(Request $request, $moduleName, $do='index'){
         global $_W;
         if (empty($_W['uniacid'])){
-            return $this->account($request, $modulename);
+            return $this->account($request, $moduleName);
         }
         $WeModule = new WeModule();
         try {
-            $site = $WeModule->create($modulename);
+            $site = $WeModule->create($moduleName);
+            if (empty($site)){
+                abort(404, "Module {$moduleName} not found");
+            }
         }catch (\Exception $exception){
             if (DEVELOPMENT){
                 throw $exception;
@@ -34,7 +37,7 @@ class ModuleController extends Controller
         }
         $method = "doWeb" . ucfirst($do);
         DB::table('users_operate_history')->updateOrInsert(
-            array('uid'=>$_W['uid'],'uniacid'=>$_W['uniacid'],'module_name'=>$modulename),
+            array('uid'=>$_W['uid'],'uniacid'=>$_W['uniacid'],'module_name'=>$moduleName),
             array('createtime'=>TIMESTAMP,'type'=>2)
         );
         $res = $site->$method($request);

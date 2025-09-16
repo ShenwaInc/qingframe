@@ -73,7 +73,7 @@ if(typeof Basetoken == 'undefined'){
                     }
                     hreq.report(res);
                 },
-                fail: function (e) {
+                error: function (e) {
                     console.log('请求失败', e);
                     if (hreq.loading !== 0) {
                         layer.close(hreq.loading);
@@ -83,7 +83,7 @@ if(typeof Basetoken == 'undefined'){
                     if(typeof(f)=='function'){
                         f(e);
                     }else{
-                        layer.msg('操作失败', {icon: 2});
+                        layer.msg(`操作失败(${e.status} ${e.statusText})`, {icon: 2});
                     }
                 }
             }
