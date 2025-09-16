@@ -23,6 +23,10 @@ class ModuleController extends Controller
         if (empty($_W['uniacid'])){
             return $this->account($request, $moduleName);
         }
+        $moduleExist = ModuleService::fetch($moduleName);
+        if (empty($moduleExist)){
+            return $this->message("Module {$moduleName} not found");
+        }
         $WeModule = new WeModule();
         try {
             $site = $WeModule->create($moduleName);
