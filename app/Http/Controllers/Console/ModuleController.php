@@ -52,6 +52,9 @@ class ModuleController extends Controller
         $WeModule = new WeModule();
         try {
             $site = $WeModule->create($moduleName);
+            if (empty($site)){
+                abort(404, "Module {$moduleName} not found");
+            }
 
             $className = "Addons\\".$moduleName."\app\Controllers\web\\".ucfirst($segment1)."Controller";
             $method = $segment2;
