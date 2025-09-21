@@ -19,6 +19,10 @@ class ModuleController extends Controller
      * @throws \Exception
      */
     public function entry(Request $request, $moduleName, $do='index'){
+        return $this->HttpRequest($request, $moduleName, $do);
+    }
+
+    public function HttpRequest(Request $request, $moduleName, $segment1='index', $segment2='main'){
         global $_W;
         if (empty($_W['uniacid'])){
             return $this->account($request, $moduleName);
@@ -33,32 +37,11 @@ class ModuleController extends Controller
             if (empty($site)){
                 abort(404, "Module {$moduleName} not found");
             }
-        }catch (\Exception $exception){
-            if (DEVELOPMENT){
-                throw $exception;
-            }
-            return $this->message($exception->getMessage());
-        }
-        $method = "doWeb" . ucfirst($do);
-        DB::table('users_operate_history')->updateOrInsert(
-            array('uid'=>$_W['uid'],'uniacid'=>$_W['uniacid'],'module_name'=>$moduleName),
-            array('createtime'=>TIMESTAMP,'type'=>2)
-        );
-        $res = $site->$method($request);
-        if(is_error($res)){
-            return $this->message($res['message']);
-        }
-        return $res;
-    }
-
-    public function HttpRequest(Request $request, $moduleName, $segment1='index', $segment2='main'){
-        global $_W;
-        $WeModule = new WeModule();
-        try {
-            $site = $WeModule->create($moduleName);
-            if (empty($site)){
-                abort(404, "Module {$moduleName} not found");
-            }
+            //记录操作日志
+            DB::table('users_operate_history')->updateOrInsert(
+                array('uid'=>$_W['uid'],'uniacid'=>$_W['uniacid'],'module_name'=>$moduleName),
+                array('createtime'=>TIMESTAMP,'type'=>2)
+            );
 
             $className = "Addons\\".$moduleName."\app\Controllers\web\\".ucfirst($segment1)."Controller";
             $method = $segment2;
@@ -72,14 +55,9 @@ class ModuleController extends Controller
                 if (!method_exists($instance, $method)){
                     abort(404, "Call to undefined member {$method} of {$className}");
                 }
-                //记录操作日志
-                DB::table('users_operate_history')->updateOrInsert(
-                    array('uid'=>$_W['uid'],'uniacid'=>$_W['uniacid'],'module_name'=>$moduleName),
-                    array('createtime'=>TIMESTAMP,'type'=>2)
-                );
                 $instance->moduleName = $moduleName;
                 $instance->moduleSite = $site;
-                $instance->moduleConfig = (array)$site->module['config'];
+                $instance->moduleConfig = $site->module['config'] ? (array)$site->module['config'] : [];
                 $instance->uniacid = $_W['uniacid'];
                 $_W['moduleController'] = $segment1;
                 $_W['moduleMethod'] = $method;
