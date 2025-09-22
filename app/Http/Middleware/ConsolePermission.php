@@ -28,6 +28,10 @@ class ConsolePermission
         global $_W;
         SettingService::Load();
         $_W['page'] = $_W['setting']['page'];
+        if (empty($request->user())){
+            echo response()->view('message',array('message'=>'请先登录','redirect'=>'/login?redirect=' . urlencode($_W['siteurl']),'type'=>'error'))->content();
+            exit();
+        }
         $user = $request->user()->toArray();
         if ($user['endtime']>0 && $user['endtime']<TIMESTAMP){
             Auth::logout();
