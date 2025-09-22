@@ -19,7 +19,32 @@ class ModuleController extends Controller
      * @throws \Exception
      */
     public function entry(Request $request, $moduleName, $do='index'){
-        return $this->HttpRequest($request, $moduleName, $do);
+        global $_W;
+        if (empty($_W['uniacid'])){
+            return $this->account($request, $moduleName);
+        }
+        $WeModule = new WeModule();
+        try {
+            $site = $WeModule->create($moduleName);
+            if (empty($site)){
+                abort(404, "Module {$moduleName} not found");
+            }
+            $method = "doWeb" . ucfirst($do);
+            DB::table('users_operate_history')->updateOrInsert(
+                array('uid'=>$_W['uid'],'uniacid'=>$_W['uniacid'],'module_name'=>$moduleName),
+                array('createtime'=>TIMESTAMP,'type'=>2)
+            );
+            $res = $site->$method($request);
+            if(is_error($res)){
+                return $this->message($res['message']);
+            }
+            return $res;
+        }catch (\Exception $exception){
+            if (DEVELOPMENT){
+                throw $exception;
+            }
+            return $this->message($exception->getMessage());
+        }
     }
 
     public function HttpRequest(Request $request, $moduleName, $segment1='index', $segment2='main'){

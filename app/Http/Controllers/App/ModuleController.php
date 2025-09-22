@@ -11,17 +11,7 @@ class ModuleController extends Controller
     //
 
     public function entry(Request $request, $moduleName, $do='index'){
-        $WeModule = new WeModule();
-        try {
-            $site = $WeModule->create($moduleName);
-        }catch (\Exception $exception){
-            return $this->message('模块初始化失败，请联系技术处理');
-        }
-        $method = "doMobile" . ucfirst($do);
-        if (!method_exists($site,$method)){
-            return $this->message("模块不支持{$method}()方法");
-        }
-        return $site->$method($request);
+        return $this->HttpRequest($request, $moduleName, $do);
     }
 
     public function HttpRequest(Request $request, $module, $segment1='index', $segment2='main'){
@@ -30,6 +20,10 @@ class ModuleController extends Controller
             $WeModule = new WeModule();
 
             $site = $WeModule->create($module);
+            if (empty($site)){
+                abort(404, "Module {$module} not found");
+            }
+
             $className = "Addons\\".$module."\app\Controllers\app\\".ucfirst($segment1)."Controller";
             $method = $segment2;
             if (!class_exists($className)){
@@ -72,7 +66,7 @@ class ModuleController extends Controller
             $WeModule = new WeModule();
             $site = $WeModule->create($moduleName);
 
-            $className = "Addons\\".$moduleName."\app\Controllers\api\\".ucfirst($segment1)."Controller";
+            $className = "Addons\\".$moduleName."\app\Controllers\api\\" . ucfirst($segment1) . "Controller";
             $method = $segment2;
             if (!class_exists($className)){
                 $className = "Addons\\".$moduleName."\app\Controllers\api\IndexController";
