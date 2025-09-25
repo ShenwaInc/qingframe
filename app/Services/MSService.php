@@ -349,7 +349,7 @@ class MSService
 
     public static function checkDepend($identity, $return=false){
         //判断服务依赖
-        $servers = DB::table(self::$tableName)->select(array('id','identity','name','configs'))->where('configs', 'LIKE', '%:"weengine"%')->get()->toArray();
+        $servers = DB::table(self::$tableName)->select(array('id','identity','name','configs'))->where('configs', 'LIKE', '%'.$identity.'%')->get()->toArray();
         if (!empty($servers)){
             $depends = array();
             foreach ($servers as $value){

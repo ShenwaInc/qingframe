@@ -28,8 +28,10 @@ class ModuleController extends Controller
             $method = $segment2;
             if (!class_exists($className)){
                 $className = "Addons\\".$module."\app\Controllers\app\IndexController";
-                $method = $segment1;
-                $segment1 = 'index';
+                if(class_exists($className)){
+                    $method = $segment1;
+                    $segment1 = 'index';
+                }
             }
 
             if(class_exists($className)) {
@@ -70,8 +72,10 @@ class ModuleController extends Controller
             $method = $segment2;
             if (!class_exists($className)){
                 $className = "Addons\\".$moduleName."\app\Controllers\api\IndexController";
-                $method = $segment1;
-                $segment1 = 'index';
+                if(class_exists($className)){
+                    $method = $segment1;
+                    $segment1 = 'index';
+                }
             }
             if(class_exists($className)) {
                 $instance = new $className();
