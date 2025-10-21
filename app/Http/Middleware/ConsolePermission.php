@@ -30,7 +30,7 @@ class ConsolePermission
         $_W['page'] = $_W['setting']['page'];
         if (empty($request->user())){
             echo response()->view('message',array('message'=>'请先登录','redirect'=>'/login?redirect=' . urlencode($_W['siteurl']),'type'=>'error'))->content();
-            exit();
+            session_exit();
         }
         $user = $request->user()->toArray();
         if ($user['endtime']>0 && $user['endtime']<TIMESTAMP){
@@ -40,7 +40,7 @@ class ConsolePermission
             $_W['user'] = array('uid'=>0,'username'=>'未登录');
             View::share('_W',$_W);
             echo response()->view('message',array('message'=>'您的账号服务已到期，请联系管理员','redirect'=>'/login','type'=>'error'))->content();
-            exit();
+            session_exit();
         }
         $_W['inConsole'] = true;
         $_W['consolePage'] = wurl('');
