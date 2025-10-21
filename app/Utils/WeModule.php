@@ -89,7 +89,10 @@ class WeModule
     public function pay($params){
         $payment = serv("payment");
         if (!$payment->enabled){
-            \App\Helpers\message("支付服务暂不可用");
+            if (!function_exists('\message')){
+                require_once app_path('Helpers/app.php');
+            }
+            \message("支付服务暂不可用");
         }
         global $_W;
         $data = array(

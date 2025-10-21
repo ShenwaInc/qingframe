@@ -40,6 +40,12 @@ class App
     public function initialize($request){
         global $_W,$_GPC;
         $_GPC = $request->all();
+        $_W['session_id'] = "";
+        if($sessionId = $request->header('x-session-id', '')){
+            $_W['session_id'] = $sessionId;
+            session()->setId($sessionId);
+            session()->start();
+        }
         $_W['startTime'] = microtime(true);
         $_W['config'] = config('system');
         $_W['setting'] = [];

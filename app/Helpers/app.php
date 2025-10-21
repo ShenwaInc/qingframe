@@ -1,7 +1,5 @@
 <?php
 
-namespace App\Helpers;
-
 use Illuminate\Support\Facades\View;
 
 function message($msg, $redirect = '', $type = 'error') {

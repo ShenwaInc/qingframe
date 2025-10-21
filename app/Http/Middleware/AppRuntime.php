@@ -30,15 +30,16 @@ class AppRuntime
         if (empty($uniacid)) abort(404,'找不到该平台');
         global $_W;
         SettingService::Load();
-        $_W['session_id'] = "";
-        $state = \request()->input("state", "");
-        if (!empty($state) && \Str::startsWith($state, "we7sid-")){
-            $_W['session_id'] = str_replace("we7sid-", "", $state);
-            session()->setId($_W['session_id']);
-        }else{
-            $_W['session_id'] = session()->getId();
+        if(empty($_W['session_id'])){
+            $state = \request()->input("state", "");
+            if (!empty($state) && \Str::startsWith($state, "we7sid-")){
+                $_W['session_id'] = str_replace("we7sid-", "", $state);
+                session()->setId($_W['session_id']);
+            }else{
+                $_W['session_id'] = session()->getId();
+            }
+            session()->start();
         }
-        session()->start();
         $_W['uniacid'] = intval($uniacid);
         $_W['account'] = AccountService::FetchUni($uniacid);
         $_W['acid'] = intval($_W['account']['acid']) ?? $_W['uniacid'];
