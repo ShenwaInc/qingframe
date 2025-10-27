@@ -45,7 +45,7 @@ class ConsolePermission
         $_W['inConsole'] = true;
         $_W['consolePage'] = wurl('');
         $_W['uid'] = $user['uid'];
-        $profile = DB::table('users_profile')->where('uid',$_W['uid'])->select('avatar','gender','mobile','email')->first();
+        $profile = DB::table('users_profile')->where('uid',$_W['uid'])->select('avatar','gender','mobile','email', 'realname')->first();
         $_W['user'] = array_merge($user,$profile);
         $_W['username'] = $_W['user']['username'];
         $_W['isfounder'] = UserService::isFounder($_W['uid']);
@@ -60,6 +60,7 @@ class ConsolePermission
             $_W['acid'] = $_W['account']['acid'];
         }
         $_W['attachurl'] = FileService::SetAttachUrl();
+        //DB::table('users')->where('uid',$_W['uid'])->update(array('lastvisit'=>TIMESTAMP));
         //路由权限判断
         if (!$_W['isfounder']) $this->checkPermission($request, $_W['uid'], $_W['uniacid']);
         return $next($request);

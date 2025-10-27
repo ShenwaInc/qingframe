@@ -72,6 +72,7 @@ class AuthController extends Controller
                 'city'=>'',
                 'createtime'=>TIMESTAMP
             ));
+            DB::table('users')->where('uid', $user['uid'])->update(array('lastvisit'=>TIMESTAMP));
             $redirect = wurl();
             $uniacid = (int)$request->input('uniacid');
             if (!empty($uniacid)){

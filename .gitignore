@@ -44,3 +44,4 @@ yarn-error.log
 /.cursor
 /docs
 .editorconfig
+/app/Console/Commands/TcpServerCommand.php

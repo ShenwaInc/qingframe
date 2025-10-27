@@ -59,6 +59,13 @@
                                 <a href="{{ wurl('user/passport') }}" class="text-blue ajaxshow" title="{{ __('modifyData', array('data'=>__('password'))) }}">@lang('modify')</a>
                             </td>
                         </tr>
+                        <tr>
+                            <td><span class="fui-table-lable">@lang('邮箱')</span></td>
+                            <td id="user-email" class="soild-after{{ !$_W['user']['email'] ? ' text-gray' : '' }}">{{ $_W['user']['email'] ?: '未填写' }}</td>
+                            <td class="text-right soild-after">
+                                <a href="javascript:modifyEmail()" class="text-blue" title="{{ __('modifyData', array('data'=>__('邮箱'))) }}">@lang('modify')</a>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -66,5 +73,24 @@
     </div>
 
 </div>
+
+<script type="text/javascript">
+    function modifyEmail(){
+        let emailElem = $('#user-email');
+        layer.prompt({
+            title: "{{ __('modifyData', array('data'=>__('邮箱'))) }}",
+            value: emailElem.hasClass('text-gray') ? '' : emailElem.text(),
+            placeholder: "@lang('用于接收通知及找回密码等邮件')"
+        }, function(val, index){
+            if(!val) return false;
+            Core.post('{{ wurl("user/modifyEmail") }}', function (res) {
+                if(res.type!=='success') return Core.report(res);
+                emailElem.text(val).removeClass('text-gray');
+                layer.msg(res.message, {icon:1});
+                layer.close(index);
+            }, {email:val});
+        });
+    }
+</script>
 
 @include('common.footer')

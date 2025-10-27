@@ -22,6 +22,30 @@ class UserController extends Controller
         return $this->$method($request);
     }
 
+    public function doModifyEmail(Request $request)
+    {
+        $email = $request->input('email', '');
+        if (empty($email)){
+            return $this->message('请填写邮箱');
+        }
+        $pattern = defined('REGULAR_EMAIL') ? REGULAR_EMAIL : '/\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*/i';
+        if (!preg_match($pattern, $email)){
+            return $this->message('邮箱格式错误');
+        }
+        global $_W;
+        $user = DB::table('users_profile')->where('email', $email)->first(['uid']);
+        if (!empty($user)){
+            if($user['uid']==$_W['uid']){
+                return $this->success("保存成功！", referer());
+            }
+            return $this->message('该邮箱已被使用');
+        }
+        if (DB::table("users_profile")->updateOrInsert(array('uid'=>$_W['uid']),array('email'=>$email))){
+            return $this->success("保存成功！", referer());
+        }
+        return $this->message();
+    }
+
     public function doCreate(Request $request){
         global $_W;
         $uid = (int)$request->input('uid',0);
@@ -33,6 +57,7 @@ class UserController extends Controller
                 return $this->message('userNotAuthorized');
             }
             $user['maxaccount'] = (int)DB::table('users_extra_limit')->where('uid',$user['uid'])->value('maxaccount');
+            $user['email'] = DB::table('users_profile')->where('uid',$user['uid'])->value('email');
             $return['user'] = $user;
         }
         if ($request->isMethod('post')){
@@ -42,6 +67,7 @@ class UserController extends Controller
             $endtime = (string)$request->input('endtime','');
             $remark = (string)$request->input('remark','');
             $maxaccount = (int)$request->input('maxaccount',0);
+            $email = (string)$request->input('email','');
             $data = array('remark'=>$remark,'username'=>$username,'starttime'=>TIMESTAMP);
             if (empty($data['username'])){
                 if ($uid==0) return $this->message(__("typeSomething", array('data'=>__('username'))));
@@ -75,30 +101,34 @@ class UserController extends Controller
                 return $this->message('typeNewPassword');
             }
             if ($uid>0){
-                $complete = DB::table('users')->where('uid',$user['uid'])->update($data);
-                if ($maxaccount!=$user['maxaccount']){
+                if(!DB::table('users')->where('uid',$user['uid'])->update($data)){
+                    return $this->message();
+                }
+                if ($maxaccount != $user['maxaccount']){
                     DB::table('users_extra_limit')->updateOrInsert(array('uid'=>$user['uid']),array('maxaccount'=>$maxaccount,'timelimit'=>$data['endtime']));
                 }
+                DB::table('users_profile')->updateOrInsert(array('uid'=>$uid), array('email'=>$email));
             }else{
                 $data['type'] = 1;
                 $data['status'] = 2;
                 $data['joindate'] = TIMESTAMP;
                 $data['joinip'] = $_W['clientip'];
                 $data['owner_uid'] = $_W['uid'];
-                $complete = DB::table('users')->insertGetId($data);
-                if ($complete){
-                    DB::table('users_profile')->insert(array(
-                        'avatar'=>'/static/icon200.jpg',
-                        'edittime'=>TIMESTAMP,
-                        'uid'=>$complete,
-                        'createtime'=>TIMESTAMP,
-                        'nickname'=>$data['username']
-                    ));
-                    DB::table('users_extra_limit')->insert(array('uid'=>$complete,'maxaccount'=>$maxaccount,'timelimit'=>$data['endtime']));
+                $uid = DB::table('users')->insertGetId($data);
+                if (!$uid) {
+                    return $this->message();
                 }
+                DB::table('users_profile')->insert(array(
+                    'avatar'=>'/static/icon200.jpg',
+                    'edittime'=>TIMESTAMP,
+                    'uid'=>$uid,
+                    'createtime'=>TIMESTAMP,
+                    'nickname'=>$data['username'],
+                    'email'=>$email
+                ));
+                DB::table('users_extra_limit')->insert(array('uid'=>$uid,'maxaccount'=>$maxaccount,'timelimit'=>$data['endtime']));
             }
-            if ($complete) return $this->message('savedSuccessfully', referer(), 'success');
-            return $this->message();
+            return $this->message('savedSuccessfully', referer(), 'success');
         }
         return $this->globalView('console.user.create',$return);
     }

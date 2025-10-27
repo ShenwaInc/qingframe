@@ -50,6 +50,12 @@
                             </div>
                         @endif
                         <div class="layui-form-item">
+                            <label class="layui-form-label">@lang('邮箱')</label>
+                            <div class="layui-input-block">
+                                <input type="email" name="email" value="{{ $user['email'] ?: '' }}" placeholder="@lang('用于接收通知及找回密码等邮件')" autocomplete="off" class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
                             <label class="layui-form-label">@lang('remark')</label>
                             <div class="layui-input-block">
                                 <textarea rows="2" class="layui-textarea" placeholder="{{ __('typeRemark', array('size'=>'50')) }}" name="remark">{{ $user['remark'] }}</textarea>
