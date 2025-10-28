@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Console;
 
 use App\Http\Controllers\Controller;
+use App\Models\SystemLog;
 use App\Services\UserService;
 use App\User;
 use Illuminate\Http\Request;
@@ -40,7 +41,9 @@ class UserController extends Controller
             }
             return $this->message('该邮箱已被使用');
         }
-        if (DB::table("users_profile")->updateOrInsert(array('uid'=>$_W['uid']),array('email'=>$email))){
+        $result = DB::table("users_profile")->updateOrInsert(array('uid'=>$_W['uid']),array('email'=>$email));
+        SystemLog::userOperation('修改邮箱', 'user:email', "新邮箱：{$email}", $result);
+        if ($result){
             return $this->success("保存成功！", referer());
         }
         return $this->message();
@@ -101,13 +104,16 @@ class UserController extends Controller
                 return $this->message('typeNewPassword');
             }
             if ($uid>0){
-                if(!DB::table('users')->where('uid',$user['uid'])->update($data)){
+                $result = DB::table('users')->where('uid',$user['uid'])->update($data);
+                if(!$result){
+                    SystemLog::userOperation('更新子账号', 'user:update', "用户ID：{$uid}，操作失败", false);
                     return $this->message();
                 }
                 if ($maxaccount != $user['maxaccount']){
                     DB::table('users_extra_limit')->updateOrInsert(array('uid'=>$user['uid']),array('maxaccount'=>$maxaccount,'timelimit'=>$data['endtime']));
                 }
                 DB::table('users_profile')->updateOrInsert(array('uid'=>$uid), array('email'=>$email));
+                SystemLog::userOperation('更新子账号', 'user:update', "用户ID：{$uid}，用户名：{$username}", true);
             }else{
                 $data['type'] = 1;
                 $data['status'] = 2;
@@ -127,6 +133,7 @@ class UserController extends Controller
                     'email'=>$email
                 ));
                 DB::table('users_extra_limit')->insert(array('uid'=>$uid,'maxaccount'=>$maxaccount,'timelimit'=>$data['endtime']));
+                SystemLog::userOperation('创建子账号', 'user:create', "用户ID：{$uid}，用户名：{$username}", true, ['uid' => $uid]);
             }
             return $this->message('savedSuccessfully', referer(), 'success');
         }
@@ -143,6 +150,7 @@ class UserController extends Controller
             return $this->message('userNotAuthorized');
         }
         $complete = $query->update(array('status'=>3));
+        SystemLog::userOperation('删除子账号', 'user:remove', "用户ID：{$uid}", $complete, ['uid' => $uid]);
         if ($complete){
             return $this->message('deleteSuccessfully',wurl('user/subuser'),'success');
         }
@@ -256,6 +264,7 @@ class UserController extends Controller
             $update['password'] = sha1("{$newpassowrd}-{$update['salt']}-{$_W['config']['setting']['authkey']}");
             $update['register_type'] = 0;
             $complete = pdo_update('users',$update,array('uid'=>$_W['uid']));
+            SystemLog::userOperation('修改登录密码', 'user:passport', "用户ID：{$_W['uid']}", $complete, ['uid' => $_W['uid']]);
             if ($complete){
                 Auth::logout();
                 \session()->flush();

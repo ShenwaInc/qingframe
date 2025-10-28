@@ -118,12 +118,16 @@
                     <tr>
                         <td colspan="9" class="text-center">暂无日志记录</td>
                     </tr>
+                @else
+                    <tr>
+                        <td colspan="9">共找到{{ $logs->total() }}条日志</td>
+                    </tr>
                 @endif
                 </tbody>
             </table>
 
             {{-- 分页 --}}
-            <div class="layui-box layui-laypage layui-laypage-default" style="text-align: center;">
+            <div class="text-center">
                 {{ $logs->appends(request()->all())->render() }}
             </div>
         </div>

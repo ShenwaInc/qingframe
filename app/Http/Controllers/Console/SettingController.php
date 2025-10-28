@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Console;
 
 use App\Http\Controllers\Controller;
+use App\Models\SystemLog;
 use App\Services\CacheService;
 use App\Services\CloudService;
 use App\Services\ModuleService;
@@ -43,24 +44,33 @@ class SettingController extends Controller
             }
             $redirect = "";
             if ($res['type']=="success"){
-                if ($_W['config']['site']['id']==0){
+                if ($_W['config']['site']['id']==0) {
                     //首次激活
                     $_W['config']['site']['id'] = $activeState['siteid'];
-                    if (!CloudService::CloudEnv('APP_SITEID=0', "APP_SITEID={$activeState['siteid']}")){
+                    if (!CloudService::CloudEnv('APP_SITEID=0', "APP_SITEID={$activeState['siteid']}")) {
                         return $this->message('文件写入失败，请检查根目录权限');
                     }
                     //自动安装默认微服务
                     Artisan::call('server:update');
                     //自动安装默认应用
                     $defaultModule = env("APP_MODULE", "");
-                    if (!empty($defaultModule) && file_exists(public_path("addons/$defaultModule/manifest.json"))){
+                    if (!empty($defaultModule) && file_exists(public_path("addons/$defaultModule/manifest.json"))) {
                         ModuleService::install($defaultModule);
                     }
                     CacheService::flush();
+                }else{
+                    Cache::forget(md5('HingWork:Authorize:Active:'.$_W['siteroot']));
                 }
                 $res['message'] = '恭喜您，激活成功！';
                 $redirect = wurl('');
             }
+            SystemLog::userOperation(
+                '激活云服务',
+                'setting:active',
+                "站点ID：{$activeState['siteid']}",
+                $res['type']=='success',
+                ['siteid' => $activeState['siteid'], 'name' => $siteInfo['name'] ?? '']
+            );
             return $this->message($res['message'], $redirect, $res["type"]);
         }
         return $this->globalView("console.active", ["siteinfo"=>$activeState, "title"=>__('云服务激活')]);
@@ -131,8 +141,10 @@ class SettingController extends Controller
                 ))
             ));
             CloudService::CloudEnv(array("APP_VERSION=".QingVersion,"APP_RELEASE=".QingRelease), array("APP_VERSION={$cloudInfo['version']}","APP_RELEASE={$cloudInfo['releasedate']}"));
+            SystemLog::userOperation('系统同步源码', 'setting:selfupgrade', "版本：{$cloudInfo['version']}", true, ['version' => $cloudInfo['version']]);
         }catch (\Exception $exception){
             MSService::TerminalSend(['mode'=>'err', 'message'=>"程序同步失败：".$exception->getMessage()]);
+            SystemLog::userOperation('系统同步源码', 'setting:selfupgrade', "失败：{$exception->getMessage()}", false);
             return $this->message($exception->getMessage());
         }
         return $this->message('程序同步完成，即将自动更新...', wurl('setting/sysupgrade'),'success');
@@ -156,7 +168,9 @@ class SettingController extends Controller
             Artisan::call('server:update');
             Artisan::call('self:clear');
             CacheService::flush();
+            SystemLog::userOperation('系统升级', 'setting:sysupgrade', '执行系统升级流程', true);
         }catch (\Exception $exception){
+            SystemLog::userOperation('系统升级', 'setting:sysupgrade', "失败：{$exception->getMessage()}", false);
             return $this->message($exception->getMessage());
         }
         return $this->message('恭喜您，升级成功！', wurl('setting'),'success');
@@ -254,8 +268,10 @@ class SettingController extends Controller
                 return $this->message("无效的HTML内容");
             }
             if (!file_put_contents($welcomePath, $html)){
+                SystemLog::userOperation('保存欢迎页', 'setting:welcome', '保存欢迎页失败', false);
                 return $this->message('saveFailed');
             }
+            SystemLog::userOperation('保存欢迎页', 'setting:welcome', '保存欢迎页成功', true);
             return $this->message('savedSuccessfully', \request()->input('redirect', referer()), 'success');
         }
 
@@ -313,8 +329,10 @@ class SettingController extends Controller
                     $complete = CloudService::CloudEnv('APP_DEBUG=false', 'APP_DEBUG=true');
                 }
                 if (!$complete) {
+                    SystemLog::userOperation('调试模式切换', 'setting:envdebug', '切换失败', false);
                     return $this->message('文件写入失败，请检查根目录权限');
                 }
+                SystemLog::userOperation('调试模式切换', 'setting:envdebug', "切换为".($debug ? '关闭' : '开启'), true);
                 return $this->message('successful', wurl('setting'), 'success');
             case 'comcheck':
                 $component = DB::table('gxswa_cloud')->where('id', intval($_GPC['cid']))->first(['id', 'identity', 'type', 'online', 'releasedate', 'rootpath', 'modulename']);
@@ -438,6 +456,7 @@ class SettingController extends Controller
                 }
             }
             $complete = SettingService::Save($config,'page');
+            SystemLog::userOperation('保存页面设置', 'setting:pageset', '保存页面配置', $complete);
             if ($complete){
                 return $this->message('savedSuccessfully',wurl('setting'),'success');
             }
@@ -461,6 +480,7 @@ EOF;
                     }
                 }
             }
+            SystemLog::userOperation('修改安全入口', 'setting:appSecurity', "入口代码已变更", true);
             return $this->message('savedSuccessfully',wurl('setting'),'success');
         }
         return $this->message();

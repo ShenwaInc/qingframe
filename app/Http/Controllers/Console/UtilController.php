@@ -186,8 +186,18 @@ class UtilController extends Controller
                 if (empty($mobile) || !preg_match('/^(\+)?(86)?0?1\d{10}$/', $mobile)) return $this->message("typeAValidPhoneNumber");
                 $data = array('r'=>'util.code', 'token'=>1,'mobile'=>$mobile,"sendcode"=>"1","from"=>"autocheck");
                 $res = CloudService::CloudApi("", $data);
+                SystemLog::userOperation(
+                    '获取云端验证码',
+                    'core:cloud',
+                    "手机号：" . $mobile,
+                    $res&&!is_error($res),
+                    ['result'=>$res, 'request'=>$data]
+                );
                 if (is_error($res)){
                     return $this->message($res['message']);
+                }
+                if (!$res){
+                    return $this->message();
                 }
                 return $this->message($res['message'], "", $res["type"]);
             }

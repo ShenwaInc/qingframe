@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Console;
 
 use App\Http\Controllers\Controller;
+use App\Models\SystemLog;
 use App\Services\CacheService;
 use App\Services\CloudService;
 use App\Services\HttpService;
@@ -130,7 +131,9 @@ class ReportController extends Controller {
             $data['order_id'] = $orderId;
             $data['sign'] = $this->genSignature($data);
             $res = $this->reportCloud("orderFeedback/add", $data, false);
-            if (is_error($res)) return $this->message($res['message']);
+            $status = !is_error($res);
+            SystemLog::userOperation('工单反馈', 'report:feedback', "工单ID：{$orderId}", $status, ['order_id' => $orderId]);
+            if (!$status) return $this->message($res['message']);
             if (!$request->ajax()){
                 return $this->success("workOrderSubmitted", wurl('report'));
             }
@@ -184,7 +187,9 @@ class ReportController extends Controller {
             $data['name'] = mb_substr($data['content'], 0, 20, 'utf8') . "...";
             if (is_error($data['source'])) return $this->message($data['source']['message']);
             $res = $this->reportCloud("order/save", $data, false);
-            if (is_error($res)) return $this->message($res['message']);
+            $status = !is_error($res);
+            SystemLog::userOperation('提交工单', 'report:post', "分类：{$data['category_id']}", $status, ['category_id' => $data['category_id']]);
+            if (!$status) return $this->message($res['message']);
             CacheService::flush();
             return $this->success(['response'=>$res, 'input'=>$data]);
         }
@@ -207,21 +212,27 @@ class ReportController extends Controller {
     }
 
     public function Complete(Request $request){
+        $orderId = (int)$request->input('id');
         $res = $this->reportCloud("order/finish", array(
-            'id'=>(int)$request->input('id'),
+            'id'=>$orderId,
             'source'=>$this->getSource()
         ), false);
-        if (is_error($res)) return $this->message($res['message']);
+        $status = !is_error($res);
+        SystemLog::userOperation('完成工单', 'report:complete', "工单ID：{$orderId}", $status, ['order_id' => $orderId]);
+        if (!$status) return $this->message($res['message']);
         CacheService::flush();
         return $this->success("successful", wurl('report'));
     }
 
     public function closeOrder(Request $request){
+        $orderId = (int)$request->input('id');
         $res = $this->reportCloud("order/close", array(
-            'id'=>(int)$request->input('id'),
+            'id'=>$orderId,
             'source'=>$this->getSource()
         ), false);
-        if (is_error($res)) return $this->message($res['message']);
+        $status = !is_error($res);
+        SystemLog::userOperation('关闭工单', 'report:close', "工单ID：{$orderId}", $status, ['order_id' => $orderId]);
+        if (!$status) return $this->message($res['message']);
         CacheService::flush();
         return $this->success("successful", wurl('report'));
     }

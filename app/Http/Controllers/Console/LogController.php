@@ -11,6 +11,10 @@ class LogController extends Controller
 
     public function index(Request $request)
     {
+        if ($request->user()->uid != env('APP_FOUNDER')){
+            return $this->message('暂无权限');
+        }
+
         // 构建查询
         $query = SystemLog::query();
 
@@ -44,18 +48,22 @@ class LogController extends Controller
 
         // 排序和分页
         $logs = $query->orderBy('created_at', 'desc')
-            ->paginate(20) // 每页20条
-            ->appends($request->all()); // 保留筛选参数到分页链接
+            ->paginate(20)
+            ->appends($request->all());
 
         return $this->globalView('console.log.index', [
             'logs'=>$logs,
             'logTypes'=>$this->getTypes(),
-            'title'=>__('日志管理')
+            'title'=>__('日志管理'),
+            'total'=>$query->count()
         ]);
     }
 
     public function show(Request $request, $id)
     {
+        if ($request->user()->uid != env('APP_FOUNDER')){
+            return $this->message('暂无权限');
+        }
         $log = SystemLog::find($id);
         if (!$log) {
             return $this->message('找不到该日志，可能已被删除');

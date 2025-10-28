@@ -5,10 +5,6 @@
         <div class="layui-card-body">
             {{-- 基础信息 --}}
             <table class="layui-table">
-                <colgroup>
-                    <col width="150">
-                    <col />
-                </colgroup>
                 <tr>
                     <th>ID</th>
                     <td>{{ $log->id }}</td>
@@ -112,4 +108,12 @@
             </table>
         </div>
     </div>
+    <style>
+        .layui-table{
+            max-width: 100%;
+        }
+        .layui-table th{
+            min-width: 80px;
+        }
+    </style>
 @endsection

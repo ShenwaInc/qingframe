@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\SystemLog;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -491,6 +492,7 @@ class CloudService
         $data['sign'] = self::GetSignature($data['appsecret'],$data);
         $CloudApi = env('APP_CLOUD_API', self::$cloudApi);
         $res = HttpService::ihttp_post($CloudApi,$data);
+        $status = is_error($res) || $res['code'] != 200 || empty($res['content']);
         if (is_error($res)) return $res;
         if($return){
             if(strexists($res['content'], 'error')){

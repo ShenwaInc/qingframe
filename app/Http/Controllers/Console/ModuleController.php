@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Console;
 
 use App\Http\Controllers\Controller;
+use App\Models\SystemLog;
 use App\Services\AccountService;
 use App\Services\CacheService;
 use App\Services\CloudService;
@@ -159,7 +160,10 @@ class ModuleController extends Controller
                     }
                 }
                 CacheService::flush();
+                $platformCount = count($ids);
+                SystemLog::userOperation('分配应用模块', 'module:allocate', "模块：{$identity}，分配到{$platformCount}个平台", true, ['module' => $identity, 'platform_count' => $platformCount]);
             }catch (\Exception $exception){
+                SystemLog::userOperation('分配应用模块', 'module:allocate', "模块：{$identity}，操作失败：{$exception->getMessage()}", false);
                 return $this->message($exception->getMessage());
             }
             $redirect = $request->input('referer', referer());
@@ -246,7 +250,9 @@ class ModuleController extends Controller
     public function doInstall(Request $request){
         $identity = $request->input('nid', "");
         $install = ModuleService::install($identity, 'addons', 'local');
-        if (is_error($install)){
+        $status = !is_error($install);
+        SystemLog::userOperation('安装应用模块', 'module:install', "模块：{$identity}（本地安装）", $status, ['module' => $identity]);
+        if (!$status){
             return $this->TerminalError($install['message']);
         }
         return $this->message('installSuccessfully', wurl('module/allocate', ['nid'=>$identity]),'success');
@@ -258,7 +264,9 @@ class ModuleController extends Controller
     public function doUpgrade(Request $request){
         $identity = $request->input('nid', "");
         $complete = ModuleService::upgrade($identity);
-        if (is_error($complete)){
+        $status = !is_error($complete);
+        SystemLog::userOperation('升级应用模块', 'module:upgrade', "模块：{$identity}（本地升级）", $status, ['module' => $identity]);
+        if (!$status){
             return $this->TerminalError($complete['message']);
         }
         CacheService::flush();
@@ -271,7 +279,9 @@ class ModuleController extends Controller
     public function doRequire(Request $request){
         $identity = $request->input('nid', "");
         $cloudRequire = CloudService::RequireModule($identity);
-        if (is_error($cloudRequire)){
+        $status = !is_error($cloudRequire);
+        SystemLog::userOperation('安装应用模块', 'module:require', "模块：{$identity}（云端安装）", $status, ['module' => $identity]);
+        if (!$status){
             MSService::TerminalSend(["mode"=>"err", "message"=>$cloudRequire['message']], true);
             return $this->message($cloudRequire['message'], trim($cloudRequire['redirect']));
         }
@@ -292,7 +302,9 @@ class ModuleController extends Controller
             return $this->message($res['message'], trim($res['redirect']));
         }
         $moduleUpdate = ModuleService::upgrade($identity, 'cloud');
-        if (is_error($moduleUpdate)){
+        $status = !is_error($moduleUpdate);
+        SystemLog::userOperation('升级应用模块', 'module:update', "模块：{$identity}（云端升级）", $status, ['module' => $identity]);
+        if (!$status){
             return $this->TerminalError($moduleUpdate['message']);
         }
         $redirect = wurl('module');
@@ -311,7 +323,9 @@ class ModuleController extends Controller
     public function doRemove(Request $request){
         $identity = $request->input('nid', "");
         $uninstall = ModuleService::uninstall($identity);
-        if (is_error($uninstall)) return $this->TerminalError($uninstall['message']);
+        $status = !is_error($uninstall);
+        SystemLog::userOperation('卸载应用模块', 'module:remove', "模块：{$identity}", $status, ['module' => $identity]);
+        if (!$status) return $this->TerminalError($uninstall['message']);
         return $this->message('uninstallComplete', wurl('module'),'success');
     }
 

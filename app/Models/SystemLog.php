@@ -79,8 +79,8 @@ class SystemLog extends Model
      * @return self
      */
     public static function systemRunning(
-        string $module,
         string $title,
+        string $module = 'system',
         ?string $content = null,
         bool $status = true,
         array $extra = []
