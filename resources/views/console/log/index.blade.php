@@ -42,7 +42,7 @@
                     </div>
 
                     <div class="layui-inline">
-                        <input type="text" name="keyword" placeholder="关键词搜索(标题/内容/IP)"
+                        <input type="text" name="keyword" placeholder="关键词搜索(标题/内容/IP/模块/用户)"
                                value="{{ request('keyword') }}" class="layui-input">
                     </div>
 

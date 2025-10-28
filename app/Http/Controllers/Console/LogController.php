@@ -22,9 +22,6 @@ class LogController extends Controller
         if ($type = $request->input('type')) {
             $query->ofType($type);
         }
-        if ($module = $request->input('module')) {
-            $query->ofModule($module);
-        }
         if ($status = $request->input('status') !== null) {
             $query->where('status', $request->input('status') === '1');
         }
@@ -36,6 +33,7 @@ class LogController extends Controller
                 $q->where('title', 'like', "%{$keyword}%")
                     ->orWhere('content', 'like', "%{$keyword}%")
                     ->orWhere('username', 'like', "%{$keyword}%")
+                    ->orWhere('module', 'like', "%{$keyword}%")
                     ->orWhere('ip', 'like', "%{$keyword}%");
             });
         }
