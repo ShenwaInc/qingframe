@@ -36,6 +36,7 @@
                                     <dd><a href="{{ wurl('setting') }}">@lang('站点信息')</a></dd>
                                     <dd><a href="{{ wurl('server') }}">@lang('服务管理')</a></dd>
                                     <dd><a href="{{ wurl('module') }}">@lang('应用管理')</a></dd>
+                                    <dd><a href="{{ wurl('logs') }}">@lang('日志管理')</a></dd>
                                 </dl>
                             @endif
                         </li>

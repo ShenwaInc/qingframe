@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\SystemLog;
 use App\Services\AccountService;
 use App\Services\SettingService;
 use Illuminate\Http\Request;
@@ -47,11 +48,12 @@ class AuthController extends Controller
         $failed_login = $failed_login_query->orWhere('ip',$this->clientip)->orderByDesc('lastupdate')->first(['id','ip','count','lastupdate']);
         if (!empty($failed_login)){
             $this->failed_loginid = $failed_login['id'];
-            $lastupdate = TIMESTAMP - 900;
-            if ($failed_login['count']>=5 && $failed_login['lastupdate']>$lastupdate  && $failed_login['ip']==$this->clientip){
+            $lastUpdate = TIMESTAMP - 900;
+            if ($failed_login['count']>=5 && $failed_login['lastupdate']>$lastUpdate  && $failed_login['ip']==$this->clientip){
+                SystemLog::userOperation( '用户反复尝试登录失败', 'core:console', '', false, $request->all());
                 return $this->message('您登录错误次数过多，请15分钟后再试');
             }else{
-                if ($failed_login['lastupdate']<=$lastupdate || $failed_login['ip']!=$this->clientip){
+                if ($failed_login['lastupdate']<=$lastUpdate || $failed_login['ip']!=$this->clientip){
                     DB::table('users_failed_login')->where('ip',$this->clientip)->delete();
                 }else{
                     $this->failed_logins = $failed_login['count'];
@@ -73,6 +75,7 @@ class AuthController extends Controller
                 'createtime'=>TIMESTAMP
             ));
             DB::table('users')->where('uid', $user['uid'])->update(array('lastvisit'=>TIMESTAMP));
+            SystemLog::userOperation("登录后台【{$username}】");
             $redirect = wurl();
             $uniacid = (int)$request->input('uniacid');
             if (!empty($uniacid)){

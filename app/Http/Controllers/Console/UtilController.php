@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Console;
 
 use App\Http\Controllers\Controller;
+use App\Models\SystemLog;
 use App\Services\CacheService;
 use App\Services\CloudService;
 use App\Services\HttpService;
@@ -40,6 +41,7 @@ class UtilController extends Controller
         //清理系统缓存
         try {
             CacheService::flush();
+            SystemLog::userOperation('更新系统缓存');
         }catch (\Exception $exception){
             return $this->message($exception->getMessage());
         }

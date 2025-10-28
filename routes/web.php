@@ -50,6 +50,8 @@ Route::group(['prefix' => 'console', 'namespace' => 'Console', 'middleware'=>['a
     Route::get('/server/apis/{server}', 'ServerController@Apis');
     Route::get('/server/methods/{server}', 'ServerController@Methods');
     Route::match(['get', 'post'], '/report/{option?}', 'ReportController@httpReq');
+    Route::get('/logs', 'LogController@index');
+    Route::get('/log/{id}', 'LogController@show');
 });
 
 Route::group(['prefix'=>'server', 'namespace' =>'Console', 'middleware'=>['auth', 'app', 'permission']],function (){

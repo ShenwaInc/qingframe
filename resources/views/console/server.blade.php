@@ -13,6 +13,9 @@
                 <li>
                     <a href="{{ wurl('module') }}">@lang('applications')</a>
                 </li>
+                <li>
+                    <a href="{{ wurl('logs') }}">@lang('日志管理')</a>
+                </li>
             </ul>
         </div>
 
