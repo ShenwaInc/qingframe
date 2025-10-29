@@ -136,8 +136,8 @@ class SystemLog extends Model
 
     /**
      * 记录错误日志
-     * @param string $module 模块
      * @param string $title 错误标题
+     * @param string $module 模块
      * @param string|null $content 错误详情
      * @param string $errorCode 错误码
      * @param array $extra 扩展信息（如堆栈、请求参数）
@@ -145,8 +145,8 @@ class SystemLog extends Model
      * @return self
      */
     public static function error(
-        string $module,
         string $title,
+        string $module = 'core:console',
         ?string $content = null,
         string $errorCode = '',
         array $extra = [],

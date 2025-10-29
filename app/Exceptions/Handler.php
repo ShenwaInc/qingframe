@@ -2,8 +2,11 @@
 
 namespace App\Exceptions;
 
+use App\Models\SystemLog;
 use Exception;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Support\Facades\Schema;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class Handler extends ExceptionHandler
 {
@@ -34,6 +37,15 @@ class Handler extends ExceptionHandler
      */
     public function report(Exception $exception)
     {
+        if (!($exception instanceof NotFoundHttpException) && Schema::hasTable('system_logs')) {
+            SystemLog::error('服务器错误(' . $exception->getCode() . ')', 'Exception:report', $exception->getMessage(), $exception->getCode(), [
+                'file' => $exception->getFile() . ":" . $exception->getLine(),
+                'trace' => $exception->getTraceAsString(),
+                'path'   => url()->current(),
+                'method'  => request()->method(),
+                'params'  => request()->all(),
+            ]);
+        }
         parent::report($exception);
     }
 
