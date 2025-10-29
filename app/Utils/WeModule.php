@@ -2,6 +2,7 @@
 
 namespace App\Utils;
 
+use App\Models\SystemLog;
 use App\Services\AccountService;
 use App\Services\CacheService;
 use App\Services\ModuleService;
@@ -46,6 +47,20 @@ class WeModule
                 $Instance = self::createModuleInstance($classname, $name);
             }
         }catch (\Exception $e){
+            SystemLog::systemRunning(
+                '模块实例创建异常',
+                'utils:WeModule',
+                "创建模块实例时发生异常：{$e->getMessage()}",
+                false,
+                [
+                    'exception_file' => $e->getFile(),
+                    'exception_line' => $e->getLine(),
+                    'exception_code' => $e->getCode(),
+                    'exception_trace' => $e->getTrace(),
+                    'module_name' => $name,
+                    'classname' => $classname ?? null,
+                ]
+            );
             trigger_error($e->getMessage(), E_USER_WARNING);
             return null;
         }
@@ -170,9 +185,37 @@ class WeModule
         try {
             View::addNamespace($this->modulename, $viewPath);
         }catch (\Exception $exception){
+            SystemLog::systemRunning(
+                '模块视图命名空间注册异常',
+                'utils:WeModule',
+                "注册模块视图命名空间时发生异常：{$exception->getMessage()}",
+                false,
+                [
+                    'exception_file' => $exception->getFile(),
+                    'exception_line' => $exception->getLine(),
+                    'exception_code' => $exception->getCode(),
+                    'exception_trace' => $exception->getTrace(),
+                    'module_name' => $this->modulename,
+                    'view_path' => $viewPath,
+                ]
+            );
             try {
                 app('view')->addNamespace($this->modulename, $viewPath);
             } catch (\Exception $e2) {
+                SystemLog::systemRunning(
+                    '模块视图命名空间备用注册异常',
+                    'utils:WeModule',
+                    "备用方法注册模块视图命名空间时发生异常：{$e2->getMessage()}",
+                    false,
+                    [
+                        'exception_file' => $e2->getFile(),
+                        'exception_line' => $e2->getLine(),
+                        'exception_code' => $e2->getCode(),
+                        'exception_trace' => $e2->getTrace(),
+                        'module_name' => $this->modulename,
+                        'view_path' => $viewPath,
+                    ]
+                );
                 // 记录错误
                 error_log("Failed to register module view namespace: " . $e2->getMessage());
                 session_exit($e2->getMessage());

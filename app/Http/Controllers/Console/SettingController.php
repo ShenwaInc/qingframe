@@ -144,7 +144,18 @@ class SettingController extends Controller
             SystemLog::userOperation('系统同步源码', 'setting:selfupgrade', "版本：{$cloudInfo['version']}", true, ['version' => $cloudInfo['version']]);
         }catch (\Exception $exception){
             MSService::TerminalSend(['mode'=>'err', 'message'=>"程序同步失败：".$exception->getMessage()]);
-            SystemLog::systemRunning('系统同步源码', 'setting:selfupgrade', $exception->getMessage(), false, $exception->getTrace());
+            SystemLog::systemRunning(
+                '系统同步源码异常',
+                'setting:selfupgrade',
+                "系统同步源码过程中发生异常：{$exception->getMessage()}",
+                false,
+                [
+                    'exception_file' => $exception->getFile(),
+                    'exception_line' => $exception->getLine(),
+                    'exception_code' => $exception->getCode(),
+                    'exception_trace' => $exception->getTrace()
+                ]
+            );
             return $this->message($exception->getMessage());
         }
         return $this->message('程序同步完成，即将自动更新...', wurl('setting/sysupgrade'),'success');
@@ -170,7 +181,18 @@ class SettingController extends Controller
             CacheService::flush();
             SystemLog::userOperation('系统升级', 'setting:sysupgrade', '执行系统升级流程');
         }catch (\Exception $exception){
-            SystemLog::systemRunning('系统升级失败', 'setting:sysupgrade', $exception->getMessage(), false, $exception->getTrace());
+            SystemLog::systemRunning(
+                '系统升级异常',
+                'setting:sysupgrade',
+                "系统升级过程中发生异常：{$exception->getMessage()}",
+                false,
+                [
+                    'exception_file' => $exception->getFile(),
+                    'exception_line' => $exception->getLine(),
+                    'exception_code' => $exception->getCode(),
+                    'exception_trace' => $exception->getTrace()
+                ]
+            );
             return $this->message($exception->getMessage());
         }
         return $this->message('恭喜您，升级成功！', wurl('setting'),'success');

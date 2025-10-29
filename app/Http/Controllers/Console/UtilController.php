@@ -43,6 +43,18 @@ class UtilController extends Controller
             CacheService::flush();
             SystemLog::userOperation('更新系统缓存');
         }catch (\Exception $exception){
+            SystemLog::systemRunning(
+                '清理系统缓存异常',
+                'util:cache',
+                "清理系统缓存过程中发生异常：{$exception->getMessage()}",
+                false,
+                [
+                    'exception_file' => $exception->getFile(),
+                    'exception_line' => $exception->getLine(),
+                    'exception_code' => $exception->getCode(),
+                    'exception_trace' => $exception->getTrace()
+                ]
+            );
             return $this->message($exception->getMessage());
         }
         return $this->message('successful','','success');

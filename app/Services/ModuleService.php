@@ -5,6 +5,7 @@ namespace App\Services;
 
 use App\Models\Account;
 use App\Models\Module;
+use App\Models\SystemLog;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -42,6 +43,20 @@ class ModuleService
                 MSService::TerminalSend(['mode'=>'info', 'message'=>"正在运行应用安装脚本..."]);
                 script_run($ManiFest['install'], public_path("{$path}/{$identity}/"));
             } catch (\Exception $exception){
+                SystemLog::systemRunning(
+                    '模块安装脚本执行异常',
+                    'service:ModuleService',
+                    "执行模块安装脚本时发生异常：{$exception->getMessage()}",
+                    false,
+                    [
+                        'exception_file' => $exception->getFile(),
+                        'exception_line' => $exception->getLine(),
+                        'exception_code' => $exception->getCode(),
+                        'exception_trace' => $exception->getTrace(),
+                        'module_identity' => $identity,
+                        'path' => $path,
+                    ]
+                );
                 return error(-1,__('installFailed', ['reason'=>DEVELOPMENT?$exception->getMessage():__('installFailedRender')]));
             }
         }
@@ -80,6 +95,19 @@ class ModuleService
                 $MSS = new MSService();
                 $MSS->checkRequire($ManiFest['servers']);
             }catch (\Exception $exception){
+                SystemLog::systemRunning(
+                    '模块依赖服务检查异常',
+                    'service:ModuleService',
+                    "检查模块依赖服务时发生异常：{$exception->getMessage()}",
+                    false,
+                    [
+                        'exception_file' => $exception->getFile(),
+                        'exception_line' => $exception->getLine(),
+                        'exception_code' => $exception->getCode(),
+                        'exception_trace' => $exception->getTrace(),
+                        'module_identity' => $identity,
+                    ]
+                );
                 return error(-1,__('installFailed', ['reason'=>$exception->getMessage()]));
             }
         }
@@ -142,6 +170,19 @@ class ModuleService
                 MSService::TerminalSend(['mode'=>'info', 'message'=>"正在运行应用升级脚本..."]);
                 script_run($ManiFest['upgrade'], public_path("addons/$identity/"));
             } catch (\Exception $exception){
+                SystemLog::systemRunning(
+                    '模块升级脚本执行异常',
+                    'service:ModuleService',
+                    "执行模块升级脚本时发生异常：{$exception->getMessage()}",
+                    false,
+                    [
+                        'exception_file' => $exception->getFile(),
+                        'exception_line' => $exception->getLine(),
+                        'exception_code' => $exception->getCode(),
+                        'exception_trace' => $exception->getTrace(),
+                        'module_identity' => $identity,
+                    ]
+                );
                 return error(-1,__('installFailed', ['reason'=>$exception->getMessage()]));
             }
         }
@@ -184,6 +225,19 @@ class ModuleService
                 $MSS = new MSService();
                 $MSS->checkRequire($ManiFest['servers']);
             }catch (\Exception $exception){
+                SystemLog::systemRunning(
+                    '模块升级依赖服务检查异常',
+                    'service:ModuleService',
+                    "检查模块升级依赖服务时发生异常：{$exception->getMessage()}",
+                    false,
+                    [
+                        'exception_file' => $exception->getFile(),
+                        'exception_line' => $exception->getLine(),
+                        'exception_code' => $exception->getCode(),
+                        'exception_trace' => $exception->getTrace(),
+                        'module_identity' => $identity,
+                    ]
+                );
                 return error(-1,__('installServerFailed', ['reason'=>$exception->getMessage()]));
             }
         }
@@ -202,6 +256,19 @@ class ModuleService
                 MSService::TerminalSend(['mode'=>'info', 'message'=>"正在运行应用卸载脚本..."]);
                 script_run($ManiFest['uninstall'], public_path("addons/$identity/"));
             } catch (\Exception $exception){
+                SystemLog::systemRunning(
+                    '模块卸载脚本执行异常',
+                    'service:ModuleService',
+                    "执行模块卸载脚本时发生异常：{$exception->getMessage()}",
+                    false,
+                    [
+                        'exception_file' => $exception->getFile(),
+                        'exception_line' => $exception->getLine(),
+                        'exception_code' => $exception->getCode(),
+                        'exception_trace' => $exception->getTrace(),
+                        'module_identity' => $identity,
+                    ]
+                );
                 return error(-1,__('uninstallFailed', array('reason'=>DEVELOPMENT?$exception->getMessage():__('installFailedRender'))));
             }
         }

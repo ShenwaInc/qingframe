@@ -13,21 +13,18 @@ class CorePaylog extends Model
 
     /**
      * 生成订单信息
-     * $orderinfo 订单信息 array类型
-     * $identify 插件标识 string类型
-     * @throws \Exception
+     * @param $orderInfo array 订单信息 array类型
+     * @param $identify string 插件标识 string类型
+     * @return array|bool
      */
-    public static function create(array $orderinfo,$identify='core')
+    public static function create(array $orderInfo, $identify='core')
     {
         global $_W;
         //允许插入的字段
         $allowFields = ['openid','tid','fee','module','uniontid','tag','is_usecard','card_type','card_id','card_fee','encrypt_code','is_wish','coupon'];
-        $data = [];
-        foreach ($orderinfo as $key=>$value){
-            if (in_array($key, $allowFields)){
-                $data[$key] = $value;
-            }
-        }
+        $data = array_filter($orderInfo, function ($key) use ($allowFields) {
+            return in_array($key, $allowFields);
+        }, ARRAY_FILTER_USE_KEY);
         if (!isset($data['module'])){
             $data['module'] = $identify;
         }
@@ -36,58 +33,47 @@ class CorePaylog extends Model
         $data['status'] = 0;  //生成订单时是未支付
         if (empty($data['uniontid'])){
             //$data['uniontid'] = Random::orderNumber();  //生成订单号
-            $moduleid = DB::table('modules')->where(array('name' => $data['module']))->value('mid');
-            $moduleid = empty($moduleid) ? '000000' : sprintf("%06d", $moduleid);
-            $data['uniontid'] = date('YmdHis').$moduleid.random(8,true);
+            $moduleId = DB::table('modules')->where(array('name' => $data['module']))->value('mid');
+            $moduleId = empty($moduleId) ? '000000' : sprintf("%06d", $moduleId);
+            $data['uniontid'] = date('YmdHis').$moduleId.random(8,true);
         }
-        try{
-            $data['plid'] = DB::table('core_paylog')->insertGetId($data);
-            return $data;
-        }catch(\Throwable $e){
-            throw new \Exception($e->getMessage(),Code::SERVER_INTERNAL_ERROR);
-        }
+        $data['plid'] = DB::table('core_paylog')->insertGetId($data);
+        return $data['plid'] ? $data : false;
     }
 
      /**
-     * 根据订单号/订单唯一标识id获取订单信息
-     * $plid 订单唯一标识id int类型
-     * $ordernumber 订单号 string
+      * 根据订单号/订单唯一标识id获取订单信息
+      * @param $id int 订单id
+      * @param $uniontid string 外部订单号
+      * @return array
      */
-    public static function detail(int $plid,string $ordernumber='')
+    public static function detail(int $id,string $uniontid='')
     {
-        if($ordernumber == ''){  //订单号为空时按id查询
-            $where['plid'] = $plid;
+        if(empty($uniontid)){
+            $where['plid'] = $id;
         }else{
-            $where['uniontid'] = $ordernumber;
+            $where['uniontid'] = $uniontid;
         }
-        try{
-            return DB::table('core_paylog')->where($where)->get()->toArray()[0];
-        }catch(\Throwable $e){
-            throw new \Exception($e->getMessage(),Code::SERVER_INTERNAL_ERROR);
-        }
+        return (array)DB::table('core_paylog')->where($where)->first();
     }
 
     /**
      * 更新订单信息
-     * $plid 订单唯一标识ID int类型
-     * $orderinfo 订单信息
+     * @param $id int 订单唯一标识ID int类型
+     * @param $orderInfo array 订单信息
+     * @return bool
      */
-    public static function modify(int $plid,array $orderinfo)
+    public static function modify(int $id, array $orderInfo)
     {
         //允许修改的字段
         $allowFields = ['type','status'];
         $data = [];
         foreach($allowFields as $field){
-            if(isset($orderinfo[$field])){
-                $data[$field] = $orderinfo[$field];   //只修改传入的字段信息
+            if(isset($orderInfo[$field])){
+                $data[$field] = $orderInfo[$field];   //只修改传入的字段信息
             }
         }
-        try{
-            DB::table('core_paylog')->where(['plid'=>$plid])->update($data);
-            return true;
-        }catch(\Throwable $e){
-            throw new \Exception($e->getMessage(),Code::SERVER_INTERNAL_ERROR);
-        }
+        return DB::table('core_paylog')->where(['plid'=>$id])->update($data);
     }
 }
 ?>

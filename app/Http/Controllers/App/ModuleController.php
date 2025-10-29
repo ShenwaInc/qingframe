@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\App;
 
 use App\Http\Controllers\Controller;
+use App\Models\SystemLog;
 use App\Utils\WeModule;
 use Illuminate\Http\Request;
 
@@ -52,6 +53,21 @@ class ModuleController extends Controller
                 return $site->$method($request);
             }
         }catch (\Exception $exception){
+            SystemLog::systemRunning(
+                "移动端模块请求异常：{$module}",
+                'app:module:HttpRequest',
+                "移动端模块请求处理过程中发生异常：{$exception->getMessage()}",
+                false,
+                [
+                    'exception_file' => $exception->getFile(),
+                    'exception_line' => $exception->getLine(),
+                    'exception_code' => $exception->getCode(),
+                    'exception_trace' => $exception->getTrace(),
+                    'module' => $module,
+                    'segment1' => $segment1,
+                    'segment2' => $segment2,
+                ]
+            );
             return $this->message(empty($_W['config']['debugMode'])?'模块初始化失败，请联系技术处理':$exception->getMessage());
         }
     }
@@ -98,6 +114,21 @@ class ModuleController extends Controller
             }
             return $site->$method($request);
         }catch (\Exception $exception){
+            SystemLog::systemRunning(
+                "模块API请求异常：{$moduleName}",
+                'app:module:Api',
+                "模块API请求处理过程中发生异常：{$exception->getMessage()}",
+                false,
+                [
+                    'exception_file' => $exception->getFile(),
+                    'exception_line' => $exception->getLine(),
+                    'exception_code' => $exception->getCode(),
+                    'exception_trace' => $exception->getTrace(),
+                    'module_name' => $moduleName,
+                    'segment1' => $segment1,
+                    'segment2' => $segment2,
+                ]
+            );
             if ($_W['config']['debugMode'] || DEVELOPMENT){
                 throw $exception;
             }

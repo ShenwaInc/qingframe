@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\SystemLog;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -386,7 +387,19 @@ class MSService
                             continue;
                         }
                     }catch (\Exception $exception){
-                        //Todo something
+                        SystemLog::systemRunning(
+                            '微服务自动升级异常',
+                            'service:MSService',
+                            "微服务自动升级过程中发生异常：{$exception->getMessage()}",
+                            false,
+                            [
+                                'exception_file' => $exception->getFile(),
+                                'exception_line' => $exception->getLine(),
+                                'exception_code' => $exception->getCode(),
+                                'exception_trace' => $exception->getTrace(),
+                                'server_identity' => $value['identity'] ?? null,
+                            ]
+                        );
                     }
                     $return['faild'] += 1;
                 }
@@ -406,7 +419,19 @@ class MSService
                             continue;
                         }
                     }catch (\Exception $exception){
-                        //Todo something
+                        SystemLog::systemRunning(
+                            '微服务自动安装异常',
+                            'service:MSService',
+                            "微服务自动安装过程中发生异常：{$exception->getMessage()}",
+                            false,
+                            [
+                                'exception_file' => $exception->getFile(),
+                                'exception_line' => $exception->getLine(),
+                                'exception_code' => $exception->getCode(),
+                                'exception_trace' => $exception->getTrace(),
+                                'server_identity' => $value['identity'] ?? null,
+                            ]
+                        );
                     }
                     $return['faild'] += 1;
                 }
@@ -429,7 +454,19 @@ class MSService
                     continue;
                 }
             }catch (\Exception $exception){
-                //Todo something
+                SystemLog::systemRunning(
+                    '微服务框架服务安装异常',
+                    'service:MSService',
+                    "安装框架必须服务过程中发生异常：{$exception->getMessage()}",
+                    false,
+                    [
+                        'exception_file' => $exception->getFile(),
+                        'exception_line' => $exception->getLine(),
+                        'exception_code' => $exception->getCode(),
+                        'exception_trace' => $exception->getTrace(),
+                        'server' => $serve ?? null,
+                    ]
+                );
             }
             $return['faild'] += 1;
         }
@@ -465,6 +502,19 @@ class MSService
                 $this->TerminalSend(["mode"=>"info", "message"=>"正在运行服务安装脚本..."]);
                 script_run($service['install'], MICRO_SERVER.$identity);
             }catch (\Exception $exception){
+                SystemLog::systemRunning(
+                    '微服务安装脚本执行异常',
+                    'service:MSService',
+                    "执行微服务安装脚本时发生异常：{$exception->getMessage()}",
+                    false,
+                    [
+                        'exception_file' => $exception->getFile(),
+                        'exception_line' => $exception->getLine(),
+                        'exception_code' => $exception->getCode(),
+                        'exception_trace' => $exception->getTrace(),
+                        'server_identity' => $identity,
+                    ]
+                );
                 if (!DEVELOPMENT){
                     //删除服务安装包
                     FileService::rmdirs(MICRO_SERVER.$identity."/");
@@ -492,7 +542,19 @@ class MSService
                     FileService::rmdirs(MICRO_SERVER.$identity."/");
                 }
             }catch (\Exception $exception){
-                //Todo something
+                SystemLog::systemRunning(
+                    '微服务安装回滚异常',
+                    'service:MSService',
+                    "微服务安装回滚过程中发生异常：{$exception->getMessage()}",
+                    false,
+                    [
+                        'exception_file' => $exception->getFile(),
+                        'exception_line' => $exception->getLine(),
+                        'exception_code' => $exception->getCode(),
+                        'exception_trace' => $exception->getTrace(),
+                        'server_identity' => $identity,
+                    ]
+                );
             }
             return error(-1,'安装失败，请重试');
         }
@@ -550,6 +612,19 @@ class MSService
                     $this->TerminalSend(["mode"=>"info", "message"=>"正在运行服务升级脚本..."]);
                     script_run($manifest['upgrade'], MICRO_SERVER.$identity);
                 }catch (\Exception $exception){
+                    SystemLog::systemRunning(
+                        '微服务升级脚本执行异常',
+                        'service:MSService',
+                        "执行微服务升级脚本时发生异常：{$exception->getMessage()}",
+                        false,
+                        [
+                            'exception_file' => $exception->getFile(),
+                            'exception_line' => $exception->getLine(),
+                            'exception_code' => $exception->getCode(),
+                            'exception_trace' => $exception->getTrace(),
+                            'server_identity' => $identity,
+                        ]
+                    );
                     return error(-1,"安装失败：".$exception->getMessage());
                 }
             }
@@ -623,6 +698,19 @@ class MSService
             try {
                 script_run($service['configs']['uninstall'], MICRO_SERVER.$identity);
             }catch (\Exception $exception){
+                SystemLog::systemRunning(
+                    '微服务卸载脚本执行异常',
+                    'service:MSService',
+                    "执行微服务卸载脚本时发生异常：{$exception->getMessage()}",
+                    false,
+                    [
+                        'exception_file' => $exception->getFile(),
+                        'exception_line' => $exception->getLine(),
+                        'exception_code' => $exception->getCode(),
+                        'exception_trace' => $exception->getTrace(),
+                        'server_identity' => $identity,
+                    ]
+                );
                 $this->TerminalSend(["mode"=>"err", "message"=>$exception->getMessage()]);
                 return error(-1,__('uninstallFailed', array('reason'=>$exception->getMessage())));
             }
@@ -796,8 +884,21 @@ class MSService
                 self::ComposerFail($name, $process->getOutput());
             }
         }catch (\Exception $exception){
-            //Todo something
             $message = $exception->getMessage();
+            SystemLog::systemRunning(
+                'Composer依赖安装异常',
+                'service:MSService',
+                "安装Composer依赖时发生异常：{$message}",
+                false,
+                [
+                    'exception_file' => $exception->getFile(),
+                    'exception_line' => $exception->getLine(),
+                    'exception_code' => $exception->getCode(),
+                    'exception_trace' => $exception->getTrace(),
+                    'composer_name' => $name,
+                    'base_path' => $basePath,
+                ]
+            );
             self::TerminalSend(["mode"=>"err", "message"=>$message]);
             if (strexists($message, 'exceeded the timeout')){
                 self::TerminalSend(["mode"=>"err", "message"=>"Composer安装耗时大于程序最大运行时间(".ini_get('max_execution_time')."秒)，请适当调整该数值后再重试"]);
@@ -838,8 +939,21 @@ class MSService
                 self::ComposerFail($name, $process->getOutput(), $command);
             }
         }catch (\Exception $exception){
-            //Todo something
             $message = $exception->getMessage();
+            SystemLog::systemRunning(
+                'Composer依赖更新异常',
+                'service:MSService',
+                "更新Composer依赖时发生异常：{$message}",
+                false,
+                [
+                    'exception_file' => $exception->getFile(),
+                    'exception_line' => $exception->getLine(),
+                    'exception_code' => $exception->getCode(),
+                    'exception_trace' => $exception->getTrace(),
+                    'composer_name' => $name,
+                    'base_path' => $basePath,
+                ]
+            );
             self::TerminalSend(["mode"=>"err", "message"=>$message]);
             if (strexists($message, 'exceeded the timeout')){
                 self::TerminalSend(["mode"=>"err", "message"=>"Composer安装耗时大于程序最大运行时间(".ini_get('max_execution_time')."秒)，请适当调整该数值后再重试"]);
@@ -874,7 +988,19 @@ class MSService
                 return true;
             }
         }catch (\Exception $exception){
-            //Todo something
+            SystemLog::systemRunning(
+                'Composer依赖卸载异常',
+                'service:MSService',
+                "卸载Composer依赖时发生异常：{$exception->getMessage()}",
+                false,
+                [
+                    'exception_file' => $exception->getFile(),
+                    'exception_line' => $exception->getLine(),
+                    'exception_code' => $exception->getCode(),
+                    'exception_trace' => $exception->getTrace(),
+                    'composer_require' => $require,
+                ]
+            );
         }
         self::TerminalSend(["mode"=>"warm", "message"=>"Composer依赖卸载失败，请使用宝塔终端或其它ssh依次运行如下指令（执行完后请刷新此页面）"]);
         self::TerminalSend(["mode"=>"cmd", "message"=>"cd ".$WorkingDirectory]);

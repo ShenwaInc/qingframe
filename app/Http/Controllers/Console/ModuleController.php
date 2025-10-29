@@ -82,6 +82,21 @@ class ModuleController extends Controller
             if (DEVELOPMENT){
                 throw $exception;
             }
+            SystemLog::systemRunning(
+                "模块请求异常：{$moduleName}",
+                'module:HttpRequest',
+                "模块请求处理过程中发生异常：{$exception->getMessage()}",
+                false,
+                [
+                    'exception_file' => $exception->getFile(),
+                    'exception_line' => $exception->getLine(),
+                    'exception_code' => $exception->getCode(),
+                    'exception_trace' => $exception->getTrace(),
+                    'module_name' => $moduleName,
+                    'segment1' => $segment1,
+                    'segment2' => $segment2,
+                ]
+            );
             return $this->message($exception->getMessage());
         }
     }
@@ -163,7 +178,19 @@ class ModuleController extends Controller
                 $platformCount = count($ids);
                 SystemLog::userOperation('分配应用模块', 'module:allocate', "模块：{$identity}，分配到{$platformCount}个平台", true, ['module' => $identity, 'platform_count' => $platformCount]);
             }catch (\Exception $exception){
-                SystemLog::systemRunning('分配应用模块报错', 'module:allocate', $exception->getMessage(), false, $exception->getTrace());
+                SystemLog::systemRunning(
+                    '分配应用模块异常',
+                    'module:allocate',
+                    "分配应用模块过程中发生异常：{$exception->getMessage()}",
+                    false,
+                    [
+                        'exception_file' => $exception->getFile(),
+                        'exception_line' => $exception->getLine(),
+                        'exception_code' => $exception->getCode(),
+                        'exception_trace' => $exception->getTrace(),
+                        'module' => $identity,
+                    ]
+                );
                 return $this->message($exception->getMessage());
             }
             $redirect = $request->input('referer', referer());

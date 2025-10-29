@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Middleware\AppRuntime;
+use App\Models\SystemLog;
 
 class HttpController extends Controller
 {
@@ -27,6 +28,21 @@ class HttpController extends Controller
         try {
             $service = serv($server);
         } catch (\Exception $e) {
+            SystemLog::systemRunning(
+                '微服务调用异常',
+                'http:HttpRequest',
+                "获取微服务实例时发生异常：{$e->getMessage()}",
+                false,
+                [
+                    'exception_file' => $e->getFile(),
+                    'exception_line' => $e->getLine(),
+                    'exception_code' => $e->getCode(),
+                    'exception_trace' => $e->getTrace(),
+                    'server' => $server,
+                    'segment1' => $segment1,
+                    'segment2' => $segment2,
+                ]
+            );
             return $this->message($e->getMessage());
         }
         if (is_error($service) || !$service->enabled){
@@ -89,6 +105,20 @@ class HttpController extends Controller
             $instance = new $className();
             return $instance->$method();
         }catch (\Exception $exception){
+            SystemLog::systemRunning(
+                '微服务运行异常',
+                'http:ServerRun',
+                "微服务执行过程中发生异常：{$exception->getMessage()}",
+                false,
+                [
+                    'exception_file' => $exception->getFile(),
+                    'exception_line' => $exception->getLine(),
+                    'exception_code' => $exception->getCode(),
+                    'exception_trace' => $exception->getTrace(),
+                    'server' => $server,
+                    'controller' => $controller,
+                ]
+            );
             if (DEVELOPMENT){
                 throw new $exception;
             }

@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Models\SystemLog;
+
 use App\Models\Module;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
@@ -567,7 +569,18 @@ class CacheService
         try {
             serv('language')->langUsable(false);
         }catch (\Exception $exception){
-
+            SystemLog::systemRunning(
+                '语言服务初始化异常',
+                'service:CacheService',
+                "初始化语言服务时发生异常：{$exception->getMessage()}",
+                false,
+                [
+                    'exception_file' => $exception->getFile(),
+                    'exception_line' => $exception->getLine(),
+                    'exception_code' => $exception->getCode(),
+                    'exception_trace' => $exception->getTrace(),
+                ]
+            );
         }
         return true;
     }

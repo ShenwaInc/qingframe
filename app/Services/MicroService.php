@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Models\SystemLog;
+
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\View;
@@ -337,7 +339,20 @@ class MicroService
             try {
                 serv($serv)->Processor($listener, $data);
             }catch (\Exception $exception){
-                //Todo something
+                SystemLog::systemRunning(
+                    '微服务事件处理器异常',
+                    'service:MicroService',
+                    "执行微服务事件处理器时发生异常：{$exception->getMessage()}",
+                    false,
+                    [
+                        'exception_file' => $exception->getFile(),
+                        'exception_line' => $exception->getLine(),
+                        'exception_code' => $exception->getCode(),
+                        'exception_trace' => $exception->getTrace(),
+                        'listener' => $listener,
+                        'server' => $serv,
+                    ]
+                );
             }
         }
         return true;

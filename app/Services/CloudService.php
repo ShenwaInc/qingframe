@@ -69,6 +69,19 @@ class CloudService
                     if (is_error($ManiFest)) continue;
                     $com = $ManiFest['application'];
                 }catch (\Exception $exception){
+                    SystemLog::systemRunning(
+                        '获取模块清单异常',
+                        'service:CloudService',
+                        "获取本地模块清单时发生异常：{$exception->getMessage()}",
+                        false,
+                        [
+                            'exception_file' => $exception->getFile(),
+                            'exception_line' => $exception->getLine(),
+                            'exception_code' => $exception->getCode(),
+                            'exception_trace' => $exception->getTrace(),
+                            'identity' => $identity,
+                        ]
+                    );
                     continue;
                 }
                 $comCloud = $plugins[$identity] ?? [];

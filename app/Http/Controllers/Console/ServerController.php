@@ -111,7 +111,18 @@ class ServerController extends Controller
                     Artisan::call('self:repair');
                     SystemLog::userOperation('修复系统服务', 'server:repair', '系统服务修复');
                 }catch (\Exception $exception){
-                    SystemLog::systemRunning('修复系统服务', 'server:repair', $exception->getMessage(), false, $exception->getTrace());
+                    SystemLog::systemRunning(
+                        '修复系统服务异常',
+                        'server:repair',
+                        "修复系统服务过程中发生异常：{$exception->getMessage()}",
+                        false,
+                        [
+                            'exception_file' => $exception->getFile(),
+                            'exception_line' => $exception->getLine(),
+                            'exception_code' => $exception->getCode(),
+                            'exception_trace' => $exception->getTrace()
+                        ]
+                    );
                     return $this->message($exception->getMessage());
                 }
                 return $this->message("successful", wurl("server"), "success");

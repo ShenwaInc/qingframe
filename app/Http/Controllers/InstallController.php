@@ -116,6 +116,7 @@ class InstallController extends Controller
             try {
                 Artisan::call('self:setup', array('user'=>trim($manager['username']), 'pwd'=>$founderPWD, 'appName'=>$appName));
             }catch (\Exception $exception){
+                //系统未完成安装，日志表可能未创建，不记录日志
                 if(DEVELOPMENT){
                     throw $exception;
                 }
@@ -202,6 +203,7 @@ class InstallController extends Controller
                 try {
                     $founder = $isConnect->table('users')->select('uid','password','salt')->where('founder_groupid',1)->orderBy('uid','asc')->first();
                 }catch (\Exception $e){
+                    //系统未完成安装，日志表可能未创建，不记录日志
                     if (!empty($e->errorInfo) && $e->errorInfo[0]=='42S02'){
                         //Table dosn't exist
                         return $this->message('非微擎站点数据库');
@@ -220,6 +222,7 @@ class InstallController extends Controller
                 try {
                     $accounts = $isConnect->table('account')->count();
                 }catch (\Exception $e){
+                    //系统未完成安装，日志表可能未创建，不记录日志
                     //Todo something
                     unset($accounts);
                 }
@@ -268,6 +271,7 @@ class InstallController extends Controller
             //$conn->raw()
             return $conn;
         } catch (\Exception $e){
+            //系统未完成安装，日志表可能未创建，不记录日志
             //if (empty($e->errorInfo)) return false;
             return false;//@json_decode(json_encode($e->errorInfo),true);
         }

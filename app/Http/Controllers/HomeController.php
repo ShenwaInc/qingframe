@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Middleware\App;
+use App\Models\SystemLog;
 use App\Services\SettingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,6 +21,18 @@ class HomeController extends Controller
             if(in_array($exception->getCode(), [1044, 1045, 2002])){
                 $installed = false;
             }else{
+                SystemLog::systemRunning(
+                    '数据库表检查异常',
+                    'home:index',
+                    "检查系统安装状态时发生异常：{$exception->getMessage()}",
+                    false,
+                    [
+                        'exception_file' => $exception->getFile(),
+                        'exception_line' => $exception->getLine(),
+                        'exception_code' => $exception->getCode(),
+                        'exception_trace' => $exception->getTrace(),
+                    ]
+                );
                 throw $exception;
             }
         }
