@@ -1,14 +1,15 @@
 @include('common.header')
 <div class="layui-fluid unpadding">
-    <div class="main-content">
+    <div class="{{ $_W['isajax'] ? '' : 'main-content' }}">
 
         @if(empty($_W['isajax']))
-            <h2>{{ $title }}</h2>
+            <h2>
+                {{ $title }}
+                @yield('titleExtra')
+            </h2>
         @endif
 
-        <main class="py-4">
-            @yield('content')
-        </main>
+        @yield('content')
 
     </div>
 </div>

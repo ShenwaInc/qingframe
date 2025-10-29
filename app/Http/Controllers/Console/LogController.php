@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Console;
 
 use App\Http\Controllers\Controller;
+use App\Http\Middleware\App;
+use App\Http\Middleware\ConsolePermission;
 use App\Models\SystemLog;
 use Illuminate\Http\Request;
 
@@ -11,7 +13,7 @@ class LogController extends Controller
 
     public function index(Request $request)
     {
-        if ($request->user()->uid != env('APP_FOUNDER')){
+        if (!$request->user()->founder_groupid){
             return $this->message('暂无权限');
         }
 
@@ -59,7 +61,7 @@ class LogController extends Controller
 
     public function show(Request $request, $id)
     {
-        if ($request->user()->uid != env('APP_FOUNDER')){
+        if (!$request->user()->founder_groupid){
             return $this->message('暂无权限');
         }
         $log = SystemLog::find($id);
@@ -69,7 +71,7 @@ class LogController extends Controller
         return $this->globalView('console.log.detail', [
             'log'=>$log,
             'logTypes'=>$this->getTypes(),
-            'title'=>__('查看日志详情')
+            'title'=>__('detailOf', ['data'=>__('records')])
         ]);
     }
 
@@ -80,7 +82,7 @@ class LogController extends Controller
             'system_running' => __('系统运行'),
             'database' => __('数据库操作'),
             'error' => __('错误日志'),
-            'other' => __('其他')
+            'other' => __('其它')
         ];
     }
 

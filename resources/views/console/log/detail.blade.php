@@ -1,16 +1,19 @@
 @extends('layouts.console')
 
+@section('titleExtra')
+    &nbsp;&nbsp;<a href="{{ wurl('logs') }}" class="layui-btn layui-btn-primary">@lang('back')</a>
+@endsection
+
 @section('content')
-    <div class="layui-card">
+    <div class="log-detail layui-card">
         <div class="layui-card-body">
-            {{-- 基础信息 --}}
             <table class="layui-table">
                 <tr>
                     <th>ID</th>
                     <td>{{ $log->id }}</td>
                 </tr>
                 <tr>
-                    <th>日志类型</th>
+                    <th>@lang('类型')</th>
                     <td>
                         @php
                             $typeClass = 'layui-bg-gray';
@@ -27,39 +30,39 @@
                     </td>
                 </tr>
                 <tr>
-                    <th>相关模块</th>
+                    <th>@lang('module')</th>
                     <td>{{ $log->module }}</td>
                 </tr>
                 <tr>
-                    <th>日志标题</th>
+                    <th>@lang('标题')</th>
                     <td>{{ $log->title }}</td>
                 </tr>
                 <tr>
-                    <th>日志内容</th>
+                    <th>@lang('内容')</th>
                     <td>
-                        <div class="layui-card layui-bg-gray" style="margin-top: 5px; width: calc(100% - 125px);">
+                        <div class="layui-card layui-bg-gray margin-sm">
                             <div class="layui-card-body pre-wrap">
-                                {{ $log->content ?: '无内容' }}
+                                {{ $log->content ?: __('暂无数据') }}
                             </div>
                         </div>
                     </td>
                 </tr>
                 <tr>
-                    <th>操作人</th>
+                    <th>@lang('user')</th>
                     <td>
                         @if($log->user_id)
-                            <a href="{{ wurl('logs', ['user_id'=>$log->user_id]) }}" class="text-blue" title="查看{{ $log->username }}相关的日志">{{ $log->username }}</a>&nbsp;(UID: {{ $log->user_id }})
+                            <a href="{{ wurl('logs', ['user_id'=>$log->user_id]) }}" class="text-blue">{{ $log->username }}</a>&nbsp;(UID: {{ $log->user_id }})
                         @else
-                            <span class="layui-badge layui-bg-gray">系统</span>
+                            <span class="layui-badge layui-bg-gray">-</span>
                         @endif
                     </td>
                 </tr>
                 <tr>
-                    <th>IP地址</th>
+                    <th>IP</th>
                     <td>{{ $log->ip }}</td>
                 </tr>
                 <tr>
-                    <th>请求信息</th>
+                    <th>URL</th>
                     <td>
                         @if($log->url)
                             <span class="layui-badge layui-bg-blue">{{ $log->method ?: 'GET' }}</span> {{ $log->url }}
@@ -69,50 +72,47 @@
                     </td>
                 </tr>
                 <tr>
-                    <th>状态</th>
+                    <th>@lang('state')</th>
                     <td>
                         <span class="layui-badge {{ $log->status ? 'layui-bg-green' : 'layui-bg-red' }}">
-                            {{ $log->status ? '成功' : '失败' }}
+                            {{ __($log->status ? '成功' : '失败') }}
                         </span>
                         @if($log->error_code)
                             <span class="layui-badge layui-bg-orange ml-2">
-                                错误码: {{ $log->error_code }}
+                                @lang('错误码'): {{ $log->error_code }}
                             </span>
                         @endif
                     </td>
                 </tr>
                 <tr>
-                    <th>耗时</th>
-                    <td>
-                        {{ $log->cost_ms ? $log->cost_ms . ' 毫秒' : '-' }}
-                    </td>
-                </tr>
-                <tr>
-                    <th>创建时间</th>
+                    <th>@lang('发生时间')</th>
                     <td>
                         {{ $log->created_at->format('Y-m-d H:i:s') }}
+                        @if($log->cost_ms)
+                            <span class="layui-badge layui-bg-orange">{{ __('takesTime', ['time'=>$log->cost_ms/1000]) }}</span>
+                        @endif
                     </td>
                 </tr>
                 @if(!empty($log->extra))
-                <tr>
-                    <th>扩展信息</th>
-                    <td>
-                        <div class="layui-card layui-bg-gray" style="margin-top: 5px; width: calc(100% - 125px);">
-                            <div class="layui-card-body">
-                                <pre class="pre-wrap">{{ json_encode($log->extra, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) }}</pre>
+                    <tr>
+                        <th>@lang('扩展信息')</th>
+                        <td>
+                            <div class="layui-card layui-bg-gray margin-sm">
+                                <div class="layui-card-body">
+                                    <pre class="pre-wrap">{{ json_encode($log->extra, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) }}</pre>
+                                </div>
                             </div>
-                        </div>
-                    </td>
-                </tr>
+                        </td>
+                    </tr>
                 @endif
             </table>
         </div>
     </div>
     <style>
-        .layui-table{
+        .log-detail .layui-table{
             max-width: 100%;
         }
-        .layui-table th{
+        .log-detail .layui-table th{
             min-width: 80px;
         }
     </style>

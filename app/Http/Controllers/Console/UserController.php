@@ -103,17 +103,17 @@ class UserController extends Controller
             }elseif ($uid==0){
                 return $this->message('typeNewPassword');
             }
-            if ($uid>0){
-                $result = DB::table('users')->where('uid',$user['uid'])->update($data);
+            if (!empty($user)){
+                $result = DB::table('users')->where('uid', $user['uid'])->update($data);
+                unset($data['salt'], $data['password']);
+                SystemLog::userOperation('更新子账号资料', 'user:update', "", (bool)$result, ['update'=>array_merge($data, ['email'=>$email, 'maxaccount'=>$maxaccount])]);
                 if(!$result){
-                    SystemLog::userOperation('更新子账号', 'user:update', "用户ID：{$uid}，操作失败", false);
                     return $this->message();
                 }
                 if ($maxaccount != $user['maxaccount']){
                     DB::table('users_extra_limit')->updateOrInsert(array('uid'=>$user['uid']),array('maxaccount'=>$maxaccount,'timelimit'=>$data['endtime']));
                 }
                 DB::table('users_profile')->updateOrInsert(array('uid'=>$uid), array('email'=>$email));
-                SystemLog::userOperation('更新子账号', 'user:update', "用户ID：{$uid}，用户名：{$username}", true);
             }else{
                 $data['type'] = 1;
                 $data['status'] = 2;
@@ -121,6 +121,8 @@ class UserController extends Controller
                 $data['joinip'] = $_W['clientip'];
                 $data['owner_uid'] = $_W['uid'];
                 $uid = DB::table('users')->insertGetId($data);
+                unset($data['salt'], $data['password']);
+                SystemLog::userOperation('创建子账号', 'user:create', "", (bool)$uid, ['update'=>array_merge($data, ['email'=>$email, 'maxaccount'=>$maxaccount])]);
                 if (!$uid) {
                     return $this->message();
                 }
@@ -133,7 +135,6 @@ class UserController extends Controller
                     'email'=>$email
                 ));
                 DB::table('users_extra_limit')->insert(array('uid'=>$uid,'maxaccount'=>$maxaccount,'timelimit'=>$data['endtime']));
-                SystemLog::userOperation('创建子账号', 'user:create', "用户ID：{$uid}，用户名：{$username}", true, ['uid' => $uid]);
             }
             return $this->message('savedSuccessfully', referer(), 'success');
         }
@@ -150,7 +151,7 @@ class UserController extends Controller
             return $this->message('userNotAuthorized');
         }
         $complete = $query->update(array('status'=>3));
-        SystemLog::userOperation('删除子账号', 'user:remove', "用户ID：{$uid}", $complete, ['uid' => $uid]);
+        SystemLog::userOperation('删除子账号', 'user:remove', "删除用户：{$user['username']}", $complete, (array)$user);
         if ($complete){
             return $this->message('deleteSuccessfully',wurl('user/subuser'),'success');
         }

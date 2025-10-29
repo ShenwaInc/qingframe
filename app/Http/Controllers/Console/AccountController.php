@@ -80,8 +80,8 @@ class AccountController extends Controller
                     return $this->message('roleValid');
                 }
                 $complete = UserService::AccountRoleUpdate($this->uniacid, $uid, $role);
+                SystemLog::userOperation('添加平台成员', 'account:role', "平台ID：{$this->uniacid}，用户ID：{$uid}，角色：{$role}", (bool)$complete, ['uniacid' => $this->uniacid, 'user_id' => $uid, 'role' => $role]);
                 if ($complete) {
-                    SystemLog::userOperation('添加平台成员', 'account:role', "平台ID：{$this->uniacid}，用户ID：{$uid}，角色：{$role}", true, ['uniacid' => $this->uniacid, 'user_id' => $uid, 'role' => $role]);
                     return $this->message('savedSuccessfully', referer(), 'success');
                 }
             }elseif ($op=='setowner'){
@@ -92,8 +92,8 @@ class AccountController extends Controller
                 if ($uid==0) return $this->message('userNotfound');
                 DB::table('uni_account_users')->where(array('role'=>'owner','uniacid'=>$this->uniacid))->delete();
                 $complete = UserService::AccountRoleUpdate($this->uniacid, $uid);
+                SystemLog::userOperation('设置平台所有者', 'account:role', "平台ID：{$this->uniacid}，用户ID：{$uid}", $complete);
                 if ($complete) {
-                    SystemLog::userOperation('设置平台所有者', 'account:role', "平台ID：{$this->uniacid}，用户ID：{$uid}");
                     return $this->message('savedSuccessfully', referer(), 'success');
                 }
             }
@@ -107,8 +107,8 @@ class AccountController extends Controller
             $uid = (int)$request->input('uid',0);
             if ($uid==0) return $this->message('userNotfound');
                 $complete = DB::table('uni_account_users')->where(array('uid'=>$uid,'uniacid'=>$this->uniacid))->delete();
+                SystemLog::userOperation('移除平台成员', 'account:role', "平台ID：{$this->uniacid}，用户ID：{$uid}", (bool)$complete, ['uniacid' => $this->uniacid, 'user_id' => $uid]);
                 if ($complete){
-                    SystemLog::userOperation('移除平台成员', 'account:role', "平台ID：{$this->uniacid}，用户ID：{$uid}", true, ['uniacid' => $this->uniacid, 'user_id' => $uid]);
                     return $this->message('successful', referer(),'success');
                 }
             return $this->message();
@@ -172,8 +172,8 @@ class AccountController extends Controller
             if (empty($post['logo'])) return $this->message('platformLogoEmpty');
             $post['description'] = trim($post['description']);
             $complete = Account::where('uniacid',$this->uniacid)->update($post);
+            SystemLog::userOperation('编辑平台信息', 'account:edit', "平台ID：{$this->uniacid}，名称：{$post['name']}", (bool)$complete, ['uniacid' => $this->uniacid]);
             if (!$complete) return $this->message('saveFailed');
-            SystemLog::userOperation('编辑平台信息', 'account:edit', "平台ID：{$this->uniacid}，名称：{$post['name']}", true, ['uniacid' => $this->uniacid]);
             return $this->message('savedSuccessfully',wurl('account/profile',array('uniacid'=>$this->uniacid),true), 'success');
         }
         $storage = serv('storage', 0);
@@ -259,10 +259,10 @@ class AccountController extends Controller
             }else{
                 $complete = DB::table('uni_account_users')->where('id', $account_users['id'])->update(array('entrance'=>$controller.":".$method));
             }
+            SystemLog::userOperation('设置默认入口', 'account:entry', "平台ID：{$this->uniacid}，入口：{$controller}:{$method}", (bool)$complete, ['uniacid' => $this->uniacid, 'entrance' => $controller . ':' . $method]);
             if (!$complete){
                 return $this->message();
             }
-            SystemLog::userOperation('设置默认入口', 'account:entry', "平台ID：{$this->uniacid}，入口：{$controller}:{$method}", true, ['uniacid' => $this->uniacid, 'entrance' => $controller . ':' . $method]);
             return $this->message('savedSuccessfully', referer(), 'success');
         }
         list($controller, $method) = AccountService::GetEntrance($_W['uid'], $this->uniacid);
@@ -300,10 +300,11 @@ class AccountController extends Controller
                             return $this->message('该域名已被其它平台绑定');
                         }
                     }
-                    if (!DB::table('uni_settings')->where('uniacid', $this->uniacid)->update(['bind_domain'=>$domain])){
+                    $res = DB::table('uni_settings')->where('uniacid', $this->uniacid)->update(['bind_domain'=>$domain]);
+                    SystemLog::userOperation('绑定域名', 'account:profile', "平台ID：{$this->uniacid}，域名：{$domain}", (bool)$res, ['uniacid' => $this->uniacid, 'domain' => $domain]);
+                    if (!$res){
                         return $this->message('saveFailed');
                     }
-                    SystemLog::userOperation('绑定域名', 'account:profile', "平台ID：{$this->uniacid}，域名：{$domain}", true, ['uniacid' => $this->uniacid, 'domain' => $domain]);
                     return $this->success();
                 }
                 case 'setExpire' : {
@@ -313,8 +314,8 @@ class AccountController extends Controller
                         $data['endtime'] = strtotime($expire." 23:59:59");
                     }
                     $complete = DB::table('account')->where('acid',$account['acid'])->update($data);
+                    SystemLog::userOperation('设置平台到期时间', 'account:profile', "平台ID：{$account['uniacid']}，到期时间：" . ($expire ?: '长期'), (bool)$complete, ['uniacid' => $account['uniacid']]);
                     if (!$complete) return $this->message('saveFailed');
-                    SystemLog::userOperation('设置平台到期时间', 'account:profile', "平台ID：{$account['uniacid']}，到期时间：" . ($expire ?: '长期'), true, ['uniacid' => $account['uniacid']]);
                     return $this->message('savedSuccessfully',wurl('account/profile',array('uniacid'=>$account['uniacid']),true), 'success');
                 }
             }
@@ -354,10 +355,10 @@ class AccountController extends Controller
         DB::table('uni_modules')->where('uniacid',$uniacid)->delete();
         DB::table('users_operate_star')->where('uniacid',$uniacid)->delete();
         DB::table('users_operate_history')->where('uniacid', $uniacid)->delete();
-        $cachekey = CacheService::system_key('user_accounts', array('type' => 'account', 'uid' => $_W['uid']));
-        Cache::forget($cachekey);
-        $cachekey = CacheService::system_key('uniaccount', array('uniacid' => $uniacid));
-        Cache::forget($cachekey);
+        $cacheKey = CacheService::system_key('user_accounts', array('type' => 'account', 'uid' => $_W['uid']));
+        Cache::forget($cacheKey);
+        $cacheKey = CacheService::system_key('uniaccount', array('uniacid' => $uniacid));
+        Cache::forget($cacheKey);
         SystemLog::userOperation('删除平台', 'account:remove', "平台ID：{$uniacid}", true, ['uniacid' => $uniacid]);
         return $this->message('deleteSuccessfully',wurl(''),'success');
     }
@@ -369,7 +370,7 @@ class AccountController extends Controller
             if (empty($post['name'])) return $this->message('platformNameEmpty');
             if (empty($post['logo'])) return $this->message('platformLogoEmpty');
             $uni_account = DB::table('uni_account');
-            $uniacid = $uni_account->insertGetId(array(
+            $data = array(
                 'groupid' => 0,
                 'default_acid' => 0,
                 'name' => $post['name'],
@@ -378,13 +379,14 @@ class AccountController extends Controller
                 'title_initial' => 'W',
                 'createtime' => TIMESTAMP,
                 'create_uid' => $_W['uid']
-            ));
+            );
+            $uniacid = $uni_account->insertGetId($data);
+            $data['uniacid'] = $uniacid;
+            SystemLog::userOperation('创建平台', 'account:create', "平台ID：{$uniacid}，名称：{$post['name']}", (bool)$uniacid, $data);
             if (!empty($uniacid)){
                 $acid = Account::account_create($uniacid,array('name'=>$post['name']));
                 $uni_account->where('uniacid',$uniacid)->update(array('default_acid' => $acid));
                 UserService::AccountRoleUpdate($uniacid,$_W['uid']);
-
-                SystemLog::userOperation('创建平台', 'account:create', "平台ID：{$uniacid}，名称：{$post['name']}", true, ['uniacid' => $uniacid, 'name' => $post['name']]);
                 return $this->message('createSuccessfully',wurl('account/profile',array('uniacid'=>$uniacid)),'success');
             }
             return $this->message('saveFailed');
@@ -428,10 +430,10 @@ class AccountController extends Controller
                 ];
                 $res = DB::table('users_permission')->insert($data);
             }
+            SystemLog::userOperation('设置用户权限', 'account:permission', "平台ID：{$uniacid}，用户ID：{$uid}", (bool)$res, ['uniacid' => $uniacid, 'uid' => $uid]);
 
             if($res){
                 UserService::AccountPermission($this->uniacid, $uid, false);
-                SystemLog::userOperation('设置用户权限', 'account:permission', "平台ID：{$uniacid}，用户ID：{$uid}", true, ['uniacid' => $uniacid, 'uid' => $uid]);
                 $redirect = $request->input('redirect', wurl('account/profile',array('uniacid'=>$uniacid)));
                 return $this->message('savedSuccessfully', $redirect,'success');
             }

@@ -163,7 +163,7 @@ class ModuleController extends Controller
                 $platformCount = count($ids);
                 SystemLog::userOperation('分配应用模块', 'module:allocate', "模块：{$identity}，分配到{$platformCount}个平台", true, ['module' => $identity, 'platform_count' => $platformCount]);
             }catch (\Exception $exception){
-                SystemLog::userOperation('分配应用模块', 'module:allocate', "模块：{$identity}，操作失败：{$exception->getMessage()}", false);
+                SystemLog::systemRunning('分配应用模块报错', 'module:allocate', $exception->getMessage(), false, $exception->getTrace());
                 return $this->message($exception->getMessage());
             }
             $redirect = $request->input('referer', referer());

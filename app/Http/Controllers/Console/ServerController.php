@@ -109,9 +109,9 @@ class ServerController extends Controller
             case "repair" : {
                 try {
                     Artisan::call('self:repair');
-                    SystemLog::userOperation('修复系统服务', 'server:repair', '系统服务修复', true);
+                    SystemLog::userOperation('修复系统服务', 'server:repair', '系统服务修复');
                 }catch (\Exception $exception){
-                    SystemLog::userOperation('修复系统服务', 'server:repair', "修复失败：{$exception->getMessage()}", false);
+                    SystemLog::systemRunning('修复系统服务', 'server:repair', $exception->getMessage(), false, $exception->getTrace());
                     return $this->message($exception->getMessage());
                 }
                 return $this->message("successful", wurl("server"), "success");

@@ -107,8 +107,8 @@ class SettingService{
                 array('value'=>serialize($data))
             );
         }
-        $cachekey = CacheService::system_key('setting');
-        Cache::forget($cachekey);
-        return $return;
+        $cacheKey = CacheService::system_key('setting');
+        Cache::forget($cacheKey);
+        return $return??false;
     }
 }

@@ -24,7 +24,7 @@
                 <div class="layui-form-item">
                     <div class="layui-inline">
                         <select name="type" lay-search>
-                            <option value="">全部日志类型</option>
+                            <option value="">@lang('全部类型')</option>
                             @foreach($logTypes as $key => $name)
                                 <option value="{{ $key }}" {{ request('type') == $key ? 'selected' : '' }}>
                                     {{ $name }}
@@ -35,15 +35,14 @@
 
                     <div class="layui-inline">
                         <select name="status">
-                            <option value="">全部状态</option>
-                            <option value="1" {{ request('status') === '1' ? 'selected' : '' }}>成功</option>
-                            <option value="0" {{ request('status') === '0' ? 'selected' : '' }}>失败</option>
+                            <option value="">@lang('全部状态')</option>
+                            <option value="1" {{ request('status') === '1' ? 'selected' : '' }}>@lang('成功')</option>
+                            <option value="0" {{ request('status') === '0' ? 'selected' : '' }}>@lang('失败')</option>
                         </select>
                     </div>
 
-                    <div class="layui-inline">
-                        <input type="text" name="keyword" placeholder="关键词搜索(标题/内容/IP/模块/用户)"
-                               value="{{ request('keyword') }}" class="layui-input">
+                    <div class="layui-inline" style="min-width: 320px;">
+                        <input type="text" name="keyword" placeholder="@lang('关键词搜索(标题/内容/IP/模块/用户)')" value="{{ request('keyword') }}" class="layui-input">
                     </div>
 
                     <div class="layui-inline">
@@ -55,8 +54,8 @@
                     </div>
 
                     <div class="layui-inline">
-                        <button class="layui-btn" lay-submit lay-filter="search">筛选</button>
-                        <a href="{{ wurl('logs') }}" class="layui-btn layui-btn-primary">重置</a>
+                        <button class="layui-btn" lay-submit lay-filter="search">@lang('搜索')</button>
+                        <a href="{{ wurl('logs') }}" class="layui-btn layui-btn-primary">@lang('reset')</a>
                     </div>
                 </div>
             </form>
@@ -66,14 +65,14 @@
                 <thead>
                 <tr>
                     <th style="width: 60px;">ID</th>
-                    <th>日志类型</th>
-                    <th>模块</th>
-                    <th>标题</th>
-                    <th>操作人</th>
-                    <th>IP地址</th>
-                    <th>状态</th>
-                    <th>创建时间</th>
-                    <th>操作</th>
+                    <th>@lang('类型')</th>
+                    <th>@lang('module')</th>
+                    <th>@lang('标题')</th>
+                    <th>@lang('用户')</th>
+                    <th>IP</th>
+                    <th>@lang('state')</th>
+                    <th>@lang('发生时间')</th>
+                    <th>@lang('action')</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -97,17 +96,17 @@
                         </td>
                         <td>{{ $log->module }}</td>
                         <td>{{ $log->title }}</td>
-                        <td>{{ $log->username ?: '系统' }}</td>
+                        <td>{{ $log->username ?: '-' }}</td>
                         <td>{{ $log->ip ?: '-' }}</td>
                         <td>
                             <span class="layui-badge {{ $log->status ? 'layui-bg-green' : 'layui-bg-red' }}">
-                                {{ $log->status ? '成功' : '失败' }}
+                                {{ __($log->status ? '成功' : '失败') }}
                             </span>
                         </td>
                         <td>{{ $log->created_at->format('Y-m-d H:i:s') }}</td>
                         <td>
-                            <a href="{{ wurl('log/' . $log->id) }}" class="text-blue ajaxshow" title="查看日志详情">
-                                查看详情
+                            <a href="{{ wurl('log/' . $log->id) }}" class="text-blue ajaxshow">
+                                @lang('查看详情')
                             </a>
                         </td>
                     </tr>
@@ -116,11 +115,11 @@
                 {{-- 空状态处理 --}}
                 @if($logs->isEmpty())
                     <tr>
-                        <td colspan="9" class="text-center">暂无日志记录</td>
+                        <td colspan="9" class="text-center">@lang('暂无数据')</td>
                     </tr>
                 @else
                     <tr>
-                        <td colspan="9">共找到{{ $logs->total() }}条日志</td>
+                        <td colspan="9">{{ __('共找到:total条日志', ['total'=>$logs->total()]) }}</td>
                     </tr>
                 @endif
                 </tbody>

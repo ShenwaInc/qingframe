@@ -132,7 +132,7 @@ class ReportController extends Controller {
             $data['sign'] = $this->genSignature($data);
             $res = $this->reportCloud("orderFeedback/add", $data, false);
             $status = !is_error($res);
-            SystemLog::userOperation('工单反馈', 'report:feedback', "工单ID：{$orderId}", $status, ['order_id' => $orderId]);
+            SystemLog::userOperation('工单反馈', 'report:feedback', "工单ID：{$orderId}", $status, ['order_id' => $orderId, 'data' => $data, 'response' => $res]);
             if (!$status) return $this->message($res['message']);
             if (!$request->ajax()){
                 return $this->success("workOrderSubmitted", wurl('report'));
