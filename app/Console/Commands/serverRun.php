@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\SystemLog;
 use Illuminate\Console\Command;
 
 class serverRun extends Command
@@ -47,6 +48,21 @@ class serverRun extends Command
             $params = $this->argument('params');
             $service->Terminal($this, ...$params);
         }catch (\Exception $exception){
+            SystemLog::systemRunning(
+                "微服务运行异常：{$this->argument('id')}",
+                'console:serverRun',
+                "微服务执行过程中发生异常：{$exception->getMessage()}",
+                false,
+                [
+                    'exception_message' => $exception->getMessage(),
+                    'exception_file' => $exception->getFile(),
+                    'exception_line' => $exception->getLine(),
+                    'exception_code' => $exception->getCode(),
+                    'exception_trace' => $exception->getTrace(),
+                    'server_id' => $this->argument('id'),
+                    'params' => $params ?? [],
+                ]
+            );
             $this->error($exception->getMessage());
         }
         return true;

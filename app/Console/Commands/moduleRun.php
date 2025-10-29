@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\SystemLog;
 use Illuminate\Console\Command;
 
 class moduleRun extends Command
@@ -45,6 +46,21 @@ class moduleRun extends Command
                 $params = $this->argument('params');
                 $instance->run($this, ...$params);
             }catch (\Exception $exception){
+                SystemLog::systemRunning(
+                    "模块运行异常：{$moduleId}",
+                    'console:moduleRun',
+                    "模块执行过程中发生异常：{$exception->getMessage()}",
+                    false,
+                    [
+                        'exception_message' => $exception->getMessage(),
+                        'exception_file' => $exception->getFile(),
+                        'exception_line' => $exception->getLine(),
+                        'exception_code' => $exception->getCode(),
+                        'exception_trace' => $exception->getTrace(),
+                        'module_id' => $moduleId,
+                        'params' => $params ?? [],
+                    ]
+                );
                 $this->error($exception->getMessage());
             }
         }else{

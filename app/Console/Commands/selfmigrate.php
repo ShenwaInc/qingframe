@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Http\Middleware\App;
+use App\Models\SystemLog;
 use App\Services\CacheService;
 use App\Services\FileService;
 use App\Services\MSService;
@@ -120,6 +121,19 @@ class selfmigrate extends Command
             CacheService::flush();
             $this->info('Qingwork framework migrate successfully.');
         } catch (\Exception $exception){
+            SystemLog::systemRunning(
+                "系统数据库迁移异常",
+                'console:selfmigrate',
+                "数据库迁移过程中发生异常：{$exception->getMessage()}",
+                false,
+                [
+                    'exception_message' => $exception->getMessage(),
+                    'exception_file' => $exception->getFile(),
+                    'exception_line' => $exception->getLine(),
+                    'exception_code' => $exception->getCode(),
+                    'exception_trace' => $exception->getTrace(),
+                ]
+            );
             $this->error("Migrate fail:".$exception->getMessage());
         }
 

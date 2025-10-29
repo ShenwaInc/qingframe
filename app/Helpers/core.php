@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\SystemLog;
 use App\Services\ExceptionService;
 use App\Services\FileService;
 use Illuminate\Support\Facades\Cache;
@@ -49,6 +50,19 @@ function serv(...$params){
             return new ExceptionService("Service $className has stopped.");
         }
     }catch (Exception $exception){
+        SystemLog::systemRunning(
+            "微服务启动失败",
+            'service:start',
+            $exception->getMessage(),
+            false,
+            [
+                'file' => $exception->getFile() . ":" . $exception->getLine(),
+                'code' => $exception->getCode(),
+                'trace' => $exception->getTrace(),
+                'service' => $identity,
+                'params' => $params,
+            ]
+        );
         return new ExceptionService($exception->getMessage());
     }
     $_servers[$serverId] = $instance;

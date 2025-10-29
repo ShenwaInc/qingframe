@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Http\Middleware\App;
+use App\Models\SystemLog;
 use App\Services\FileService;
 use App\Services\MSService;
 use Illuminate\Console\Command;
@@ -56,6 +57,20 @@ class servermake extends Command
                 return false;
             }
         }catch (\Exception $exception){
+            SystemLog::systemRunning(
+                "微服务创建异常：{$identity}",
+                'console:servermake',
+                "微服务创建过程中发生异常：{$exception->getMessage()}",
+                false,
+                [
+                    'exception_message' => $exception->getMessage(),
+                    'exception_file' => $exception->getFile(),
+                    'exception_line' => $exception->getLine(),
+                    'exception_code' => $exception->getCode(),
+                    'exception_trace' => $exception->getTrace(),
+                    'identity' => $identity,
+                ]
+            );
             $this->error($exception->getMessage());
             return false;
         }

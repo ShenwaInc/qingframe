@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Http\Middleware\App;
+use App\Models\SystemLog;
 use App\Services\FileService;
 use App\Services\ModuleService;
 use Illuminate\Console\Command;
@@ -61,6 +62,20 @@ class modulemake extends Command {
                 return $this->report("Package $identity already exists!");
             }
         }catch (\Exception $exception){
+            SystemLog::systemRunning(
+                "模块创建异常：{$identity}",
+                'console:modulemake',
+                "模块创建过程中发生异常：{$exception->getMessage()}",
+                false,
+                [
+                    'exception_message' => $exception->getMessage(),
+                    'exception_file' => $exception->getFile(),
+                    'exception_line' => $exception->getLine(),
+                    'exception_code' => $exception->getCode(),
+                    'exception_trace' => $exception->getTrace(),
+                    'arguments' => $arguments,
+                ]
+            );
             return $this->report($exception->getMessage());
         }
         $package = public_path("addons/$identity/");
