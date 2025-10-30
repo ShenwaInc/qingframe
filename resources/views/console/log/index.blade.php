@@ -55,7 +55,7 @@
 
                     <div class="layui-inline">
                         <button class="layui-btn" lay-submit lay-filter="search">@lang('搜索')</button>
-                        <a href="{{ wurl('log/export', request()->query()) }}" class="layui-btn layui-btn-normal">导出</a>
+                        <a href="{{ wurl('log/export', request()->query()) }}" class="layui-btn layui-btn-normal">@lang('导出')</a>
                         <a href="{{ wurl('logs') }}" class="layui-btn layui-btn-primary">@lang('reset')</a>
                     </div>
                 </div>
@@ -106,8 +106,8 @@
                         </td>
                         <td>{{ $log->created_at->format('Y-m-d H:i:s') }}</td>
                         <td>
-                            <a href="{{ wurl('log/' . $log->id) }}" class="text-blue ajaxshow">
-                                @lang('查看详情')
+                            <a href="{{ wurl('log/' . $log->id) }}" class="text-blue ajaxshow" title="@lang('查看日志详情')">
+                                @lang('详情')
                             </a>
                         </td>
                     </tr>

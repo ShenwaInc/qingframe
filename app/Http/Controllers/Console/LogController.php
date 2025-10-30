@@ -41,7 +41,7 @@ class LogController extends Controller
         return $this->globalView('console.log.detail', [
             'log'=>$log,
             'logTypes'=>$this->getTypes(),
-            'title'=>__('detailOf', ['data'=>__('records')])
+            'title'=>__('查看日志详情')
         ]);
     }
 

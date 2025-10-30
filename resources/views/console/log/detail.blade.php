@@ -42,7 +42,7 @@
                     <td>
                         <div class="layui-card layui-bg-gray margin-sm">
                             <div class="layui-card-body pre-wrap" style="max-width: 785px; overflow: hidden;">
-                                {{ $log->content ?: __('暂无数据') }}
+                                {{ $log->content }}
                             </div>
                         </div>
                     </td>

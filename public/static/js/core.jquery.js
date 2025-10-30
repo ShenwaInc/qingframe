@@ -303,8 +303,8 @@ if(typeof Basetoken == 'undefined'){
             });
             let UploadBtn = Ajaxwindow.find(".attach-uploader"), groupId = 0;
             const uploadUrl = UploadBtn.data('url');
-            if(Ajaxwindow.find('.category .cate-item.layui-border-green').length>0){
-                groupId = Ajaxwindow.find('.category .cate-item.layui-border-green').data('id');
+            if(Ajaxwindow.find('.category .cate-item.active').length>0){
+                groupId = Ajaxwindow.find('.category .cate-item.active').attr('data-id') || 0;
             }
             const uploadDone = (res)=>{
                 if(res.type!=='success'){

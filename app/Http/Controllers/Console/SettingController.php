@@ -319,7 +319,7 @@ class SettingController extends Controller
         if ($_W['config']['site']['id']==0){
             return redirect("console/active");
         }
-        $return = array('title'=>'系统管理','op'=>$op,'components'=>array());
+        $return = array('title'=>__('系统管理'),'op'=>$op,'components'=>array());
         if (!isset($_W['setting']['page'])){
             $_W['setting']['page'] = $_W['page'];
         }
