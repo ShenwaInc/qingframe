@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 
 class SystemLog extends Model
 {
@@ -175,6 +176,42 @@ class SystemLog extends Model
                 'request_params' => $request->all(), // 自动记录请求参数
             ]),
         ]);
+    }
+
+    /**
+     * 自动清理过期日志
+    */
+    public static function autoClear()
+    {
+        $autoClear = env('LOG_AUTO_CLEAR', '');
+        if (!$autoClear) return;
+        list($type, $value) = explode(':', $autoClear);
+        switch ($type){
+            case 'time' : {
+                $time = Carbon::now();
+                if(Str::contains($value, 'months')){
+                    $time->subMonths((int)str_replace('months', '', $value));
+                }elseif (Str::contains($value, 'years')){
+                    $time->subYears((int)str_replace('years', '', $value));
+                }else{
+                    $time->subDays(intval($value));
+                }
+                self::where('created_at', '<', $time)->delete();
+                break;
+            }
+            case 'limit' : {
+                $keepCount = (int)$value;
+                if($keepCount>0 && self::count()>$keepCount){
+                    $keepMinId = self::orderBy('created_at', 'desc')
+                        ->skip($keepCount)
+                        ->take(1)
+                        ->value('id');
+                    if($keepMinId) self::where('id', '<', $keepMinId)->delete();
+                }
+                self::where('id', '<', self::max('id') - intval($value))->delete();
+                break;
+            }
+        }
     }
 
     public static function formatSql(string $sql, array $bindings): string

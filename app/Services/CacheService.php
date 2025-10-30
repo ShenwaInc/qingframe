@@ -566,6 +566,8 @@ class CacheService
         if ($_W['uniacid']){
             SettingService::uni_load('',$_W['uniacid']);
         }
+        //自动清理日志
+        SystemLog::autoClear();
         try {
             serv('language')->langUsable(false);
         }catch (\Exception $exception){

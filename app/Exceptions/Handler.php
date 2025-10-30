@@ -44,18 +44,23 @@ class Handler extends ExceptionHandler
             return;
         }
         if (Schema::hasTable('system_logs')) {
+            $module = get_class($exception);
+            $errCode = $exception->getCode();
+            if ($exception instanceof NotFoundHttpException){
+                $errCode = 404;
+            }
             if ($exception instanceof QueryException){
                 SystemLog::database(
-                    'QueryException:Handle',
+                    $module,
                     $exception->getSql(),
                     $exception->getBindings(),
-                    'MySQL查询异常',
+                    "MySQL查询异常({$errCode})",
                     0,
                     false,
                     $exception->getMessage()
                 );
             }else{
-                SystemLog::error('服务器错误(' . $exception->getCode() . ')', 'Exception:report', $exception->getMessage(), $exception->getCode(), [
+                SystemLog::error("服务器错误({$errCode})", $module, $exception->getMessage(), $errCode, [
                     'file' => $exception->getFile() . ":" . $exception->getLine(),
                     'trace' => $exception->getTraceAsString(),
                     'path'   => url()->current(),

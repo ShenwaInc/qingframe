@@ -22,7 +22,7 @@
         <div class="layui-card-header">
             <form class="layui-form" lay-filter="searchForm" method="get">
                 <div class="layui-form-item">
-                    <div class="layui-inline">
+                    <div class="layui-inline" style="width: 150px;">
                         <select name="type" lay-search>
                             <option value="">@lang('全部类型')</option>
                             @foreach($logTypes as $key => $name)
@@ -33,7 +33,7 @@
                         </select>
                     </div>
 
-                    <div class="layui-inline">
+                    <div class="layui-inline" style="width: 100px;">
                         <select name="status">
                             <option value="">@lang('全部状态')</option>
                             <option value="1" {{ request('status') === '1' ? 'selected' : '' }}>@lang('成功')</option>
@@ -41,7 +41,7 @@
                         </select>
                     </div>
 
-                    <div class="layui-inline" style="min-width: 320px;">
+                    <div class="layui-inline" style="min-width: 250px;">
                         <input type="text" name="keyword" placeholder="@lang('关键词搜索(标题/内容/IP/模块/用户)')" value="{{ request('keyword') }}" class="layui-input">
                     </div>
 
@@ -55,6 +55,7 @@
 
                     <div class="layui-inline">
                         <button class="layui-btn" lay-submit lay-filter="search">@lang('搜索')</button>
+                        <a href="{{ wurl('log/export', request()->query()) }}" class="layui-btn layui-btn-normal">导出</a>
                         <a href="{{ wurl('logs') }}" class="layui-btn layui-btn-primary">@lang('reset')</a>
                     </div>
                 </div>
