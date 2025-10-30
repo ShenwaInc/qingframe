@@ -3,6 +3,7 @@
 namespace App\Exports;
 
 use App\Models\SystemLog;
+use Illuminate\Support\Carbon;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
