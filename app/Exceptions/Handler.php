@@ -4,9 +4,12 @@ namespace App\Exceptions;
 
 use App\Models\SystemLog;
 use Exception;
+use Illuminate\Auth\AuthenticationException;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Support\Facades\Schema;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Throwable;
 
 class Handler extends ExceptionHandler
 {
@@ -37,14 +40,29 @@ class Handler extends ExceptionHandler
      */
     public function report(Exception $exception)
     {
-        if (!($exception instanceof NotFoundHttpException) && Schema::hasTable('system_logs')) {
-            SystemLog::error('服务器错误(' . $exception->getCode() . ')', 'Exception:report', $exception->getMessage(), $exception->getCode(), [
-                'file' => $exception->getFile() . ":" . $exception->getLine(),
-                'trace' => $exception->getTraceAsString(),
-                'path'   => url()->current(),
-                'method'  => request()->method(),
-                'params'  => request()->all(),
-            ]);
+        if (!$this->shouldReport($exception)){
+            return;
+        }
+        if (Schema::hasTable('system_logs')) {
+            if ($exception instanceof QueryException){
+                SystemLog::database(
+                    'QueryException:Handle',
+                    $exception->getSql(),
+                    $exception->getBindings(),
+                    'MySQL查询异常',
+                    0,
+                    false,
+                    $exception->getMessage()
+                );
+            }else{
+                SystemLog::error('服务器错误(' . $exception->getCode() . ')', 'Exception:report', $exception->getMessage(), $exception->getCode(), [
+                    'file' => $exception->getFile() . ":" . $exception->getLine(),
+                    'trace' => $exception->getTraceAsString(),
+                    'path'   => url()->current(),
+                    'method'  => request()->method(),
+                    'className' => get_class($exception)
+                ]);
+            }
         }
         parent::report($exception);
     }
@@ -59,5 +77,19 @@ class Handler extends ExceptionHandler
     public function render($request, Exception $exception)
     {
         return parent::render($request, $exception);
+    }
+
+    public function shouldReport(Exception $exception)
+    {
+        if ($exception instanceof AuthenticationException){
+            //不记录未登录异常捕捉
+            return false;
+        }
+        if ($exception instanceof NotFoundHttpException){
+            //不记录未找到路由异常捕捉（开发环境除外）
+            return (bool)env('APP_DEVELOPMENT',0);
+        }
+
+        return true;
     }
 }

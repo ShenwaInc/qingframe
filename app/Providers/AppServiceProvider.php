@@ -2,7 +2,10 @@
 
 namespace App\Providers;
 
+use App\Jobs\RecordSlowQuery;
+use App\Models\SystemLog;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -24,7 +27,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        //定义微服务模板调用
         Blade::directive("serverView", function ($template=''){
             $realname = str_replace(array(":", ".","'", '"'), array("/views/", "/"), $template);
             $path = base_path("servers/" . $realname . ".blade.php");
@@ -37,6 +40,7 @@ class AppServiceProvider extends ServiceProvider
             }
             return "<?php echo Illuminate\Support\Facades\View::file('$path')->render() ?>";
         });
+        //定义应用模块模板调用
         Blade::directive("moduleView", function ($template=''){
             if (strexists($template, ":")){
                 $view = str_replace(array(":", ".","'", '"'), array("/views/", "/"), $template);
@@ -54,5 +58,25 @@ class AppServiceProvider extends ServiceProvider
             }
             return "<?php echo Illuminate\Support\Facades\View::file('$path')->render() ?>";
         });
+        //异步记录慢查询日志
+        DB::listen(function ($query) {
+            // 忽略日志相关操作
+            if (strpos($query->sql, 'system_logs') !== false){
+                return;
+            }
+            // 慢查询阈值（单位：秒，示例为1秒）
+            $slowThreshold = env('LOG_SLOW_QUERY', 0);
+            if ($slowThreshold && $query->time > $slowThreshold){
+                //记录日志查询
+                $fullSql = SystemLog::formatSql($query->sql, $query->bindings);
+                RecordSlowQuery::dispatch(
+                    $fullSql,
+                    $query->time, // 执行时间（毫秒）
+                    $query->connectionName, // 数据库连接名
+                    $query->bindings // 绑定参数
+                );
+            }
+        });
     }
+
 }

@@ -41,7 +41,7 @@
                     <th>@lang('内容')</th>
                     <td>
                         <div class="layui-card layui-bg-gray margin-sm">
-                            <div class="layui-card-body pre-wrap">
+                            <div class="layui-card-body pre-wrap" style="max-width: 785px; overflow: hidden;">
                                 {{ $log->content ?: __('暂无数据') }}
                             </div>
                         </div>
@@ -99,7 +99,7 @@
                         <td>
                             <div class="layui-card layui-bg-gray margin-sm">
                                 <div class="layui-card-body">
-                                    <pre class="pre-wrap">{{ json_encode($log->extra, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) }}</pre>
+                                    <pre class="pre-wrap" style="max-width: 785px; overflow: hidden;">{{ json_encode($log->extra, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) }}</pre>
                                 </div>
                             </div>
                         </td>

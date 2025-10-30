@@ -112,7 +112,10 @@ class SystemLog extends Model
         string $module,
         string $sql,
         array $bindings = [],
+        string $title = '',
         int $costMs = 0,
+        bool $status = true,
+        string $content = null,
         int $rowsAffected = 0
     ): self {
         $user = auth()->user();
@@ -120,15 +123,16 @@ class SystemLog extends Model
         return self::create([
             'type' => 'database',
             'module' => $module,
-            'title' => '数据库操作',
-            'content' => "SQL执行完成（耗时{$costMs}ms）",
+            'title' => $title ?: '数据库操作',
+            'content' => $content ?: "SQL执行完成（耗时{$costMs}ms）",
             'user_id' => $user->uid ?? 0,
             'username' => $user->username ?? '系统',
-            'status' => true,
+            'status' => $status,
             'cost_ms' => $costMs,
             'extra' => [
                 'sql' => $sql,
                 'bindings' => $bindings,
+                'fullSql' => self::formatSql($sql, $bindings),
                 'rows_affected' => $rowsAffected,
             ],
         ]);
@@ -169,9 +173,27 @@ class SystemLog extends Model
             'error_code' => $errorCode,
             'extra' => array_merge($extra, [
                 'request_params' => $request->all(), // 自动记录请求参数
-                'stack_trace' => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 5), // 简化堆栈信息
             ]),
         ]);
+    }
+
+    public static function formatSql(string $sql, array $bindings): string
+    {
+        $bindings = array_map(function ($binding) {
+            if (is_string($binding)) {
+                return "'" . addslashes($binding) . "'";
+            }
+            if (is_bool($binding)) {
+                return $binding ? '1' : '0';
+            }
+            if ($binding === null) {
+                return 'NULL';
+            }
+            return $binding;
+        }, $bindings);
+
+        // 替换 ? 为实际参数（vsprintf 在 PHP7.2 中正常支持）
+        return vsprintf(str_replace('?', '%s', $sql), $bindings);
     }
 
 
