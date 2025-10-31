@@ -17,9 +17,11 @@ class SystemLog extends Model
     ];
 
     protected $casts = [
-        'extra' => 'array',
+        'extra' => 'json',
         'status' => 'boolean',
+        'cost_ms' => 'integer'
     ];
+    protected $dateFormat = 'Y-m-d H:i:s';
 
     // 关闭updated_at自动更新（日志创建后不修改）
     public $timestamps = true;

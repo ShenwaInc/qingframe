@@ -121,6 +121,8 @@ class selfmigrate extends Command
             CacheService::flush();
             $this->info('Qingwork framework migrate successfully.');
         } catch (\Exception $exception){
+            $this->error("Migrate fail:".$exception->getMessage());
+            if (!Schema::hasTable('system_logs')) return false;
             SystemLog::systemRunning(
                 "系统数据库迁移异常",
                 'console:selfmigrate',
@@ -134,7 +136,6 @@ class selfmigrate extends Command
                     'exception_trace' => $exception->getTrace(),
                 ]
             );
-            $this->error("Migrate fail:".$exception->getMessage());
         }
 
         return true;

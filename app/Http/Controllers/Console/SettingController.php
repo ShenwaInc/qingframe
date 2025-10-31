@@ -13,6 +13,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 class SettingController extends Controller
 {
@@ -181,18 +183,23 @@ class SettingController extends Controller
             CacheService::flush();
             SystemLog::userOperation('系统升级', 'setting:sysupgrade', '执行系统升级流程');
         }catch (\Exception $exception){
-            SystemLog::systemRunning(
-                '系统升级异常',
-                'setting:sysupgrade',
-                "系统升级过程中发生异常：{$exception->getMessage()}",
-                false,
-                [
-                    'exception_file' => $exception->getFile(),
-                    'exception_line' => $exception->getLine(),
-                    'exception_code' => $exception->getCode(),
-                    'exception_trace' => $exception->getTrace()
-                ]
-            );
+            if (Schema::hasTable('system_logs')){
+                SystemLog::error(
+                    '系统升级异常',
+                    'setting:sysupgrade',
+                    "系统升级过程中发生异常：{$exception->getMessage()}",
+                    $exception->getCode(),
+                    [
+                        'file' => $exception->getFile() . ":" . $exception->getLine(),
+                        'trace' => $exception->getTrace()
+                    ]
+                );
+            }else{
+                Log::error($exception->getMessage(), [
+                    'file' => $exception->getFile() . ":" . $exception->getLine(),
+                    'trace' => $exception->getTrace()
+                ]);
+            }
             return $this->message($exception->getMessage());
         }
         return $this->message('恭喜您，升级成功！', wurl('setting'),'success');
