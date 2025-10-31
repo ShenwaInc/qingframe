@@ -43,31 +43,29 @@ class Handler extends ExceptionHandler
         if (!$this->shouldReport($exception)){
             return;
         }
-        if (Schema::hasTable('system_logs')) {
-            $module = get_class($exception);
-            $errCode = $exception->getCode();
-            if ($exception instanceof NotFoundHttpException){
-                $errCode = 404;
-            }
-            if ($exception instanceof QueryException){
-                SystemLog::database(
-                    $module,
-                    $exception->getSql(),
-                    $exception->getBindings(),
-                    "MySQL查询异常({$errCode})",
-                    0,
-                    false,
-                    $exception->getMessage()
-                );
-            }else{
-                SystemLog::error("服务器错误({$errCode})", $module, $exception->getMessage(), $errCode, [
-                    'file' => $exception->getFile() . ":" . $exception->getLine(),
-                    'trace' => $exception->getTraceAsString(),
-                    'path'   => url()->current(),
-                    'method'  => request()->method(),
-                    'className' => get_class($exception)
-                ]);
-            }
+        $module = get_class($exception);
+        $errCode = $exception->getCode();
+        if ($exception instanceof NotFoundHttpException){
+            $errCode = 404;
+        }
+        if ($exception instanceof QueryException){
+            SystemLog::database(
+                $module,
+                $exception->getSql(),
+                $exception->getBindings(),
+                "MySQL查询异常({$errCode})",
+                0,
+                false,
+                $exception->getMessage()
+            );
+        }else{
+            SystemLog::error("服务器错误({$errCode})", $module, $exception->getMessage(), $errCode, [
+                'file' => $exception->getFile() . ":" . $exception->getLine(),
+                'trace' => $exception->getTraceAsString(),
+                'path'   => url()->current(),
+                'method'  => request()->method(),
+                'className' => get_class($exception)
+            ]);
         }
         parent::report($exception);
     }

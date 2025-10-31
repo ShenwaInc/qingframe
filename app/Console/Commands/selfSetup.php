@@ -2,14 +2,16 @@
 
 namespace App\Console\Commands;
 
-use App\Http\Middleware\App;
 use App\Models\Account;
 use App\Services\CloudService;
 use App\Services\UserService;
 use Illuminate\Console\Command;
-use Illuminate\Http\Request;
+use Illuminate\Database\DatabaseManager;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class selfSetup extends Command
 {
@@ -59,7 +61,8 @@ class selfSetup extends Command
     /**
      * Execute the console command.
      *
-     * @return mixed|void
+     * @return array|bool|string|void|null
+     * @throws \Exception
      */
     public function handle()
     {
@@ -67,34 +70,50 @@ class selfSetup extends Command
         $_W['TerminalSilence'] = 1;
         $params = $this->arguments();
         $title = $params['appName']?:$this->defaultParams['name'];
-        if (!isset($_W['framework'])){
-            $application = new App();
-            $application->initialize(new Request());
-        }
         if (file_exists(storage_path('installed.bin'))){
             $this->message("The system has been installed.");
         }
         //1.数据库迁移
         try {
+            $this->call('config:clear');
+
+            $databaseCFG = config('database.connections.mysql');
+            if ($databaseCFG['username']=='forge'){
+                $installer = Cache::get('installer');
+                if (!empty($installer['database'])){
+                    foreach ($databaseCFG as $key=>$cfg){
+                        if(!isset($installer['database'][$key])) continue;
+                        $databaseCFG[$key] = $installer['database'][$key];
+                    }
+                    $databaseCFG['strict'] = false;
+                    Config::set('database.default', 'mysql');
+                    app('config')->set('database.default', 'mysql');
+                    Config::set('database.connections.mysql',$databaseCFG);
+                    app('config')->set('database.connections.mysql',$databaseCFG);
+                }else{
+                    $this->error("Undefined database configure.");
+                    return;
+                }
+            }
+
+            $db = app(DatabaseManager::class);
+            $db->purge('mysql');
+
             @ini_set('max_execution_time',900);
             //import database
             $this->call('migrate');
         }catch (\Exception $exception){
-            Log::error($exception->getMessage(), [
-                'code'=>$exception->getCode(),
-                'trace'=>$exception->getTrace()
-            ]);
-            return $this->message($_W['config']['debugMode']?$exception->getMessage():'Database migrate failed.');
+            return $this->message($_W['config']['debugMode']?$exception->getMessage():'Database migrate failed.(' . \config('database.connections.mysql.username').')');
         }
         //2.创建默认账户
         $authKey = $this->option("authKey");
         if (empty($authKey) || $authKey=="default"){
-            $authKey = \Str::random(12);
+            $authKey = Str::random(12);
         }
-        $salt = \Str::random(8);
+        $salt = Str::random(8);
         $username = $params['user'] ?: "admin";
         $founderPWD = $params['pwd'] ?: "123456";
-        $pwdHash = sha1("{$founderPWD}-{$salt}-{$authKey}");
+        $pwdHash = sha1("$founderPWD-$salt-$authKey");
         $register_type = 0;
         if ($username=='admin' && $founderPWD=='123456'){
             $register_type = 1;
@@ -106,7 +125,7 @@ class selfSetup extends Command
             'password'=>$pwdHash,
             'salt'=>$salt,
             'status'=>2,
-            'joindate'=>TIMESTAMP,
+            'joindate'=>time(),
             'register_type'=>$register_type,
             'endtime'=>0
         );
@@ -116,9 +135,9 @@ class selfSetup extends Command
         $_W['user'] = $founder;
         DB::table('users_profile')->insert(array(
             'avatar'=>'/web/resource/images/noavatar_middle.gif',
-            'edittime'=>TIMESTAMP,
+            'edittime'=>time(),
             'uid'=>$uid,
-            'createtime'=>TIMESTAMP,
+            'createtime'=>time(),
             'nickname'=>$founder['username']
         ));
         //3.创建默认平台
@@ -130,7 +149,7 @@ class selfSetup extends Command
             'description' => $this->defaultParams['accountDescription'],
             'logo'=>$this->defaultParams['logo'],
             'title_initial' => 'W',
-            'createtime' => TIMESTAMP,
+            'createtime' => time(),
             'create_uid' => $uid
         ));
         if (empty($uniacid)) return $this->message('System initialization failed.');
@@ -142,17 +161,17 @@ class selfSetup extends Command
 
         //4.初始化云服务
         DB::table('gxswa_cloud')->insert(array(
-            'identity'=>$_W['config']['identity'],
+            'identity'=>env('APP_IDENTITY', 'swa_framework_laravel'),
             'name'=>'轻如云系统V1',
             'modulename'=>'',
             'type'=>0,
             'logo'=>'//shenwahuanan.oss-cn-shenzhen.aliyuncs.com/images/4/2021/08/pK8iHw0eQg5hHgg4Kqe5E1E1hSBpZS.png',
             'website'=>'https://www.gxswa.com/laravel/',
             'rootpath'=>'',
-            'version'=>QingVersion,
-            'releasedate'=>QingRelease,
-            'addtime'=>TIMESTAMP,
-            'dateline'=>TIMESTAMP
+            'version'=>env('APP_VERSION'),
+            'releasedate'=>(int)env('APP_RELEASE'),
+            'addtime'=>time(),
+            'dateline'=>time()
         ));
 
         //5.初始化默认设置
@@ -166,7 +185,7 @@ class selfSetup extends Command
                     'copyright'=>$this->defaultParams['copyright'],
                     'links'=>'<a class="copyright-link" href="https://www.yuque.com/shenwa/qingru" target="_blank">开发文档</a><a class="copyright-link ajaxshow" href="/console/setting/market">应用市场</a><a class="copyright-link" href="https://www.gxit.org/" target="_blank">关于我们</a><a class="copyright-link ajaxshow" href="/console/report/post">提交工单</a>',
                     'keywords'=>'SaaS软件，应用市场，APP开发，微信应用，微服务，微信营销，小程序开发，模块化开发，快速开发，脚手架，Laravel模块',
-                    'description'=>'轻如云系统是一个基于Laravel的跨平台快速开发框架，提供丰富的基础微服务，满足各类应用程序的快速开发需求'
+                    'description'=>'轻如云系统是一款多租户（SaaS）、模块化的WEB系统集成开放平台'
                 ))
             )
         ]);
@@ -200,7 +219,7 @@ class selfSetup extends Command
 
         //9.指定唯一平台
         if (!empty($this->defaultParams['accountId'])){
-            CloudService::CloudEnv("APP_UNIACID=0", "APP_UNIACID={$uniacid}");
+            CloudService::CloudEnv("APP_UNIACID=0", "APP_UNIACID=$uniacid");
         }
 
         $this->info('System installation completed');

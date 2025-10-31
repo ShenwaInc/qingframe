@@ -5,9 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
+
+define('SystemInstalled', file_exists(base_path('storage/installed.bin')));
 
 class SystemLog extends Model
 {
@@ -54,7 +54,7 @@ class SystemLog extends Model
         array $extra = [],
         ?Request $request = null
     ): void {
-        if (!Schema::hasTable('system_logs')) return;
+        if(!SystemInstalled) return;
         $request = $request ?? request(); // 默认为当前请求
         $user = auth()->user();
 
@@ -91,7 +91,7 @@ class SystemLog extends Model
         bool $status = true,
         array $extra = []
     ): void {
-        if (!Schema::hasTable('system_logs')) return;
+        if(!SystemInstalled) return;
         self::create([
             'type' => 'system_running',
             'module' => $module,
@@ -125,7 +125,7 @@ class SystemLog extends Model
         string $content = null,
         int $rowsAffected = 0
     ): void {
-        if (!Schema::hasTable('system_logs')) return;
+        if(!SystemInstalled) return;
         $user = auth()->user();
 
         self::create([
@@ -164,11 +164,7 @@ class SystemLog extends Model
         array $extra = [],
         ?Request $request = null
     ): void {
-        if (!Schema::hasTable('system_logs')){
-            Log::error($title, $extra);
-            return;
-        }
-
+        if(!SystemInstalled) return;
         $request = $request ?? request();
         $user = auth()->user();
 
