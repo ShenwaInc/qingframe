@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 class SystemLog extends Model
@@ -42,7 +44,7 @@ class SystemLog extends Model
      * @param bool $status 状态（成功/失败）
      * @param array $extra 扩展信息
      * @param Request|null $request 请求对象（自动获取IP/URL等）
-     * @return self
+     * @return void
      */
     public static function userOperation(
         string $title,
@@ -51,11 +53,12 @@ class SystemLog extends Model
         bool $status = true,
         array $extra = [],
         ?Request $request = null
-    ): self {
+    ): void {
+        if (!Schema::hasTable('system_logs')) return;
         $request = $request ?? request(); // 默认为当前请求
         $user = auth()->user();
 
-        return self::create([
+        self::create([
             'type' => 'user_operation',
             'module' => $module,
             'title' => $title,
@@ -79,7 +82,7 @@ class SystemLog extends Model
      * @param string|null $content 详情
      * @param bool $status 状态
      * @param array $extra 扩展信息（如进程ID、内存占用）
-     * @return self
+     * @return void
      */
     public static function systemRunning(
         string $title,
@@ -87,8 +90,9 @@ class SystemLog extends Model
         ?string $content = null,
         bool $status = true,
         array $extra = []
-    ): self {
-        return self::create([
+    ): void {
+        if (!Schema::hasTable('system_logs')) return;
+        self::create([
             'type' => 'system_running',
             'module' => $module,
             'title' => $title,
@@ -109,7 +113,7 @@ class SystemLog extends Model
      * @param array $bindings 绑定参数
      * @param int $costMs 耗时（毫秒）
      * @param int $rowsAffected 影响行数
-     * @return self
+     * @return void
      */
     public static function database(
         string $module,
@@ -120,10 +124,11 @@ class SystemLog extends Model
         bool $status = true,
         string $content = null,
         int $rowsAffected = 0
-    ): self {
+    ): void {
+        if (!Schema::hasTable('system_logs')) return;
         $user = auth()->user();
 
-        return self::create([
+        self::create([
             'type' => 'database',
             'module' => $module,
             'title' => $title ?: '数据库操作',
@@ -149,7 +154,7 @@ class SystemLog extends Model
      * @param string $errorCode 错误码
      * @param array $extra 扩展信息（如堆栈、请求参数）
      * @param Request|null $request 请求对象
-     * @return self
+     * @return void
      */
     public static function error(
         string $title,
@@ -158,11 +163,16 @@ class SystemLog extends Model
         string $errorCode = '',
         array $extra = [],
         ?Request $request = null
-    ): self {
+    ): void {
+        if (!Schema::hasTable('system_logs')){
+            Log::error($title, $extra);
+            return;
+        }
+
         $request = $request ?? request();
         $user = auth()->user();
 
-        return self::create([
+        self::create([
             'type' => 'error',
             'module' => $module,
             'title' => $title,

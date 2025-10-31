@@ -122,7 +122,6 @@ class selfmigrate extends Command
             $this->info('Qingwork framework migrate successfully.');
         } catch (\Exception $exception){
             $this->error("Migrate fail:".$exception->getMessage());
-            if (!Schema::hasTable('system_logs')) return false;
             SystemLog::systemRunning(
                 "系统数据库迁移异常",
                 'console:selfmigrate',
