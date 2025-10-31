@@ -2,19 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Account;
-use App\Models\Module;
-use App\Models\UniAccountUser;
-use App\Services\ModuleService;
-use App\Services\UserService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Schema;
 
 class InstallController extends Controller
 {

@@ -4,9 +4,7 @@ namespace App\Console\Commands;
 
 use App\Http\Middleware\App;
 use App\Models\Account;
-use App\Models\SystemLog;
 use App\Services\CloudService;
-use App\Services\ModuleService;
 use App\Services\UserService;
 use Illuminate\Console\Command;
 use Illuminate\Http\Request;
@@ -82,20 +80,10 @@ class selfSetup extends Command
             //import database
             $this->call('migrate');
         }catch (\Exception $exception){
-            SystemLog::systemRunning(
-                "系统安装数据库迁移异常",
-                'console:selfSetup',
-                "系统安装过程中数据库迁移发生异常：{$exception->getMessage()}",
-                false,
-                [
-                    'exception_message' => $exception->getMessage(),
-                    'exception_file' => $exception->getFile(),
-                    'exception_line' => $exception->getLine(),
-                    'exception_code' => $exception->getCode(),
-                    'exception_trace' => $exception->getTrace(),
-                    'params' => $params,
-                ]
-            );
+            Log::error($exception->getMessage(), [
+                'code'=>$exception->getCode(),
+                'trace'=>$exception->getTrace()
+            ]);
             return $this->message($_W['config']['debugMode']?$exception->getMessage():'Database migrate failed.');
         }
         //2.创建默认账户
@@ -188,19 +176,6 @@ class selfSetup extends Command
         }catch (\Exception $exception){
             //创建文件映射失败
             Log::error('storage_link_fail',array('errno'=>-1,'message'=>$exception->getMessage()));
-            SystemLog::systemRunning(
-                "系统安装文件映射异常",
-                'console:selfSetup',
-                "系统安装过程中创建文件映射失败：{$exception->getMessage()}",
-                false,
-                [
-                    'exception_message' => $exception->getMessage(),
-                    'exception_file' => $exception->getFile(),
-                    'exception_line' => $exception->getLine(),
-                    'exception_code' => $exception->getCode(),
-                    'exception_trace' => $exception->getTrace(),
-                ]
-            );
         }
 
         //6.更新环境变量
