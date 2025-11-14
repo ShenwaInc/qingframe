@@ -6,6 +6,8 @@ use App\Services\FileService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
+use Illuminate\SupportStr;
 
 /**
  * 调用服务方法
@@ -76,20 +78,25 @@ function assets($path, $secure = null){
     if (strpos($path, 'http')===0){
         return $path;
     }
-    if (file_exists(public_path($path)) && !\Str::startsWith($path, "/")){
+    if (file_exists(public_path($path)) && !Str::startsWith($path, "/")){
         $path = "/" . $path;
     }
     return $path;
 }
 
 if (!function_exists('post_var')){
-    function post_var($keys=array(),$datas=array()){
-        global $_GPC;
+    function post_var(array $keys, $params=null): array
+    {
+        if (empty($keys)){
+            return [];
+        }
         $data = array();
-        $datas = $datas ?: $_GPC;
+        if ($params===null){
+            $params = request()->all();
+        }
         foreach ($keys as $key){
-            if (isset($datas[$key])){
-                $data[$key] = $datas[$key];
+            if (isset($params[$key])){
+                $data[$key] = $params[$key];
             }
         }
         return $data;
@@ -133,7 +140,7 @@ function script_run($params, $basedir = MICRO_SERVER){
 }
 
 function strexists($string, $find) {
-    return \Str::contains($string,$find);
+    return Str::contains($string,$find);
 }
 
 function array_elements($keys, $src, $default = false) {
@@ -211,6 +218,13 @@ function referer() {
     return strip_tags($_W['referer']);
 }
 
+/**
+ * 获取控制台URL
+ * @param $segment string|null 路径
+ * @param $params array|null 参数
+ * @param $contain_domain boolean|null 是否包含域名
+ * @return string 控制台URL
+ */
 function wurl($segment="", $params = array(), $contain_domain = false){
     global $_W;
     $url = 'console';
@@ -221,7 +235,7 @@ function wurl($segment="", $params = array(), $contain_domain = false){
     }
     if (!empty($segment)){
         $segment = str_replace('.','/',$segment);
-        $url .= \Str::startsWith($segment, '/') ? $segment : '/' . $segment;
+        $url .= Str::startsWith($segment, '/') ? $segment : '/' . $segment;
     }
     if (!empty($params)) {
         $queryString = http_build_query($params, '', '&');
@@ -230,6 +244,14 @@ function wurl($segment="", $params = array(), $contain_domain = false){
     return $url;
 }
 
+/**
+ * 获取客户端URL
+ * @param $segment string|null 路由路径
+ * @param $params array|null 参数
+ * @param $noredirect boolean|null 是否跳转
+ * @param $addhost boolean|null 是否添加域名
+ * @return string 客户端URL
+ */
 function murl($segment, $params = array(), $noredirect = true, $addhost = false) {
     global $_W;
     if (strexists($segment,'.')){
@@ -242,7 +264,7 @@ function murl($segment, $params = array(), $noredirect = true, $addhost = false)
     }
 
     if (!empty($segment)){
-        $url .= \Str::startsWith($segment, '/') ? $segment : '/' .$segment;
+        $url .= Str::startsWith($segment, '/') ? $segment : '/' .$segment;
     }
 
     if (empty($params)){
@@ -276,13 +298,13 @@ function tomedia($src, $local_path = false, $is_cahce = false) {
         return wurl('util/wxcode') . ltrim($url, '.');
     }
 
-    if (\Str::startsWith($src,'//')) {
+    if (Str::startsWith($src,'//')) {
         return preg_replace('/^\/\//', $_W['sitescheme'], $src);
     }
-    if (\Str::startsWith($src,'http://') || \Str::startsWith($src,'https://')) {
+    if (Str::startsWith($src,'http://') || Str::startsWith($src,'https://')) {
         return $src;
     }
-    if (\Str::startsWith($src,'/') && file_exists(public_path($src))){
+    if (Str::startsWith($src,'/') && file_exists(public_path($src))){
         return defined('IN_SYS') ? assets($src) : $_W['siteroot'] . preg_replace('/^\//', '', $src);
     }
     if (file_exists($src)){
@@ -309,10 +331,10 @@ function globalMedia($src){
         return '';
     }
     global $_W;
-    if (\Str::startsWith($src,'http://') || \Str::startsWith($src,'https://')) {
+    if (Str::startsWith($src,'http://') || Str::startsWith($src,'https://')) {
         return $src;
     }
-    if (\Str::startsWith($src,'//')) {
+    if (Str::startsWith($src,'//')) {
         return preg_replace('/^\/\//', $_W['sitescheme'], $src);
     }
     if (file_exists(public_path($src))){
@@ -347,7 +369,7 @@ function random($len,$is_number=false){
         $stop = (int)pow(10,$len) - 1;
         return random_int($start, $stop);
     }
-    return \Str::random($len);
+    return Str::random($len);
 }
 
 function is_error($data) {

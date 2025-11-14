@@ -8,6 +8,7 @@ use App\Services\MemberService;
 use App\Services\SettingService;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 define('IN_MOBILE', true);
 
@@ -31,7 +32,7 @@ class AppRuntime
         global $_W;
         SettingService::Load();
         if($state = \request()->input("state", "")){
-            if (!empty($state) && \Str::startsWith($state, "we7sid-")){
+            if (!empty($state) && Str::startsWith($state, "we7sid-")){
                 $_W['session_id'] = str_replace("we7sid-", "", $state);
                 session()->setId($_W['session_id']);
             }

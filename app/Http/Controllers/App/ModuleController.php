@@ -22,7 +22,22 @@ class ModuleController extends Controller
 
             $site = $WeModule->create($module);
             if (empty($site)){
+                SystemLog::systemRunning(
+                    "模块不存在：{$module}",
+                    'app:module:entry',
+                    "模块不存在：{$module}",
+                    false,
+                    [
+                        'module' => $module,
+                        'segment1' => $segment1,
+                        'segment2' => $segment2,
+                    ]
+                );
                 abort(404, "Module {$module} not found");
+            }
+
+            if (method_exists($site, 'AppRequest')){
+                return $site->AppRequest($request, $segment1, $segment2);
             }
 
             $className = "Addons\\".$module."\app\Controllers\app\\".ucfirst($segment1)."Controller";
@@ -83,6 +98,25 @@ class ModuleController extends Controller
         try {
             $WeModule = new WeModule();
             $site = $WeModule->create($moduleName);
+
+            if (empty($site)){
+                SystemLog::systemRunning(
+                    "模块不存在：{$moduleName}",
+                    'api:module:entry',
+                    "模块不存在：{$moduleName}",
+                    false,
+                    [
+                        'module' => $moduleName,
+                        'segment1' => $segment1,
+                        'segment2' => $segment2,
+                    ]
+                );
+                abort(404, "Module {$moduleName} not found");
+            }
+
+            if (method_exists($site, 'ApiRequest')){
+                return $site->ApiRequest($request, $segment1, $segment2);
+            }
 
             $className = "Addons\\".$moduleName."\app\Controllers\api\\" . ucfirst($segment1) . "Controller";
             $method = $segment2;

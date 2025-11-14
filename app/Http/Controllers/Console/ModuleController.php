@@ -36,6 +36,17 @@ class ModuleController extends Controller
         try {
             $site = $WeModule->create($moduleName);
             if (empty($site)){
+                SystemLog::systemRunning(
+                    "模块请求异常：{$moduleName}",
+                    'console:module:HttpRequest',
+                    "模块请求处理过程中发生异常：模块不存在",
+                    false,
+                    [
+                        'module_name' => $moduleName,
+                        'segment1' => $segment1,
+                        'segment2' => $segment2,
+                    ]
+                );
                 abort(404, "Module {$moduleName} not found");
             }
             //记录操作日志
@@ -43,6 +54,10 @@ class ModuleController extends Controller
                 array('uid'=>$_W['uid'],'uniacid'=>$_W['uniacid'],'module_name'=>$moduleName),
                 array('createtime'=>TIMESTAMP,'type'=>2)
             );
+
+            if (method_exists($site, 'ConsoleRequest')){
+                return $site->ConsoleRequest($request, $segment1, $segment2);
+            }
 
             $className = "Addons\\".$moduleName."\app\Controllers\web\\".ucfirst($segment1)."Controller";
             $method = $segment2;

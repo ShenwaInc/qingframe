@@ -1,0 +1,20 @@
+<?php
+
+namespace Addons\dummy\app\Controllers\web;
+
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+
+
+class IndexController extends Controller
+{
+
+    public $moduleSite;
+    public $moduleConfig;
+    public $uniacid;
+
+    public function main(Request $request){
+        return 'Hello World!';
+    }
+
+}

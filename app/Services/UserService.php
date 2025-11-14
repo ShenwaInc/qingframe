@@ -120,22 +120,10 @@ class UserService
                 pdo_delete('users_founder_own_users', array('founder_uid' => $founder_own_user_info['founder_uid'], 'uid' => $founder_own_user_info['uid']));
             }
         }
-        if($record['type'] == 3) {
-            $clerk = pdo_get('activity_clerks', array('uid' => $record['uid']));
-            if(!empty($clerk)) {
-                $record['name'] = $clerk['name'];
-                $record['clerk_id'] = $clerk['id'];
-                $record['store_id'] = $clerk['storeid'];
-                $record['store_name'] = pdo_fetchcolumn('SELECT business_name FROM ' . tablename('activity_stores') . ' WHERE id = :id', array(':id' => $clerk['storeid']));
-                $record['clerk_type'] = '3';
-                $record['uniacid'] = $clerk['uniacid'];
-            }
-        } else {
-            $record['name'] = $record['username'];
-            $record['clerk_id'] = $user['uid'];
-            $record['store_id'] = 0;
-            $record['clerk_type'] = '2';
-        }
+        $record['name'] = $record['username'];
+        $record['clerk_id'] = $user['uid'];
+        $record['store_id'] = 0;
+        $record['clerk_type'] = '2';
         $third_info = pdo_getall('users_bind', array('uid' => $record['uid']), array(), 'third_type');
         if (!empty($third_info) && is_array($third_info)) {
             $record['qq_openid'] = $third_info[1]['bind_sign'];
