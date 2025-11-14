@@ -11,6 +11,9 @@ class CorePaylog extends Model
     protected $primaryKey = 'plid';
     protected $table = 'core_paylog';
 
+    public $timestamps = false;
+    protected $guarded = [];
+
     /**
      * 生成订单信息
      * @param $orderInfo array 订单信息 array类型
