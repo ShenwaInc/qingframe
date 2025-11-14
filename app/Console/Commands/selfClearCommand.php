@@ -67,7 +67,21 @@ class selfClearCommand extends Command
             base_path('manifest.yaml'),
             resource_path('template/web/composer.html'),
             app_path('Console/Commands/ModuleCustomRouteCommand.php'),
-            app_path('Console/Commands/selfclear.php')
+            app_path('Console/Commands/selfclear.php'),
+            app_path('Console/Commands/modulemake.php'),
+            public_path('web/resource/images/favicon.ico'),
+            base_path('database/migrations/2021_08_10_113449_create_activity_clerks_table.php'),
+            base_path('database/migrations/2021_08_10_113449_create_core_sessions_table.php'),
+            base_path('database/migrations/2021_08_10_113449_create_uni_verifycode_table.php'),
+            base_path('database/migrations/2021_08_10_113449_create_system_welcome_binddomain_table.php'),
+            base_path('database/migrations/2021_08_10_113449_create_stat_visit_table.php'),
+            base_path('database/migrations/2021_08_10_113449_create_stat_visit_ip_table.php'),
+            base_path('database/migrations/2021_08_10_113449_create_stat_fans_table.php'),
+            base_path('database/migrations/2021_08_10_113449_create_core_cache_table.php'),
+            base_path('database/migrations/2021_08_10_113449_create_mc_credits_record_table.php'),
+            base_path('database/migrations/2021_08_10_113449_create_mc_member_fields_table.php'),
+            base_path('database/migrations/2021_08_10_113449_create_mc_groups_table.php'),
+            base_path('database/migrations/2021_08_10_113449_create_mc_members_table.php'),
         );
         foreach ($unused as $file){
             if (file_exists($file)){

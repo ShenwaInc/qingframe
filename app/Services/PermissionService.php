@@ -74,7 +74,6 @@ class PermissionService {
         if (!empty($user_founder_info['founder_uid'])) {
             $owner_info = User::where('uid',$user_founder_info['founder_uid'])->first();
             $group_vice = DB::table('users_founder_group')->where('id',$owner_info['groupid'])->first();
-            $founder_group_num = AccountService::OwnerAccountNums($owner_info['uid'], 'vice_founder');
         }
         $store_create_table = DB::table('site_store_create_account');
         $create_buy_num['account'] = $store_create_table->leftJoin('account','site_store_create_account.uniacid','=','account.uniacid')->where(array(

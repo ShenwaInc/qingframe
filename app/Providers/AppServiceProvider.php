@@ -60,8 +60,8 @@ class AppServiceProvider extends ServiceProvider
         });
         //异步记录慢查询日志
         DB::listen(function ($query) {
-            // 忽略日志相关操作
-            if (strpos($query->sql, 'system_logs') !== false){
+            // 忽略日志、队列相关操作
+            if (strpos($query->sql, 'system_logs') !== false || strpos($query->sql, 'failed_jobs') !== false){
                 return;
             }
             // 慢查询阈值（单位：秒，示例为1秒）

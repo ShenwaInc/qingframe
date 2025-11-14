@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Services\UserService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class Account extends Model
 {
@@ -37,10 +38,9 @@ class Account extends Model
 
         $account['acid'] = $acid;
         $account['uniacid'] = $uniacid;
-        $account['token'] = \Str::random(32);
-        $account['encodingaeskey'] = \Str::random(43);
+        $account['token'] = Str::random(32);
+        $account['encodingaeskey'] = Str::random(43);
         DB::table(self::$tables['wechat'])->insert($account);
-        DB::table('mc_groups')->insert(array('uniacid' => $uniacid, 'title' => '默认会员组', 'isdefault' => 1));
         DB::table('uni_settings')->insert(array(
             'creditnames' => serialize(array('credit1' => array('title' => '积分', 'enabled' => 1), 'credit2' => array('title' => '余额', 'enabled' => 1))),
             'creditbehaviors' => serialize(array('activity' => 'credit1', 'currency' => 'credit2')),
@@ -48,6 +48,7 @@ class Account extends Model
             'default_site' => 0,
             'sync' => serialize(array('switch' => 0, 'acid' => '')),
         ));
+        @serv('ucenter')->createDefaultGroup();
         return $acid;
     }
 

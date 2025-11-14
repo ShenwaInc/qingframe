@@ -8,7 +8,7 @@ use App\Services\FileService;
 use App\Services\ModuleService;
 use Illuminate\Console\Command;
 
-class modulemake extends Command {
+class MakeModuleCommand extends Command {
     /**
      * The name and signature of the console command.
      *
@@ -98,16 +98,18 @@ class modulemake extends Command {
         }
         $maniFile = $package."manifest.json";
         if (!file_put_contents($maniFile, $Manifest)){
-            return $this->report("Create package faild: may not have permission.");
+            return $this->report("Create package failed: may not have permission.");
         }
-        FileService::mkdirs($package."/template/");
+        FileService::mkdirs($package."/views/");
         FileService::mkdirs($package."/static/");
-        $stubInstaller = resource_path('stub/module.install.stub');
-        $reader = fopen($stubInstaller, 'r');
-        $Installer = fread($reader, filesize($stubInstaller));
-        fclose($reader);
-        if (!file_put_contents($package."/install.php", $Installer)){
-            return $this->report("Create package faild: may not have permission.");
+        FileService::mkdirs($package."/app/Controllers/web/");
+        $Installer = file_get_contents(resource_path('stub/module.install.stub'));
+        if (!file_put_contents($package."/install.php", str_replace('dummy', $identity, $Installer))){
+            return $this->report("Create package failed: may not have permission.");
+        }
+        $IndexController = file_get_contents(resource_path('stub/module.IndexController.stub'));
+        if ($IndexController){
+            @file_put_contents($package."/app/Controllers/web/IndexController.php", str_replace('dummy', $identity, $IndexController));
         }
         $this->info('Create Module '.$moduleName.' successfully.');
         return true;

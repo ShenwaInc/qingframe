@@ -59,6 +59,12 @@ class SettingController extends Controller
                     }
                     CacheService::flush();
                 }else{
+                    if($_W['config']['site']['id'] != $activeState['siteid']){
+                        //重置云服务站点ID
+                        if (!CloudService::CloudEnv('APP_SITEID=0', "APP_SITEID={$activeState['siteid']}")) {
+                            return $this->message('文件写入失败，请检查根目录权限');
+                        }
+                    }
                     Cache::forget(md5('HingWork:Authorize:Active:'.$_W['siteroot']));
                 }
                 $res['message'] = '恭喜您，激活成功！';

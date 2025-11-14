@@ -116,14 +116,6 @@ class WeAccount extends \ArrayObject{
         return self::create($uniaccount);
     }
 
-    protected function fetchGroups() {
-        $groups = DB::table('mc_groups')->where('uniacid',$this->uniacid)->get()->keyBy('groupid');
-        if (!empty($groups)){
-            $this->groups = $groups->toArray();
-        }
-        return $this->groups;
-    }
-
     public function __toArray() {
         foreach ($this->account as $key => $property) {
             $this[$key] = $property;

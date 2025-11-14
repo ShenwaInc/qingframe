@@ -95,8 +95,10 @@
                                 {{ $logTypes[$log->type] ?? $log->type }}
                             </span>
                         </td>
-                        <td>{{ $log->module }}</td>
-                        <td>{{ $log->title }}</td>
+                        <td><p class="text-cut" title="{{ $log->module }}" style="max-width: 150px;">{{ $log->module }}</p></td>
+                        <td>
+                            <p class="text-cut" title="{{ $log->title }}" style="max-width: 280px;">{{ $log->title }}</p>
+                        </td>
                         <td>{{ $log->username ?: '-' }}</td>
                         <td>{{ $log->ip ?: '-' }}</td>
                         <td>
