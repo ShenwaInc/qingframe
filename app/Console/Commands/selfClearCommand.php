@@ -43,6 +43,7 @@ class selfClearCommand extends Command
      */
     public function handle()
     {
+        $cleanFiles = $cleanFolders = $dropTables = 0;
         //清理无用文件
         $unused = array(
             app_path('Console/Commands/repwd.php'),
@@ -85,7 +86,7 @@ class selfClearCommand extends Command
         );
         foreach ($unused as $file){
             if (file_exists($file)){
-                @unlink($file);
+                $cleanFiles += @unlink($file) ? 1 : 0;
             }
         }
         //清理无用文件夹
@@ -99,16 +100,34 @@ class selfClearCommand extends Command
         );
         foreach ($unusedDirs as $dir){
             if (is_dir($dir)){
-                FileService::rmdirs($dir);
+                $cleanFolders += FileService::rmdirs($dir) ? 1 : 0;
             }
         }
+        $this->info("Clean $cleanFolders folders.");
+        //清理无用数据表
+        $unusedTables = array(
+            'core_cache',
+            'core_sessions',
+            'stat_fans',
+            'stat_visit',
+            'stat_visit_ip',
+            'uni_verifycode',
+            'activity_clerks',
+            'system_welcome_binddomain',
+        );
+        foreach ($unusedTables as $table){
+            if (Schema::hasTable($table)){
+                $dropTables += @Schema::dropIfExists($table) ? 1 : 0;
+            }
+        }
+        $this->info("Drop $dropTables tables.");
         $arguments = $this->argument();
         if ($arguments['mode']=='release' || $arguments['mode']=='res'){
             $gitIgnores = FileService::file_tree(base_path("/"), array('*/.gitignore','*/*/.gitignore','.gitignore','*/*/*/.gitignore','*/*/*/*/.gitignore', '*/README.md', '*/*/README.md', 'README.md', 'README_*.md'));
             if (!empty($gitIgnores)){
                 foreach ($gitIgnores as $file){
                     if (!file_exists($file)) continue;
-                    @unlink($file);
+                    $cleanFiles += @unlink($file) ? 1 : 0;
                 }
             }
             if (!FileService::rmdirs(storage_path('framework/testing/'))){
@@ -120,8 +139,8 @@ class selfClearCommand extends Command
             if (!FileService::rmdirs(base_path('docs/'))){
                 $this->error("Remove dir failed: ".base_path('docs/'));
             }
-            $this->info("Clean ".count($gitIgnores)." files.");
         }
+        $this->info("Clean $cleanFiles files.");
         $this->info('FrameWork Clean successfully.');
         return true;
     }
