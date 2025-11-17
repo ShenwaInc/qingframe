@@ -60,6 +60,7 @@ class selfClearCommand extends Command
             app_path('Services/PayService.php'),
             app_path('Utils/WeEngine.php'),
             app_path('Http/Controllers/Api/WechatController.php'),
+            app_path('Models/CorePaylog.php'),
             resource_path('views/console/socket.blade.php'),
             resource_path('views/install/socket.blade.php'),
             resource_path('views/console/account/com.blade.php'),
@@ -83,6 +84,7 @@ class selfClearCommand extends Command
             base_path('database/migrations/2021_08_10_113449_create_mc_member_fields_table.php'),
             base_path('database/migrations/2021_08_10_113449_create_mc_groups_table.php'),
             base_path('database/migrations/2021_08_10_113449_create_mc_members_table.php'),
+            base_path('database/migrations/2021_08_10_113449_create_core_paylog_table.php'),
         );
         foreach ($unused as $file){
             if (file_exists($file)){
