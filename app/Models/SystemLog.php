@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 define('SystemInstalled', file_exists(base_path('storage/installed.bin')));
@@ -191,35 +192,44 @@ class SystemLog extends Model
     */
     public static function autoClear()
     {
-        $autoClear = env('LOG_AUTO_CLEAR', '');
-        if (!$autoClear) return;
-        list($type, $value) = explode(':', $autoClear);
-        switch ($type){
-            case 'time' : {
-                $time = Carbon::now();
-                if(Str::contains($value, 'months')){
-                    $time->subMonths((int)str_replace('months', '', $value));
-                }elseif (Str::contains($value, 'years')){
-                    $time->subYears((int)str_replace('years', '', $value));
-                }else{
-                    $time->subDays(intval($value));
+        $plans = env('LOG_AUTO_CLEAR', '');
+        if (!$plans) return 0;
+        $deleted = 0;
+        foreach (explode('|', $plans) as $plan){
+            list($type, $value) = explode(':', $plan);
+            switch ($type){
+                case 'time' : {
+                    $time = Carbon::now();
+                    if(Str::contains($value, 'months')){
+                        $time->subMonths((int)str_replace('months', '', $value));
+                    }elseif (Str::contains($value, 'years')){
+                        $time->subYears((int)str_replace('years', '', $value));
+                    }else{
+                        $time->subDays(intval($value));
+                    }
+                    $deleted += self::where('created_at', '<', $time)->delete();
+                    break;
                 }
-                self::where('created_at', '<', $time)->delete();
-                break;
-            }
-            case 'limit' : {
-                $keepCount = (int)$value;
-                if($keepCount>0 && self::count()>$keepCount){
-                    $keepMinId = self::orderBy('created_at', 'desc')
-                        ->skip($keepCount)
-                        ->take(1)
-                        ->value('id');
-                    if($keepMinId) self::where('id', '<', $keepMinId)->delete();
+                case 'limit' : {
+                    $keepCount = (int)$value;
+                    if($keepCount>0){
+                        if(self::count()>$keepCount){
+                            $keepMinId = self::orderBy('created_at', 'desc')
+                                ->orderBy('id', 'desc') // 增加主键排序确保结果唯一
+                                ->take($keepCount)
+                                ->pluck('id')
+                                ->last();
+                            if($keepMinId){
+                                $deleted += self::where('id', '<', $keepMinId)->delete();
+                            }
+                            break;
+                        }
+                    }
+                    break;
                 }
-                self::where('id', '<', self::max('id') - intval($value))->delete();
-                break;
             }
         }
+        return $deleted;
     }
 
     public static function formatSql(string $sql, array $bindings): string
