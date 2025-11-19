@@ -28,6 +28,7 @@ class RecordSlowQuery implements ShouldQueue
     protected $executionTime = 0;
     protected $connectionName;
     protected $bindings;
+    protected $pageUrl = '';
 
     /**
      * 创建任务实例
@@ -36,12 +37,13 @@ class RecordSlowQuery implements ShouldQueue
      * @param string $connectionName 数据库连接名
      * @param array $bindings 绑定参数
      */
-    public function __construct(string $fullSql, int $executionTime, string $connectionName, array $bindings)
+    public function __construct(string $fullSql, int $executionTime, string $connectionName, array $bindings, string $page = '')
     {
         $this->fullSql = $fullSql;
         $this->executionTime = $executionTime;
         $this->connectionName = $connectionName;
         $this->bindings = $bindings;
+        $this->pageUrl = $page?: request()->url();
     }
 
     /**
@@ -54,7 +56,7 @@ class RecordSlowQuery implements ShouldQueue
         }
         // 写入数据库日志表（使用之前的 SystemLog 模型）
         SystemLog::database(
-            'database:slow_query',
+            $this->pageUrl?:'database:slow_query',
             $this->fullSql,
             $this->bindings,
             'MySQL慢日志',

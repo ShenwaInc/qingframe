@@ -69,11 +69,13 @@ class AppServiceProvider extends ServiceProvider
             if ($slowThreshold && $query->time > $slowThreshold){
                 //记录日志查询
                 $fullSql = SystemLog::formatSql($query->sql, $query->bindings);
+                $pageUrl = request()->fullUrl();
                 RecordSlowQuery::dispatch(
                     $fullSql,
                     $query->time, // 执行时间（毫秒）
                     $query->connectionName, // 数据库连接名
-                    $query->bindings // 绑定参数
+                    $query->bindings, // 绑定参数
+                    $pageUrl
                 );
             }
         });
