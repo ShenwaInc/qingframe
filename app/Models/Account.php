@@ -48,7 +48,7 @@ class Account extends Model
             'default_site' => 0,
             'sync' => serialize(array('switch' => 0, 'acid' => '')),
         ));
-        @serv('ucenter')->createDefaultGroup();
+        @serv('ucenter', $uniacid);
         return $acid;
     }
 
