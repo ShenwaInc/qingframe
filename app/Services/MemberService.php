@@ -83,7 +83,7 @@ class MemberService
         if (empty($openid)) return array('uid'=>0);
         global $_W;
         $wechat = serv("wechat");
-        if ($wechat->enabled){
+        if ($wechat->enabled && !is_numeric($openid)){
             $member = $wechat->getUserByOpenid($openid);
         }else{
             $member = serv('ucenter')->getUser(intval($openid));
