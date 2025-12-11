@@ -20,7 +20,15 @@ class DataClearCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Clear database data based on current plan';
+    protected $description = '清理数据库表数据，支持两种计划：
+    - time:X（删除X时间前的数据，如time:6months）
+    - limit:Y（保留最新Y条数据，如limit:50000）
+    参数说明：
+        table: 表名（必填）
+        key: 主键字段（默认id）
+        timeKey: 时间字段（默认created_at）
+        timeType: 时间类型（datetime/timestamp，默认datetime）
+        plan: 清理计划（默认time:6months|limit:50000）';
     protected $plan = 'time:6months|limit:50000';
     protected $primaryKey = 'id';
     protected $timeKey = 'created_at';
@@ -58,18 +66,38 @@ class DataClearCommand extends Command
         $primaryKey = $arguments['key'] ?: $this->primaryKey;
         $timeKey = $arguments['timeKey'] ?: $this->timeKey;
         $timeType = $arguments['timeType'] ?: $this->timeType;
+        if (!Schema::hasColumn($table, $timeKey)) {
+            $this->error("表 {$table} 不存在字段 {$timeKey}");
+            return;
+        }
         $total = DB::table($table)->count();
         $this->info("开始清理表 {$table} 数据（共 {$total} 条），清理计划：{$plan}");
         $plans = explode('|', $plan);
         $deleteCount = 0;
         foreach ($plans as $p) {
-            list($type, $value) = explode(':', $p);
+            $parts = explode(':', $p);
+            if (count($parts) !== 2) {
+                $this->error("无效的计划格式: {$p}，跳过该计划");
+                continue;
+            }
+            list($type, $value) = $parts;
             switch ($type) {
                 case 'time':
-                    if($timeType=='datetime'){
-                        $deleteCount += DB::table($table)->where($timeKey, '<', date('Y-m-d H:i:s', strtotime("-{$value}")))->delete();
-                    }else{
-                        $deleteCount += DB::table($table)->where($timeKey, '<', strtotime("-{$value}"))->delete();
+                    $timeThreshold = strtotime("-{$value}");
+                    if ($timeThreshold === false) {
+                        $this->error("无效的时间值: {$value}，跳过时间策略");
+                        break;
+                    }
+                    while (true){
+                        if($timeType=='datetime'){
+                            $deleted = DB::table($table)->where($timeKey, '<', date('Y-m-d H:i:s', $timeThreshold))->delete();
+                        }else{
+                            $deleted = DB::table($table)->where($timeKey, '<', $timeThreshold)->delete();
+                        }
+                        if($deleted==0){
+                            break;
+                        }
+                        $deleteCount += $deleted;
                     }
                     break;
                 case 'limit':
@@ -80,7 +108,13 @@ class DataClearCommand extends Command
                             ->take($keepCount)
                             ->pluck($primaryKey)
                             ->last();
-                        $deleteCount += DB::table($table)->where($primaryKey, '<', $keepMinId)->delete();
+                        while (true){
+                            $deleted = DB::table($table)->where($primaryKey, '<', $keepMinId)->limit(1000)->delete();
+                            if($deleted==0){
+                                break;
+                            }
+                            $deleteCount += $deleted;
+                        }
                     }
                     break;
             }

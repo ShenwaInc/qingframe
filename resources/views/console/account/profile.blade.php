@@ -25,34 +25,38 @@
             <div class="fui-card layui-card" style="height: 100%;">
                 <div class="layui-card-header nobd">
                     @if($_W['isfounder'] || $role=='founder')
-                        <a href="{{ wurl('account/modules',array('uniacid'=>$uniacid), true) }}" class="fr text-blue ajaxshow" title="{{ __('manageData', array('data'=>__('application'))) }}">@lang('manage')</a>
+                        <a href="{{ wurl('account/modules',array('uniacid'=>$uniacid), true) }}" class="pull-right text-blue ajaxshow" title="{{ __('manageData', array('data'=>__('application'))) }}">@lang('manage')</a>
                     @endif
                     <span class="title">@lang('application')</span>
                 </div>
                 <div class="layui-card-body">
-                    @if(empty($components))
-                        <div class="fui-empty text-center" style="line-height: 150px;">
-                            <span class="text-gray" style="font-size: 16px;">@lang('NoAppsAvailable')</span>
-                        </div>
-                    @else
-                        <div class="layui-row layui-col-space15 fui-list card">
-                            @foreach($components as $item)
-                                <div class="layui-col-lg6 layui-col-sm12 fui-item arrow">
-                                    <a target="_blank" href="{{ wurl("m/".$item['identity']) }}" class="fui-content margin-0">
-                                        <div class="fui-info">
-                                            <img alt="{{ $item['name'] }}" class="radius" src="{{ $item['logo'] }}" />
-                                            <strong class="card-name">@lang($item['name'])</strong>
-                                        </div>
+                    <div class="layui-row layui-col-space15 fui-list card">
+                        @foreach($components?:[] as $item)
+                            <div class="layui-col-lg6 layui-col-sm12 fui-item arrow">
+                                <a target="_blank" href="{{ wurl("m/".$item['identity']) }}" class="fui-content margin-0">
+                                    <div class="fui-info">
+                                        <img alt="{{ $item['name'] }}" class="radius" src="{{ $item['logo'] }}" />
+                                        <strong class="card-name">@lang($item['name'])</strong>
+                                    </div>
+                                </a>
+                                @if($_W['isfounder'])
+                                    <a class="js-dropdown" target="_blank" href="{{ wurl("m/".$item['identity']."/system_setting") }}">
+                                        <span class="layui-icon layui-icon-set text-blue"></span>
                                     </a>
-                                    @if($_W['isfounder'])
-                                        <a class="js-dropdown" target="_blank" href="{{ wurl("m/".$item['identity']."/system_setting") }}">
-                                            <span class="layui-icon layui-icon-set text-blue"></span>
-                                        </a>
-                                    @endif
-                                </div>
-                            @endforeach
-                        </div>
-                    @endif
+                                @endif
+                            </div>
+                        @endforeach
+                        @if($_W['isfounder'])
+                            <div class="layui-col-lg6 layui-col-sm12 fui-item">
+                                <a href="{{ wurl('module/quickCreate',array('uniacid'=>$uniacid), true) }}" title="@lang('创建第三方应用')" class="fui-content dashed ajaxshow">
+                                    <div class="fui-info">
+                                        <span class="card-icon layui-icon layui-icon-add-1 text-gray"></span>
+                                        <strong class="card-name text-gray">@lang('第三方应用')</strong>
+                                    </div>
+                                </a>
+                            </div>
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>

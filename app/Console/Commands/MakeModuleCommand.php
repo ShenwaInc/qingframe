@@ -14,7 +14,7 @@ class MakeModuleCommand extends Command {
      *
      * @var string
      */
-    protected $signature = 'make:module {identity} {name?} {type=1}';
+    protected $signature = 'make:module {identity} {name?} {type=1} {--description=description} {--logo=logo}';
     public $Application;
 
     /**
@@ -95,6 +95,13 @@ class MakeModuleCommand extends Command {
         $Manifest = str_replace(array("Dummy","dummy","TIMESTAMP"), array($moduleName, $identity, date("Ymd01", TIMESTAMP)), $Manifest);
         if ($arguments['type']!=1){
             $Manifest = str_replace('"module_type": "1"', '"module_type": "'.$arguments['type'].'"', $Manifest);
+        }
+        $options = $this->options();
+        if (!empty($options['description']) && $options['description']!='description'){
+            $Manifest = str_replace("Your Module", $options['description'], $Manifest);
+        }
+        if (!empty($options['logo']) && $options['logo']!='logo'){
+            $Manifest = str_replace("/static/images/microserver.png", $options['logo'], $Manifest);
         }
         $maniFile = $package."manifest.json";
         if (!file_put_contents($maniFile, $Manifest)){

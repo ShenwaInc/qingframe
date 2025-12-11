@@ -11,6 +11,7 @@ use App\Services\ModuleService;
 use App\Services\MSService;
 use App\Utils\WeModule;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 
 class ModuleController extends Controller
@@ -125,6 +126,54 @@ class ModuleController extends Controller
             'platforms'=>AccountService::OwnerAccounts(array(), -1, true),
         );
         return $this->globalView("console.server.platform",$data);
+    }
+
+    public function doQuickCreate(Request $request)
+    {
+        global $_W;
+        if (!$_W['isfounder']){
+            return $this->message('暂无权限');
+        }
+        $uniacid = $request->input('uniacid', 0);
+        if ($request->isMethod('POST')){
+            $module = $request->input('module');
+            $identifier = trim($module['identifier']);
+            $moduleExist = ModuleService::localExists($identifier);
+            if ($moduleExist){
+                return $this->message('该应用标识已被使用');
+            }
+            if (!preg_match('/^[a-z][a-z0-9_]+$/', $identifier)){
+                return $this->message('应用标识只能由英文小写字母、数字和下划线组成');
+            }
+            $module['name'] = trim($module['name']);
+            if (empty($module['name'])){
+                return $this->message('请填写应用名称');
+            }
+            $module['logo'] = trim($module['logo']);
+            if (empty($module['logo'])){
+                $module['logo'] = '/static/images/microserver.png';
+            }
+            $module['description'] = trim($module['description']);
+            try {
+                Artisan::call('make:module', [
+                    'identity'=>$identifier,
+                    'name'=>$module['name'],
+                    'type'=>2,
+                    '--logo' => $module['logo'],
+                    '--description' => $module['description'],
+                ]);
+                if (!ModuleService::localExists($identifier)){
+                    return $this->message('创建应用失败，请重试');
+                }
+                $install = ModuleService::install($identifier, 'addons', 'local');
+                if (!$install || is_error($install)){
+                    return $this->message($install['message']??'应用安装失败，请重试');
+                }
+            }catch (\Exception $exception){
+                return $this->message($exception->getMessage());
+            }
+        }
+        return $this->globalView("console.module.quickCreate", ['title'=>__('创建第三方应用'), 'uniacid'=>$uniacid]);
     }
 
     public function index(Request $request, $option='list'){
