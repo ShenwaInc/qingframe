@@ -149,9 +149,14 @@ class ModuleController extends Controller
             if (empty($module['name'])){
                 return $this->message('请填写应用名称');
             }
+            $data = $request->input('data', []);
+            $data['WebIndex'] = trim($data['WebIndex']);
+            if (empty($data['WebIndex'])){
+                return $this->message('请填写应用单点登录地址');
+            }
             $module['logo'] = trim($module['logo']);
             if (empty($module['logo'])){
-                $module['logo'] = '/static/images/microserver.png';
+                $module['logo'] = asset('static/images/microserver.png');
             }
             $module['description'] = trim($module['description']);
             try {
@@ -159,8 +164,9 @@ class ModuleController extends Controller
                     'identity'=>$identifier,
                     'name'=>$module['name'],
                     'type'=>2,
-                    '--logo' => $module['logo'],
+                    '--logo' => tomedia($module['logo']),
                     '--description' => $module['description'],
+                    '--ssoUrl' => $data['WebIndex'],
                 ]);
                 if (!ModuleService::localExists($identifier)){
                     return $this->message('创建应用失败，请重试');
@@ -169,6 +175,30 @@ class ModuleController extends Controller
                 if (!$install || is_error($install)){
                     return $this->message($install['message']??'应用安装失败，请重试');
                 }
+                if (!empty($uniacid)){
+                    //为平台分配应用
+                    $moduleInfo = array(
+                        'name'=>$module['name'],
+                        'identity'=>$identifier,
+                        'logo'=>$module['logo'],
+                        'profile'=>'default'
+                    );
+                    $moduleList = AccountService::ExtraModules($uniacid, false);
+                    if (empty($moduleList[$identifier])){
+                        $modules = array_values($moduleList);
+                        $modules[] = $moduleInfo;
+                    }else{
+                        $moduleList[$identifier] = $moduleInfo;
+                        $modules = array_values($moduleList);
+                    }
+                    DB::table('uni_account_extra_modules')->updateOrInsert(array('uniacid'=>$uniacid), array('modules'=>serialize($modules)));
+                }
+                $WeModule = new WeModule();
+                $WeModule->modulename = $identifier;
+                $WeModule->saveSettings($data);
+                //清理应用缓存
+                CacheService::flush();
+                return $this->message('应用创建成功', wurl("m/".$identifier), 'success');
             }catch (\Exception $exception){
                 return $this->message($exception->getMessage());
             }

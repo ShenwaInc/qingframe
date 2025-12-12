@@ -14,7 +14,7 @@ class MakeModuleCommand extends Command {
      *
      * @var string
      */
-    protected $signature = 'make:module {identity} {name?} {type=1} {--description=description} {--logo=logo}';
+    protected $signature = 'make:module {identity} {name?} {type=1} {--description=description} {--logo=logo} {--ssoUrl=default}';
     public $Application;
 
     /**
@@ -49,6 +49,7 @@ class MakeModuleCommand extends Command {
     {
         //
         $arguments = $this->argument();
+        $options = $this->options();
         $arguments['type'] = intval($arguments['type']);
         if (empty($arguments['type'])) $arguments['type'] = 1;
         $identity = trim($arguments['identity']);
@@ -87,6 +88,9 @@ class MakeModuleCommand extends Command {
         $siteStub = $arguments['type']==2 ? 'stub/module.siteQuick.stub' : 'stub/module.site.stub';
         $site = file_get_contents(resource_path($siteStub));
         $site = str_replace(array("Dummy","dummy"), array(ucfirst($identity), $identity), $site);
+        if ($arguments['type']==2 && !empty($options['ssoUrl']) && $options['ssoUrl']!='default'){
+            $site = str_replace("WebIndex = ''", "WebIndex = '{$options['ssoUrl']}'", $site);
+        }
         $site_php = $package."site.php";
         if (!file_put_contents($site_php, $site)){
             return $this->report("Create package faild: may not have permission.");
@@ -96,7 +100,6 @@ class MakeModuleCommand extends Command {
         if ($arguments['type']!=1){
             $Manifest = str_replace('"module_type": "1"', '"module_type": "'.$arguments['type'].'"', $Manifest);
         }
-        $options = $this->options();
         if (!empty($options['description']) && $options['description']!='description'){
             $Manifest = str_replace("Your Module", $options['description'], $Manifest);
         }
@@ -109,13 +112,13 @@ class MakeModuleCommand extends Command {
         }
         FileService::mkdirs($package."/views/");
         FileService::mkdirs($package."/static/");
-        FileService::mkdirs($package."/app/Controllers/web/");
         $Installer = file_get_contents(resource_path('stub/module.install.stub'));
         if (!file_put_contents($package."/install.php", str_replace('dummy', $identity, $Installer))){
             return $this->report("Create package failed: may not have permission.");
         }
         $IndexController = file_get_contents(resource_path('stub/module.IndexController.stub'));
-        if ($IndexController){
+        if ($IndexController && $arguments['type']==1){
+            FileService::mkdirs($package."/app/Controllers/web/");
             @file_put_contents($package."/app/Controllers/web/IndexController.php", str_replace('dummy', $identity, $IndexController));
         }
         $this->info('Create Module '.$moduleName.' successfully.');

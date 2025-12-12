@@ -24,7 +24,7 @@
                     </div>
                     <div class="layui-form-item">
                         <label class="layui-form-label">@lang('icon')</label>
-                        {!! serv('storage')->tpl_form_image('module[logo]', '',array('required'=>true,'placeholder'=>__('chooseImageSquare', array('size'=>'128x128')))) !!}
+                        {!! serv('storage', 0)->tpl_form_image('module[logo]', '',array('required'=>true,'placeholder'=>__('chooseImageSquare', array('size'=>'128x128')))) !!}
                     </div>
                     <div class="layui-form-item">
                         <label class="layui-form-label">@lang('description')</label>
