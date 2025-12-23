@@ -107,19 +107,27 @@ class selfClearCommand extends Command
         }
         $this->info("Clean $cleanFolders folders.");
         //清理无用数据表
-        $unusedTables = array(
-            'core_cache',
-            'core_sessions',
-            'stat_fans',
-            'stat_visit',
-            'stat_visit_ip',
-            'uni_verifycode',
-            'activity_clerks',
-            'system_welcome_binddomain',
-        );
-        foreach ($unusedTables as $table){
-            if (Schema::hasTable($table)){
-                $dropTables += @Schema::dropIfExists($table) ? 1 : 0;
+        $installed = file_exists(base_path('storage/installed.bin'));
+        if ($installed){
+            $unusedTables = array(
+                'core_cache',
+                'core_sessions',
+                'stat_fans',
+                'stat_visit',
+                'stat_visit_ip',
+                'uni_verifycode',
+                'activity_clerks',
+                'system_welcome_binddomain',
+            );
+            foreach ($unusedTables as $table){
+                try {
+                    if (Schema::hasTable($table)){
+                        @Schema::dropIfExists($table);
+                        $dropTables += 1;
+                    }
+                }catch (\Exception $e){
+                    $this->error("Drop table[{$table}] failed: " . $e->getMessage());
+                }
             }
         }
         $this->info("Drop $dropTables tables.");
