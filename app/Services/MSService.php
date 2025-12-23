@@ -500,6 +500,7 @@ class MSService
                 $this->TerminalSend(["mode"=>"info", "message"=>"处理微服务静态文件..."]);
                 $this->makeResource($identity, (array)$service['resources']);
                 $this->TerminalSend(["mode"=>"info", "message"=>"正在运行服务安装脚本..."]);
+                define('SERVER_INSTALL', 1);
                 script_run($service['install'], MICRO_SERVER.$identity);
             }catch (\Exception $exception){
                 SystemLog::systemRunning(
@@ -610,6 +611,7 @@ class MSService
                     $this->TerminalSend(["mode"=>"info", "message"=>"更新微服务静态文件..."]);
                     $this->makeResource($identity, (array)$manifest['resources']);
                     $this->TerminalSend(["mode"=>"info", "message"=>"正在运行服务升级脚本..."]);
+                    define('SERVER_UPGRADE', 1);
                     script_run($manifest['upgrade'], MICRO_SERVER.$identity);
                 }catch (\Exception $exception){
                     SystemLog::systemRunning(
@@ -695,24 +697,27 @@ class MSService
         if (!empty($service)){
             $depends = self::checkDepend($identity);
             if (is_error($depends)) return $depends;
-            try {
-                script_run($service['configs']['uninstall'], MICRO_SERVER.$identity);
-            }catch (\Exception $exception){
-                SystemLog::systemRunning(
-                    '微服务卸载脚本执行异常',
-                    'service:MSService',
-                    "执行微服务卸载脚本时发生异常：{$exception->getMessage()}",
-                    false,
-                    [
-                        'exception_file' => $exception->getFile(),
-                        'exception_line' => $exception->getLine(),
-                        'exception_code' => $exception->getCode(),
-                        'exception_trace' => $exception->getTrace(),
-                        'server_identity' => $identity,
-                    ]
-                );
-                $this->TerminalSend(["mode"=>"err", "message"=>$exception->getMessage()]);
-                return error(-1,__('uninstallFailed', array('reason'=>$exception->getMessage())));
+            if (!empty($service['configs']['uninstall'])){
+                try {
+                    define('SERVER_UNINSTALL', 1);
+                    script_run($service['configs']['uninstall'], MICRO_SERVER.$identity);
+                }catch (\Exception $exception){
+                    SystemLog::systemRunning(
+                        '微服务卸载脚本执行异常',
+                        'service:MSService',
+                        "执行微服务卸载脚本时发生异常：{$exception->getMessage()}",
+                        false,
+                        [
+                            'exception_file' => $exception->getFile(),
+                            'exception_line' => $exception->getLine(),
+                            'exception_code' => $exception->getCode(),
+                            'exception_trace' => $exception->getTrace(),
+                            'server_identity' => $identity,
+                        ]
+                    );
+                    $this->TerminalSend(["mode"=>"err", "message"=>$exception->getMessage()]);
+                    return error(-1,__('uninstallFailed', array('reason'=>$exception->getMessage())));
+                }
             }
             if (is_dir(public_path("resource/server/$identity"))){
                 $this->TerminalSend(["mode"=>"info", "message"=>"正在清理微服务静态文件..."]);

@@ -41,6 +41,7 @@ class ModuleService
         if (!empty($ManiFest['install'])){
             try {
                 MSService::TerminalSend(['mode'=>'info', 'message'=>"正在运行应用安装脚本..."]);
+                define('MODULE_INSTALL', 1);
                 script_run($ManiFest['install'], public_path("{$path}/{$identity}/"));
             } catch (\Exception $exception){
                 SystemLog::systemRunning(
@@ -168,6 +169,7 @@ class ModuleService
         if (!empty($ManiFest['upgrade'])){
             try {
                 MSService::TerminalSend(['mode'=>'info', 'message'=>"正在运行应用升级脚本..."]);
+                define('MODULE_UPGRADE', 1);
                 script_run($ManiFest['upgrade'], public_path("addons/$identity/"));
             } catch (\Exception $exception){
                 SystemLog::systemRunning(
@@ -254,6 +256,7 @@ class ModuleService
         if (!empty($ManiFest['uninstall'])){
             try {
                 MSService::TerminalSend(['mode'=>'info', 'message'=>"正在运行应用卸载脚本..."]);
+                define('MODULE_UNINSTALL', 1);
                 script_run($ManiFest['uninstall'], public_path("addons/$identity/"));
             } catch (\Exception $exception){
                 SystemLog::systemRunning(
