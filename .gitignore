@@ -47,3 +47,4 @@ yarn-error.log
 .editorconfig
 /app/Console/Commands/TcpServerCommand.php
 /public/jpush.log
+/public/website/
