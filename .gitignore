@@ -4,6 +4,7 @@
 /storage/*.key
 /storage/logs
 /storage/installed.bin
+/storage/Blacklist.txt
 /vendor
 /.idea
 .env
