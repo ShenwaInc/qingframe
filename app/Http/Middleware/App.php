@@ -41,8 +41,9 @@ class App
     public function getRealIp(Request $request)
     {
         $headers = $request->header();
-        if (!empty($headers['x-forwarded-for'])){
-            return $headers['x-forwarded-for'][0];
+        $cdnIpHeadName = env('CDN_REAL_IP_HEADER', 'x-forwarded-for');
+        if (!empty($headers[$cdnIpHeadName])){
+            return $headers[$cdnIpHeadName][0];
         }
         return $request->getClientIp();
     }
