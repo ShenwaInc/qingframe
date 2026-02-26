@@ -317,6 +317,30 @@ class SettingController extends Controller
         ));
     }
 
+    public function doBlacklist()
+    {
+        $file = storage_path('Blacklist.txt');
+        if (\request()->isMethod('post')){
+            $Blacklist = trim(\request()->input('blacklist'));
+            if(!empty($Blacklist)){
+                $res = file_put_contents($file, $Blacklist);
+            }else{
+                $res = file_put_contents($file, '');
+            }
+            SystemLog::userOperation('保存黑名单', 'setting:blacklist', $Blacklist, $res);
+            if ($res===false){
+                return $this->message('saveFailed');
+            }
+            return $this->message('savedSuccessfully', wurl('setting'), 'success');
+        }
+        $Blacklist = file_exists($file) ? file_get_contents($file) : '';
+        return $this->globalView('console.setting.blacklist', array(
+            'title'=>__('IP黑名单'),
+            'Blacklist'=>$Blacklist,
+            'file'=>$file
+        ));
+    }
+
     public function index($op='main'){
         global $_W,$_GPC;
         $_W['inSetting'] = true;

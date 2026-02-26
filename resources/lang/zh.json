@@ -245,7 +245,6 @@
     "debugModeConfirm": "确定要:action调试模式吗？",
     "reasonForClosing": "关闭原因",
     "closingFor": "站点已关闭，关闭原因：:reason",
-    "securityEntrance": "安全入口",
     "setup": "配置",
     "notConfigured": "未配置",
     "none": "无",

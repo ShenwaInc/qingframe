@@ -64,7 +64,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <td><span class="fui-table-lable">@lang('securityEntrance')</span></td>
+                            <td><span class="fui-table-lable">@lang('安全入口')</span></td>
                             <td class="soild-after">
                                 @if(!empty($appSecurityEntrance))
                                     {{ $_W['siteroot'].$appSecurityEntrance }}&nbsp;&nbsp;<span class="js-clip text-blue" data-url="{{ $_W['siteroot'].$appSecurityEntrance }}">@lang('copy')</span>
@@ -74,6 +74,7 @@
                             </td>
                             <td class="text-right soild-after">
                                 <a href="javascript:" class="text-blue js-SecurityEntrance">{{ __($appSecurityEntrance?'modify':'setup') }}</a>
+                                &nbsp;&nbsp;<a href="{{ wurl('setting/blacklist') }}" class="text-red">@lang('IP黑名单')</a>
                             </td>
                         </tr>
                         <tr>

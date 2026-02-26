@@ -38,6 +38,15 @@ class App
         return $next($request);
     }
 
+    public function getRealIp(Request $request)
+    {
+        $headers = $request->header();
+        if (!empty($headers['x-forwarded-for'])){
+            return $headers['x-forwarded-for'][0];
+        }
+        return $request->getClientIp();
+    }
+
     public function initialize(Request $request){
         global $_W,$_GPC;
         $_GPC = $request->all();
@@ -48,7 +57,7 @@ class App
         $_W['framework'] = ['version'=>QingVersion, 'release'=>QingRelease];
         $_W['timestamp'] = TIMESTAMP;
         $_W['charset'] = $_W['config']['setting']['charset'];
-        $_W['clientip'] = $request->getClientIp();
+        $_W['clientip'] = $this->getRealIp($request);
         $_W['isajax'] = $request->ajax() || !empty($_GPC['inajax']);
         $_W['ispost'] = $request->isMethod('post');
         $query = http_build_query($_GET, '', '&');

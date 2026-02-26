@@ -23,7 +23,7 @@ class AppRuntime
      * @return mixed
      */
     public function handle(Request $request, Closure $next){
-        if ($this->isBlacklisted($request)) {
+        if ($this->isBlacklisted()) {
             abort(403, 'Forbidden');
         }
         $uniacid = $request->input('i', SITEACID);
@@ -36,7 +36,7 @@ class AppRuntime
         global $_W;
         SettingService::Load();
         if($state = \request()->input("state", "")){
-            if (!empty($state) && Str::startsWith($state, "we7sid-")){
+            if (!empty($state) && \Str::startsWith($state, "we7sid-")){
                 $_W['session_id'] = str_replace("we7sid-", "", $state);
                 session()->setId($_W['session_id']);
             }
@@ -75,27 +75,23 @@ class AppRuntime
     /**
      * 检测当前 IP 是否在黑名单中
      */
-    protected function isBlacklisted($request): bool
+    protected function isBlacklisted($ip=''): bool
     {
-        $ip = $request->ip(); // 真实 IP（需配置可信代理）
         if (empty($ip)){
-            $ip = $request->getClientIp();
+            global $_W;
+            $ip = $_W['clientip'];
         }
         $file = storage_path('Blacklist.txt');
-
-        if (!file_exists($file)) {
+        if (!file_exists($file) || empty($ip)) {
             return false;
         }
-
         // 获取文件修改时间，用于缓存失效
         $mtime = filemtime($file);
         $cacheKey = 'blacklist_rules_' . $mtime;
-
         // 从缓存读取规则，若不存在则解析文件并缓存
         $rules = Cache::remember($cacheKey, 3600, function () use ($file) {
             return $this->parseBlacklistFile($file);
         });
-
         return $this->ipMatchesRules($ip, $rules);
     }
 
@@ -147,4 +143,5 @@ class AppRuntime
 
         return false;
     }
+
 }
