@@ -327,7 +327,8 @@ class SettingController extends Controller
             if ($res===false){
                 return $this->message('saveFailed');
             }
-            return $this->message('savedSuccessfully', wurl('setting'), 'success');
+            $redirect = \request()->input('redirect', wurl('setting'));
+            return $this->message('savedSuccessfully', $redirect, 'success');
         }
         $Blacklist = file_exists($file) ? file_get_contents($file) : '';
         return $this->globalView('console.setting.blacklist', array(

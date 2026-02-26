@@ -74,7 +74,7 @@
                             </td>
                             <td class="text-right soild-after">
                                 <a href="javascript:" class="text-blue js-SecurityEntrance">{{ __($appSecurityEntrance?'modify':'setup') }}</a>
-                                &nbsp;&nbsp;<a href="{{ wurl('setting/blacklist') }}" class="text-red">@lang('IP黑名单')</a>
+                                &nbsp;&nbsp;<a href="{{ wurl('setting/blacklist') }}" class="text-red ajaxshow">@lang('IP黑名单')</a>
                             </td>
                         </tr>
                         <tr>
