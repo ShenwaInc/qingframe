@@ -322,11 +322,7 @@ class SettingController extends Controller
         $file = storage_path('Blacklist.txt');
         if (\request()->isMethod('post')){
             $Blacklist = trim(\request()->input('blacklist'));
-            if(!empty($Blacklist)){
-                $res = file_put_contents($file, $Blacklist);
-            }else{
-                $res = file_put_contents($file, '');
-            }
+            $res = file_put_contents($file, $Blacklist);
             SystemLog::userOperation('保存黑名单', 'setting:blacklist', $Blacklist, $res);
             if ($res===false){
                 return $this->message('saveFailed');
