@@ -104,7 +104,7 @@
             Core.post('{{ wurl("report/post") }}', function (res) {
                 console.log(res);
                 if(res.type!=='success') return Core.report(res);
-                layer.msg('@lang("workOrderSubmitted")', {icon:1});
+                layer.msg('@lang("workOrderSubmitted")', {icon:1, skin: 'fui-layer'});
                 setTimeout(function () {
                     window.location.reload();
                 }, 1800);

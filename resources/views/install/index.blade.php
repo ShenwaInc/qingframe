@@ -18,7 +18,7 @@
 <script type="text/javascript">
     var isagree = false, agreeElem = $('#w-agree'),NextUrl = '{{ $_W['siteroot'] }}installer/database';
     function doNext(){
-        if(!isagree) return layer.msg('请先仔细阅读并同意安装使用协议',{icon:2});
+        if(!isagree) return layer.msg('请先仔细阅读并同意安装使用协议',{icon:2, skin: 'fui-layer'});
         Core.post('installer/agreement',function (res){
             if(res.type==='success'){
                 window.location.href = NextUrl;

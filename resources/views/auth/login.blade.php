@@ -76,7 +76,7 @@
             form.on('submit(formLogin)',function (data){
                 Core.post('auth.login',function (res){
                     if (res.type!=='success') return Core.report(res);
-                    layer.msg(res.message,{icon:1});
+                    layer.msg(res.message,{icon:1, skin: 'fui-layer'});
                     setTimeout(function (){
                         @if(empty($account))
                         window.location.href = '{{ empty($_GPC["referer"]) ? "/console" : url($_GPC["referer"]) }}';

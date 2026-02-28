@@ -242,11 +242,11 @@
     });
     @if(in_array($role,['founder','owner']) || $_W['isfounder'])
         function setDomain(domain='') {
-            let options = {title: '{{ __('请输入要绑定的域名') }}', value: domain, maxlength:50, btn:['@lang("确定")', '@lang("取消")'], placeholder:"{{ __('仅支持单个域名，只填写host部分') }}"};
+            let options = {title: '{{ __('请输入要绑定的域名') }}', skin: 'fui-layer', value: domain, maxlength:50, btn:['@lang("确定")', '@lang("取消")'], placeholder:"{{ __('仅支持单个域名，只填写host部分') }}"};
             if (domain && domain!==""){
                 options.btn = ['@lang("确定")', '@lang("解除绑定")', '@lang("取消")'];
                 options.btn2 = function (index) {
-                    layer.confirm('@lang("确定要解除绑定吗？")', {icon: 3, title:'@lang("解除域名绑定")'}, function (e) {
+                    layer.confirm('@lang("确定要解除绑定吗？")', {icon: 3, title:'@lang("解除域名绑定")', skin: 'fui-layer'}, function (e) {
                         Core.post('console.account.profile',function (res){
                             Core.report(res);
                             if(res.type==='success'){
@@ -262,11 +262,14 @@
                     return false;
                 };
             }
+            options.success = function (layero, index, that) {
+                jQuery(layero).find('input.layui-layer-input').focus();
+            }
             layer.prompt(options, function(value, index, elem){
                 if(value === '') return elem.focus();
                 let regex = /^(?:[a-zA-Z0-9_-]+\.)*[a-z]{2,6}$/;
                 if(!regex.test(value)){
-                    layer.msg('{{ __('请输入正确格式的域名') }}', {icon:2});
+                    layer.msg('{{ __('请输入正确格式的域名') }}', {icon:2, skin: 'fui-layer'});
                     return elem.focus();
                 }
                 Core.post('console.account.profile',function (res){

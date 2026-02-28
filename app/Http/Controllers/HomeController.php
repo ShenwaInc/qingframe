@@ -63,7 +63,13 @@ class HomeController extends Controller
         if (!empty($uniacid)){
             $views = ['welcomeCustom'.$uniacid, 'welcomeCustom', 'welcome'];
         }
-        return response()->view($views, array('title'=>__($_W['setting']['page']['title']), 'Multilingual'=>$language->enabled, 'locale'=>$locale));
+        $user = $request->user();
+        if (!empty($user)){
+            $profile = DB::table('users_profile')->where('uid', $user->uid)->select('avatar','gender','mobile','email', 'realname')->first();
+            $_W['user'] = array_merge($user->toArray(), $profile?:[]);
+            $_W['uid'] = $user->uid;
+        }
+        return response()->view($views, array('title'=>__($_W['setting']['page']['title']), '_W'=>$_W, 'Multilingual'=>$language->enabled, 'locale'=>$locale));
     }
 
     public function module(Request $request, $moduleName){

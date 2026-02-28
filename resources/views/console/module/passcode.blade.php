@@ -64,7 +64,7 @@
         let input = $('#js-passcode');
         let passcode = input.val();
         if(!passcode || passcode===''){
-            layer.msg('{{ __("无效的卡密或兑换码") }}', {icon: 2});
+            layer.msg('{{ __("无效的卡密或兑换码") }}', {icon: 2, skin: 'fui-layer'});
             return input.focus();
         }
         const Elem = $('.js-application');
@@ -72,7 +72,7 @@
         codeStatus = true;
         Core.post('console.module.passcode', function (res) {
             if(res.type!=='success'){
-                return layer.msg(res.message, {icon: 2});
+                return layer.msg(res.message, {icon: 2, skin: 'fui-layer'});
             }
             let app = res.data.application;
             Elem.find('.logo').attr('src', app.icon).attr('alt', app.name);
@@ -111,11 +111,11 @@
         let input = $('#js-passcode');
         let passcode = input.val();
         if(!passcode || passcode===''){
-            layer.msg('{{ __("无效的卡密或兑换码") }}', {icon: 2})
+            layer.msg('{{ __("无效的卡密或兑换码") }}', {icon: 2, skin: 'fui-layer'})
             return input.focus();
         }
         if (!codeStatus){
-            return layer.msg('{{ __("无效的卡密或兑换码") }}', {icon: 2});
+            return layer.msg('{{ __("无效的卡密或兑换码") }}', {icon: 2, skin: 'fui-layer'});
         }
         if(!yes){
             return Core.confirm('{{ __('确定要兑换该应用授权吗？') }}', function (){
@@ -127,7 +127,7 @@
         }
         Core.post('console.module.passcode', function (res) {
             if(res.type!=='success'){
-                return layer.msg(res.message, {icon: 2});
+                return layer.msg(res.message, {icon: 2, skin: 'fui-layer'});
             }
             if(res.data.terminalUrl){
                 terminalInit(res.data.terminalUrl);

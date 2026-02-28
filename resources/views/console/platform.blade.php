@@ -53,7 +53,7 @@ $tplStr = '{{d.title}}';
                 click:function (obj){
                     switch (obj.id) {
                         case "remove":{
-                            layer.confirm("@lang('deletePlatformRemain')", {icon: 3, title:'@lang("confirm")', btn:['@lang("delete")', '@lang("取消")']}, function(index){
+                            layer.confirm("@lang('deletePlatformRemain')", {icon: 3, title:'@lang("confirm")', skin: 'fui-layer', btn:['@lang("delete")', '@lang("取消")']}, function(index){
                                 window.location.href = '{{ wurl('account/remove') }}?uniacid=' + uniacid;
                                 layer.close(index);
                             });

@@ -241,13 +241,13 @@
         if(code===""){
             code = Wrandom(8);
         }
-        layer.prompt({title: '请输入安全入口（不能含/）', value:code, btn:['确定', '随机生成', '取消'], btn2:function (index) {
+        layer.prompt({title: '请输入安全入口（不能含/）', skin: 'fui-layer', value:code, btn:['确定', '随机生成', '取消'], btn2:function (index) {
             layer.close(index);
             SecurityEntrance();
         }, yes:function (index, elem) {
             let value = $(elem).find('input.layui-layer-input').val();
             if(value.indexOf('/')>=0){
-                layer.msg("安全入口不能包含字符/");
+                layer.msg("安全入口不能包含字符/", {icon: 2, skin: 'fui-layer'});
             }
             Core.post("{{ wurl("setting") }}", function (res) {
                 Core.report(res);
@@ -255,6 +255,8 @@
                 'op':"appSecurity",
                 'SecurityCode':value
             });
+        }, success: function (layero, index, that) {
+                jQuery(layero).find('input.layui-layer-input').focus();
         }});
     }
 </script>

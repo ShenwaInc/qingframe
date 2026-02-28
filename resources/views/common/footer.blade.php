@@ -104,7 +104,7 @@
         Obj.find('a.confirm').not('.ajaxshow').click(function(){
             var comfirmText = $(this).data('text');
             var redirect = $(this).attr('href');
-            layer.confirm(comfirmText, {icon: 3, title:'@lang("confirm")', btn:['@lang("确定")', '@lang("取消")']}, function(index){
+            layer.confirm(comfirmText, {icon: 3, title:'@lang("confirm")', skin: 'fui-layer', btn:['@lang("确定")', '@lang("取消")']}, function(index){
                 window.location.href = redirect;
                 layer.close(index);
             });
@@ -133,7 +133,8 @@
                         title:title,
                         content: '<div style="width: 200px; height: 200px; margin: 0 auto;"><img src="'+qrcode+'" height="200" width="200" /></div>',
                         shade:0.5,
-                        shadeClose:true
+                        shadeClose:true,
+                        skin: 'fui-layer'
                     });
                     break;
                 case 'fullscreen' :
@@ -224,7 +225,7 @@
                 },{inajax:1,ajaxhash:ajaxhash},'html',true);
             }
             if(confirmText!==''){
-                layer.confirm(confirmText, {icon: 3, title:'@lang("confirm")'}, function(index){
+                layer.confirm(confirmText, {icon: 3, title:'@lang("confirm")', skin: 'fui-layer'}, function(index){
                     layer.close(index);
                     callBack();
                 });
@@ -257,10 +258,10 @@
                 }
             });
             e.on("success", function (t) {
-                layer.msg("@lang('copySuccessfully')",{icon:1});
+                layer.msg("@lang('copySuccessfully')",{icon:1, skin: 'fui-layer'});
             });
             e.on("error", function (t) {
-                layer.msg("@lang('copyFailed')",{icon:2});
+                layer.msg("@lang('copyFailed')",{icon:2, skin: 'fui-layer'});
             })
         });
     }

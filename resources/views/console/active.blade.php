@@ -85,7 +85,7 @@
             if(codeBtn.hasClass('layui-disabled')) return false;
             let codeInterval = null, timeout=120,Input = $('#mobile');
             let mobile = Input.val();
-            if (!mobile.match(/^(\+)?(86)?0?1\d{10}$/)) return layer.msg('{{ __("typeValidData", array("data"=>__("phoneNumber"))) }}',{icon:2}),Input.focus();
+            if (!mobile.match(/^(\+)?(86)?0?1\d{10}$/)) return layer.msg('{{ __("typeValidData", array("data"=>__("phoneNumber"))) }}',{icon:2, skin: 'fui-layer'}),Input.focus();
             codeBtn.addClass('layui-disabled');
             let data = {inajax:1,mobile:mobile,_token:"{{ $_W['token'] }}",sendcode:"true"};
             Core.post("console/util/cloudcode", function (res) {
@@ -98,7 +98,7 @@
                     if(typeof(res.data.uid)!='undefined'){
                         $('#userId').val(parseInt(res.data.uid));
                     }
-                    layer.msg('@lang("verificationCodeSent")',{icon:1});
+                    layer.msg('@lang("verificationCodeSent")',{icon:1, skin: 'fui-layer'});
                     codeInterval = setInterval(function(){
                         if(timeout===0){
                             clearInterval(codeInterval);
@@ -112,14 +112,14 @@
                     },1e3);
                 }else{
                     $(codeBtn).removeClass('layui-disabled').find('span').text('@lang("获取验证码")');
-                    layer.msg(res.message,{icon:2});
+                    layer.msg(res.message,{icon:2, skin: 'fui-layer'});
                 }
             }, data, 'json', true)
             return false;
         });
         $('.js-reDomain').click(function () {
             @if(empty($siteinfo['reDomain']))
-                layer.msg("@lang('domainModifyNotify')", {icon: 5});
+                layer.msg("@lang('domainModifyNotify')", {icon: 5, skin: 'fui-layer'});
             @else
                 let siteRoot = $("#siteRoot");
                 siteRoot.removeAttr("readonly").removeClass("layui-bg-gray");

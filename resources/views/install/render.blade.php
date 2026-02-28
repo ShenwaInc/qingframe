@@ -104,7 +104,7 @@
             Core.confirm('安装过程大约需要3~5分钟，中途请不要退出网页',function (){
                 Core.post('installer.render',function (res){
                     if (res.type!=='success') return Core.report(res);
-                    layer.msg('恭喜您，安装完成！',{icon:1});
+                    layer.msg('恭喜您，安装完成！',{icon:1, skin: 'fui-layer'});
                     setTimeout(function (){
                         window.location.href = "/login";
                     },1200);

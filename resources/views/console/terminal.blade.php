@@ -56,7 +56,7 @@ if (empty($socket)){
                     }, false, function (e){
                         terminalRunning = false;
                         $(layero).find('span.layui-icon-loading').addClass('layui-hide');
-                        layer.msg('操作失败', {icon: 2});
+                        layer.msg('操作失败', {icon: 2, skin: 'fui-layer'});
                     });
                 }
                 if(terminalTimeout){
@@ -68,7 +68,7 @@ if (empty($socket)){
             cancel:function (index, layero) {
                 terminalState = false;
                 if(terminalRunning){
-                    layer.msg("程序仍在后台运行", {icon:3});
+                    layer.msg("程序仍在后台运行", {icon:3, skin: 'fui-layer'});
                 }
             }
         });

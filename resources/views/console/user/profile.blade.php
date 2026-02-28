@@ -5,7 +5,7 @@
         layer.close(layIndex);
         Core.post('{{ wurl("user/setAvatar") }}', function (res) {
             if(res.type!=='success') return Core.report(res);
-            layer.msg('@lang("successful")',{icon:1});
+            layer.msg('@lang("successful")',{icon:1, skin: 'fui-layer'});
         }, {path:attach.path});
     }
 </script>
@@ -80,13 +80,17 @@
         layer.prompt({
             title: "{{ __('modifyData', array('data'=>__('邮箱'))) }}",
             value: emailElem.hasClass('text-gray') ? '' : emailElem.text(),
-            placeholder: "@lang('用于接收通知及找回密码等邮件')"
+            placeholder: "@lang('用于接收通知及找回密码等邮件')",
+            skin: 'fui-layer',
+            success: function (layero, index, that) {
+                jQuery(layero).find('input.layui-layer-input').focus();
+            }
         }, function(val, index){
             if(!val) return false;
             Core.post('{{ wurl("user/modifyEmail") }}', function (res) {
                 if(res.type!=='success') return Core.report(res);
                 emailElem.text(val).removeClass('text-gray');
-                layer.msg(res.message, {icon:1});
+                layer.msg(res.message, {icon:1, skin: 'fui-layer'});
                 layer.close(index);
             }, {email:val});
         });

@@ -33,15 +33,20 @@ if(typeof Basetoken == 'undefined'){
         post: function (u, c, d, t, l) {
             return this.request(u, 'POST', d, t, c, l);
         },
-        confirm: function (msg, success = false, cancle = false, option = {icon: 3, title: '温馨提示'}) {
-            layer.confirm(msg, option, function (index) {
+        confirm: function (msg, success = false, cancel = null, option = null) {
+            const defaultOptions = {icon: 3, title: '温馨提示'};
+            const options = option === null || option === undefined
+                ? defaultOptions
+                : {...defaultOptions, ...option};
+            options.skin = 'fui-layer';
+            layer.confirm(msg, options, function (index) {
                 if (typeof (success) == 'function') {
                     success();
                 }
                 layer.close(index);
             }, function () {
-                if (typeof (cancle) == 'function') {
-                    cancle();
+                if (typeof (cancel) == 'function') {
+                    cancel();
                 }
             });
         },
