@@ -46,7 +46,7 @@
                             {{ $_W['username'] }}
                         </a>
                         <dl class="layui-nav-child layui-anim layui-anim-upbit" style="padding: 0;">
-                            <dd><a href="{{ wurl('user/profile') }}" target="_blank"><span class="layui-icon layui-icon-username"></span>&nbsp;@lang('accountManagement')</a></dd>
+                            <dd><a href="{{ wurl('user/profile') }}" target="_blank"><span class="layui-icon layui-icon-username"></span>&nbsp;@lang('账户管理')</a></dd>
                             @if($_W['inService'] && $inService->Unique)
                             <dd><a href="{{ wurl('account/profile', ['uniacid'=>$_W['uniacid']]) }}"><span class="layui-icon layui-icon-website"></span>&nbsp;{{ __('manageData', array('data'=>__('platform'))) }}</a></dd>
                             @endif

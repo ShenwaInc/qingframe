@@ -20,7 +20,7 @@
                             @if($_W['user']['register_type']==1)<span class="layui-badge-dot"></span>&nbsp;&nbsp;&nbsp;&nbsp;@endif
                         </a>
                         <dl id="layui-admin-usermenu" class="layui-nav-child layui-anim layui-anim-upbit">
-                            <dd><a href="{{ wurl('user/profile') }}">@lang('accountManagement')@if($_W['user']['register_type']==1)<span class="layui-badge-dot"></span>&nbsp;&nbsp;&nbsp;&nbsp;@endif</a></dd>
+                            <dd><a href="{{ wurl('user/profile') }}">@lang('账户管理')@if($_W['user']['register_type']==1)<span class="layui-badge-dot"></span>&nbsp;&nbsp;&nbsp;&nbsp;@endif</a></dd>
                             <dd><a href="javascript:Core.cacheclear();">@lang('更新缓存')</a></dd>
                             <hr />
                             <dd><a href="javascript:Core.logout();">@lang('logout')</a></dd>

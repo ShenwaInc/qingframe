@@ -231,7 +231,7 @@ class UserController extends Controller
 
     public function doProfile(Request $request){
         global $_W;
-        $return = array('title'=>__('accountManagement'));
+        $return = array('title'=>__('账户管理'));
         $profile = pdo_get('users_profile',array('uid'=>$_W['uid']));
         $return['profile'] = !empty($profile) ? $profile : array(
             'avatar' => $_W['setting']['page']['logo']

@@ -12,7 +12,7 @@
 
 <div class="main-content">
 
-    <h2 class="weui-desktop-page__title">@lang('accountManagement')</h2>
+    <h2 class="weui-desktop-page__title">@lang('账户管理')</h2>
 
     <div class="layui-tab fui-tab margin-bottom-xl">
         <ul class="layui-tab-title title_tab">
@@ -27,7 +27,7 @@
 
     <div class="fui-card layui-card">
         <div class="layui-card-header nobd">
-            <span class="title">@lang('accountManagement')</span>
+            <span class="title">@lang('账户管理')</span>
         </div>
         <div class="layui-card-body">
             <div class="un-padding">

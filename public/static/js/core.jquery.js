@@ -39,6 +39,19 @@ if(typeof Basetoken == 'undefined'){
                 ? defaultOptions
                 : {...defaultOptions, ...option};
             options.skin = 'fui-layer';
+            if(typeof(layer)=='undefined'){
+                let res = window.confirm(msg);
+                if(res){
+                    if (typeof (success) == 'function') {
+                        success();
+                    }
+                }else{
+                    if (typeof (cancel) == 'function') {
+                        cancel();
+                    }
+                }
+                return false;
+            }
             layer.confirm(msg, options, function (index) {
                 if (typeof (success) == 'function') {
                     success();
@@ -56,6 +69,9 @@ if(typeof Basetoken == 'undefined'){
             var data = d ? d : {};
             var datatype = t ? t : 'json';
             data.inajax = 1;
+            if(typeof(layer)=='undefined'){
+                l = false;
+            }
             if (l && !this.loading) {
                 this.loading = layer.load(1, {shade: 0.3});
             }
@@ -79,7 +95,7 @@ if(typeof Basetoken == 'undefined'){
                     hreq.report(res);
                 },
                 error: function (e) {
-                    console.log('请求失败', e);
+                    console.error('请求失败: ', `${e.statusText}(${e.status})`);
                     if (hreq.loading !== 0) {
                         layer.close(hreq.loading);
                         hreq.loading = 0;
@@ -87,7 +103,7 @@ if(typeof Basetoken == 'undefined'){
                     if (Loadajax) Loadajax = false;
                     if(typeof(f)=='function'){
                         f(e);
-                    }else{
+                    }else if(typeof(layer)!='undefined'){
                         layer.msg(`操作失败(${e.status} ${e.statusText})`, {icon: 2});
                     }
                 }
@@ -122,7 +138,11 @@ if(typeof Basetoken == 'undefined'){
                 act = res.type;
                 redirect = res.redirect;
                 let icon = res.type === 'success' ? 1 : 2;
-                layer.msg(res.message, {icon: icon});
+                if(typeof(layer)!='undefined'){
+                    layer.msg(res.message, {icon: icon});
+                }else{
+                    alert(res.message);
+                }
             }
             if (redirect !== '') {
                 let direction = function () {
@@ -154,6 +174,10 @@ if(typeof Basetoken == 'undefined'){
             aids:[]
         },
         StoragePicker(Elem, multi=false, CallBack=false) {
+            if(typeof(layer)=='undefined'){
+                alert('缺少必须的JS库(layer)');
+                return false;
+            }
             let WindowId = 'storagepicker' + Wrandom(6);
             let PickerUrl = this.url("server/storage/picker");
             let PickerTitle = $(Elem).data("title")

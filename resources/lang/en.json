@@ -1,7 +1,7 @@
 {
     "name": "NAME",
     "edit": "EDIT",
-    "accountManagement": "Account Management",
+    "账户管理": "Account Management",
     "accountUnavailable": "Your account is under review or has been banned by the system. Please contact the website administrator to resolve it!",
     "personalInformation": "Information",
     "subAccount": "Sub-accounts",

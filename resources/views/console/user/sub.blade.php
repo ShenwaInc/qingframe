@@ -2,7 +2,7 @@
 
 <div class="main-content">
 
-    <h2 class="weui-desktop-page__title">@lang('accountManagement')</h2>
+    <h2 class="weui-desktop-page__title">@lang('账户管理')</h2>
 
     <div class="layui-tab fui-tab margin-bottom-xl">
         <ul class="layui-tab-title title_tab">
