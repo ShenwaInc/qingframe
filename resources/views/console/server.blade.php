@@ -27,7 +27,12 @@
 
         <div class="fui-card layui-card">
             <div class="layui-card-header nobd">
-                <a href="{{ wurl('server', ['op'=>'repair']) }}" class="fr layui-btn layui-btn-sm layui-btn-danger margin-left-sm js-terminal" data-text="@lang('只有服务出现不可用的情况才需要使用此功能')">@lang('自动修复')</a>
+                <div class="fr">
+                    <a href="{{ wurl('server', ['op'=>'repair']) }}" class="layui-btn layui-btn-sm layui-btn-danger js-terminal" data-text="@lang('只有服务出现不可用的情况才需要使用此功能')">@lang('自动修复')</a>
+                    @if(DEVELOPMENT)
+                        <button class="layui-btn layui-btn-sm layui-btn-normal js-upload">@lang('本地安装')</button>
+                    @endif
+                </div>
                 <span class="title">{{ $title }}</span>
                 <div class="layui-tab fui-tab">
                     <ul class="layui-tab-title title_tab">
@@ -127,5 +132,28 @@
         });
         @endif
     })
+    function FormRender(form) {
+        if(layupload){
+            return layupload.render({
+                elem: '.js-upload',
+                url: '{!! wurl('server/upload') !!}',
+                data: {
+                    _token: '{{ csrf_token() }}'
+                },
+                accept: 'file',
+                acceptMime: 'application/zip',
+                exts: 'zip',
+                done: function(res, index, upload){
+                    layer.msg(res.message, {icon: res.type === 'success' ? 1 : 2, skin: 'fui-layer'});
+                    if(res.type === 'success'){
+                        window.location.href = '{!! wurl('server') !!}';
+                    }
+                }
+            })
+        }
+        setTimeout(function (){
+            FormRender(form);
+        }, 1000);
+    }
 </script>
 @include('common.footer')

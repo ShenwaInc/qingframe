@@ -2,23 +2,25 @@
 
 use Illuminate\Support\Facades\View;
 
-function message($msg, $redirect = '', $type = 'error') {
-    global $_W, $_GPC;
-    $data = array('message'=>$msg,'redirect'=>$redirect,'type'=>$type, 'data'=>[]);
-    ob_clean();
-    if ($_W['isajax']){
-        if (is_array($msg)){
-            $data['data'] = $msg;
-            $data['message'] = 'OK';
+if(!function_exists('message')){
+    function message($msg, $redirect = '', $type = 'error') {
+        global $_W, $_GPC;
+        $data = array('message'=>$msg,'redirect'=>$redirect,'type'=>$type, 'data'=>[]);
+        ob_clean();
+        if ($_W['isajax']){
+            if (is_array($msg)){
+                $data['data'] = $msg;
+                $data['message'] = 'OK';
+            }
+            echo json_encode($data);
+        }else{
+            View::share('_W',$_W);
+            View::share('_GPC',$_GPC);
+            echo response()->view('message',$data)->content();
         }
-        echo json_encode($data);
-    }else{
-        View::share('_W',$_W);
-        View::share('_GPC',$_GPC);
-        echo response()->view('message',$data)->content();
+        session()->save();
+        exit;
     }
-    session()->save();
-    exit;
 }
 
 function pagination($total, $pageIndex, $pageSize = 15, $url = '', $context = array('before' => 5, 'after' => 4, 'ajaxcallback' => '', 'callbackfuncname' => '')) {

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\SystemLog;
 use App\Services\AccountService;
 use App\Services\CloudService;
+use App\Services\FileService;
 use App\Services\MSService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
@@ -77,6 +78,71 @@ class ServerController extends Controller
     public function TerminalError($message){
         MSService::TerminalSend(["mode"=>"err", "message"=>$message], true);
         return $this->message($message);
+    }
+
+    public function upload(Request $request)
+    {
+        if (!$request->hasFile('file')) return $this->message('attachFileInvalid');
+        $Upload = $request->file('file');
+        $ext = $Upload->getClientOriginalExtension();
+        if ($ext != 'zip'){
+            return $this->message('attachExtInvalid');
+        }
+        $path = "files/0/".date('Y/m');
+        $dirname = "server" . random(10);
+        $filePath = $Upload->storeAs($path, $dirname . ".zip");
+        if (!$filePath){
+            return $this->message('uploadFailed');
+        }
+        $fileRoot = storage_path('app/public/'.$filePath);
+        $patchPath = storage_path('patch/packages/' . $dirname);
+        if (!is_dir($patchPath)){
+            FileService::mkdirs($patchPath);
+        }
+        $zip = new \ZipArchive();
+        $openRes = $zip->open($fileRoot);
+        if ($openRes === TRUE) {
+            $zip->extractTo($patchPath);
+            $zip->close();
+            //删除安装包
+            @unlink($fileRoot);
+        }else{
+            @unlink($fileRoot);
+            FileService::rmdirs($patchPath);
+            return error(-1,'安装包解压失败，请重试');
+        }
+        $manifests = FileService::file_tree($patchPath, array('*/manifest.json'));
+        if (empty($manifests)){
+            FileService::rmdirs($patchPath);
+            return $this->message('安装包解析失败');
+        }
+        $complete = false;
+        try {
+            $MSS = new MSService();
+            foreach ($manifests as $manifest){
+                $serverPath = dirname($manifest);
+                $JSON = file_get_contents($manifest);
+                $service = json_decode($JSON, true);
+                if (empty($service) || empty($service['application']) || empty($service['application']['identity'])){
+                    continue;
+                }
+                $identity = trim($service['application']['identity']);
+                $targetPath = MICRO_SERVER.$identity;
+                if (CloudService::CloudPatch($targetPath . '/', $serverPath . '/', true)){
+                    $res = $MSS->install($identity);
+                    if (!is_error($res)){
+                        $complete = true;
+                    }
+                }
+            }
+            FileService::rmdirs($patchPath);
+            if($complete){
+                return $this->message("installSuccessfully", wurl("server"), "success");
+            }
+        }catch (\Exception $exception){
+            FileService::rmdirs($patchPath);
+        }
+        return $this->message(__('installFailed', ['reason'=>$res['message']??'无可用的安装包']));
     }
 
     public function index(Request $request){

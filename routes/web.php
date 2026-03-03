@@ -47,6 +47,7 @@ Route::group(['prefix' => 'console', 'namespace' => 'Console', 'middleware'=>['a
     Route::match(['get', 'post'],'/module/{option?}', 'ModuleController@index');
     Route::get('/server', 'ServerController@index');
     Route::get('/server/account', 'ServerController@checkout');
+    Route::post('/server/upload', 'ServerController@upload');
     Route::get('/server/apis/{server}', 'ServerController@Apis');
     Route::get('/server/methods/{server}', 'ServerController@Methods');
     Route::match(['get', 'post'], '/report/{option?}', 'ReportController@httpReq');
