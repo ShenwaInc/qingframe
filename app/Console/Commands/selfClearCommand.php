@@ -85,7 +85,8 @@ class selfClearCommand extends Command
             base_path('database/migrations/2021_08_10_113449_create_mc_groups_table.php'),
             base_path('database/migrations/2021_08_10_113449_create_mc_members_table.php'),
             base_path('database/migrations/2021_08_10_113449_create_core_paylog_table.php'),
-            base_path('database/migrations/2024_12_19_000000_add_balance_after_to_mc_credits_record_table.php')
+            base_path('database/migrations/2024_12_19_000000_add_balance_after_to_mc_credits_record_table.php'),
+            app_path('Console/Commands/serverup.php')
         );
         foreach ($unused as $file){
             if (file_exists($file)){

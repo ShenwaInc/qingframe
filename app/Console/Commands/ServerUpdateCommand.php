@@ -8,14 +8,14 @@ use App\Http\Middleware\App;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class serverup extends Command
+class ServerUpdateCommand extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'server:update';
+    protected $signature = 'server:update {id?}';
     protected $application = null;
 
     /**
@@ -44,6 +44,16 @@ class serverup extends Command
     public function handle()
     {
         $MSS = new MSService();
+        $identity = $this->argument('id');
+        if(!empty($identity)){
+            $res = $MSS->upgrade($identity);
+            if (is_error($res)){
+                $this->error($res['message']);
+            }else{
+                $this->info("Service {$identity} upgraded successfully.");
+            }
+            return true;
+        }
         $MSS->setup();
         $res = $MSS->autoInstall();
         $this->info("Add {$res['install']} service,update {$res['upgrade']}, faild {$res['faild']}, found {$res['servers']} packages.");

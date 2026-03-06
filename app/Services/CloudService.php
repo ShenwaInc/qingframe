@@ -163,7 +163,7 @@ class CloudService
                     if (!$cloudInfo['isLocal']){
                         if (!is_error($value['authorize'])){
                             if($value['authorize']['expiretime']==0){
-                                $local['expireDate'] = '<span class="text-green">'.__('longtime').'</span>';
+                                $local['expireDate'] = '<span class="text-green">'.__('长期').'</span>';
                             }elseif ($value['authorize']['expiretime']<=TIMESTAMP){
                                 $local['expireDate'] = '<span class="text-red">'.__('已到期').'</span>';
                                 $cloudInfo['expired'] = true;

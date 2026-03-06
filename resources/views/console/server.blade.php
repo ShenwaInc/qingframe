@@ -132,28 +132,23 @@
         });
         @endif
     })
-    function FormRender(form) {
-        if(layupload){
-            return layupload.render({
-                elem: '.js-upload',
-                url: '{!! wurl('server/upload') !!}',
-                data: {
-                    _token: '{{ csrf_token() }}'
-                },
-                accept: 'file',
-                acceptMime: 'application/zip',
-                exts: 'zip',
-                done: function(res, index, upload){
-                    layer.msg(res.message, {icon: res.type === 'success' ? 1 : 2, skin: 'fui-layer'});
-                    if(res.type === 'success'){
-                        window.location.href = '{!! wurl('server') !!}';
-                    }
+    function UploadRender(upload) {
+        upload.render({
+            elem: '.js-upload',
+            url: '{!! wurl('server/upload') !!}',
+            data: {
+                _token: '{{ csrf_token() }}'
+            },
+            accept: 'file',
+            acceptMime: 'application/zip',
+            exts: 'zip',
+            done: function(res, index, upload){
+                layer.msg(res.message, {icon: res.type === 'success' ? 1 : 2, skin: 'fui-layer'});
+                if(res.type === 'success'){
+                    window.location.href = '{!! wurl('server') !!}';
                 }
-            })
-        }
-        setTimeout(function (){
-            FormRender(form);
-        }, 1000);
+            }
+        });
     }
 </script>
 @include('common.footer')
