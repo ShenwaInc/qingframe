@@ -502,6 +502,7 @@ class CloudService
         $data['siteid'] = $_W['config']['site']['id'];
         $data['devmode'] = env('APP_DEVELOPMENT',0);
         $data['versionBase'] = QingVersion;
+        $data['clientIP'] = $_W['clientip'];
         $data['sign'] = self::GetSignature($data['appsecret'],$data);
         $CloudApi = env('APP_CLOUD_API', self::$cloudApi);
         $res = HttpService::ihttp_post($CloudApi,$data);

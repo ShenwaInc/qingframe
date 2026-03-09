@@ -46,7 +46,7 @@
                     <div class="layui-form-item must js-password layui-hide">
                         <div class="layui-form-label">@lang('cloudPassword')</div>
                         <div class="layui-input-block">
-                            <input type="password" name="site[password]" placeholder="@lang('cloudPasswordNotify')" required lay-verify="required" class="layui-input radius" value="" />
+                            <input type="password" name="site[password]" placeholder="@lang('cloudPasswordNotify')" class="layui-input radius" value="" />
                         </div>
                     </div>
                     <div class="layui-form-item">
@@ -131,5 +131,20 @@
             return false;
         });
     });
+    function FormRender(form){
+        form.on('submit(cloud_active_submit)', function (data) {
+            console.log(data.field);
+            Core.post("{{ wurl('active') }}", function (res) {
+                if(res.type==='success'){
+                    layer.msg(res.message, {icon:1, skin: 'fui-layer'}, function () {
+                        location.href = res.redirect || '{{ wurl('setting') }}';
+                    });
+                }else{
+                    layer.msg(res.message, {icon:2, skin: 'fui-layer'});
+                }
+            }, data.field, 'json', true);
+            return false;
+        });
+    }
 </script>
 @include('common.footer')
