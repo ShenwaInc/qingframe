@@ -52,10 +52,16 @@ class HomeController extends Controller
                 return redirect("/login/{$uniacid}");
             }
         }
-        $locale = $request->input('lang', $_W['locale']);
+        $locale = e($request->input('lang', $_W['locale']));
         if (!empty($locale) && $locale!=$_W['locale']){
-            \Illuminate\Support\Facades\App::setLocale($locale);
-            session()->put('FRAME_LOCALE', $locale);
+            $language = serv('language');
+            if ($language->enabled){
+                $languages = $language->langUsable();
+                if (!empty($languages) && !empty($languages[$locale])){
+                    \Illuminate\Support\Facades\App::setLocale($locale);
+                    session()->put('FRAME_LOCALE', $locale);
+                }
+            }
         }
         SettingService::Load();
         $language = serv('language');
