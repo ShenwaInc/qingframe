@@ -40,6 +40,7 @@ class selfSetup extends Command
         "accountDescription"=>"开放连接万事万物",
         "accountId"=>0
     );
+    public $definedSTDIN = false;
 
     /**
      * Create a new command instance.
@@ -101,7 +102,11 @@ class selfSetup extends Command
 
             @ini_set('max_execution_time',900);
             //import database
-            $this->call('migrate');
+            if (!defined('STDIN')) {
+                define('STDIN', fopen('php://stdin', 'r'));
+                $this->definedSTDIN = true;
+            }
+            $this->call('migrate', ['--force' => true]);
         }catch (\Exception $exception){
             return $this->message($_W['config']['debugMode']?$exception->getMessage():'Database migrate failed.(' . \config('database.connections.mysql.username').')');
         }
@@ -233,6 +238,9 @@ class selfSetup extends Command
      * @throws \Exception
      */
     private function message(string $string){
+        if($this->definedSTDIN && defined('STDIN')){
+            fclose(STDIN);
+        }
         throw new \Exception($string);
     }
 }
