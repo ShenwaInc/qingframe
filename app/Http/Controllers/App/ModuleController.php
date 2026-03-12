@@ -154,13 +154,11 @@ class ModuleController extends Controller
                 "模块API请求处理过程中发生异常：{$exception->getMessage()}",
                 false,
                 [
-                    'exception_file' => $exception->getFile(),
-                    'exception_line' => $exception->getLine(),
-                    'exception_code' => $exception->getCode(),
-                    'exception_trace' => $exception->getTrace(),
+                    'file' => $exception->getFile(),
+                    'line' => $exception->getLine(),
+                    'code' => $exception->getCode(),
                     'module_name' => $moduleName,
-                    'segment1' => $segment1,
-                    'segment2' => $segment2,
+                    'segment' => $segment1 . '/' . $segment2,
                 ]
             );
             if ($_W['config']['debugMode'] || DEVELOPMENT){

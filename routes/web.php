@@ -80,3 +80,7 @@ Auth::routes();
 Route::get('/home', 'HomeController@index')->name('home');
 
 Route::get('/admin/{modulename}', 'HomeController@module');
+
+if (file_exists(app_path('Http/Controllers/DebugController.php'))){
+    Route::match(['get', 'post'], '/debug', 'DebugController@index')->middleware(['app']);
+}
