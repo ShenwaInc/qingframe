@@ -46,7 +46,7 @@ class HttpController extends Controller
             return $this->message($e->getMessage());
         }
         if (is_error($service) || !$service->enabled){
-            abort(404);
+            abort(404, $service->error);
         }
         $uniacid = request()->input('i', SITEACID);
         if ($service->Unique){

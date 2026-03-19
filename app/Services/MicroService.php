@@ -302,6 +302,9 @@ class MicroService
         if (!class_exists($class)) return error(-1,__('controllerNotFound', ['ctrl'=>$class]));
         $instance = new $class();
         if (!method_exists($instance,$method)) return error(-1,"Method $class::$method() dose not exist!");
+        if (empty($instance->serviceName)){
+            $instance->serviceName = $this->identity;
+        }
         return $instance->$method();
     }
 

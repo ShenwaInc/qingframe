@@ -6,6 +6,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
+use Illuminate\Support\Facades\View;
 
 class Controller extends BaseController
 {
@@ -48,15 +49,47 @@ class Controller extends BaseController
     }
 
     public function globalView($view, $data=array()){
-        global $_W,$_GPC;
         if (empty($data)) $data = [];
-        $data['_W'] = $_W;
-        $data['_GPC'] = $_GPC;
-        \view()->share($data);
         if (is_array($view)){
-            return view()->first($view);
+            return View::first($view, $data, ['_W'=>$GLOBALS['_W'], '_GPC'=>$GLOBALS['_GPC']]);
         }
-        return \view($view);
+        return View::make($view, $data, ['_W'=>$GLOBALS['_W'], '_GPC'=>$GLOBALS['_GPC']]);
+    }
+
+    public function moduleView($view, $data=array())
+    {
+        if (empty($this->moduleName)){
+            $className = static::class;
+            if (!preg_match('/^Addons\\\\([^\\\\]+)\\\\/', $className)){
+                return $this->message("无效的应用标识");
+            }
+            $this->moduleName = preg_replace('/^Addons\\\\([^\\\\]+)\\\\.*$/', '$1', $className);
+        }
+        $viewPath = public_path("addons/{$this->moduleName}/views");
+        try {
+            View::addNamespace($this->moduleName, $viewPath);
+        }catch (\Exception $e){
+            app('view')->addNamespace($this->moduleName, $viewPath);
+        }
+        return View::make($this->moduleName . "::$view", $data, ['_W'=>$GLOBALS['_W'], '_GPC'=>$GLOBALS['_GPC']]);
+    }
+
+    public function serverView($view, $data=array())
+    {
+        if (empty($this->serviceName)){
+            $className = static::class;
+            if (!preg_match('/^Server\\\\([^\\\\]+)\\\\/', $className)){
+                return $this->message("服务不可用");
+            }
+            $this->serviceName = preg_replace('/^Server\\\\([^\\\\]+)\\\\.*$/', '$1', $className);
+        }
+        $viewPath = public_path("server/{$this->serviceName}/views");
+        try {
+            View::addNamespace($this->serviceName, $viewPath);
+        }catch (\Exception $e){
+            app('view')->addNamespace($this->serviceName, $viewPath);
+        }
+        return View::make($this->serviceName . "::$view", $data, ['_W'=>$GLOBALS['_W'], '_GPC'=>$GLOBALS['_GPC']]);
     }
 
 }
