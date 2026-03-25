@@ -6,6 +6,7 @@ namespace App\Services;
 use App\Models\Account;
 use App\Models\Module;
 use App\Models\SystemLog;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -37,6 +38,29 @@ class ModuleService
         if ($ManiFest['installed']) return true;
         $application = $ManiFest['application'];
         MSService::TerminalSend(['mode'=>'info', 'message'=>"即将安装应用模块【{$application['name']}^{$application['version']}】"]);
+        //运行数据库迁移
+        $migrationPath = public_path("{$path}/{$identity}/database/migrations");
+        if (is_dir($migrationPath)){
+            MSService::TerminalSend(['mode'=>'info', 'message'=>"即将进行数据结构迁移..."]);
+            try {
+                Artisan::call('migrate', ['--force' => true, '--path' => $migrationPath]);
+            }catch (\Exception $exception){
+                SystemLog::systemRunning(
+                    '模块数据库迁移异常',
+                    'service:ModuleService',
+                    "执行模块数据库迁移时发生异常：{$exception->getMessage()}",
+                    false,
+                    [
+                        'exception_file' => $exception->getFile(),
+                        'exception_line' => $exception->getLine(),
+                        'exception_code' => $exception->getCode(),
+                        'module_identity' => $identity,
+                        'path' => $path,
+                    ]
+                );
+                return error(-1,__('installFailed', ['reason'=>DEVELOPMENT?$exception->getMessage():__('运行数据库迁移时出现异常')]));
+            }
+        }
         //执行安装脚本
         if (!empty($ManiFest['install'])){
             try {
@@ -53,7 +77,6 @@ class ModuleService
                         'exception_file' => $exception->getFile(),
                         'exception_line' => $exception->getLine(),
                         'exception_code' => $exception->getCode(),
-                        'exception_trace' => $exception->getTrace(),
                         'module_identity' => $identity,
                         'path' => $path,
                     ]
@@ -105,7 +128,6 @@ class ModuleService
                         'exception_file' => $exception->getFile(),
                         'exception_line' => $exception->getLine(),
                         'exception_code' => $exception->getCode(),
-                        'exception_trace' => $exception->getTrace(),
                         'module_identity' => $identity,
                     ]
                 );
@@ -165,6 +187,29 @@ class ModuleService
                 return true;
             }
         }
+        //运行数据库迁移
+        $migrationPath = public_path("addons/$identity/database/migrations");
+        if (is_dir($migrationPath)){
+            MSService::TerminalSend(['mode'=>'info', 'message'=>"即将进行数据结构迁移..."]);
+            try {
+                Artisan::call('migrate', ['--force' => true, '--path' => $migrationPath]);
+            }catch (\Exception $exception){
+                SystemLog::systemRunning(
+                    '模块数据库迁移异常',
+                    'service:ModuleService',
+                    "执行模块数据库迁移时发生异常：{$exception->getMessage()}",
+                    false,
+                    [
+                        'exception_file' => $exception->getFile(),
+                        'exception_line' => $exception->getLine(),
+                        'exception_code' => $exception->getCode(),
+                        'module_identity' => $identity,
+                        'path' => public_path("addons/$identity/"),
+                    ]
+                );
+                return error(-1,__('installFailed', ['reason'=>DEVELOPMENT?$exception->getMessage():__('运行数据库迁移时出现异常')]));
+            }
+        }
         //执行升级脚本
         if (!empty($ManiFest['upgrade'])){
             try {
@@ -181,7 +226,6 @@ class ModuleService
                         'exception_file' => $exception->getFile(),
                         'exception_line' => $exception->getLine(),
                         'exception_code' => $exception->getCode(),
-                        'exception_trace' => $exception->getTrace(),
                         'module_identity' => $identity,
                     ]
                 );
@@ -236,7 +280,6 @@ class ModuleService
                         'exception_file' => $exception->getFile(),
                         'exception_line' => $exception->getLine(),
                         'exception_code' => $exception->getCode(),
-                        'exception_trace' => $exception->getTrace(),
                         'module_identity' => $identity,
                     ]
                 );
@@ -268,7 +311,6 @@ class ModuleService
                         'exception_file' => $exception->getFile(),
                         'exception_line' => $exception->getLine(),
                         'exception_code' => $exception->getCode(),
-                        'exception_trace' => $exception->getTrace(),
                         'module_identity' => $identity,
                     ]
                 );

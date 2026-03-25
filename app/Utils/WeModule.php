@@ -168,9 +168,21 @@ class WeModule
         return $url;
     }
 
-    protected function createWebUrl($do="", $query = array()) {
+    protected function createAppUrl($route, $query = array(), $noredirect = true)
+    {
+        return $this->createMobileUrl($route, $query, $noredirect, true);
+    }
+
+    protected function createWebUrl($do="", $query = array(), $full = false) {
         $module_name = strtolower($this->modulename);
-        return wurl("m/$module_name".($do?"/$do":''), $query);
+        return wurl("m/$module_name".($do?"/$do":''), $query, $full);
+    }
+
+    protected function createApiUrl($route="", $query = array())
+    {
+        global $_W;
+        $module_name = strtolower($this->modulename);
+        return $_W['siteroot'] . "api/m/" . $module_name . ($route?"/$route":'') . "?i={$_W['uniacid']}&" . http_build_query($query, '', '&');
     }
 
     /**

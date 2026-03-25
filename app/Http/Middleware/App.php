@@ -71,6 +71,7 @@ class App
         }
         $_W['sitescheme'] = $_W['ishttps'] ? 'https://' : 'http://';
         $_W['siteroot'] = $_W['sitescheme'] . $_SERVER['HTTP_HOST'] .'/';
+        $_W['attachurl_local'] = $_W['siteroot'] . $_W['config']['upload']['attachdir'] . '/';
         $_W['siteacid'] = SITEACID;
         $_W['uniacid'] = $_W['uid'] = 0;
         $_W['user'] = array('uid'=>$_W['uid'],'username'=>'未登录');

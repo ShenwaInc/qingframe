@@ -26,7 +26,7 @@ class FileService
                 $_W['setting']['remote_complete_info'] = $_W['setting']['remote'];
             }
         }
-        $attach_url = $_W['attachurl_local'] = $_W['siteroot'] . $_W['config']['upload']['attachdir'] . '/';
+        $attach_url = $_W['siteroot'] . $_W['config']['upload']['attachdir'] . '/';
         if (!empty($_W['setting']['remote']['type'])) {
             $attach_url = self::getRemoteUrl($_W['setting']['remote']);
             $_W['attachurl_remote'] = $attach_url;

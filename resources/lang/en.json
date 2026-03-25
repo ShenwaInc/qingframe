@@ -247,6 +247,7 @@
     "installConfirm": "Are you sure you want to install the app?",
     "installFailed": "Installation failed: :reason",
     "installFailedRender": "An error occurred while running the script",
+    "运行数据库迁移时出现异常": "An exception occurred while running the database migration",
     "readyToInstall": "To be installed",
     "SEOKeywords": "Keywords",
     "SEODescription": "Description",
