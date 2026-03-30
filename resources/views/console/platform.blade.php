@@ -43,6 +43,7 @@ $tplStr = '{{d.title}}';
             let Elem = $(this);
             let uniacid = Elem.data('id');
             let menus = [
+                {title:"@lang('新窗口打开')",id:"newTab"},
                 {title:"@lang('manage')",id:"profile"},
                 {title:"@lang('delete')",id:"remove",templet:'<span class="text-red">{{ $tplStr }}</span>'}
             ];
@@ -57,6 +58,10 @@ $tplStr = '{{d.title}}';
                                 window.location.href = '{{ wurl('account/remove') }}?uniacid=' + uniacid;
                                 layer.close(index);
                             });
+                            break;
+                        }
+                        case "newTab":{
+                            window.open('{{ wurl('account') }}/' + uniacid, '_blank');
                             break;
                         }
                         default : {
