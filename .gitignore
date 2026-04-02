@@ -47,6 +47,8 @@ yarn-error.log
 /docs
 .editorconfig
 /app/Console/Commands/TcpServerCommand.php
+/app/Console/Commands/OpenClawServe.php
+/config/openclaw.php
 /public/jpush.log
 /public/website/
 /app/Http/Controllers/DebugController.php

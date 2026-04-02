@@ -83,13 +83,14 @@ class Controller extends BaseController
             }
             $this->serviceName = preg_replace('/^Server\\\\([^\\\\]+)\\\\.*$/', '$1', $className);
         }
-        $viewPath = public_path("server/{$this->serviceName}/views");
+        $viewNameSpace = strtolower($this->serviceName);
+        $viewPath = base_path("servers/$viewNameSpace/views");
         try {
-            View::addNamespace($this->serviceName, $viewPath);
+            View::addNamespace($viewNameSpace, $viewPath);
         }catch (\Exception $e){
-            app('view')->addNamespace($this->serviceName, $viewPath);
+            app('view')->addNamespace($viewNameSpace, $viewPath);
         }
-        return View::make($this->serviceName . "::$view", $data, ['_W'=>$GLOBALS['_W'], '_GPC'=>$GLOBALS['_GPC']]);
+        return View::make("$viewNameSpace::$view", $data, ['_W'=>$GLOBALS['_W'], '_GPC'=>$GLOBALS['_GPC']]);
     }
 
 }
