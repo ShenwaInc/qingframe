@@ -55,7 +55,7 @@ return [
             'fetch'=>PDO::FETCH_ASSOC,
             'charset' => 'utf8',
             'collation' => 'utf8_general_ci',
-            'prefix' => env('DB_PREFIX','ims_'),
+            'prefix' => env('DB_PREFIX','qing_'),
             'prefix_indexes' => true,
             'strict' => false,
             'engine' => null,
