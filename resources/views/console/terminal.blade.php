@@ -29,9 +29,9 @@ if (empty($socket)){
     }
     function terminalInit(url="", show=false){
         if(terminalState) return true;
-        window.Swaws.init("{{ $socket['userSign'] }}", "{{ $socket['server'] }}", SocketReceive);
         terminalState = true;
         let html = '<div class="layui-code layui-code-notepad unpadding" id="TerminalInfo" style="margin: 0; height: 480px; width: 960px;">'+terminalPrefix+"正在连接终端服务器...</div>";
+        let layerElem = null;
         layer.open({
             type: 1,
             skin: 'fui-layer fui-terminal', //样式类名
@@ -41,6 +41,7 @@ if (empty($socket)){
             shadeClose: false, //开启遮罩关闭
             content: html,
             success:function (layero, index){
+                layerElem = layero;
                 terminalRunning = true;
                 layCode({elem: '#TerminalInfo', copy: false});
                 if(show){
@@ -48,30 +49,40 @@ if (empty($socket)){
                 }else{
                     terminalShow("请不要关闭或刷新浏览器，否则可能会造成进程中断。如果因超时而失去响应，请增大程序最大运行时间（当前设置：{{ ini_get('max_execution_time') }}秒）", "warm");
                 }
-                if(url && url!==""){
-                    Core.request(url, 'GET', {inajax:1, _token:"{{ $_W['token'] }}"}, 'json', function (res){
-                        terminalRunning = false;
-                        $(layero).find('span.layui-icon-loading').addClass('layui-hide');
-                        Core.report(res, 2500);
-                    }, false, function (e){
-                        terminalRunning = false;
-                        $(layero).find('span.layui-icon-loading').addClass('layui-hide');
-                        layer.msg('操作失败', {icon: 2, skin: 'fui-layer'});
-                    });
-                }
-                if(terminalTimeout){
-                    terminalGuard = setTimeout(function () {
-                        terminalShow("程序运行超时，请修改PHP最大运行时间或改用其它命令行工具运行该指令。", "err", true);
-                    }, terminalTimeout * 1000);
-                }
             },
-            cancel:function (index, layero) {
-                terminalState = false;
+            cancel: function (index, layero) {
                 if(terminalRunning){
                     layer.msg("程序仍在后台运行", {icon:3, skin: 'fui-layer'});
                 }
+            },
+            end: function (){
+                terminalState = false;
+                layerElem = null;
+                if(Swaws.io){
+                    Swaws.io.close();
+                }
             }
         });
+        Swaws.onConnect = (res)=>{
+            console.log("Terminal Server connected.", res);
+            if(url && url!==""){
+                Core.request(url, 'GET', {inajax:1, _token:"{{ $_W['token'] }}"}, 'json', function (res){
+                    terminalRunning = false;
+                    Core.report(res, 2500);
+                    if(layerElem) $(layerElem).find('span.layui-icon-loading').addClass('layui-hide');
+                }, false, function (e){
+                    terminalRunning = false;
+                    layer.msg('操作失败', {icon: 2, skin: 'fui-layer'});
+                    if(layerElem) $(layerElem).find('span.layui-icon-loading').addClass('layui-hide');
+                });
+            }
+            if(terminalTimeout){
+                terminalGuard = setTimeout(function () {
+                    terminalShow("程序运行超时，请修改PHP最大运行时间或改用其它命令行工具运行该指令。", "err", true);
+                }, terminalTimeout * 1000);
+            }
+        }
+        Swaws.init("{{ $socket['userSign'] }}", "{{ $socket['server'] }}", SocketReceive);
     }
     function terminalShow(message, mode='info', finish=false){
         if(!terminalState) return terminalInit("", {message:message, mode:mode});
