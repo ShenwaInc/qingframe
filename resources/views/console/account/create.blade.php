@@ -23,7 +23,7 @@
                     </div>
                     <div class="layui-form-item must">
                         <label class="layui-form-label">@lang('platformLOGO')</label>
-                        {!! serv('storage', 0)->tpl_form_image('data[logo]', "",array('required'=>true,'placeholder'=>__('chooseImageSquare', array('size'=>'200x200')))); !!}
+                        {!! $storageServer->tpl_form_image('data[logo]', "",array('required'=>true,'placeholder'=>__('chooseImageSquare', array('size'=>'200x200')))); !!}
                     </div>
                     <div class="layui-form-item">
                         <div class="layui-input-block">

@@ -229,6 +229,23 @@ class ModuleController extends Controller
             $return['socket']['server'] = $swaSocket->settings['server'];
         }
         $return['activeState'] = CloudService::CloudActive(true);
+        $requireModule = $request->input('require');
+        $requireModuleUrl = "";
+        if (!empty($requireModule)){
+            $moduleExists = ModuleService::localExists($requireModule);
+            if ($moduleExists){
+                //本地已存在
+                $moduleInstalled = ModuleService::installCheck($requireModule);
+                if (is_error($moduleInstalled) || !$moduleInstalled['installed']){
+                    //本地未安装
+                    $requireModuleUrl = wurl("module/install", ['nid'=>$requireModule]);
+                }
+            }else{
+                //云端未安装
+                $requireModuleUrl = wurl("module/require", ['nid'=>ModuleService::SysPrefix($requireModule)]);
+            }
+        }
+        $return['requireModuleUrl'] = $requireModuleUrl;
         return $this->globalView('console.module', $return);
     }
 

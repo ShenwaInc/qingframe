@@ -114,4 +114,11 @@
     </div>
 </div>
 @include('console.terminal')
+<script type="text/javascript">
+    @if(!empty($requireModuleUrl))
+        function FormRender(form) {
+            terminalInit("{{ $requireModuleUrl }}");
+        }
+    @endif
+</script>
 @include('common.footer')

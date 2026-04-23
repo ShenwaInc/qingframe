@@ -44,7 +44,8 @@ yarn-error.log
 /.vscode/
 /discuz/
 /.cursor
-/docs
+/docs/*
+!/docs/qingframe
 .editorconfig
 /app/Console/Commands/TcpServerCommand.php
 /app/Console/Commands/OpenClawServe.php

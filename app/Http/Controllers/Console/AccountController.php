@@ -395,7 +395,7 @@ class AccountController extends Controller
         if (!$storage->enabled){
             return $this->message($storage->error, wurl('server', ['op'=>'local', 'need'=>'storage']));
         }
-        return $this->globalView('console.account.create', array('title'=>__('platformCreate')));
+        return $this->globalView('console.account.create', array('title'=>__('platformCreate'), 'storageServer'=>$storage));
     }
 
     public function doPermission(Request $request){

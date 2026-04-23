@@ -2,14 +2,14 @@
 
 namespace App\Services;
 
-class ExceptionService{
+class ExceptionService extends MicroService {
 
-    public $error = '';
     public $errno = -1;
     public $enabled = false;
 
     public function __construct($error, $errno = -1)
     {
+        parent::__construct('Exception');
         $this->error = $error;
         $this->errno = $errno;
     }

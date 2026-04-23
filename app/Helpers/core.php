@@ -3,16 +3,16 @@
 use App\Models\SystemLogs;
 use App\Services\ExceptionService;
 use App\Services\FileService;
+use App\Services\MicroService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
-use Illuminate\SupportStr;
 
 /**
  * 调用服务方法
  * @param mixed $params 调用参数
- * @return object 服务实例
+ * @return MicroService 微服务实例
  */
 function serv(...$params){
     static $_servers;

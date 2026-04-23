@@ -22,11 +22,21 @@ class MicroService
     public $events = [];
     public $serviceId;
     public $accountUrl = "";
+    public $error = '';
 
     function __construct($name){
         $this->identity = $name;
         $this->accountUrl = wurl('server/account');
-        $this->initServer();
+        if($name==='Exception'){
+            $this->enabled = false;
+            return;
+        }
+        try {
+            $this->initServer();
+        } catch (\Exception $e) {
+            $this->enabled = false;
+            $this->error = $e->getMessage();
+        }
     }
 
     //初始化服务
