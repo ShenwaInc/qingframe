@@ -3,7 +3,7 @@
 
 namespace App\Services;
 
-use App\Models\Account;
+use App\Models\UniAccount;
 use App\Models\Module;
 use App\Models\SystemLog;
 use Illuminate\Support\Facades\Artisan;
@@ -445,7 +445,7 @@ class ModuleService
     }
 
     static function UniModules($uniacidOrAccount, $apptype=null){
-        $account_info = is_numeric($uniacidOrAccount) ? Account::getByUniacid($uniacidOrAccount) : $uniacidOrAccount;
+        $account_info = is_numeric($uniacidOrAccount) ? UniAccount::getByUniacid($uniacidOrAccount) : $uniacidOrAccount;
         $uni_account_type = AccountService::GetType(1);
         $owner_uid = DB::table('uni_account_users')->where(array('uniacid' => $account_info['uniacid'], 'role' => array('owner', 'vice_founder')))->select(array('uid', 'role'))->get()->keyBy('role')->toArray();
         $owner_uid = !empty($owner_uid['owner']) ? $owner_uid['owner']['uid'] : (!empty($owner_uid['vice_founder']) ? $owner_uid['vice_founder']['uid'] : 0);

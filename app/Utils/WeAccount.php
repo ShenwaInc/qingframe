@@ -2,7 +2,7 @@
 
 namespace App\Utils;
 
-use App\Models\Account;
+use App\Models\UniAccount;
 use App\Services\CacheService;
 use App\Services\UserService;
 use App\Services\WeauthService;
@@ -76,9 +76,9 @@ class WeAccount extends \ArrayObject{
             $uniaccount = $acidOrAccount;
         } else {
             if (!empty($acidOrAccount)) {
-                $uniaccount = Account::getByAcid(intval($acidOrAccount));
+                $uniaccount = UniAccount::getByAcid(intval($acidOrAccount));
             } elseif(!empty($_W['account']['uniacid'])) {
-                $uniaccount = Account::getByUniacid($_W['account']['uniacid']);
+                $uniaccount = UniAccount::getByUniacid($_W['account']['uniacid']);
             }
         }
         if (is_error($uniaccount) || empty($uniaccount)) {
@@ -106,7 +106,7 @@ class WeAccount extends \ArrayObject{
         if (!empty(self::$accountObj[$uniacid])) {
             return self::$accountObj[$uniacid];
         }
-        $uniaccount = Account::getByUniacid($uniacid);
+        $uniaccount = UniAccount::getByUniacid($uniacid);
         if (empty($uniaccount)) {
             return error('-1', '帐号不存在或是已经被删除');
         }

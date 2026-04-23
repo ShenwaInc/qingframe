@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Console;
 
 use App\Http\Controllers\Controller;
-use App\Models\Account;
+use App\Models\UniAccount;
 use App\Models\SystemLog;
 use App\Services\AccountService;
 use App\Services\CacheService;
@@ -28,7 +28,7 @@ class AccountController extends Controller
     function accInit($check=false){
         global $_W,$_GPC;
         $uniacid = intval($_GPC['uniacid']);
-        $this->account = Account::getByUniacid($uniacid);
+        $this->account = UniAccount::getByUniacid($uniacid);
         $this->role = $_W['accountRole'];
         if (!empty($this->account)){
             $this->uniacid = $uniacid;
@@ -171,7 +171,7 @@ class AccountController extends Controller
             if (empty($post['name'])) return $this->message('platformNameEmpty');
             if (empty($post['logo'])) return $this->message('platformLogoEmpty');
             $post['description'] = trim($post['description']);
-            $complete = Account::where('uniacid',$this->uniacid)->update($post);
+            $complete = UniAccount::where('uniacid',$this->uniacid)->update($post);
             SystemLog::userOperation('编辑平台信息', 'account:edit', "平台ID：{$this->uniacid}，名称：{$post['name']}", (bool)$complete, ['uniacid' => $this->uniacid]);
             if (!$complete) return $this->message('saveFailed');
             return $this->message('savedSuccessfully',wurl('account/profile',array('uniacid'=>$this->uniacid),true), 'success');
@@ -384,7 +384,7 @@ class AccountController extends Controller
             $data['uniacid'] = $uniacid;
             SystemLog::userOperation('创建平台', 'account:create', "平台ID：{$uniacid}，名称：{$post['name']}", (bool)$uniacid, $data);
             if (!empty($uniacid)){
-                $acid = Account::account_create($uniacid,array('name'=>$post['name']));
+                $acid = UniAccount::account_create($uniacid,array('name'=>$post['name']));
                 $uni_account->where('uniacid',$uniacid)->update(array('default_acid' => $acid));
                 UserService::AccountRoleUpdate($uniacid,$_W['uid']);
                 return $this->message('createSuccessfully',wurl('account/profile',array('uniacid'=>$uniacid)),'success');

@@ -4,7 +4,7 @@
 namespace App\Services;
 
 
-use App\Models\Account;
+use App\Models\UniAccount;
 use App\Models\AccountWechat;
 use App\Utils\WeAccount;
 use Illuminate\Support\Facades\Cache;
@@ -688,7 +688,7 @@ class WechatService extends WeAccount
             $acid = $account['acid'];
             break;
         }
-        $account = Account::create($acid);
+        $account = UniAccount::create($acid);
 
         return $account->getAccessToken();
     }

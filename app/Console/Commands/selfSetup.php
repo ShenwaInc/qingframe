@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Account;
+use App\Models\UniAccount;
 use App\Services\CloudService;
 use App\Services\UserService;
 use Illuminate\Console\Command;
@@ -160,7 +160,7 @@ class selfSetup extends Command
         if (empty($uniacid)) return $this->message('System initialization failed.');
         $account_data = array('name' => $this->defaultParams['accountName']);
 
-        $acid = Account::account_create($uniacid,$account_data);
+        $acid = UniAccount::account_create($uniacid,$account_data);
         $uni_account->where('uniacid',$uniacid)->update(array('default_acid' => $acid));
         UserService::AccountRoleUpdate($uniacid,$uid);
 

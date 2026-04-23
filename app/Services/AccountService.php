@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\Account;
+use App\Models\UniAccount;
 use App\Utils\WeAccount;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -177,7 +177,7 @@ class AccountService {
             $num[$key_name] = 0;
         }
 
-        $uniacocunts = Account::searchAccountList();
+        $uniacocunts = UniAccount::searchAccountList();
 
         if (!empty($uniacocunts)) {
             $uni_account_users_table = DB::table('uni_account_users')->join('account','uni_account_users.uniacid','=','account.uniacid');
@@ -226,7 +226,7 @@ class AccountService {
             $condition[] = ['uni_account_users.uid',$founder_id];
         }
 
-        $query = Account::searchAccountQuery(false)->where($condition);
+        $query = UniAccount::searchAccountQuery(false)->where($condition);
         $total = $query->count();
         $created = 0;
         if ($page!=-1){
