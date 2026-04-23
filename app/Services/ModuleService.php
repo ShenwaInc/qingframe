@@ -4,8 +4,8 @@
 namespace App\Services;
 
 use App\Models\UniAccount;
-use App\Models\Module;
-use App\Models\SystemLog;
+use App\Models\Modules;
+use App\Models\SystemLogs;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -45,7 +45,7 @@ class ModuleService
             try {
                 Artisan::call('migrate', ['--force' => true, '--path' => $migrationPath]);
             }catch (\Exception $exception){
-                SystemLog::systemRunning(
+                SystemLogs::systemRunning(
                     '模块数据库迁移异常',
                     'service:ModuleService',
                     "执行模块数据库迁移时发生异常：{$exception->getMessage()}",
@@ -68,7 +68,7 @@ class ModuleService
                 define('MODULE_INSTALL', 1);
                 script_run($ManiFest['install'], public_path("{$path}/{$identity}/"));
             } catch (\Exception $exception){
-                SystemLog::systemRunning(
+                SystemLogs::systemRunning(
                     '模块安装脚本执行异常',
                     'service:ModuleService',
                     "执行模块安装脚本时发生异常：{$exception->getMessage()}",
@@ -119,7 +119,7 @@ class ModuleService
                 $MSS = new MSService();
                 $MSS->checkRequire($ManiFest['servers']);
             }catch (\Exception $exception){
-                SystemLog::systemRunning(
+                SystemLogs::systemRunning(
                     '模块依赖服务检查异常',
                     'service:ModuleService',
                     "检查模块依赖服务时发生异常：{$exception->getMessage()}",
@@ -194,7 +194,7 @@ class ModuleService
             try {
                 Artisan::call('migrate', ['--force' => true, '--path' => $migrationPath]);
             }catch (\Exception $exception){
-                SystemLog::systemRunning(
+                SystemLogs::systemRunning(
                     '模块数据库迁移异常',
                     'service:ModuleService',
                     "执行模块数据库迁移时发生异常：{$exception->getMessage()}",
@@ -217,7 +217,7 @@ class ModuleService
                 define('MODULE_UPGRADE', 1);
                 script_run($ManiFest['upgrade'], public_path("addons/$identity/"));
             } catch (\Exception $exception){
-                SystemLog::systemRunning(
+                SystemLogs::systemRunning(
                     '模块升级脚本执行异常',
                     'service:ModuleService',
                     "执行模块升级脚本时发生异常：{$exception->getMessage()}",
@@ -271,7 +271,7 @@ class ModuleService
                 $MSS = new MSService();
                 $MSS->checkRequire($ManiFest['servers']);
             }catch (\Exception $exception){
-                SystemLog::systemRunning(
+                SystemLogs::systemRunning(
                     '模块升级依赖服务检查异常',
                     'service:ModuleService',
                     "检查模块升级依赖服务时发生异常：{$exception->getMessage()}",
@@ -302,7 +302,7 @@ class ModuleService
                 define('MODULE_UNINSTALL', 1);
                 script_run($ManiFest['uninstall'], public_path("addons/$identity/"));
             } catch (\Exception $exception){
-                SystemLog::systemRunning(
+                SystemLogs::systemRunning(
                     '模块卸载脚本执行异常',
                     'service:ModuleService',
                     "执行模块卸载脚本时发生异常：{$exception->getMessage()}",
@@ -335,7 +335,7 @@ class ModuleService
         $cacheKey = CacheService::system_key('module_info', array('module_name' => $name));
         $module = Cache::get($cacheKey,array());
         if (empty($module)) {
-            $module_info = Module::where('name',$name)->first();
+            $module_info = Modules::where('name',$name)->first();
             if (empty($module_info)) {
                 return array();
             }
@@ -502,7 +502,7 @@ class ModuleService
     }
 
     static function NonRecycleModules(){
-        $modules = Module::where('issystem' , 0)->orderBy('mid', 'DESC')->get()->keyBy('name')->toArray();
+        $modules = Modules::where('issystem' , 0)->orderBy('mid', 'DESC')->get()->keyBy('name')->toArray();
         if (empty($modules)) {
             return array();
         }

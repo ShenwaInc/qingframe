@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\SystemLog;
+use App\Models\SystemLogs;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use React\EventLoop\Loop;  // 替代原 Factory
@@ -98,7 +98,7 @@ class TcpServerCommand extends Command
                     $this->info("数据转发成功，响应: {$responseBody}");
                     $connection->write("已收到并转发数据\n");
                 } catch (\Exception $e) {
-                    SystemLog::systemRunning(
+                    SystemLogs::systemRunning(
                         "TCP服务器数据转发异常",
                         'console:TcpServerCommand',
                         "TCP服务器转发数据到目标URL时发生异常：{$e->getMessage()}",

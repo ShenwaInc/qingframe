@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Console;
 
 use App\Http\Controllers\Controller;
-use App\Models\SystemLog;
+use App\Models\SystemLogs;
 use App\Services\CacheService;
 use App\Services\CloudService;
 use App\Services\ModuleService;
@@ -70,7 +70,7 @@ class SettingController extends Controller
                 $res['message'] = '恭喜您，激活成功！';
                 $redirect = wurl('');
             }
-            SystemLog::userOperation(
+            SystemLogs::userOperation(
                 '激活云服务',
                 'setting:active',
                 "站点ID：{$activeState['siteid']}",
@@ -147,10 +147,10 @@ class SettingController extends Controller
                 ))
             ));
             CloudService::CloudEnv(array("APP_VERSION=".QingVersion,"APP_RELEASE=".QingRelease), array("APP_VERSION={$cloudInfo['version']}","APP_RELEASE={$cloudInfo['releasedate']}"));
-            SystemLog::userOperation('系统同步源码', 'setting:selfupgrade', "版本：{$cloudInfo['version']}", true, ['version' => $cloudInfo['version']]);
+            SystemLogs::userOperation('系统同步源码', 'setting:selfupgrade', "版本：{$cloudInfo['version']}", true, ['version' => $cloudInfo['version']]);
         }catch (\Exception $exception){
             MSService::TerminalSend(['mode'=>'err', 'message'=>"程序同步失败：".$exception->getMessage()]);
-            SystemLog::systemRunning(
+            SystemLogs::systemRunning(
                 '系统同步源码异常',
                 'setting:selfupgrade',
                 "系统同步源码过程中发生异常：{$exception->getMessage()}",
@@ -185,9 +185,9 @@ class SettingController extends Controller
             Artisan::call('server:update');
             Artisan::call('self:clear');
             CacheService::flush();
-            SystemLog::userOperation('系统升级', 'setting:sysupgrade', '执行系统升级流程');
+            SystemLogs::userOperation('系统升级', 'setting:sysupgrade', '执行系统升级流程');
         }catch (\Exception $exception){
-            SystemLog::error(
+            SystemLogs::error(
                 '系统升级异常',
                 'setting:sysupgrade',
                 "系统升级过程中发生异常：{$exception->getMessage()}",
@@ -294,7 +294,7 @@ class SettingController extends Controller
                 return $this->message("无效的HTML内容");
             }
             $res = file_put_contents($welcomePath, $html);
-            SystemLog::userOperation('保存欢迎页', 'setting:welcome', $html, $res);
+            SystemLogs::userOperation('保存欢迎页', 'setting:welcome', $html, $res);
             if (!$res){
                 return $this->message('saveFailed');
             }
@@ -323,7 +323,7 @@ class SettingController extends Controller
         if (\request()->isMethod('post')){
             $Blacklist = trim(\request()->input('blacklist'));
             $res = file_put_contents($file, $Blacklist);
-            SystemLog::userOperation('保存黑名单', 'setting:blacklist', $Blacklist, $res);
+            SystemLogs::userOperation('保存黑名单', 'setting:blacklist', $Blacklist, $res);
             if ($res===false){
                 return $this->message('saveFailed');
             }
@@ -375,7 +375,7 @@ class SettingController extends Controller
                 } else {
                     $complete = CloudService::CloudEnv('APP_DEBUG=false', 'APP_DEBUG=true');
                 }
-                SystemLog::userOperation('调试模式切换', 'setting:debug', "切换为".($debug ? '关闭' : '开启'), $complete);
+                SystemLogs::userOperation('调试模式切换', 'setting:debug', "切换为".($debug ? '关闭' : '开启'), $complete);
                 if (!$complete) {
                     return $this->message('文件写入失败，请检查根目录权限');
                 }
@@ -502,7 +502,7 @@ class SettingController extends Controller
                 }
             }
             $complete = SettingService::Save($config,'page');
-            SystemLog::userOperation('保存页面设置', 'setting:pageset', '保存页面配置', $complete, ['config'=>$config, 'original'=>$_W['setting']['page']]);
+            SystemLogs::userOperation('保存页面设置', 'setting:pageset', '保存页面配置', $complete, ['config'=>$config, 'original'=>$_W['setting']['page']]);
             if ($complete){
                 return $this->message('savedSuccessfully',wurl('setting'),'success');
             }
@@ -523,7 +523,7 @@ EOF;
                     $res = CloudService::CloudEnv("APP_SECURITY_ENTRANCE=$appSecurityEntrance","APP_SECURITY_ENTRANCE=".trim($SecurityCode));
                 }
             }
-            SystemLog::userOperation('修改安全入口', 'setting:appSecurity', "入口代码已变更", $res);
+            SystemLogs::userOperation('修改安全入口', 'setting:appSecurity', "入口代码已变更", $res);
             if (!$res){
                 return $this->message("文件写入失败，请检查根目录权限");
             }

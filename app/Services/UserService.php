@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\UniAccountUser;
+use App\Models\UniAccountUsers;
 use App\User;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -196,7 +196,7 @@ class UserService
         }
 
         if (!empty($uniacid)) {
-            $role = (string)UniAccountUser::where(array('uid' => $uid, 'uniacid' => $uniacid))->value('role');
+            $role = (string)UniAccountUsers::where(array('uid' => $uid, 'uniacid' => $uniacid))->value('role');
             if (in_array($role, array('owner','vice_founder','manager','operator','clerk'))){
                 return $role;
             }
@@ -206,7 +206,7 @@ class UserService
                 return 'vice_founder';
             }
 
-            $roles = UniAccountUser::where(array('uid' => $uid))->get(['role'])->toArray();;
+            $roles = UniAccountUsers::where(array('uid' => $uid))->get(['role'])->toArray();;
             $roles = array_keys($roles);
             if (in_array('vice_founder', $roles)) {
                 $role = 'vice_founder';

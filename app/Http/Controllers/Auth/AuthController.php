@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\SystemLog;
+use App\Models\SystemLogs;
 use App\Services\AccountService;
 use App\Services\SettingService;
 use Illuminate\Http\Request;
@@ -50,7 +50,7 @@ class AuthController extends Controller
             $this->failed_loginid = $failed_login['id'];
             $lastUpdate = TIMESTAMP - 900;
             if ($failed_login['count']>=5 && $failed_login['lastupdate']>$lastUpdate  && $failed_login['ip']==$this->clientip){
-                SystemLog::userOperation( '用户反复尝试登录失败', 'core:console', '', false, $request->all());
+                SystemLogs::userOperation( '用户反复尝试登录失败', 'core:console', '', false, $request->all());
                 return $this->message('您登录错误次数过多，请15分钟后再试');
             }else{
                 if ($failed_login['lastupdate']<=$lastUpdate || $failed_login['ip']!=$this->clientip){
@@ -75,7 +75,7 @@ class AuthController extends Controller
                 'createtime'=>TIMESTAMP
             ));
             DB::table('users')->where('uid', $user['uid'])->update(array('lastvisit'=>TIMESTAMP));
-            SystemLog::userOperation("登录后台【{$username}】");
+            SystemLogs::userOperation("登录后台【{$username}】");
             $redirect = wurl();
             $uniacid = (int)$request->input('uniacid');
             if (!empty($uniacid)){

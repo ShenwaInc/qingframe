@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
-class Setting extends Model
+class CoreSettings extends Model
 {
     //
     protected $table = 'core_settings';

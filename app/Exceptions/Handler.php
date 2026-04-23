@@ -2,7 +2,7 @@
 
 namespace App\Exceptions;
 
-use App\Models\SystemLog;
+use App\Models\SystemLogs;
 use Exception;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\QueryException;
@@ -49,7 +49,7 @@ class Handler extends ExceptionHandler
             $errCode = 404;
         }
         if ($exception instanceof QueryException){
-            SystemLog::database(
+            SystemLogs::database(
                 $module,
                 $exception->getSql(),
                 $exception->getBindings(),
@@ -59,7 +59,7 @@ class Handler extends ExceptionHandler
                 $exception->getMessage()
             );
         }else{
-            SystemLog::error("服务器错误({$errCode})", $module, $exception->getMessage(), $errCode, [
+            SystemLogs::error("服务器错误({$errCode})", $module, $exception->getMessage(), $errCode, [
                 'file' => $exception->getFile() . ":" . $exception->getLine(),
                 'trace' => $exception->getTraceAsString(),
                 'path'   => url()->current(),

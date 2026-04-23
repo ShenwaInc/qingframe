@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\SystemLog;
+use App\Models\SystemLogs;
 use App\Services\FileService;
 use App\Services\ModuleService;
 use Illuminate\Console\Command;
@@ -55,7 +55,7 @@ class ModuleRemoveCommand extends Command
                 define('MODULE_UNINSTALL', 1);
                 script_run($ManiFest['uninstall'], public_path("addons/$name/"));
             } catch (\Exception $exception){
-                SystemLog::systemRunning(
+                SystemLogs::systemRunning(
                     '模块卸载脚本执行异常',
                     'command:ModuleRemove',
                     "执行模块卸载脚本时发生异常：{$exception->getMessage()}",
@@ -82,7 +82,7 @@ class ModuleRemoveCommand extends Command
         //删除安装包
         FileService::rmdirs($modulePath);
         $this->info("Module $name Removed");
-        SystemLog::systemRunning(
+        SystemLogs::systemRunning(
             '模块移除成功',
             'command:ModuleRemove',
             "模块移除成功 {$name}",

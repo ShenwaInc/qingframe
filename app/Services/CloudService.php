@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\SystemLog;
+use App\Models\SystemLogs;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -69,7 +69,7 @@ class CloudService
                     if (is_error($ManiFest)) continue;
                     $com = $ManiFest['application'];
                 }catch (\Exception $exception){
-                    SystemLog::systemRunning(
+                    SystemLogs::systemRunning(
                         '获取模块清单异常',
                         'service:CloudService',
                         "获取本地模块清单时发生异常：{$exception->getMessage()}",

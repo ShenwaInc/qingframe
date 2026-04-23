@@ -10,7 +10,7 @@ use Illuminate\Support\Str;
 
 define('SystemInstalled', file_exists(base_path('storage/installed.bin')));
 
-class SystemLog extends Model
+class SystemLogs extends Model
 {
     protected $table = 'system_logs';
 

@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
-class Module extends Model
+class Modules extends Model
 {
     //
     protected $table = 'modules';

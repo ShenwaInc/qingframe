@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Http\Middleware\App;
-use App\Models\SystemLog;
+use App\Models\SystemLogs;
 use App\Services\CacheService;
 use App\Services\FileService;
 use App\Services\MSService;
@@ -122,7 +122,7 @@ class selfmigrate extends Command
             $this->info('Qingwork framework migrate successfully.');
         } catch (\Exception $exception){
             $this->error("Migrate fail:".$exception->getMessage());
-            SystemLog::systemRunning(
+            SystemLogs::systemRunning(
                 "系统数据库迁移异常",
                 'console:selfmigrate',
                 "数据库迁移过程中发生异常：{$exception->getMessage()}",

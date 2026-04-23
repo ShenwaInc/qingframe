@@ -3,7 +3,7 @@
 namespace App\Providers;
 
 use App\Jobs\RecordSlowQuery;
-use App\Models\SystemLog;
+use App\Models\SystemLogs;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
@@ -68,7 +68,7 @@ class AppServiceProvider extends ServiceProvider
             $slowThreshold = env('LOG_SLOW_QUERY', 0);
             if ($slowThreshold && $query->time > $slowThreshold){
                 //记录日志查询
-                $fullSql = SystemLog::formatSql($query->sql, $query->bindings);
+                $fullSql = SystemLogs::formatSql($query->sql, $query->bindings);
                 $pageUrl = request()->fullUrl();
                 RecordSlowQuery::dispatch(
                     $fullSql,

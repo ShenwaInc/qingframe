@@ -5,7 +5,7 @@ namespace App\Services;
 
 
 use App\Models\UniAccount;
-use App\Models\AccountWechat;
+use App\Models\AccountWechats;
 use App\Utils\WeAccount;
 use Illuminate\Support\Facades\Cache;
 
@@ -25,7 +25,7 @@ class WechatService extends WeAccount
     );
 
     public static function getAccountInfo($uniacid) {
-        $account = AccountWechat::where('uniacid',$uniacid)->first();
+        $account = AccountWechats::where('uniacid',$uniacid)->first();
         if (empty($account)) return array();
         $account['encrypt_key'] = $account['key'];
         return $account;

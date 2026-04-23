@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\SystemLog;
+use App\Models\SystemLogs;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -387,7 +387,7 @@ class MSService
                             continue;
                         }
                     }catch (\Exception $exception){
-                        SystemLog::systemRunning(
+                        SystemLogs::systemRunning(
                             '微服务自动升级异常',
                             'service:MSService',
                             "微服务自动升级过程中发生异常：{$exception->getMessage()}",
@@ -419,7 +419,7 @@ class MSService
                             continue;
                         }
                     }catch (\Exception $exception){
-                        SystemLog::systemRunning(
+                        SystemLogs::systemRunning(
                             '微服务自动安装异常',
                             'service:MSService',
                             "微服务自动安装过程中发生异常：{$exception->getMessage()}",
@@ -454,7 +454,7 @@ class MSService
                     continue;
                 }
             }catch (\Exception $exception){
-                SystemLog::systemRunning(
+                SystemLogs::systemRunning(
                     '微服务框架服务安装异常',
                     'service:MSService',
                     "安装框架必须服务过程中发生异常：{$exception->getMessage()}",
@@ -503,7 +503,7 @@ class MSService
                 define('SERVER_INSTALL', 1);
                 script_run($service['install'], MICRO_SERVER.$identity);
             }catch (\Exception $exception){
-                SystemLog::systemRunning(
+                SystemLogs::systemRunning(
                     '微服务安装脚本执行异常',
                     'service:MSService',
                     "执行微服务安装脚本时发生异常：{$exception->getMessage()}",
@@ -543,7 +543,7 @@ class MSService
                     FileService::rmdirs(MICRO_SERVER.$identity."/");
                 }
             }catch (\Exception $exception){
-                SystemLog::systemRunning(
+                SystemLogs::systemRunning(
                     '微服务安装回滚异常',
                     'service:MSService',
                     "微服务安装回滚过程中发生异常：{$exception->getMessage()}",
@@ -614,7 +614,7 @@ class MSService
                     define('SERVER_UPGRADE', 1);
                     script_run($manifest['upgrade'], MICRO_SERVER.$identity);
                 }catch (\Exception $exception){
-                    SystemLog::systemRunning(
+                    SystemLogs::systemRunning(
                         '微服务升级脚本执行异常',
                         'service:MSService',
                         "执行微服务升级脚本时发生异常：{$exception->getMessage()}",
@@ -702,7 +702,7 @@ class MSService
                     define('SERVER_UNINSTALL', 1);
                     script_run($service['configs']['uninstall'], MICRO_SERVER.$identity);
                 }catch (\Exception $exception){
-                    SystemLog::systemRunning(
+                    SystemLogs::systemRunning(
                         '微服务卸载脚本执行异常',
                         'service:MSService',
                         "执行微服务卸载脚本时发生异常：{$exception->getMessage()}",
@@ -890,7 +890,7 @@ class MSService
             }
         }catch (\Exception $exception){
             $message = $exception->getMessage();
-            SystemLog::systemRunning(
+            SystemLogs::systemRunning(
                 'Composer依赖安装异常',
                 'service:MSService',
                 "安装Composer依赖时发生异常：{$message}",
@@ -945,7 +945,7 @@ class MSService
             }
         }catch (\Exception $exception){
             $message = $exception->getMessage();
-            SystemLog::systemRunning(
+            SystemLogs::systemRunning(
                 'Composer依赖更新异常',
                 'service:MSService',
                 "更新Composer依赖时发生异常：{$message}",
@@ -993,7 +993,7 @@ class MSService
                 return true;
             }
         }catch (\Exception $exception){
-            SystemLog::systemRunning(
+            SystemLogs::systemRunning(
                 'Composer依赖卸载异常',
                 'service:MSService',
                 "卸载Composer依赖时发生异常：{$exception->getMessage()}",

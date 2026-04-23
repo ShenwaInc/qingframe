@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Console;
 
 use App\Http\Controllers\Controller;
-use App\Models\SystemLog;
+use App\Models\SystemLogs;
 use App\Services\AccountService;
 use App\Services\CloudService;
 use App\Services\FileService;
@@ -175,9 +175,9 @@ class ServerController extends Controller
             case "repair" : {
                 try {
                     Artisan::call('self:repair');
-                    SystemLog::userOperation('修复系统服务', 'server:repair', '系统服务修复');
+                    SystemLogs::userOperation('修复系统服务', 'server:repair', '系统服务修复');
                 }catch (\Exception $exception){
-                    SystemLog::systemRunning(
+                    SystemLogs::systemRunning(
                         '修复系统服务异常',
                         'server:repair',
                         "修复系统服务过程中发生异常：{$exception->getMessage()}",
@@ -196,7 +196,7 @@ class ServerController extends Controller
             case "install" : {
                 $res = $MSS->install($identity);
                 $status = !is_error($res);
-                SystemLog::userOperation('安装微服务', 'server:install', "服务：{$identity}", $status, ['identity' => $identity]);
+                SystemLogs::userOperation('安装微服务', 'server:install', "服务：{$identity}", $status, ['identity' => $identity]);
                 if (!$status){
                     return $this->TerminalError($res['message']);
                 }
@@ -207,7 +207,7 @@ class ServerController extends Controller
             case "uninstall" :{
                 $res = $MSS->uninstall($identity);
                 $status = !is_error($res);
-                SystemLog::userOperation('卸载微服务', 'server:uninstall', "服务：{$identity}", $status, ['identity' => $identity]);
+                SystemLogs::userOperation('卸载微服务', 'server:uninstall', "服务：{$identity}", $status, ['identity' => $identity]);
                 if (!$status){
                     return $this->TerminalError($res['message']);
                 }
@@ -250,7 +250,7 @@ class ServerController extends Controller
             }
             case "disable" : {
                 $result = MSService::disable($identity);
-                SystemLog::userOperation('停用微服务', 'server:disable', "服务：{$identity}", $result, ['identity' => $identity]);
+                SystemLogs::userOperation('停用微服务', 'server:disable', "服务：{$identity}", $result, ['identity' => $identity]);
                 if ($result){
                     return $this->success('successful',wurl("server"));
                 }
@@ -259,7 +259,7 @@ class ServerController extends Controller
             case "upgrade" : {
                 $res = $MSS->upgrade($identity);
                 $status = !is_error($res);
-                SystemLog::userOperation('升级微服务', 'server:upgrade', "服务：{$identity}", $status, ['identity' => $identity]);
+                SystemLogs::userOperation('升级微服务', 'server:upgrade', "服务：{$identity}", $status, ['identity' => $identity]);
                 if (!$status){
                     return $this->TerminalError($res['message']);
                 }
@@ -270,7 +270,7 @@ class ServerController extends Controller
             case "cloudup" : {
                 $res = $MSS->cloudUpdate($identity);
                 $status = !is_error($res);
-                SystemLog::userOperation('升级微服务', 'server:cloudup', "服务：{$identity}（云端升级）", $status, ['identity' => $identity]);
+                SystemLogs::userOperation('升级微服务', 'server:cloudup', "服务：{$identity}（云端升级）", $status, ['identity' => $identity]);
                 if (!$status){
                     return $this->TerminalError($res['message']);
                 }
@@ -281,7 +281,7 @@ class ServerController extends Controller
             case "cloudInstall" : {
                 $res = $MSS->cloudInstall($identity);
                 $status = !is_error($res);
-                SystemLog::userOperation('安装微服务', 'server:cloudInstall', "服务：{$identity}（云端安装）", $status, ['identity' => $identity]);
+                SystemLogs::userOperation('安装微服务', 'server:cloudInstall', "服务：{$identity}（云端安装）", $status, ['identity' => $identity]);
                 if (!$status){
                     return $this->TerminalError($res['message']);
                 }
@@ -291,7 +291,7 @@ class ServerController extends Controller
             }
             case "restore" : {
                 $result = MSService::restore($identity);
-                SystemLog::userOperation('恢复微服务', 'server:restore', "服务：{$identity}", $result, ['identity' => $identity]);
+                SystemLogs::userOperation('恢复微服务', 'server:restore', "服务：{$identity}", $result, ['identity' => $identity]);
                 if ($result){
                     return $this->message('successful',wurl("server", array('op'=>'stop')),'success');
                 }

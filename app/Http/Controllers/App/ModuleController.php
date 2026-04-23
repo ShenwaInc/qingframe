@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\App;
 
 use App\Http\Controllers\Controller;
-use App\Models\SystemLog;
+use App\Models\SystemLogs;
 use App\Utils\WeModule;
 use Illuminate\Http\Request;
 
@@ -22,7 +22,7 @@ class ModuleController extends Controller
 
             $site = $WeModule->create($module);
             if (empty($site)){
-                SystemLog::systemRunning(
+                SystemLogs::systemRunning(
                     "模块不存在：{$module}",
                     'app:module:entry',
                     "模块不存在：{$module}",
@@ -68,7 +68,7 @@ class ModuleController extends Controller
                 return $site->$method($request);
             }
         }catch (\Exception $exception){
-            SystemLog::systemRunning(
+            SystemLogs::systemRunning(
                 "移动端模块请求异常：{$module}",
                 'app:module:HttpRequest',
                 "移动端模块请求处理过程中发生异常：{$exception->getMessage()}",
@@ -100,7 +100,7 @@ class ModuleController extends Controller
             $site = $WeModule->create($moduleName);
 
             if (empty($site)){
-                SystemLog::systemRunning(
+                SystemLogs::systemRunning(
                     "模块不存在：{$moduleName}",
                     'api:module:entry',
                     "模块不存在：{$moduleName}",
@@ -148,7 +148,7 @@ class ModuleController extends Controller
             }
             return $site->$method($request);
         }catch (\Exception $exception){
-            SystemLog::systemRunning(
+            SystemLogs::systemRunning(
                 "模块API请求异常：{$moduleName}",
                 'app:module:Api',
                 "模块API请求处理过程中发生异常：{$exception->getMessage()}",

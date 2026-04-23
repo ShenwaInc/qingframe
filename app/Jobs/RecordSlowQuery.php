@@ -7,7 +7,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use App\Models\SystemLog;
+use App\Models\SystemLogs;
 use Illuminate\Support\Facades\Schema;
 
 class RecordSlowQuery implements ShouldQueue
@@ -55,7 +55,7 @@ class RecordSlowQuery implements ShouldQueue
             return;
         }
         // 写入数据库日志表（使用之前的 SystemLog 模型）
-        SystemLog::database(
+        SystemLogs::database(
             $this->pageUrl?:'database:slow_query',
             $this->fullSql,
             $this->bindings,

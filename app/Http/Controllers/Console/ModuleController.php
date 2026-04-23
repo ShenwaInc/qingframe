@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Console;
 
 use App\Http\Controllers\Controller;
-use App\Models\SystemLog;
+use App\Models\SystemLogs;
 use App\Services\AccountService;
 use App\Services\CacheService;
 use App\Services\CloudService;
@@ -37,7 +37,7 @@ class ModuleController extends Controller
         try {
             $site = $WeModule->create($moduleName);
             if (empty($site)){
-                SystemLog::systemRunning(
+                SystemLogs::systemRunning(
                     "模块请求异常：{$moduleName}",
                     'console:module:HttpRequest',
                     "模块请求处理过程中发生异常：模块不存在",
@@ -98,7 +98,7 @@ class ModuleController extends Controller
             if (DEVELOPMENT){
                 throw $exception;
             }
-            SystemLog::systemRunning(
+            SystemLogs::systemRunning(
                 "模块请求异常：{$moduleName}",
                 'module:HttpRequest',
                 "模块请求处理过程中发生异常：{$exception->getMessage()}",
@@ -270,9 +270,9 @@ class ModuleController extends Controller
                 }
                 CacheService::flush();
                 $platformCount = count($ids);
-                SystemLog::userOperation('分配应用模块', 'module:allocate', "模块：{$identity}，分配到{$platformCount}个平台", true, ['module' => $identity, 'platform_count' => $platformCount]);
+                SystemLogs::userOperation('分配应用模块', 'module:allocate', "模块：{$identity}，分配到{$platformCount}个平台", true, ['module' => $identity, 'platform_count' => $platformCount]);
             }catch (\Exception $exception){
-                SystemLog::systemRunning(
+                SystemLogs::systemRunning(
                     '分配应用模块异常',
                     'module:allocate',
                     "分配应用模块过程中发生异常：{$exception->getMessage()}",
@@ -372,7 +372,7 @@ class ModuleController extends Controller
         $identity = $request->input('nid', "");
         $install = ModuleService::install($identity, 'addons', 'local');
         $status = !is_error($install);
-        SystemLog::userOperation('安装应用模块', 'module:install', "模块：{$identity}（本地安装）", $status, ['module' => $identity]);
+        SystemLogs::userOperation('安装应用模块', 'module:install', "模块：{$identity}（本地安装）", $status, ['module' => $identity]);
         if (!$status){
             return $this->TerminalError($install['message']);
         }
@@ -386,7 +386,7 @@ class ModuleController extends Controller
         $identity = $request->input('nid', "");
         $complete = ModuleService::upgrade($identity);
         $status = !is_error($complete);
-        SystemLog::userOperation('升级应用模块', 'module:upgrade', "模块：{$identity}（本地升级）", $status, ['module' => $identity]);
+        SystemLogs::userOperation('升级应用模块', 'module:upgrade', "模块：{$identity}（本地升级）", $status, ['module' => $identity]);
         if (!$status){
             return $this->TerminalError($complete['message']);
         }
@@ -401,7 +401,7 @@ class ModuleController extends Controller
         $identity = $request->input('nid', "");
         $cloudRequire = CloudService::RequireModule($identity);
         $status = !is_error($cloudRequire);
-        SystemLog::userOperation('安装应用模块', 'module:require', "模块：{$identity}（云端安装）", $status, ['module' => $identity]);
+        SystemLogs::userOperation('安装应用模块', 'module:require', "模块：{$identity}（云端安装）", $status, ['module' => $identity]);
         if (!$status){
             MSService::TerminalSend(["mode"=>"err", "message"=>$cloudRequire['message']], true);
             return $this->message($cloudRequire['message'], trim($cloudRequire['redirect']));
@@ -424,7 +424,7 @@ class ModuleController extends Controller
         }
         $moduleUpdate = ModuleService::upgrade($identity, 'cloud');
         $status = !is_error($moduleUpdate);
-        SystemLog::userOperation('升级应用模块', 'module:update', "模块：{$identity}（云端升级）", $status, ['module' => $identity]);
+        SystemLogs::userOperation('升级应用模块', 'module:update', "模块：{$identity}（云端升级）", $status, ['module' => $identity]);
         if (!$status){
             return $this->TerminalError($moduleUpdate['message']);
         }
@@ -445,7 +445,7 @@ class ModuleController extends Controller
         $identity = $request->input('nid', "");
         $uninstall = ModuleService::uninstall($identity);
         $status = !is_error($uninstall);
-        SystemLog::userOperation('卸载应用模块', 'module:remove', "模块：{$identity}", $status, ['module' => $identity]);
+        SystemLogs::userOperation('卸载应用模块', 'module:remove', "模块：{$identity}", $status, ['module' => $identity]);
         if (!$status) return $this->TerminalError($uninstall['message']);
         return $this->message('uninstallComplete', wurl('module'),'success');
     }

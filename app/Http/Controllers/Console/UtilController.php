@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Console;
 
 use App\Http\Controllers\Controller;
-use App\Models\SystemLog;
+use App\Models\SystemLogs;
 use App\Services\CacheService;
 use App\Services\CloudService;
 use App\Services\HttpService;
@@ -41,9 +41,9 @@ class UtilController extends Controller
         //清理系统缓存
         try {
             CacheService::flush();
-            SystemLog::userOperation('更新系统缓存');
+            SystemLogs::userOperation('更新系统缓存');
         }catch (\Exception $exception){
-            SystemLog::systemRunning(
+            SystemLogs::systemRunning(
                 '清理系统缓存异常',
                 'util:cache',
                 "清理系统缓存过程中发生异常：{$exception->getMessage()}",
@@ -198,7 +198,7 @@ class UtilController extends Controller
                 if (empty($mobile) || !preg_match('/^(\+)?(86)?0?1\d{10}$/', $mobile)) return $this->message("typeAValidPhoneNumber");
                 $data = array('r'=>'util.code', 'token'=>1,'mobile'=>$mobile,"sendcode"=>"1","from"=>"autocheck");
                 $res = CloudService::CloudApi("", $data);
-                SystemLog::userOperation(
+                SystemLogs::userOperation(
                     '获取云端验证码',
                     'core:cloud',
                     "手机号：" . $mobile,

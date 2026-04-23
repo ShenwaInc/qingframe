@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Console;
 
 use App\Http\Controllers\Controller;
-use App\Models\SystemLog;
+use App\Models\SystemLogs;
 use App\Services\UserService;
 use App\User;
 use Illuminate\Http\Request;
@@ -42,7 +42,7 @@ class UserController extends Controller
             return $this->message('该邮箱已被使用');
         }
         $result = DB::table("users_profile")->updateOrInsert(array('uid'=>$_W['uid']),array('email'=>$email));
-        SystemLog::userOperation('修改邮箱', 'user:email', "新邮箱：{$email}", $result);
+        SystemLogs::userOperation('修改邮箱', 'user:email', "新邮箱：{$email}", $result);
         if ($result){
             return $this->success("保存成功！", referer());
         }
@@ -106,7 +106,7 @@ class UserController extends Controller
             if (!empty($user)){
                 $result = DB::table('users')->where('uid', $user['uid'])->update($data);
                 unset($data['salt'], $data['password']);
-                SystemLog::userOperation('更新子账号资料', 'user:update', "", (bool)$result, ['update'=>array_merge($data, ['email'=>$email, 'maxaccount'=>$maxaccount])]);
+                SystemLogs::userOperation('更新子账号资料', 'user:update', "", (bool)$result, ['update'=>array_merge($data, ['email'=>$email, 'maxaccount'=>$maxaccount])]);
                 if(!$result){
                     return $this->message();
                 }
@@ -122,7 +122,7 @@ class UserController extends Controller
                 $data['owner_uid'] = $_W['uid'];
                 $uid = DB::table('users')->insertGetId($data);
                 unset($data['salt'], $data['password']);
-                SystemLog::userOperation('创建子账号', 'user:create', "", (bool)$uid, ['update'=>array_merge($data, ['email'=>$email, 'maxaccount'=>$maxaccount])]);
+                SystemLogs::userOperation('创建子账号', 'user:create', "", (bool)$uid, ['update'=>array_merge($data, ['email'=>$email, 'maxaccount'=>$maxaccount])]);
                 if (!$uid) {
                     return $this->message();
                 }
@@ -151,7 +151,7 @@ class UserController extends Controller
             return $this->message('userNotAuthorized');
         }
         $complete = $query->update(array('status'=>3));
-        SystemLog::userOperation('删除子账号', 'user:remove', "删除用户：{$user['username']}", $complete, (array)$user);
+        SystemLogs::userOperation('删除子账号', 'user:remove', "删除用户：{$user['username']}", $complete, (array)$user);
         if ($complete){
             return $this->message('deleteSuccessfully',wurl('user/subuser'),'success');
         }
@@ -265,7 +265,7 @@ class UserController extends Controller
             $update['password'] = sha1("{$newpassowrd}-{$update['salt']}-{$_W['config']['setting']['authkey']}");
             $update['register_type'] = 0;
             $complete = pdo_update('users',$update,array('uid'=>$_W['uid']));
-            SystemLog::userOperation('修改登录密码', 'user:passport', "用户ID：{$_W['uid']}", $complete, ['uid' => $_W['uid']]);
+            SystemLogs::userOperation('修改登录密码', 'user:passport', "用户ID：{$_W['uid']}", $complete, ['uid' => $_W['uid']]);
             if ($complete){
                 Auth::logout();
                 \session()->flush();

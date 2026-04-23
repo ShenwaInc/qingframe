@@ -2,7 +2,7 @@
 
 namespace App\Exports;
 
-use App\Models\SystemLog;
+use App\Models\SystemLogs;
 use Illuminate\Support\Carbon;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -26,7 +26,7 @@ class SystemLogsExport implements FromQuery, WithHeadings, WithMapping
     public function query()
     {
         // 可根据需求添加筛选条件（如时间范围）
-        return $this->query ?? SystemLog::query();
+        return $this->query ?? SystemLogs::query();
     }
 
     /**

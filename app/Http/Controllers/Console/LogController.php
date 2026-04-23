@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Console;
 
 use App\Exports\SystemLogsExport;
 use App\Http\Controllers\Controller;
-use App\Models\SystemLog;
+use App\Models\SystemLogs;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -34,7 +34,7 @@ class LogController extends Controller
         if (!$request->user()->founder_groupid){
             return $this->message('暂无权限');
         }
-        $log = SystemLog::find($id);
+        $log = SystemLogs::find($id);
         if (!$log) {
             return $this->message('找不到该日志，可能已被删除');
         }
@@ -68,7 +68,7 @@ class LogController extends Controller
         }
 
         // 构建查询
-        $query = SystemLog::query();
+        $query = SystemLogs::query();
 
         // 筛选条件
         if ($type = $request->input('type')) {

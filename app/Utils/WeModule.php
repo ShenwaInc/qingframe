@@ -2,7 +2,7 @@
 
 namespace App\Utils;
 
-use App\Models\SystemLog;
+use App\Models\SystemLogs;
 use App\Services\AccountService;
 use App\Services\CacheService;
 use App\Services\ModuleService;
@@ -47,7 +47,7 @@ class WeModule
                 $Instance = self::createModuleInstance($classname, $name);
             }
         }catch (\Exception $e){
-            SystemLog::systemRunning(
+            SystemLogs::systemRunning(
                 '模块实例创建异常',
                 'utils:WeModule',
                 "创建模块实例时发生异常：{$e->getMessage()}",
@@ -197,7 +197,7 @@ class WeModule
         try {
             View::addNamespace($this->modulename, $viewPath);
         }catch (\Exception $exception){
-            SystemLog::systemRunning(
+            SystemLogs::systemRunning(
                 '模块视图命名空间注册异常',
                 'utils:WeModule',
                 "注册模块视图命名空间时发生异常：{$exception->getMessage()}",
@@ -214,7 +214,7 @@ class WeModule
             try {
                 app('view')->addNamespace($this->modulename, $viewPath);
             } catch (\Exception $e2) {
-                SystemLog::systemRunning(
+                SystemLogs::systemRunning(
                     '模块视图命名空间备用注册异常',
                     'utils:WeModule',
                     "备用方法注册模块视图命名空间时发生异常：{$e2->getMessage()}",

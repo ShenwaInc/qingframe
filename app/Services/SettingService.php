@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\Setting;
+use App\Models\CoreSettings;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -20,7 +20,7 @@ class SettingService{
         }
         if (empty($settings)) {
             //如果找不到缓存则从数据库中读取
-            $_settings = Setting::get()->keyBy('key');
+            $_settings = CoreSettings::get()->keyBy('key');
             if (!empty($_settings)) {
                 foreach ($_settings as $k => $v) {
                     $settings[$k] = $v['value'] ? unserialize($v['value']) : array();
@@ -47,7 +47,7 @@ class SettingService{
         $cachekey = CacheService::system_key('unisetting', array('uniacid' => $uniacid));
         $unisetting = Cache::get($cachekey,array());
         if (empty($unisetting) || ($name == 'remote' && empty($unisetting['remote']))) {
-            $unisetting = Setting::getUni($uniacid);
+            $unisetting = CoreSettings::getUni($uniacid);
             if (!empty($unisetting)) {
                 $serialize = array('site_info', 'stat', 'oauth', 'passport', 'notify',
                     'creditnames', 'default_message', 'creditbehaviors', 'payment',

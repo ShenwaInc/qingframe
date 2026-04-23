@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\SystemLog;
+use App\Models\SystemLogs;
 use Closure;
 use Illuminate\Support\Facades\Schema;
 
@@ -24,7 +24,7 @@ class Installer
             if(in_array($exception->getCode(), [1044, 1045, 2002])){
                 $installed = false;
             }else{
-                SystemLog::systemRunning(
+                SystemLogs::systemRunning(
                     '数据库表检查异常',
                     'middleware:Installer',
                     "中间件检查系统安装状态时发生异常：{$exception->getMessage()}",

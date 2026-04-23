@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
-use App\Models\SystemLog;
+use App\Models\SystemLogs;
 
-use App\Models\Module;
+use App\Models\Modules;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -512,7 +512,7 @@ class CacheService
 
     static function build_module_subscribe(){
         global $_W;
-        $modules = Module::where('subscribes','!=','')->select(['name', 'subscribes'])->get()->toArray();
+        $modules = Modules::where('subscribes','!=','')->select(['name', 'subscribes'])->get()->toArray();
         if (empty($modules)) {
             return array();
         }
@@ -567,11 +567,11 @@ class CacheService
             SettingService::uni_load('',$_W['uniacid']);
         }
         //自动清理日志
-        SystemLog::autoClear();
+        SystemLogs::autoClear();
         try {
             serv('language')->langUsable(false);
         }catch (\Exception $exception){
-            SystemLog::systemRunning(
+            SystemLogs::systemRunning(
                 '语言服务初始化异常',
                 'service:CacheService',
                 "初始化语言服务时发生异常：{$exception->getMessage()}",

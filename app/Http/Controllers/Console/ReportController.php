@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Console;
 
 use App\Http\Controllers\Controller;
-use App\Models\SystemLog;
+use App\Models\SystemLogs;
 use App\Services\CacheService;
 use App\Services\CloudService;
 use App\Services\HttpService;
@@ -132,7 +132,7 @@ class ReportController extends Controller {
             $data['sign'] = $this->genSignature($data);
             $res = $this->reportCloud("orderFeedback/add", $data, false);
             $status = !is_error($res);
-            SystemLog::userOperation('工单反馈', 'report:feedback', "工单ID：{$orderId}", $status, ['order_id' => $orderId, 'data' => $data, 'response' => $res]);
+            SystemLogs::userOperation('工单反馈', 'report:feedback', "工单ID：{$orderId}", $status, ['order_id' => $orderId, 'data' => $data, 'response' => $res]);
             if (!$status) return $this->message($res['message']);
             if (!$request->ajax()){
                 return $this->success("workOrderSubmitted", wurl('report'));
@@ -188,7 +188,7 @@ class ReportController extends Controller {
             if (is_error($data['source'])) return $this->message($data['source']['message']);
             $res = $this->reportCloud("order/save", $data, false);
             $status = !is_error($res);
-            SystemLog::userOperation('提交工单', 'report:post', "分类：{$data['category_id']}", $status, ['category_id' => $data['category_id']]);
+            SystemLogs::userOperation('提交工单', 'report:post', "分类：{$data['category_id']}", $status, ['category_id' => $data['category_id']]);
             if (!$status) return $this->message($res['message']);
             CacheService::flush();
             return $this->success(['response'=>$res, 'input'=>$data]);
@@ -218,7 +218,7 @@ class ReportController extends Controller {
             'source'=>$this->getSource()
         ), false);
         $status = !is_error($res);
-        SystemLog::userOperation('完成工单', 'report:complete', "工单ID：{$orderId}", $status, ['order_id' => $orderId]);
+        SystemLogs::userOperation('完成工单', 'report:complete', "工单ID：{$orderId}", $status, ['order_id' => $orderId]);
         if (!$status) return $this->message($res['message']);
         CacheService::flush();
         return $this->success("successful", wurl('report'));
@@ -231,7 +231,7 @@ class ReportController extends Controller {
             'source'=>$this->getSource()
         ), false);
         $status = !is_error($res);
-        SystemLog::userOperation('关闭工单', 'report:close', "工单ID：{$orderId}", $status, ['order_id' => $orderId]);
+        SystemLogs::userOperation('关闭工单', 'report:close', "工单ID：{$orderId}", $status, ['order_id' => $orderId]);
         if (!$status) return $this->message($res['message']);
         CacheService::flush();
         return $this->success("successful", wurl('report'));

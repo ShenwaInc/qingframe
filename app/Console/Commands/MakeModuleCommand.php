@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Http\Middleware\App;
-use App\Models\SystemLog;
+use App\Models\SystemLogs;
 use App\Services\FileService;
 use App\Services\ModuleService;
 use Illuminate\Console\Command;
@@ -63,7 +63,7 @@ class MakeModuleCommand extends Command {
                 return $this->report("Package $identity already exists!");
             }
         }catch (\Exception $exception){
-            SystemLog::systemRunning(
+            SystemLogs::systemRunning(
                 "模块创建异常：{$identity}",
                 'console:modulemake',
                 "模块创建过程中发生异常：{$exception->getMessage()}",

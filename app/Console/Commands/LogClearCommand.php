@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\SystemLog;
+use App\Models\SystemLogs;
 use Illuminate\Console\Command;
 
 class LogClearCommand extends Command
@@ -41,9 +41,9 @@ class LogClearCommand extends Command
         //
         // 判断是否传入 "all" 参数
         if ($this->argument('all') === 'all') {
-            SystemLog::where('id', '>', 0)->delete();
+            SystemLogs::where('id', '>', 0)->delete();
         }else{
-            SystemLog::autoClear();
+            SystemLogs::autoClear();
         }
 
         $this->info('Logs cleared!');
