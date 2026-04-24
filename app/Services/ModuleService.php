@@ -39,11 +39,12 @@ class ModuleService
         $application = $ManiFest['application'];
         MSService::TerminalSend(['mode'=>'info', 'message'=>"即将安装应用模块【{$application['name']}^{$application['version']}】"]);
         //运行数据库迁移
-        $migrationPath = public_path("{$path}/{$identity}/database/migrations");
+        $migrationPath = base_path("public/$path/$identity/database/migrations");
         if (is_dir($migrationPath)){
             MSService::TerminalSend(['mode'=>'info', 'message'=>"即将进行数据结构迁移..."]);
             try {
-                Artisan::call('migrate', ['--force' => true, '--path' => $migrationPath]);
+                Artisan::call('migrate', ['--force' => true, '--path' => "public/$path/$identity/database/migrations"]);
+                MSService::TerminalSend(['mode'=>'success', 'message'=>"数据结构迁移完成"]);
             }catch (\Exception $exception){
                 SystemLogs::systemRunning(
                     '模块数据库迁移异常',
@@ -67,6 +68,7 @@ class ModuleService
                 MSService::TerminalSend(['mode'=>'info', 'message'=>"正在运行应用安装脚本..."]);
                 define('MODULE_INSTALL', 1);
                 script_run($ManiFest['install'], public_path("{$path}/{$identity}/"));
+                MSService::TerminalSend(['mode'=>'success', 'message'=>"应用安装脚本运行完成"]);
             } catch (\Exception $exception){
                 SystemLogs::systemRunning(
                     '模块安装脚本执行异常',
