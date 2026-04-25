@@ -182,7 +182,8 @@ class MicroService
      * @param int|null $code 状态码
      * @param array 统一错误格式
      */
-    public function error($message, $code=-1){
+    public function error($message, ?int $code=-1): array
+    {
         return error($code, $message);
     }
 
