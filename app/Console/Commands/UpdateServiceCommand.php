@@ -8,14 +8,14 @@ use App\Http\Middleware\App;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class ServerUpdateCommand extends Command
+class UpdateServiceCommand extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'server:update {id?}';
+    protected $signature = 'update:service {id?}';
     protected $application = null;
 
     /**

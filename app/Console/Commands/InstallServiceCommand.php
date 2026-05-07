@@ -5,14 +5,14 @@ namespace App\Console\Commands;
 use App\Services\MSService;
 use Illuminate\Console\Command;
 
-class ServerInstallCommand extends Command
+class InstallServiceCommand extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'Server:install {name}';
+    protected $signature = 'install:service {name}';
 
     /**
      * The console command description.

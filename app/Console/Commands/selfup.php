@@ -63,13 +63,13 @@ class selfup extends Command
         //运行升级脚本
         self::call('self:migrate');
         self::call('route:clear');
-        self::call('server:update');
+        self::call('update:service');
         self::call('self:clear');
 
         //更新版本信息
         $system = array(
-            'version'=>env("APP_VERSION"),
-            'release'=>(int)env("APP_RELEASE")
+            'version'=>config('system.version'),
+            'release'=>(int)config('system.versionCode')
         );
         if (empty($arguments['version'])){
             $upgradeInfo = CloudService::CloudApi('structure',array('identity'=>$component['identity']));

@@ -8,7 +8,7 @@ use App\Services\FileService;
 use App\Services\MSService;
 use Illuminate\Console\Command;
 
-class servermake extends Command
+class MakeServiceCommand extends Command
 {
     /**
      * The name and signature of the console command.

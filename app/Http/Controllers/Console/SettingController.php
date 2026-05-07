@@ -51,7 +51,7 @@ class SettingController extends Controller
                         return $this->message('文件写入失败，请检查根目录权限');
                     }
                     //自动安装默认微服务
-                    Artisan::call('server:update');
+                    Artisan::call('update:service');
                     //自动安装默认应用
                     $defaultModule = env("APP_MODULE", "");
                     if (!empty($defaultModule) && file_exists(public_path("addons/$defaultModule/manifest.json"))) {
@@ -182,7 +182,7 @@ class SettingController extends Controller
         try {
             Artisan::call('self:migrate');
             Artisan::call('route:clear');
-            Artisan::call('server:update');
+            Artisan::call('update:service');
             Artisan::call('self:clear');
             CacheService::flush();
             SystemLogs::userOperation('系统升级', 'setting:sysupgrade', '执行系统升级流程');

@@ -13,11 +13,11 @@ define("MICRO_SERVER", base_path("servers/"));
 define('MAGIC_QUOTES_GPC', (function_exists('get_magic_quotes_gpc') && @get_magic_quotes_gpc()) || @ini_get('magic_quotes_sybase'));
 define('ATTACHMENT_ROOT', storage_path('app/public/'));
 define('TIMESTAMP', time());
-define('DEVELOPMENT', (bool)env('APP_DEVELOPMENT',0));
-define('SITEACID', env('APP_UNIACID', 0));
-define('QingVersion', env('APP_VERSION'));
-define('QingRelease', (int)env('APP_RELEASE'));
-define('QingDebug', (bool)env('APP_DEBUG', false));
+define('DEVELOPMENT', (bool)config('system.setting.development', false));
+define('SITEACID', config('system.siteUniacid', 1));
+define('QingVersion', config('system.version'));
+define('QingRelease', config('system.versionCode'));
+define('QingDebug', config('system.debugMode'));
 
 error_reporting(E_ERROR);
 global $_W,$_GPC;
@@ -28,7 +28,7 @@ class App
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param Request $request
      * @param  \Closure  $next
      * @return mixed
      */
@@ -41,7 +41,7 @@ class App
     public function getRealIp(Request $request)
     {
         $headers = $request->header();
-        $cdnIpHeadName = env('CDN_REAL_IP_HEADER', 'x-forwarded-for');
+        $cdnIpHeadName = config('system.cdn.header_column');
         if (!empty($headers[$cdnIpHeadName])){
             return $headers[$cdnIpHeadName][0];
         }
@@ -63,7 +63,7 @@ class App
         $_W['ispost'] = $request->isMethod('post');
         $query = http_build_query($_GET, '', '&');
         $_W['siteurl'] = url()->current() . ($query ? "?".$query : "");
-        $_W['ishttps'] = (bool)env('APP_FORCE_HTTPS', 0);
+        $_W['ishttps'] = (bool)config('system.setting.force_https');
         if ($_W['ishttps']){
             $_W['siteurl'] = str_replace("http://", "https://", $_W['siteurl']);
         }else{

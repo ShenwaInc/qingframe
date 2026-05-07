@@ -5,14 +5,14 @@ namespace App\Console\Commands;
 use App\Models\SystemLogs;
 use Illuminate\Console\Command;
 
-class serverRun extends Command
+class RunServiceCommand extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'server:run {id} {params*}';
+    protected $signature = 'run:service {id} {params*}';
 
     /**
      * The console command description.
