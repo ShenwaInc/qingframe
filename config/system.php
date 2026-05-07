@@ -2,6 +2,7 @@
 
 return [
     'name'=>env('APP_NAME'),
+    'url'=>env('APP_URL'),
     'identity'=>env('APP_IDENTITY', 'swa_framework_laravel'),
     'version'=>env("APP_VERSION",'1.0.0'),
     'versionCode'=>env('APP_RELEASE',2026050701),

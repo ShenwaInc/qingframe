@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-class selfup extends Command
+class SelfUpdateCommand extends Command
 {
     /**
      * The name and signature of the console command.
@@ -49,16 +49,19 @@ class selfup extends Command
         global $_W;
         $arguments = $this->argument();
         if (empty($_W['siteroot'])){
-            $appUrl = env('APP_URL');
+            $appUrl = config('system.url');
             if (empty($appUrl)) return $this->error('Invaild website url.') || "";
             $_W['siteroot'] = $appUrl . "/";
         }
         $component = DB::table('gxswa_cloud')->where('type',0)->first(['id','identity','modulename','type','releasedate','rootpath']);
-        if ($arguments['version']!='local'){
+        if (!empty($arguments['version']) && $arguments['version']!='local'){
             //从云端升级
             $cloudUpdate = CloudService::CloudUpdate($component['identity'],base_path().'/');
             if (is_error($cloudUpdate)) return $this->error($cloudUpdate['message']) || "";
         }
+
+        // 清理系统缓存
+        CacheService::flush();
 
         //运行升级脚本
         self::call('self:migrate');
