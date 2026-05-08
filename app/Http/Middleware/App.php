@@ -14,7 +14,7 @@ define('MAGIC_QUOTES_GPC', (function_exists('get_magic_quotes_gpc') && @get_magi
 define('ATTACHMENT_ROOT', storage_path('app/public/'));
 define('TIMESTAMP', time());
 define('DEVELOPMENT', (bool)config('system.setting.development', false));
-define('SITEACID', config('system.siteUniacid', 1));
+define('SITEACID', (int)config('system.site.uniacid', 0));
 define('QingVersion', config('system.version'));
 define('QingRelease', config('system.versionCode'));
 define('QingDebug', config('system.debugMode'));
