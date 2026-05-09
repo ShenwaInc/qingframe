@@ -1,0 +1,104 @@
+html, body {
+    background-color: #fff;
+    color: #636b6f;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 200;
+    height: 100vh;
+    margin: 0;
+}
+
+.full-height {
+    height: 100vh;
+}
+
+.flex-center {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    position: relative;
+}
+
+.flex-bottom {
+    align-items: end;
+    display: flex;
+    justify-content: center;
+    position: relative;
+}
+
+.position-ref {
+    position: relative;
+}
+
+.top-nav{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #454545;
+    height: 45px;
+    text-align: right;
+    padding: 0 10px;
+    line-height: 45px;
+    box-sizing: border-box;
+}
+
+.top-nav .links a{color: #FFFFFF;}
+
+.top-right {
+    position: absolute;
+    right: 10px;
+    top: 18px;
+}
+
+.page-top{
+    position: absolute;
+    width: 100%;
+    top: 45px;
+    left: 0;
+    height: 615px;
+    max-height: calc(92vh - 223px);
+    background: url("../images/page-top.png") no-repeat top center;
+    background-size: cover;
+    align-items: end;
+    display: flex;
+    justify-content: center;
+    z-index: 0;
+}
+
+.page-top .center{font-size: 1.5em; font-weight: 600; position: absolute; width: 200px; text-align: center; bottom: -25px; line-height: 45px; left: 50%; margin-left: -100px;}
+
+.content {
+    text-align: center;
+    background: #FFFFFF;
+    position: relative;
+    z-index: 1;
+    padding-bottom: 8vh;
+    width: 100%;
+}
+
+.title {
+    font-size: 36px;
+}
+
+.links > a {
+    color: #636b6f;
+    padding: 0 8px;
+    line-height: 36px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .1rem;
+    text-decoration: none;
+    text-transform: uppercase;
+}
+
+.m-b-md {
+    margin-bottom: 30px;
+}
+
+.text-black{color: #1d1d1f;}
+
+@media (min-width: 768px) {
+    .title{font-size: 84px;}
+    .links > a{padding: 0 25px;}
+    .page-top .center{bottom: -5px;}
+}

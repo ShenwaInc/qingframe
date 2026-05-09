@@ -55,7 +55,7 @@ return [
             'fetch'=>PDO::FETCH_ASSOC,
             'charset' => 'utf8',
             'collation' => 'utf8_general_ci',
-            'prefix' => env('DB_PREFIX','ims_'),
+            'prefix' => env('DB_PREFIX','qing_'),
             'prefix_indexes' => true,
             'strict' => false,
             'engine' => null,
@@ -125,7 +125,7 @@ return [
 
         'options' => [
             'cluster' => env('REDIS_CLUSTER', 'redis'),
-            'prefix' => env('REDIS_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_database_'),
+            'prefix' => env('REDIS_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_database_')
         ],
 
         'default' => [

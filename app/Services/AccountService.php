@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\Account;
+use App\Models\UniAccount;
 use App\Utils\WeAccount;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -34,7 +34,7 @@ class AccountService {
                 'contain_type' => array(1, 3),
                 'level' => array(1 => '订阅号', 2 => '服务号', 3 => '认证订阅号', 4 => '认证服务号'),
                 'icon' => 'wi wi-wx-circle',
-                'createurl' => url('account/post'),
+                'createurl' => wurl('account/create'),
                 'title' => '公众号'
             )
         );
@@ -44,12 +44,44 @@ class AccountService {
         return $all_account_type_sign;
     }
 
-    static function GetOprateStar($uid,$uniacid,$module_name){
-        return DB::table('users_operate_star')->where(array(
-            ['uid',$uid],
-            ['uniacid',$uniacid],
-            ['module_name',$module_name]
-        ))->first();
+    static function GetOprateStar($uid,$uniacid,$module_name=''){
+        $condition = array('uid'=>$uid, 'uniacid'=>$uniacid);
+        if (!empty($module_name)){
+            $condition['module_name'] = $module_name;
+        }
+        return DB::table('users_operate_star')->where($condition)->first();
+    }
+
+    static function GetEntrance($uid,$uniacid){
+        $entrance = pdo_getcolumn('uni_account_users', array('uid'=>$uid,'uniacid'=>$uniacid), 'entrance');
+        if (empty($entrance)){
+            $entrance = 'account:profile';
+        }
+        return explode(":", $entrance);
+    }
+
+    static function GetAllEntrances($uniacid, $uid=0){
+        $entrances = array(
+            'module'=>[],
+            'server'=>[]
+        );
+        $role = UserService::AccountRole($uid, $uniacid);
+        if (!in_array($role, array('founder', 'owner'))){
+            unset($entrances['account']['role']);
+        }
+        $modules = self::ExtraModules($uniacid);
+        if (!empty($modules)){
+            foreach ($modules as $module){
+                $entrances['module'][$module['identity']] = $module['name'];
+            }
+        }
+        $servers = DB::table('microserver_unilink')->where('status', 1)->get(['name','title','entry'])->toArray();
+        if (!empty($servers)){
+            foreach ($servers as $server){
+                $entrances['server'][$server['name']] = $server['title'];
+            }
+        }
+        return $entrances;
     }
 
     static function FetchUni($uniacid = 0) {
@@ -61,21 +93,9 @@ class AccountService {
         }
         $account_api->uniacid = $uniacid;
         $account_api->__toArray();
-        $account_api['accessurl'] = $account_api['manageurl'] = url("console/account/{$uniacid}/post", array('account_type' => $account_api['type']), true);
-        $account_api['roleurl'] = url("console/account/{$uniacid}/postuser", array('account_type' => $account_api['type']), true);
+        $account_api['accessurl'] = $account_api['manageurl'] = wurl("account/$uniacid/post", array('account_type' => $account_api['type']), true);
+        $account_api['roleurl'] = wurl("account/$uniacid/postuser", array('account_type' => $account_api['type']), true);
         return $account_api;
-    }
-
-    static function Create_info() {
-        global $_W;
-        $account_create_info = PermissionService::UserAccountNum();
-        $can_create = false;
-        if ($_W['isadmin'] || (!empty($account_create_info['account_limit']) && (!empty($account_create_info['founder_account_limit']) && $_W['user']['owner_uid'] || empty($_W['user']['owner_uid'])) || !empty($account_create_info['store_account_limit']))){
-            $can_create = true;
-        }
-        $all_account_type_sign = self::GetTypeSign();
-        $all_account_type_sign['account']['can_create'] = $can_create;
-        return $all_account_type_sign;
     }
 
     static function GroupModules($uniacid){
@@ -96,20 +116,53 @@ class AccountService {
         return $uni_modules;
     }
 
-    static function ExtraModules($uniacid){
-        $cachekey = CacheService::system_key("unimodules", array('uniacid'=>$uniacid));
-        $modules = Cache::get($cachekey, array());
-        if (!empty($modules)) return $modules;
-        $module = DB::table('uni_account_extra_modules')->where('uniacid', $uniacid)->value('modules');
+    static function UpdateModules($uniacid, $name, $data=[]){
+        $modules = self::ExtraModules($uniacid, false);
+        $module = $modules[$name];
         if (!empty($module)){
-            $modules = [];
-            $module = unserialize($module);
-            foreach ($module as $value){
-                $value['logo'] = asset($value['logo']);
-                $modules[$value['identity']] = $value;
+            $modify = false;
+            unset($data['identity']);
+            foreach ($module as $key=>$value){
+                if (!empty($data[$key])){
+                    $module[$key] = $data[$key];
+                    if ($data[$key]!=$value) $modify = true;
+                }
             }
-            Cache::put($cachekey, $modules, 7*86400);
+            if (!$modify) return true;
+        }else{
+            if (empty($data['name']) || empty($data['logo'])){
+                return false;
+            }
+            $module = $data;
+            $module['identity'] = $name;
         }
+        $module['profile'] = 'custom';
+        $modules[$name] = $module;
+        if (DB::table('uni_account_extra_modules')->updateOrInsert(array('uniacid'=>$uniacid), array('modules'=>serialize($modules)))){
+            CacheService::flush();
+            return true;
+        }
+        return false;
+    }
+
+    static function ExtraModules($uniacid, $cache=true){
+        $cacheKey = CacheService::system_key("unimodules", array('uniacid'=>$uniacid));
+        $modules = [];
+        $default = error(-1, 'nothing');
+        if ($cache){
+            $modules = Cache::get($cacheKey, []);
+            if (!empty($modules)){
+                return is_error($modules) ? [] : $modules;
+            }
+        }
+        $_modules = DB::table('uni_account_extra_modules')->where('uniacid', $uniacid)->value('modules');
+        $extra_modules = $_modules ? unserialize($_modules) : [];
+        if (!empty($extra_modules)){
+            foreach ($extra_modules as $val){
+                $modules[$val['identity']] = $val;
+            }
+        }
+        Cache::put($cacheKey, empty($modules)?$default:$modules, 7*86400);
         return $modules;
     }
 
@@ -124,7 +177,7 @@ class AccountService {
             $num[$key_name] = 0;
         }
 
-        $uniacocunts = Account::searchAccountList();
+        $uniacocunts = UniAccount::searchAccountList();
 
         if (!empty($uniacocunts)) {
             $uni_account_users_table = DB::table('uni_account_users')->join('account','uni_account_users.uniacid','=','account.uniacid');
@@ -173,8 +226,9 @@ class AccountService {
             $condition[] = ['uni_account_users.uid',$founder_id];
         }
 
-        $query = Account::searchAccountQuery(false)->where($condition);
+        $query = UniAccount::searchAccountQuery(false)->where($condition);
         $total = $query->count();
+        $created = 0;
         if ($page!=-1){
             $query = $query->offset($offset)->limit($pSize);
         }
@@ -199,6 +253,9 @@ class AccountService {
                     unset($list[$k]);
                     continue;
                 }
+                if ($account['user_role']=='owner' || $account['user_role']=='founder'){
+                    $created += 1;
+                }
                 $account['is_star'] = DB::table('users_operate_star')->where(array(
                     ['uid',$_W['uid']],
                     ['uniacid',$account['uniacid']],
@@ -218,7 +275,66 @@ class AccountService {
 
         if ($getlist) return $list ?: [];
 
-        return array($list, $total);
+        return array($list, $total, $created);
+    }
+
+    static function OauthHost(){
+        global $_W;
+        $oauth_url = $_W['siteroot'];
+        $unisetting = SettingService::uni_load();
+        if (!empty($unisetting['bind_domain']) && !empty($unisetting['bind_domain']['domain'])) {
+            $oauth_url = $unisetting['bind_domain']['domain'] . '/';
+        } else {
+            if (1 == $_W['account']['type']) {
+                if (!empty($unisetting['oauth']['host'])) {
+                    $oauth_url = $unisetting['oauth']['host'] . '/';
+                } else {
+                    $global_unisetting = self::GlobalOauth();
+                    $oauth_url = !empty($global_unisetting['oauth']['host']) ? $global_unisetting['oauth']['host'] . '/' : $oauth_url;
+                }
+            }
+        }
+        return $oauth_url;
+    }
+
+    static function moduleAuthenticate($uid, $name, $route, $uniacid=0, $isServer=false){
+        global $_W;
+        if ($_W['isfounder']) return true;
+        if (empty($uniacid)){
+            if (empty($_W['uniacid']))
+            $uniacid = $_W['uniacid'];
+        }
+        list($modules, $servers, $role) = UserService::AccountPermission($uniacid, $uid);
+        if (empty($role)){
+            abort(403, __('没有访问权限'));
+        }
+        $hasPerm = $isServer ? isset($servers[$name]) : isset($modules[$name]);
+        if (!$hasPerm){
+            abort(403, __('没有访问权限'));
+        }
+        if (!empty($route)){
+            $permission = $isServer ? ($servers[$name]?:[]) : ($modules[$name]?:[]);
+            if (!in_array($route, $permission)){
+                abort(403, __('没有访问权限'));
+            }
+        }
+        return true;
+    }
+
+    static function serverAuthenticate($uid, $name, $route, $uniacid=0){
+        return self::moduleAuthenticate($uid, $name, $route, $uniacid, true);
+    }
+
+    static function GlobalOauth(){
+        $oauth = SettingService::Load('global_oauth');
+        $oauth = !empty($oauth['global_oauth']) ? $oauth['global_oauth'] : array();
+        if (!empty($oauth['oauth']['account'])) {
+            $account_exist = self::FetchUni($oauth['oauth']['account']);
+            if (empty($account_exist) || is_error($account_exist)) {
+                $oauth['oauth']['account'] = 0;
+            }
+        }
+        return $oauth;
     }
 
 }

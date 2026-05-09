@@ -2,7 +2,9 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\SystemLogs;
 use Closure;
+use Illuminate\Support\Facades\Schema;
 
 class Installer
 {
@@ -16,11 +18,31 @@ class Installer
      */
     public function handle($request, Closure $next)
     {
-        $installedfile = base_path('storage/installed.bin');
-        if(!file_exists($installedfile)){
+        try {
+            $installed = Schema::hasTable("account");
+        }catch (\Exception $exception){
+            if(in_array($exception->getCode(), [1044, 1045, 2002])){
+                $installed = false;
+            }else{
+                SystemLogs::systemRunning(
+                    '数据库表检查异常',
+                    'middleware:Installer',
+                    "中间件检查系统安装状态时发生异常：{$exception->getMessage()}",
+                    false,
+                    [
+                        'exception_file' => $exception->getFile(),
+                        'exception_line' => $exception->getLine(),
+                        'exception_code' => $exception->getCode(),
+                        'exception_trace' => $exception->getTrace(),
+                    ]
+                );
+                throw $exception;
+            }
+        }
+
+        if(!$installed){
             //系统未安装
-            $installroute = url('installer');
-            header('Location: ' . $installroute);
+            header('Location: ' . url('installer'));
             exit();
         }
         return $next($request);

@@ -4,7 +4,7 @@
 namespace App\Services;
 
 
-use App\Models\Account;
+use App\Models\UniAccount;
 use App\User;
 use Illuminate\Support\Facades\DB;
 
@@ -40,7 +40,7 @@ class PermissionService {
                 $key_name = $type_info . '_num';
                 $group_num[$key_name] = 0;
             }
-            $fouder_own_users_owner_account = Account::searchAccountList(false, 1, $fields = 'uni_account.uniacid, account.type', $user['uid']);
+            $fouder_own_users_owner_account = UniAccount::searchAccountList(false, 1, $fields = 'uni_account.uniacid, account.type', $user['uid']);
             $current_vice_founder_user_group_nums = 0;
             if (!empty($fouder_own_users_owner_account)) {
                 foreach ($fouder_own_users_owner_account as $account) {
@@ -74,7 +74,6 @@ class PermissionService {
         if (!empty($user_founder_info['founder_uid'])) {
             $owner_info = User::where('uid',$user_founder_info['founder_uid'])->first();
             $group_vice = DB::table('users_founder_group')->where('id',$owner_info['groupid'])->first();
-            $founder_group_num = AccountService::OwnerAccountNums($owner_info['uid'], 'vice_founder');
         }
         $store_create_table = DB::table('site_store_create_account');
         $create_buy_num['account'] = $store_create_table->leftJoin('account','site_store_create_account.uniacid','=','account.uniacid')->where(array(
@@ -95,7 +94,7 @@ class PermissionService {
             ))->get()->keyBy('create_group_id')->toArray());
             $founder_extra_limits_info = $extra_limit_table->where('uid',$user_founder_info['founder_uid'])->first();
 
-            $vice_founder_own_users_create_accounts = Account::searchAccountList(false, 1, $fields = 'uni_account.uniacid, account.type', $user_founder_info['founder_uid']);
+            $vice_founder_own_users_create_accounts = UniAccount::searchAccountList(false, 1, $fields = 'uni_account.uniacid, account.type', $user_founder_info['founder_uid']);
             $vice_founder_own_users_create_nums = array();
             foreach ($account_all_type_sign as $type_info) {
                 $key_name = $type_info . '_num';

@@ -24,7 +24,7 @@ class CreateGxswaCloudTable extends Migration {
 			$table->string('rootpath', 50)->default('');
 			$table->string('version', 20)->default('');
 			$table->integer('releasedate')->default(0);
-			$table->text('online', 16777215)->nullable();
+			$table->text('online')->nullable();
 			$table->integer('addtime')->default(0);
 			$table->string('updatetime', 10)->default('0');
 			$table->integer('dateline')->default(0);

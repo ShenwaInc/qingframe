@@ -1,60 +1,102 @@
 <?php
 
-use App\Services\SettingService;
+use App\Models\SystemLogs;
+use App\Services\ExceptionService;
+use App\Services\FileService;
+use App\Services\MicroService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-
-class CatchCall {
-
-    public $error = '';
-    public $errno = -1;
-    public function __construct($error, $errno=-1){
-        $this->error = $error;
-        $this->errno = $errno;
-    }
-
-    public function __call($name, $arguments){
-        // TODO: Implement __call() method.
-        return error($this->errno, $this->error);
-    }
-
-}
+use Illuminate\Support\Str;
 
 /**
  * 调用服务方法
- * @param string $name 服务名称
- * @param array|null $params 构造参数
- * @return object 服务实例
+ * @param mixed $params 调用参数
+ * @return MicroService 微服务实例
  */
-function serv(string $name, $params=null){
+function serv(...$params){
     static $_servers;
-    if (empty($_servers)) $_servers = array();
-    if (isset($_servers[$name])){
-        return $_servers[$name];
+    $serviceName = ucfirst($params[0]);
+    if (!isset($_servers)) {
+        $_servers = [];
     }
-    $service = MICRO_SERVER.strtolower($name).'/'.ucfirst($name)."Service.php";
-    if (!file_exists($service)){
-        return new CatchCall("Service ".ucfirst($name)." Not Found.");
+    $serverId = md5(base64_encode(json_encode($params)));
+    if (isset($_servers[$serverId])){
+        return $_servers[$serverId];
     }
-    require_once $service;
-    $class_name = ucfirst($name) . 'Service';
-    $instance = new $class_name($params);
-    if ($instance->service['status']!=1){
-        return new CatchCall("Service $name has stopped.");
+    $identity = strtolower($serviceName);
+    try {
+        $className = $serviceName . "Service";
+        if (!class_exists($className)) {
+            $className = "\Server\\{$identity}\\{$serviceName}Service";
+        }
+        if (!class_exists($className)) {
+            $servicePath = MICRO_SERVER . $identity . "/{$serviceName}Service.php";
+            if (file_exists($servicePath)) {
+                require_once $servicePath;
+                $className = class_exists($serviceName . 'Service') ? $serviceName . 'Service' : MICRO_SERVER . $identity . "/{$serviceName}Service.php";
+            }
+            if (!class_exists($className)){
+                return new ExceptionService("Service $serviceName Not Found.");
+            }
+        }
+        if (count($params)>1){
+            array_splice($params, 0, 1);
+            $instance = new $className(...$params);
+        }else{
+            $instance = new $className();
+        }
+        $instance->serviceId = $serverId;
+        $instance->identity = $identity;
+        if ($instance->service['status']!=1 || !$instance->enabled){
+            return new ExceptionService("Service $className has stopped.");
+        }
+    }catch (Exception $exception){
+        SystemLogs::systemRunning(
+            "微服务启动失败",
+            'service:start',
+            $exception->getMessage(),
+            false,
+            [
+                'file' => $exception->getFile() . ":" . $exception->getLine(),
+                'code' => $exception->getCode(),
+                'trace' => $exception->getTrace(),
+                'service' => $identity,
+                'params' => $params,
+            ]
+        );
+        return new ExceptionService($exception->getMessage());
     }
-    $_servers[$name] = $instance;
+    $_servers[$serverId] = $instance;
     return $instance;
 }
 
+function assets($path, $secure = null){
+    if ($secure!==null){
+        return asset($path, $secure);
+    }
+    if (strpos($path, 'http')===0){
+        return $path;
+    }
+    if (file_exists(public_path($path)) && !Str::startsWith($path, "/")){
+        $path = "/" . $path;
+    }
+    return $path;
+}
+
 if (!function_exists('post_var')){
-    function post_var($keys=array(),$datas=array()){
-        global $_GPC;
+    function post_var(array $keys, $params=null): array
+    {
+        if (empty($keys)){
+            return [];
+        }
         $data = array();
-        $datas = $datas ?: $_GPC;
+        if ($params===null){
+            $params = request()->all();
+        }
         foreach ($keys as $key){
-            if (isset($datas[$key])){
-                $data[$key] = $datas[$key];
+            if (isset($params[$key])){
+                $data[$key] = $params[$key];
             }
         }
         return $data;
@@ -98,7 +140,7 @@ function script_run($params, $basedir = MICRO_SERVER){
 }
 
 function strexists($string, $find) {
-    return \Str::contains($string,$find);
+    return Str::contains($string,$find);
 }
 
 function array_elements($keys, $src, $default = false) {
@@ -119,9 +161,9 @@ function array_elements($keys, $src, $default = false) {
 function checksubmit($var='_token'){
     global $_GPC,$_W;
     if (!$_W['ispost']) return false;
-    if ($_W['inconsole']){
+    if ($_W['inConsole']){
         $headers = request()->header('X-CSRF-TOKEN');
-        return !empty($_GPC[$var]) || !empty($headers);
+        return !empty($_GPC[$var]) || ($var=='_token' && !empty($headers));
     }elseif (defined('IN_API') && $var=='_token'){
         return true;
     }
@@ -129,18 +171,33 @@ function checksubmit($var='_token'){
 }
 
 function cache_load($key, $unserialize = false, $default=null){
-    $cache = Cache::get($key, $unserialize?array():$default);
-    if (!empty($cache) && $unserialize){
+    $cache = Cache::get($key, $default);
+    if (empty($cache) || $cache===$default){
+        return $cache;
+    }
+    if ($unserialize){
         return unserialize($cache);
     }
     return $cache;
 }
 
+function cache_delete($key){
+    return Cache::forget($key);
+}
+
+function cache_set($key, $data, $expire = null){
+    return cache_write($key, $data, $expire);
+}
+
 function cache_write($key, $data, $expire = null) {
     if (empty($expire)){
-        return Cache::put($key, $data);
+        return Cache::forever($key, $data);
     }
     return Cache::put($key, $data, $expire);
+}
+
+function cache_read($key, $default=null){
+    return Cache::get($key, $default);
 }
 
 function referer() {
@@ -149,18 +206,26 @@ function referer() {
     $_W['referer'] = '?' == substr($_W['referer'], -1) ? substr($_W['referer'], 0, -1) : $_W['referer'];
 
     $_W['referer'] = str_replace('&amp;', '&', $_W['referer']);
-    $reurl = parse_url($_W['referer']);
+    $reUrl = parse_url($_W['referer']);
+    $reHost = (empty($reUrl['port']) || $reUrl['port']==80) ? $reUrl['host'] : $reUrl['host'].":".$reUrl['port'];
 
-    if (!empty($reurl['host']) && !in_array($reurl['host'], array($_SERVER['HTTP_HOST'], 'www.' . $_SERVER['HTTP_HOST'])) && !in_array($_SERVER['HTTP_HOST'], array($reurl['host'], 'www.' . $reurl['host']))) {
+    if (!empty($reHost) && !in_array($reHost, array($_SERVER['HTTP_HOST'], 'www.' . $reHost)) && !in_array($_SERVER['HTTP_HOST'], array($reHost, 'www.' . $reHost))) {
         $_W['referer'] = $_W['siteroot'];
-    } elseif (empty($reurl['host'])) {
+    } elseif (empty($reUrl['host'])) {
         $_W['referer'] = $_W['siteroot'] . './' . $_W['referer'];
     }
 
     return strip_tags($_W['referer']);
 }
 
-function wurl($segment, $params = array(), $contain_domain = false){
+/**
+ * 获取控制台URL
+ * @param $segment string|null 路径
+ * @param $params array|null 参数
+ * @param $contain_domain boolean|null 是否包含域名
+ * @return string 控制台URL
+ */
+function wurl($segment="", $params = array(), $contain_domain = false){
     global $_W;
     $url = 'console';
     if ($contain_domain){
@@ -168,11 +233,9 @@ function wurl($segment, $params = array(), $contain_domain = false){
     }else{
         $url = '/' . $url;
     }
-    if (strexists($segment,'.')){
-        $segment = str_replace('.','/',$segment);
-    }
     if (!empty($segment)){
-        $url .= '/' . $segment;
+        $segment = str_replace('.','/',$segment);
+        $url .= Str::startsWith($segment, '/') ? $segment : '/' . $segment;
     }
     if (!empty($params)) {
         $queryString = http_build_query($params, '', '&');
@@ -181,6 +244,14 @@ function wurl($segment, $params = array(), $contain_domain = false){
     return $url;
 }
 
+/**
+ * 获取客户端URL
+ * @param $segment string|null 路由路径
+ * @param $params array|null 参数
+ * @param $noredirect boolean|null 是否跳转
+ * @param $addhost boolean|null 是否添加域名
+ * @return string 客户端URL
+ */
 function murl($segment, $params = array(), $noredirect = true, $addhost = false) {
     global $_W;
     if (strexists($segment,'.')){
@@ -193,7 +264,7 @@ function murl($segment, $params = array(), $noredirect = true, $addhost = false)
     }
 
     if (!empty($segment)){
-        $url .= '/' .$segment;
+        $url .= Str::startsWith($segment, '/') ? $segment : '/' .$segment;
     }
 
     if (empty($params)){
@@ -216,9 +287,6 @@ function tomedia($src, $local_path = false, $is_cahce = false) {
     if (empty($src)) {
         return '';
     }
-    if (file_exists(public_path($src))){
-        return asset($src);
-    }
     if ($is_cahce) {
         $src .= '?v=' . time();
     }
@@ -227,46 +295,81 @@ function tomedia($src, $local_path = false, $is_cahce = false) {
     if (strexists($t, '//mmbiz.qlogo.cn') || strexists($t, '//mmbiz.qpic.cn')) {
         $url = '?a=image&attach='.$src;
 
-        return url('console/util/wxcode') . ltrim($url, '.');
+        return wurl('util/wxcode') . ltrim($url, '.');
     }
 
-    if (\Str::startsWith($src,'//')) {
-        return 'http:' . $src;
+    if (Str::startsWith($src,'//')) {
+        return preg_replace('/^\/\//', $_W['sitescheme'], $src);
     }
-    if (\Str::startsWith($src,'http://') || \Str::startsWith($src,'https://')) {
+    if (Str::startsWith($src,'http://') || Str::startsWith($src,'https://')) {
         return $src;
     }
+    if (Str::startsWith($src,'/') && file_exists(public_path($src))){
+        return defined('IN_SYS') ? assets($src) : $_W['siteroot'] . preg_replace('/^\//', '', $src);
+    }
+    if (file_exists($src)){
+        $baseDir = dirname($src);
+        if (strexists($baseDir, 'storage' . DIRECTORY_SEPARATOR . 'app/public' . DIRECTORY_SEPARATOR)){
+            return $_W['siteroot'] . 'storage/' . preg_replace('/^.+storage\/app\/public\//', "", $src);;
+        }elseif (strexists($baseDir, 'public' . DIRECTORY_SEPARATOR)){
+            return $_W['siteroot'] . preg_replace('/^.+public\//', "", $src);
+        }
+        return '';
+    }
 
-    $uni_remote_setting = SettingService::uni_load('remote');
-    if ($local_path || empty($_W['setting']['remote']['type']) && (empty($_W['uniacid']) || !empty($_W['uniacid']) && empty($uni_remote_setting['remote']['type'])) || file_exists(storage_path("app/public/{$src}") )) {
+    if ($local_path || empty($_W['setting']['remote']['type']) || file_exists(storage_path("app/public/$src") )) {
         $src = $_W['siteroot'] . 'storage/' . $src;
     } else {
-        if (!empty($uni_remote_setting['remote']['type'])) {
-            if (1 == $uni_remote_setting['remote']['type']) {
-                $src = $uni_remote_setting['remote']['ftp']['url'] . '/' . $src;
-            } elseif (2 == $uni_remote_setting['remote']['type']) {
-                $src = $uni_remote_setting['remote']['alioss']['url'] . '/' . $src;
-            } elseif (3 == $uni_remote_setting['remote']['type']) {
-                $src = $uni_remote_setting['remote']['qiniu']['url'] . '/' . $src;
-            } elseif (4 == $uni_remote_setting['remote']['type']) {
-                $src = $uni_remote_setting['remote']['cos']['url'] . '/' . $src;
-            }
-
-        } else {
-            $src = $_W['attachurl_remote'] . $src;
-        }
+        return $_W['attachurl'] . $src;
     }
 
     return $src;
 }
 
+function globalMedia($src){
+    if (empty($src)) {
+        return '';
+    }
+    global $_W;
+    if (Str::startsWith($src,'http://') || Str::startsWith($src,'https://')) {
+        return $src;
+    }
+    if (Str::startsWith($src,'//')) {
+        return preg_replace('/^\/\//', $_W['sitescheme'], $src);
+    }
+    if (file_exists(public_path($src))){
+        return assets($src);
+    }
+    if (empty($_W['attachurl_global'])){
+        $attach_global = $_W['attachurl_local'];
+        $_W['attachurl_global_remote'] = "";
+        $remoteSet = serv('storage', 0)->settings['remote'];
+        if (!empty($remoteSet['type'])){
+            $attach_global = FileService::getRemoteUrl($remoteSet);
+            $_W['attachurl_global_remote'] = $attach_global;
+        }
+        $_W['attachurl_global'] = $attach_global;
+    }
+    if (empty($_W['attachurl_global_remote']) || file_exists(storage_path("app/public/$src"))){
+        return $_W['attachurl_local'] . $src;
+    }
+    return $_W['attachurl_global'] . $src;
+}
+
+function res_path($path = ''): string
+{
+    return app()->make('path.public.resource').($path ? DIRECTORY_SEPARATOR.ltrim($path, DIRECTORY_SEPARATOR) : $path);
+}
+
 function random($len,$is_number=false){
     if($is_number){
-        $start = pow(10,$len-1);
-        $stop = pow(10,$len) - 1;
+        $len = min(9, intval($len));
+        $len = max(1, $len);
+        $start = (int)pow(10,$len-1);
+        $stop = (int)pow(10,$len) - 1;
         return random_int($start, $stop);
     }
-    return \Str::random($len);
+    return Str::random($len);
 }
 
 function is_error($data) {
@@ -282,6 +385,17 @@ function error($errno, $message = '') {
         'errno' => $errno,
         'message' => $message
     );
+}
+
+function debugInfo(){
+    global $_W;
+    if ($_W['config']['debugMode']){
+        $_W['debugInfo'] = array(
+            'runtime'=>number_format((microtime(true) - $_W['startTime']), 6)
+        );
+        return $_W['debugInfo'];
+    }
+    return false;
 }
 
 function session_exit($print=''){
@@ -305,16 +419,18 @@ function pdo_get($tablename, $condition = array(), $fields = array()) {
     return $query->first($fields);
 }
 
-function pdo_getall($tablename, $condition = array(), $fields = array(), $keyfield = '', $orderby = array(), $limit = array()) {
+function pdo_getall($tablename, $condition = array(), $fields = array(), $keyfield = '', $orderBy = array(), $limit = array()) {
     $query = DB::table($tablename)->where($condition);
     if ($fields){
         $query = $query->select($fields);
     }
-    if (!empty($orderby)){
-        if (!is_array($orderby)){
-            $orderby = array($orderby,'desc');
+    if (!empty($orderBy)){
+        if(is_array($orderBy) && count($orderBy) == 2 && in_array($orderBy[1], ['asc','desc'])){
+            $query = $query->orderBy($orderBy[0],$orderBy[1]);
+        }else{
+            $orderByRaw = is_array($orderBy) ? implode(',',$orderBy) : $orderBy;
+            $query = $query->orderByRaw($orderByRaw);
         }
-        $query = $query->orderBy($orderby[0],$orderby[1]);
     }
     if ($limit){
         $query = $query->offset($limit[0])->limit($limit[1]);
@@ -327,8 +443,13 @@ function pdo_getall($tablename, $condition = array(), $fields = array(), $keyfie
     return $res;
 }
 
-function pdo_fetchall($sql, $params = array()) {
-    return DB::select($sql,$params);
+function pdo_fetchall($sql, $params = array(), $keyfield = '') {
+    $result = DB::select($sql,$params);
+    if (!empty($result) && $keyfield){
+        $keys = array_column($result, $keyfield);
+        return empty($keys) ? $result : array_combine($keys, $result);
+    }
+    return $result;
 }
 
 function pdo_fetchcolumn($sql, $params = array(), $column = 0) {
@@ -346,16 +467,26 @@ function pdo_fetch($sql, $params = array()) {
     return DB::selectOne($sql,$params);
 }
 
+function pdo_getcount($tablename, $condition=array()){
+    return DB::table($tablename)->where($condition)->count();
+}
+
 function pdo_getcolumn($tablename, $condition, $field) {
     return DB::table($tablename)->where($condition)->value($field);
 }
 
+function pdo_truncate($tablename){
+    DB::table($tablename)->truncate();
+    return true;
+}
+
 function pdo_insert($tablename,$data,$insertgetid=false){
-    $query = DB::table($tablename);
-    if ($insertgetid){
-        return $query->insertGetId($data);
-    }
-    return $query->insert($data);
+    $GLOBALS['_W']['__db_last_inserid_'] = DB::table($tablename)->insertGetId($data);
+    return $GLOBALS['_W']['__db_last_inserid_'];
+}
+
+function pdo_insertid(){
+    return $GLOBALS['_W']['__db_last_inserid_'];
 }
 
 function pdo_insertgetid($tablename,$data){
@@ -374,6 +505,23 @@ function pdo_count($tablename, $condition = array(), $cachetime = 15) {
     return DB::table($tablename)->where($condition)->count();
 }
 
+function pdo_indexexists($tablename, $indexname = ''){
+    if (!Schema::hasTable($tablename)){
+        return false;
+    }
+    if (!empty($indexname)){
+        $indexs = DB::select("SHOW INDEX FROM ".tablename($tablename));
+        if (!empty($indexs) && is_array($indexs)) {
+            foreach ($indexs as $row) {
+                if ($row['Key_name'] == $indexname) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
 function pdo_fieldexists($tablename, $fieldname = '') {
     return Schema::hasColumn($tablename,$fieldname);
 }
@@ -387,5 +535,7 @@ function pdo_run($sql) {
 }
 
 function pdo_query($sql, $params = array()) {
-    return DB::statement($sql);
+    $prefix = env("DB_PREFIX", 'ims_');
+    $sql = str_replace(array("ims_", "ENGINE=MyISAM"), array($prefix, "ENGINE=InnoDB"), $sql);
+    return DB::statement($sql, $params);
 }

@@ -3,72 +3,103 @@
 
 namespace App\Services;
 
-
-use App\Models\Account;
-use App\Models\Module;
+use App\Models\UniAccount;
+use App\Models\Modules;
+use App\Models\SystemLogs;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class ModuleService
 {
 
-    static function Initializer(){
-        $query = DB::table('modules');
-        $initialized = $query->where('mid','>',0)->first();
-        if (!$initialized){
-            $query->insert(array(
-                ['name'=>'basic','application_type'=>0,'type'=>'system','title'=>'基本文字回复','version'=>'1.0','ability'=>'基本文字回复','description'=>'基本文字回复','author'=>'WeEngine Team','isrulefields'=>1,'issystem'=>1,'wxapp_support'=>1,'welcome_support'=>1,'oauth_type'=>1,'webapp_support'=>1,'phoneapp_support'=>1,'account_support'=>2,'xzapp_support'=>1,'aliapp_support'=>1,'baiduapp_support'=>1,'toutiaoapp_support'=>1],
-                ['name'=>'news','application_type'=>0,'type'=>'system','title'=>'基本混合图文回复','version'=>'1.0','ability'=>'基本混合图文回复','description'=>'基本混合图文回复','author'=>'WeEngine Team','isrulefields'=>1,'issystem'=>1,'wxapp_support'=>1,'welcome_support'=>1,'oauth_type'=>1,'webapp_support'=>1,'phoneapp_support'=>1,'account_support'=>2,'xzapp_support'=>1,'aliapp_support'=>1,'baiduapp_support'=>1,'toutiaoapp_support'=>1],
-                ['name'=>'music','application_type'=>0,'type'=>'system','title'=>'基本音乐回复','version'=>'1.0','ability'=>'基本音乐回复','description'=>'基本音乐回复','author'=>'WeEngine Team','isrulefields'=>1,'issystem'=>1,'wxapp_support'=>1,'welcome_support'=>1,'oauth_type'=>1,'webapp_support'=>1,'phoneapp_support'=>1,'account_support'=>2,'xzapp_support'=>1,'aliapp_support'=>1,'baiduapp_support'=>1,'toutiaoapp_support'=>1],
-                ['name'=>'userapi','application_type'=>0,'type'=>'system','title'=>'自定义接口回复','version'=>'1.0','ability'=>'自定义接口回复','description'=>'自定义接口回复','author'=>'WeEngine Team','isrulefields'=>1,'issystem'=>1,'wxapp_support'=>1,'welcome_support'=>1,'oauth_type'=>1,'webapp_support'=>1,'phoneapp_support'=>1,'account_support'=>2,'xzapp_support'=>1,'aliapp_support'=>1,'baiduapp_support'=>1,'toutiaoapp_support'=>1],
-                ['name'=>'userapi','application_type'=>0,'type'=>'system','title'=>'会员中心充值模块','version'=>'1.0','ability'=>'会员中心充值模块','description'=>'会员中心充值模块','author'=>'WeEngine Team','isrulefields'=>1,'issystem'=>1,'wxapp_support'=>1,'welcome_support'=>1,'oauth_type'=>1,'webapp_support'=>1,'phoneapp_support'=>1,'account_support'=>2,'xzapp_support'=>1,'aliapp_support'=>1,'baiduapp_support'=>1,'toutiaoapp_support'=>1],
-                ['name'=>'custom','application_type'=>0,'type'=>'system','title'=>'多客服转接','version'=>'1.0','ability'=>'多客服转接','description'=>'多客服转接','author'=>'WeEngine Team','isrulefields'=>1,'issystem'=>1,'wxapp_support'=>1,'welcome_support'=>1,'oauth_type'=>1,'webapp_support'=>1,'phoneapp_support'=>1,'account_support'=>2,'xzapp_support'=>1,'aliapp_support'=>1,'baiduapp_support'=>1,'toutiaoapp_support'=>1],
-                ['name'=>'images','application_type'=>0,'type'=>'system','title'=>'基本图片回复','version'=>'1.0','ability'=>'基本图片回复','description'=>'基本图片回复','author'=>'WeEngine Team','isrulefields'=>1,'issystem'=>1,'wxapp_support'=>1,'welcome_support'=>1,'oauth_type'=>1,'webapp_support'=>1,'phoneapp_support'=>1,'account_support'=>2,'xzapp_support'=>1,'aliapp_support'=>1,'baiduapp_support'=>1,'toutiaoapp_support'=>1],
-                ['name'=>'video','application_type'=>0,'type'=>'system','title'=>'基本视频回复','version'=>'1.0','ability'=>'基本视频回复','description'=>'基本视频回复','author'=>'WeEngine Team','isrulefields'=>1,'issystem'=>1,'wxapp_support'=>1,'welcome_support'=>1,'oauth_type'=>1,'webapp_support'=>1,'phoneapp_support'=>1,'account_support'=>2,'xzapp_support'=>1,'aliapp_support'=>1,'baiduapp_support'=>1,'toutiaoapp_support'=>1],
-                ['name'=>'voice','application_type'=>0,'type'=>'system','title'=>'基本语音回复','version'=>'1.0','ability'=>'基本语音回复','description'=>'基本语音回复','author'=>'WeEngine Team','isrulefields'=>1,'issystem'=>1,'wxapp_support'=>1,'welcome_support'=>1,'oauth_type'=>1,'webapp_support'=>1,'phoneapp_support'=>1,'account_support'=>2,'xzapp_support'=>1,'aliapp_support'=>1,'baiduapp_support'=>1,'toutiaoapp_support'=>1],
-                ['name'=>'chats','application_type'=>0,'type'=>'system','title'=>'发送客服消息','version'=>'1.0','ability'=>'发送客服消息','description'=>'公众号可以在粉丝最后发送消息的48小时内无限制发送消息','author'=>'WeEngine Team','isrulefields'=>1,'issystem'=>1,'wxapp_support'=>1,'welcome_support'=>1,'oauth_type'=>1,'webapp_support'=>1,'phoneapp_support'=>1,'account_support'=>2,'xzapp_support'=>1,'aliapp_support'=>1,'baiduapp_support'=>1,'toutiaoapp_support'=>1],
-                ['name'=>'wxcard','application_type'=>0,'type'=>'system','title'=>'微信卡券回复','version'=>'1.0','ability'=>'微信卡券回复','description'=>'微信卡券回复','author'=>'WeEngine Team','isrulefields'=>1,'issystem'=>1,'wxapp_support'=>1,'welcome_support'=>1,'oauth_type'=>1,'webapp_support'=>1,'phoneapp_support'=>1,'account_support'=>2,'xzapp_support'=>1,'aliapp_support'=>1,'baiduapp_support'=>1,'toutiaoapp_support'=>1],
-                ['name'=>'default','application_type'=>2,'type'=>'system','title'=>'微站默认模板','version'=>'1.0','ability'=>'微站默认模板','description'=>'微站默认模板','author'=>'WeEngine Team','isrulefields'=>1,'issystem'=>1,'wxapp_support'=>1,'welcome_support'=>1,'oauth_type'=>1,'webapp_support'=>1,'phoneapp_support'=>1,'account_support'=>2,'xzapp_support'=>1,'aliapp_support'=>1,'baiduapp_support'=>1,'toutiaoapp_support'=>1],
-                ['name'=>'store','application_type'=>0,'type'=>'business','title'=>'站内商城','version'=>'1.0','ability'=>'站内商城','description'=>'站内商城','author'=>'WeEngine Team','isrulefields'=>1,'issystem'=>1,'wxapp_support'=>1,'welcome_support'=>1,'oauth_type'=>1,'webapp_support'=>1,'phoneapp_support'=>1,'account_support'=>2,'xzapp_support'=>1,'aliapp_support'=>1,'baiduapp_support'=>1,'toutiaoapp_support'=>1]
-            ));
+    static function getManifest($identity,$path='addons'){
+        $manifestFile = base_path("public/$path/$identity/manifest.json");
+        if(!file_exists($manifestFile)) return error(-1,__('无法解析模块安装包'));
+        $JSON = file_get_contents($manifestFile);
+        $result = json_decode($JSON, true);
+        if (empty($result) || !isset($result['application'])) return error(-1,__('无效的模块安装包'));
+        $result['installed'] = false;
+        if (DB::table('modules')->where('name', $identity)->exists()){
+            $result['installed'] = true;
         }
-        return true;
+        return $result;
+    }
+
+    static function maintenance($identity, $maintenance=1){
+        $cloudIdentity = self::SysPrefix($identity);
+        return DB::table('gxswa_cloud')->where('identity', $cloudIdentity)->update(['maintenance'=>intval($maintenance)]);
     }
 
     static function install($identity,$path='addons',$from='cloud'){
-        $installpath = base_path("public/$path/$identity/");
-        $manifestfile = $installpath . "Manifest.php";
-        if(!file_exists($manifestfile)) return error(-1,'无法解析模块安装包');
-        $ManiFest = require_once $manifestfile;
-        if ($ManiFest->installed) return true;
-        //执行安装脚本
-        if (method_exists($ManiFest,'installer')){
+        $startTime = time();
+        $ManiFest = self::getManifest($identity, $path);
+        if (is_error($ManiFest)) return $ManiFest;
+        if ($ManiFest['installed']) return true;
+        $application = $ManiFest['application'];
+        MSService::TerminalSend(['mode'=>'info', 'message'=>"即将安装应用模块【{$application['name']}^{$application['version']}】"]);
+        //运行数据库迁移
+        $migrationPath = base_path("public/$path/$identity/database/migrations");
+        if (is_dir($migrationPath)){
+            MSService::TerminalSend(['mode'=>'info', 'message'=>"即将进行数据结构迁移..."]);
             try {
-                $ManiFest->installer();
+                Artisan::call('migrate', ['--force' => true, '--path' => "public/$path/$identity/database/migrations"]);
+                MSService::TerminalSend(['mode'=>'success', 'message'=>"数据结构迁移完成!"]);
+            }catch (\Exception $exception){
+                SystemLogs::systemRunning(
+                    '模块数据库迁移异常',
+                    'service:ModuleService',
+                    "执行模块数据库迁移时发生异常：{$exception->getMessage()}",
+                    false,
+                    [
+                        'exception_file' => $exception->getFile(),
+                        'exception_line' => $exception->getLine(),
+                        'exception_code' => $exception->getCode(),
+                        'module_identity' => $identity,
+                        'path' => $path,
+                    ]
+                );
+                return error(-1,__('installFailed', ['reason'=>DEVELOPMENT?$exception->getMessage():__('运行数据库迁移时出现异常')]));
+            }
+        }
+        //执行安装脚本
+        if (!empty($ManiFest['install'])){
+            try {
+                MSService::TerminalSend(['mode'=>'info', 'message'=>"正在运行应用安装脚本..."]);
+                define('MODULE_INSTALL', 1);
+                script_run($ManiFest['install'], public_path("{$path}/{$identity}/"));
+                MSService::TerminalSend(['mode'=>'success', 'message'=>"应用安装脚本运行完成!"]);
             } catch (\Exception $exception){
-                return error(-1,'安装失败：运行脚本出现错误');
+                SystemLogs::systemRunning(
+                    '模块安装脚本执行异常',
+                    'service:ModuleService',
+                    "执行模块安装脚本时发生异常：{$exception->getMessage()}",
+                    false,
+                    [
+                        'exception_file' => $exception->getFile(),
+                        'exception_line' => $exception->getLine(),
+                        'exception_code' => $exception->getCode(),
+                        'module_identity' => $identity,
+                        'path' => $path,
+                    ]
+                );
+                return error(-1,__('installFailed', ['reason'=>DEVELOPMENT?$exception->getMessage():__('installFailedRender')]));
             }
         }
         //写入模块数据表
-        $application = $ManiFest->application;
-        $subscribes = method_exists($ManiFest,'subscribes') ? $ManiFest->subscribes : array();
-        $handles = method_exists($ManiFest,'handles') ? $ManiFest->handles : array();
+        $subscribes = $ManiFest['subscribes'] ?: array();
+        $handles = $ManiFest['handles'] ?: array();
         $module = self::ModuleData($application,$subscribes,$handles);
+        if (!empty($ManiFest['permissions'])){
+            $module['permissions'] = serialize($ManiFest['permissions']);
+        }
         $module['from'] = $from;
         if (!DB::table('modules')->insert($module)){
-            return error(-1,'无法解析模块安装包');
-        }
-        if (!empty($ManiFest->servers)){
-            try {
-                $MSS = new MSService();
-                $MSS->checkrequire($ManiFest->servers);
-            }catch (\Exception $exception){
-                return error(-1,'安装依赖服务时发生错误：'.$exception->getMessage());
-            }
+            return error(-1, __('无法解析模块安装包'));
         }
         //写入组件表
         if ($from=='cloud'){
-            $comdata = array(
+            $comData = array(
                 'name'=>$module['title'],
                 'modulename'=>$identity,
                 'type'=>1,
@@ -81,34 +112,76 @@ class ModuleService
                 'dateline'=>TIMESTAMP
             );
             DB::table('gxswa_cloud')->updateOrInsert(array(
-                'identity'=>"laravel_module_$identity",
+                'identity'=>self::SysPrefix($identity),
                 'rootpath'=>"public/$path/$identity/"
-            ),$comdata);
+            ),$comData);
         }
+        if (!empty($ManiFest['servers'])){
+            try {
+                $MSS = new MSService();
+                $MSS->checkRequire($ManiFest['servers']);
+            }catch (\Exception $exception){
+                SystemLogs::systemRunning(
+                    '模块依赖服务检查异常',
+                    'service:ModuleService',
+                    "检查模块依赖服务时发生异常：{$exception->getMessage()}",
+                    false,
+                    [
+                        'exception_file' => $exception->getFile(),
+                        'exception_line' => $exception->getLine(),
+                        'exception_code' => $exception->getCode(),
+                        'module_identity' => $identity,
+                    ]
+                );
+                return error(-1,__('installFailed', ['reason'=>$exception->getMessage()]));
+            }
+        }
+        $stopTime = time();
+        $timeOut = $from=='cloud' ? '' : __('takesTime', ['time'=>$stopTime-$startTime]);
+        MSService::TerminalSend(['mode'=>'success', 'message'=>__('installSuccessfully').$timeOut], true);
         return true;
     }
 
     static function installCheck($identity){
-        $module = DB::table('modules')->where('name',$identity)->first();
-        if (empty($module)) return error(-2,'该模块尚未安装');
-        $installpath = base_path("public/addons/$identity/");
-        $manifestfile = $installpath . "Manifest.php";
-        if(!file_exists($manifestfile)) return error(-1,'无法解析模块安装包');
-        $ManiFest = require_once $manifestfile;
-        if (!$ManiFest->installed) return error(-3,'该模块尚未安装');
+        $ManiFest = self::getManifest($identity);
+        if (is_error($ManiFest)) return $ManiFest;
+        if (!$ManiFest['installed']) return error(-3,__('applicationNotInstall'));
         return $ManiFest;
     }
 
-    static function localExists($identity){
-        $manifest = base_path("public/addons/$identity/Manifest.php");
-        return file_exists($manifest);
+    /**
+     * 获取模块列表（已安装）
+     * @param int $recycle 0正常1停用2删除-1所有
+     * @param int $issystem 0普通应用1系统应用
+     * @return array 模块列表
+    */
+    static function moduleList($recycle=0, $issystem=0){
+        $modules = DB::table('modules')->select(['mid','name','title','version','logo','from','status','permissions'])->where('issystem', intval($issystem))->get()->keyBy('name')->toArray();
+        if (empty($modules)) return [];
+        if ($recycle==-1) return $modules;
+        $recycles = DB::table('modules_recycle')->select('type')->get()->keyBy('name')->toArray();
+        foreach ($modules as $key=>$module){
+            if ($recycle>0){
+                if ($recycle!=intval($recycles[$module['name']])){
+                    unset($modules[$key]);
+                }
+            }elseif (isset($recycles[$key])){
+                unset($modules[$key]);
+            }
+        }
+        return $modules;
     }
 
-    static function upgrade($identity){
+    static function localExists($identity){
+        return file_exists(base_path("public/addons/$identity/manifest.json"));
+    }
+
+    static function upgrade($identity,$from=''){
+        $startTime = time();
         $ManiFest = self::installCheck($identity);
         if (is_error($ManiFest)) return $ManiFest;
-        if (!$ManiFest->installed) return error(-1,'该模块尚未安装');
-        $application = $ManiFest->application;
+        $application = $ManiFest['application'];
+        MSService::TerminalSend(['mode'=>'info', 'message'=>"即将升级应用模块【{$application['name']}^{$application['version']}】"]);
         $component = self::SysComponent($application['identifie']);
         if (!empty($component)){
             //已经是最新版本
@@ -116,49 +189,140 @@ class ModuleService
                 return true;
             }
         }
-        //执行升级脚本
-        if (method_exists($ManiFest,'upgrader')){
+        //运行数据库迁移
+        $migrationPath = base_path("public/addons/$identity/database/migrations");
+        if (is_dir($migrationPath)){
+            MSService::TerminalSend(['mode'=>'info', 'message'=>"即将进行数据结构迁移..."]);
             try {
-                $ManiFest->upgrader();
+                Artisan::call('migrate', ['--force' => true, '--path' => "public/addons/$identity/database/migrations"]);
+                MSService::TerminalSend(['mode'=>'success', 'message'=>"数据结构迁移完成！"]);
+            }catch (\Exception $exception){
+                SystemLogs::systemRunning(
+                    '模块数据库迁移异常',
+                    'service:ModuleService',
+                    "执行模块数据库迁移时发生异常：{$exception->getMessage()}",
+                    false,
+                    [
+                        'exception_file' => $exception->getFile(),
+                        'exception_line' => $exception->getLine(),
+                        'exception_code' => $exception->getCode(),
+                        'module_identity' => $identity,
+                        'path' => public_path("addons/$identity/"),
+                    ]
+                );
+                return error(-1,__('installFailed', ['reason'=>DEVELOPMENT?$exception->getMessage():__('运行数据库迁移时出现异常')]));
+            }
+        }
+        //执行升级脚本
+        if (!empty($ManiFest['upgrade'])){
+            try {
+                MSService::TerminalSend(['mode'=>'info', 'message'=>"正在运行应用升级脚本..."]);
+                define('MODULE_UPGRADE', 1);
+                script_run($ManiFest['upgrade'], public_path("addons/$identity/"));
+                MSService::TerminalSend(['mode'=>'success', 'message'=>"应用升级脚本运行完成！"]);
             } catch (\Exception $exception){
-                return error(-1,'升级失败：运行脚本出现错误:'.$exception->getMessage());
+                SystemLogs::systemRunning(
+                    '模块升级脚本执行异常',
+                    'service:ModuleService',
+                    "执行模块升级脚本时发生异常：{$exception->getMessage()}",
+                    false,
+                    [
+                        'exception_file' => $exception->getFile(),
+                        'exception_line' => $exception->getLine(),
+                        'exception_code' => $exception->getCode(),
+                        'module_identity' => $identity,
+                    ]
+                );
+                return error(-1,__('installFailed', ['reason'=>$exception->getMessage()]));
             }
         }
         //更新模块数据表
-        $subscribes = method_exists($ManiFest,'subscribes') ? $ManiFest->subscribes : array();
-        $handles = method_exists($ManiFest,'handles') ? $ManiFest->handles : array();
+        $subscribes = $ManiFest['subscribes'] ?: array();
+        $handles = $ManiFest['handles'] ?: array();
         $moduledata = self::ModuleData($application,$subscribes,$handles);
+        $moduledata['permissions'] = empty($ManiFest['permissions']) ? "" : serialize($ManiFest['permissions']);
         DB::table('modules')->where('name',$application['identifie'])->update($moduledata);
         //更新模块数据表
-        if (!empty($component)){
+        if (!empty($component) || $from=='cloud'){
             $cloudinfo = empty($component['online']) ? array() : unserialize($component['online']);
             $cloudinfo['isnew'] = false;
-            DB::table('gxswa_cloud')->where('id',$component['id'])->update(array(
+            $cloudinfo['releasedate'] = $application['releasedate'];
+            $cloudinfo['version'] = $application['version'];
+            $cloudIdentity = self::SysPrefix($identity);
+            $comInfo = array(
                 'name'=>$application['name'],
                 'logo'=>$application['logo'],
                 'website'=>$application['url'],
+                'online'=>serialize($cloudinfo),
                 'version'=>$application['version'],
                 'updatetime'=>TIMESTAMP,
-                'releasedate'=>$application['releasedate']
-            ));
+                'releasedate'=>$application['releasedate'],
+                'dateline'=>TIMESTAMP
+            );
+            if (empty($component)){
+                $comInfo['modulename'] = $identity;
+                $comInfo['type'] = 1;
+                $comInfo['rootpath'] = "public/addons/$identity/";
+                $comInfo['addtime'] = TIMESTAMP;
+                DB::table('gxswa_cloud')->insert($comInfo);
+            }else{
+                DB::table('gxswa_cloud')->where('identity', $cloudIdentity)->update($comInfo);
+            }
         }
+        //安装模块依赖服务
+        if (!empty($ManiFest['servers'])){
+            try {
+                $MSS = new MSService();
+                $MSS->checkRequire($ManiFest['servers']);
+            }catch (\Exception $exception){
+                SystemLogs::systemRunning(
+                    '模块升级依赖服务检查异常',
+                    'service:ModuleService',
+                    "检查模块升级依赖服务时发生异常：{$exception->getMessage()}",
+                    false,
+                    [
+                        'exception_file' => $exception->getFile(),
+                        'exception_line' => $exception->getLine(),
+                        'exception_code' => $exception->getCode(),
+                        'module_identity' => $identity,
+                    ]
+                );
+                return error(-1,__('installServerFailed', ['reason'=>$exception->getMessage()]));
+            }
+        }
+        $stopTime = time();
+        MSService::TerminalSend(['mode'=>'success', 'message'=>"模块升级完成！耗时".($stopTime-$startTime)."秒"]);
         return true;
     }
 
     static function uninstall($identity){
         $ManiFest = self::installCheck($identity);
         if (is_error($ManiFest)) return $ManiFest;
-        $component = self::SysComponent($ManiFest->application['identifie']);
+        $component = self::SysComponent($ManiFest['application']['identifie']);
         //执行卸载脚本
-        if (method_exists($ManiFest,'uninstaller')){
+        if (!empty($ManiFest['uninstall'])){
             try {
-                $ManiFest->uninstaller();
+                MSService::TerminalSend(['mode'=>'info', 'message'=>"正在运行应用卸载脚本..."]);
+                define('MODULE_UNINSTALL', 1);
+                script_run($ManiFest['uninstall'], public_path("addons/$identity/"));
             } catch (\Exception $exception){
-                return error(-1,'卸载失败：运行脚本出现错误:'.$exception->getMessage());
+                SystemLogs::systemRunning(
+                    '模块卸载脚本执行异常',
+                    'service:ModuleService',
+                    "执行模块卸载脚本时发生异常：{$exception->getMessage()}",
+                    false,
+                    [
+                        'exception_file' => $exception->getFile(),
+                        'exception_line' => $exception->getLine(),
+                        'exception_code' => $exception->getCode(),
+                        'module_identity' => $identity,
+                    ]
+                );
+                return error(-1,__('uninstallFailed', array('reason'=>DEVELOPMENT?$exception->getMessage():__('installFailedRender'))));
             }
         }
         //更新模块数据表
-        DB::table('modules')->where('name',$ManiFest->application['identifie'])->delete();
+        DB::table('modules')->where('name',$ManiFest['application']['identifie'])->delete();
         if (!empty($component)){
             DB::table('gxswa_cloud')->where('id',$component['id'])->delete();
             if (!DEVELOPMENT){
@@ -172,10 +336,10 @@ class ModuleService
 
     static function fetch($name, $enabled = true) {
         global $_W;
-        $cachekey = CacheService::system_key('module_info', array('module_name' => $name));
-        $module = Cache::get($cachekey,array());
+        $cacheKey = CacheService::system_key('module_info', array('module_name' => $name));
+        $module = Cache::get($cacheKey,array());
         if (empty($module)) {
-            $module_info = Module::where('name',$name)->first();
+            $module_info = Modules::where('name',$name)->first();
             if (empty($module_info)) {
                 return array();
             }
@@ -185,16 +349,10 @@ class ModuleService
             if (file_exists(IA_ROOT . '/addons/' . $module_info['name'] . '/preview-custom.jpg')) {
                 $module_info['preview'] = tomedia(IA_ROOT . '/addons/' . $module_info['name'] . '/preview-custom.jpg', '', true);
             }
-            $module_receive_ban = (array)SettingService::Load('module_receive_ban');
-            if (is_array($module_receive_ban['module_receive_ban']) && in_array($name, $module_receive_ban['module_receive_ban'])) {
-                $module_info['is_receive_ban'] = true;
-            }
-            $module_ban = (array)SettingService::Load('module_ban');
-            if (is_array($module_ban['module_ban']) && in_array($name, $module_ban['module_ban'])) {
-                $module_info['is_ban'] = true;
-            }
+            $module_info['is_receive_ban'] = false;
+            $module_info['is_ban'] = false;
             $module_upgrade = (array)SettingService::Load('module_upgrade');
-            if (is_array($module_upgrade['module_upgrade']) && in_array($name, array_keys($module_upgrade['module_upgrade']))) {
+            if (!empty($module_upgrade['module_upgrade']) && in_array($name, array_keys($module_upgrade['module_upgrade']))) {
                 $module_info['is_upgrade'] = true;
             }
 
@@ -223,28 +381,26 @@ class ModuleService
                 $module_info['is_delete'] = $is_delete; 		}
 
             $module = $module_info;
-            Cache::put($cachekey, $module_info, 86400*7);
+            cache_write($cacheKey, $module_info);
         }
 
-        if (!empty($enabled)) {
-            if (!empty($module['is_delete'])) {
-                return array();
-            }
+        if (!$enabled && !empty($module['is_delete'])) {
+            return array();
         }
 
         if (!empty($module) && !empty($_W['uniacid'])) {
-            $setting_cachekey = CacheService::system_key('module_setting', array('module_name' => $name, 'uniacid' => $_W['uniacid']));
-            $setting = Cache::get($setting_cachekey,array());
+            $setting_cacheKey = CacheService::system_key('module_setting', array('module_name' => $name, 'uniacid' => $_W['uniacid']));
+            $setting = Cache::get($setting_cacheKey,array());
             if (!isset($setting['settings'])) {
                 $setting = DB::table('uni_account_modules')->where(array('module'=>$name,'uniacid'=>$_W['uniacid']))->first();
-                $setting = empty($setting) ? array('module' => $name) : $setting;
-                Cache::put($setting_cachekey, $setting, 86400*7);
+                $setting = empty($setting) ? array('module' => $name, 'shortcut'=>'', 'module_shortcut'=>'', 'displayorder'=>0, 'uniacid'=>$_W['uniacid'], 'settings'=>'') : $setting;
+                Cache::put($setting_cacheKey, $setting, 86400*7);
             }
             $module['config'] = unserialize($setting['settings']);
             $module['enabled'] = $module['issystem'] || !isset($setting['enabled']) ? 1 : $setting['enabled'];
-            $module['displayorder'] = $setting['displayorder'];
-            $module['shortcut'] = $setting['shortcut'];
-            $module['module_shortcut'] = $setting['module_shortcut'];
+            $module['displayorder'] = empty($setting['displayorder'])?0:$setting['displayorder'];
+            $module['shortcut'] = empty($setting['shortcut'])?'':$setting['shortcut'];
+            $module['module_shortcut'] = empty($setting['module_shortcut'])?'':$setting['module_shortcut'];
         }
         return $module;
     }
@@ -252,7 +408,7 @@ class ModuleService
     static function ModuleData($application,$subscribes=array(),$handles=array()){
         return array(
             'name'=>$application['identifie'],
-            'application_type'=>1,
+            'application_type'=>$application['module_type']??1,
             'type'=>$application['type'],
             'title'=>$application['name'],
             'version'=>$application['version'],
@@ -292,18 +448,18 @@ class ModuleService
         return $module_support_type;
     }
 
-    static function UniModules($uniacid, $apptype=null){
-        $account_info = Account::getByUniacid($uniacid);
+    static function UniModules($uniacidOrAccount, $apptype=null){
+        $account_info = is_numeric($uniacidOrAccount) ? UniAccount::getByUniacid($uniacidOrAccount) : $uniacidOrAccount;
         $uni_account_type = AccountService::GetType(1);
-        $owner_uid = DB::table('uni_account_users')->where(array('uniacid' => $uniacid, 'role' => array('owner', 'vice_founder')))->select(array('uid', 'role'))->get()->keyBy('role')->toArray();
+        $owner_uid = DB::table('uni_account_users')->where(array('uniacid' => $account_info['uniacid'], 'role' => array('owner', 'vice_founder')))->select(array('uid', 'role'))->get()->keyBy('role')->toArray();
         $owner_uid = !empty($owner_uid['owner']) ? $owner_uid['owner']['uid'] : (!empty($owner_uid['vice_founder']) ? $owner_uid['vice_founder']['uid'] : 0);
 
-        $cachekey = CacheService::system_key('unimodules',array('uniacid'=>$uniacid));
+        $cachekey = CacheService::system_key('unimodules',array('uniacid'=>$account_info['uniacid']));
         $modules = Cache::get($cachekey,array());
         if (empty($modules)){
             $enabled_modules = self::NonRecycleModules();
             if (!empty($owner_uid) && !UserService::isFounder($owner_uid, true)) {
-                $group_modules = AccountService::GroupModules($uniacid);
+                $group_modules = AccountService::GroupModules($account_info['uniacid']);
 
                 $user_modules = UserService::GetModules($owner_uid);
                 if (!empty($user_modules)) {
@@ -350,7 +506,7 @@ class ModuleService
     }
 
     static function NonRecycleModules(){
-        $modules = Module::where('issystem' , 0)->orderBy('mid', 'DESC')->get()->keyBy('name')->toArray();
+        $modules = Modules::where('issystem' , 0)->orderBy('mid', 'DESC')->get()->keyBy('name')->toArray();
         if (empty($modules)) {
             return array();
         }
@@ -372,8 +528,12 @@ class ModuleService
         return array('basic', 'news', 'music', 'service', 'userapi', 'recharge', 'images', 'video', 'voice', 'wxcard', 'custom', 'chats', 'paycenter', 'keyword', 'special', 'welcome', 'default', 'apply', 'reply', 'core', 'store', 'wxapp');
     }
 
+    static function SysPrefix($identity=""){
+        return env('APP_MODULE_PRE', 'laravel_module_') . $identity;
+    }
+
     static function SysComponent($identity){
-        return DB::table('gxswa_cloud')->where('identity',"laravel_module_$identity")->first();
+        return DB::table('gxswa_cloud')->where('identity',self::SysPrefix($identity))->first();
     }
 
 }

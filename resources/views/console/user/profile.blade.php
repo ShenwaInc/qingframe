@@ -1,23 +1,33 @@
 @include('common.header')
+<script type="text/javascript">
+    function setAvatar(attach, layIndex){
+        $('.user-avatar').attr('src',attach.url);
+        layer.close(layIndex);
+        Core.post('{{ wurl("user/setAvatar") }}', function (res) {
+            if(res.type!=='success') return Core.report(res);
+            layer.msg('@lang("successful")',{icon:1, skin: 'fui-layer'});
+        }, {path:attach.path});
+    }
+</script>
 
 <div class="main-content">
 
-    <h2 class="weui-desktop-page__title">账户管理</h2>
+    <h2 class="weui-desktop-page__title">@lang('账户管理')</h2>
 
     <div class="layui-tab fui-tab margin-bottom-xl">
         <ul class="layui-tab-title title_tab">
             <li class="layui-this">
-                <a href="javascript:;">个人资料</a>
+                <a href="javascript:;">@lang('personalInformation')</a>
             </li>
             <li>
-                <a href="{{ wurl('user/subuser') }}">子账户</a>
+                <a href="{{ wurl('user/subuser') }}">@lang('subAccount')</a>
             </li>
         </ul>
     </div>
 
     <div class="fui-card layui-card">
         <div class="layui-card-header nobd">
-            <span class="title">账户管理</span>
+            <span class="title">@lang('账户管理')</span>
         </div>
         <div class="layui-card-body">
             <div class="un-padding">
@@ -29,24 +39,31 @@
                     </colgroup>
                     <tbody>
                         <tr>
-                            <td><span class="fui-table-lable">用户名</span></td>
+                            <td><span class="fui-table-lable">@lang('username')</span></td>
                             <td class="soild-after">{{ $_W['user']['username'] }}</td>
                             <td class="text-right soild-after"></td>
                         </tr>
                         <tr>
-                            <td><span class="fui-table-lable">头像</span></td>
+                            <td><span class="fui-table-lable">@lang('avatar')</span></td>
                             <td class="soild-after">
-                                <img class="radius user-avatar" src="{{ tomedia($profile['avatar']) }}" width="72" />
+                                <img class="radius user-avatar" src="{{ globalMedia($profile['avatar']) }}" width="72" />
                             </td>
                             <td class="text-right soild-after">
-                                <a href="javascript:" class="text-blue js-avatar" data-prev=".user-avatar" title="修改头像">修改</a>
+                                <a href="javascript:" data-url="/server/storage/picker?type=1&uniacid=0" class="text-blue" onclick="Core.StoragePicker(this, false, setAvatar)" title="{{ __('modifyData', array('data'=>__('avatar'))) }}">@lang('modify')</a>
                             </td>
                         </tr>
                         <tr>
-                            <td><span class="fui-table-lable">密码</span></td>
-                            <td class="soild-after"> ******** </td>
+                            <td><span class="fui-table-lable">@lang('password')</span></td>
+                            <td class="soild-after"> ******** @if($_W['user']['register_type']==1)<span class="layui-badge">@lang('初始密码很不安全')</span>@endif</td>
                             <td class="text-right soild-after">
-                                <a href="{{ url('console/user/passport') }}" class="text-blue ajaxshow" title="修改登录密码">修改</a>
+                                <a href="{{ wurl('user/passport') }}" class="text-blue ajaxshow" title="{{ __('modifyData', array('data'=>__('password'))) }}">@lang('modify')</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><span class="fui-table-lable">@lang('邮箱')</span></td>
+                            <td id="user-email" class="soild-after{{ !$_W['user']['email'] ? ' text-gray' : '' }}">{{ $_W['user']['email'] ?: '未填写' }}</td>
+                            <td class="text-right soild-after">
+                                <a href="javascript:modifyEmail()" class="text-blue" title="{{ __('modifyData', array('data'=>__('邮箱'))) }}">@lang('modify')</a>
                             </td>
                         </tr>
                     </tbody>
@@ -57,27 +74,27 @@
 
 </div>
 
-@include('common.footer')
-
 <script type="text/javascript">
-    layer.ready(function (){
-        $('.js-avatar').each(function (index,element){
-            let preview = $(this).data('prev');
-            layui.upload.render({
-                elem: element
-                ,url: '{{ url("console/user/avatar") }}' //必填项
-                ,accept:'images'
-                ,acceptMime:'images/*'
-                ,exts:"{{ implode('|',$_W['setting']['upload']['image']['extentions']) }}"
-                ,data:{_token:"{{ csrf_token() }}"}
-                ,done:function (res, index, upload){
-                    if(res.type!=='success') return Core.report(res);
-                    layer.msg('修改成功！',{icon:1});
-                    if (typeof(preview)!='undefined'){
-                        $(preview).attr('src',res.message.url);
-                    }
-                }
-            });
+    function modifyEmail(){
+        let emailElem = $('#user-email');
+        layer.prompt({
+            title: "{{ __('modifyData', array('data'=>__('邮箱'))) }}",
+            value: emailElem.hasClass('text-gray') ? '' : emailElem.text(),
+            placeholder: "@lang('用于接收通知及找回密码等邮件')",
+            skin: 'fui-layer',
+            success: function (layero, index, that) {
+                jQuery(layero).find('input.layui-layer-input').focus();
+            }
+        }, function(val, index){
+            if(!val) return false;
+            Core.post('{{ wurl("user/modifyEmail") }}', function (res) {
+                if(res.type!=='success') return Core.report(res);
+                emailElem.text(val).removeClass('text-gray');
+                layer.msg(res.message, {icon:1, skin: 'fui-layer'});
+                layer.close(index);
+            }, {email:val});
         });
-    });
+    }
 </script>
+
+@include('common.footer')

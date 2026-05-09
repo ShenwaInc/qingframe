@@ -2,10 +2,12 @@
 
 namespace App\Utils;
 
+use App\Models\SystemLogs;
+use App\Services\AccountService;
 use App\Services\CacheService;
-use App\Services\FileService;
 use App\Services\ModuleService;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\View;
 
 !(defined('IN_IA')) && define('IN_IA', 2);
 
@@ -22,34 +24,104 @@ class WeModule
 
     public $__define;
 
+    /**
+     * @throws \Exception
+     */
     public function create($name){
-        global $_W;
         static $file;
-        $classname = "{$name}ModuleSite";
-        if (!class_exists($classname)) {
-            $file = public_path("/addons/{$name}/site.php");
-            if (!is_file($file)) {
-                trigger_error('ModuleSite Definition File Not Found ' . $file, E_USER_WARNING);
+        $classname = "\\Addons\\{$name}\\site";
+        $file = public_path("/addons/{$name}/site.php");
+        try {
+            if (class_exists($classname)) {
+                $Instance =   self::createModuleInstance($classname, $name);
+            }else{
+                if (!file_exists($file)) {
+                    throw new \Exception('ModuleSite Definition File Not Found ' . $name, E_USER_WARNING);
+                }
+                require_once $file;
+                $classname = "{$name}ModuleSite";
+                if (!class_exists($classname)) {
+                    trigger_error('ModuleSite Definition Class Not Found', E_USER_WARNING);
+                    return null;
+                }
+                $Instance = self::createModuleInstance($classname, $name);
             }
-            require $file;
+        }catch (\Exception $e){
+            SystemLogs::systemRunning(
+                '模块实例创建异常',
+                'utils:WeModule',
+                "创建模块实例时发生异常：{$e->getMessage()}",
+                false,
+                [
+                    'exception_file' => $e->getFile(),
+                    'exception_line' => $e->getLine(),
+                    'exception_code' => $e->getCode(),
+                    'exception_trace' => $e->getTrace(),
+                    'module_name' => $name,
+                    'classname' => $classname ?? null,
+                ]
+            );
+            trigger_error($e->getMessage(), E_USER_WARNING);
+            return null;
         }
-        if (!class_exists($classname)) {
-            list($namespace) = explode('_', $name);
-            if (class_exists("\\{$namespace}\\{$classname}")) {
-                $classname = "\\{$namespace}\\{$classname}";
-            } else {
-                trigger_error('ModuleSite Definition Class Not Found', E_USER_WARNING);
-                return null;
-            }
-        }
+        $Instance->__define = $file;
+        return $Instance;
+    }
+
+    public static function createModuleInstance($classname, $module){
+        global $_W;
         $o = new $classname();
         $o->uniacid = $o->weid = $_W['uniacid'];
-        $o->modulename = $name;
-        $o->module = ModuleService::fetch($name);
-        $o->__define = $file;
+        $o->modulename = $module;
+        $o->module = ModuleService::fetch($module);
         self::defineConst($o);
         $o->inMobile = defined('IN_MOBILE');
         return $o;
+    }
+
+    public function doWebSystem_setting(){
+        global $_W;
+        if (checksubmit()){
+            $moduleInfo = request()->input('module', []);
+            if (!empty($moduleInfo)){
+                AccountService::UpdateModules($this->uniacid, $this->modulename, array(
+                    'name'=>trim($moduleInfo['name']),
+                    'logo'=>trim($moduleInfo['logo'])
+                ));
+            }
+            return redirect($this->createWebUrl());
+        }
+        $modules = AccountService::ExtraModules($this->uniacid);
+        View::share('_W',$_W);
+        return view('console.module.quickSetting', [
+            'configs'=>$this->module['config'],
+            'title'=>'应用配置',
+            'moduleInfo'=>$modules[$this->modulename],
+            'application_type'=>1
+        ]);
+    }
+
+    public function pay($params){
+        $payment = serv("payment");
+        if (!$payment->enabled){
+            if (!function_exists('\message')){
+                require_once app_path('Helpers/app.php');
+            }
+            \message("支付服务暂不可用");
+        }
+        global $_W;
+        $data = array(
+            'tid'=>$params['tid'],
+            'amount'=>$params['fee'],
+            'subject'=>$params['title'],
+            'openid'=>$_W['openid'],
+            'isRecharge'=>(bool)$params['isRecharge']
+        );
+        return $payment->cashier($data, $this->modulename);
+    }
+
+    public function doWebMenu(){
+
     }
 
     private static function defineConst($obj) {
@@ -79,7 +151,6 @@ class WeModule
         return $result;
     }
 
-
     protected function createMobileUrl($do, $query = array(), $noredirect = true, $addhost=false) {
         global $_W;
         $module_name = strtolower($this->modulename);
@@ -97,35 +168,102 @@ class WeModule
         return $url;
     }
 
-
-    protected function createWebUrl($do, $query = array()) {
-        $module_name = strtolower($this->modulename);
-        return wurl("m/{$module_name}".($do?'/'.$do:''), $query);
+    protected function createAppUrl($route, $query = array(), $noredirect = true)
+    {
+        return $this->createMobileUrl($route, $query, $noredirect, true);
     }
 
+    protected function createWebUrl($do="", $query = array(), $full = false) {
+        $module_name = strtolower($this->modulename);
+        return wurl("m/$module_name".($do?"/$do":''), $query, $full);
+    }
 
-    protected function template($filename, $extra='') {
+    protected function createApiUrl($route="", $query = array())
+    {
+        global $_W;
+        $module_name = strtolower($this->modulename);
+        return $_W['siteroot'] . "api/m/" . $module_name . ($route?"/$route":'') . "?i={$_W['uniacid']}&" . http_build_query($query, '', '&');
+    }
+
+    /**
+     * 获取模块视图
+     * param array $data 视图渲染数据
+     * param string $template 模板名称
+     * return \Illuminate\Contracts\View\View
+    */
+    public function View($data, $template='index'){
+        global $_W, $_GPC, $_MODULE_VIEW;
+        $viewPath = public_path('addons/' . $this->modulename . '/views');
+        try {
+            View::addNamespace($this->modulename, $viewPath);
+        }catch (\Exception $exception){
+            SystemLogs::systemRunning(
+                '模块视图命名空间注册异常',
+                'utils:WeModule',
+                "注册模块视图命名空间时发生异常：{$exception->getMessage()}",
+                false,
+                [
+                    'exception_file' => $exception->getFile(),
+                    'exception_line' => $exception->getLine(),
+                    'exception_code' => $exception->getCode(),
+                    'exception_trace' => $exception->getTrace(),
+                    'module_name' => $this->modulename,
+                    'view_path' => $viewPath,
+                ]
+            );
+            try {
+                app('view')->addNamespace($this->modulename, $viewPath);
+            } catch (\Exception $e2) {
+                SystemLogs::systemRunning(
+                    '模块视图命名空间备用注册异常',
+                    'utils:WeModule',
+                    "备用方法注册模块视图命名空间时发生异常：{$e2->getMessage()}",
+                    false,
+                    [
+                        'exception_file' => $e2->getFile(),
+                        'exception_line' => $e2->getLine(),
+                        'exception_code' => $e2->getCode(),
+                        'exception_trace' => $e2->getTrace(),
+                        'module_name' => $this->modulename,
+                        'view_path' => $viewPath,
+                    ]
+                );
+                // 记录错误
+                error_log("Failed to register module view namespace: " . $e2->getMessage());
+                session_exit($e2->getMessage());
+            }
+        }
+        if (empty($data)){
+            $data = array();
+        }
+        $_MODULE_VIEW = $this->modulename;
+        $data['_W'] = $_W;
+        $data['_GPC'] = $_GPC;
+        View::share($data);
+        return View::make($this->modulename . ":" .str_replace('/', '.', $template), $data);
+    }
+
+    public function template($filename, $extra='') {
         global $_W;
         $name = strtolower($this->modulename);
         $defineDir = dirname($this->__define);
-        serv("weengine")->func("template");
         if (defined('IN_SYS')) {
-            $source = IA_ROOT . "/web/themes/{$_W['template']}/{$name}/{$extra}{$filename}.html";
-            $compile = storage_path("framework/tpls/web/{$name}/{$extra}{$filename}.tpl.php");
+            $source = IA_ROOT . "/web/themes/{$_W['template']}/$name/$extra$filename.html";
+            $compile = storage_path("framework/tpls/web/$name/$extra$filename.tpl.php");
             if (!is_file($source)) {
-                $source = IA_ROOT . "/web/themes/default/{$name}/{$filename}.html";
+                $source = IA_ROOT . "/web/themes/default/$name/$filename.html";
             }
             if (!is_file($source)) {
-                $source = $defineDir . "/{$extra}template/{$filename}.html";
+                $source = $defineDir . "/{$extra}template/$filename.html";
             }
             if (!is_file($source) && !empty($extra)) {
-                $source = $defineDir . "/template/{$filename}.html";
+                $source = $defineDir . "/template/$filename.html";
             }
             if (!is_file($source)) {
-                $source = IA_ROOT . "/web/themes/{$_W['template']}/{$filename}.html";
+                $source = IA_ROOT . "/web/themes/{$_W['template']}/$filename.html";
             }
             if (!is_file($source)) {
-                $source = IA_ROOT . "/web/themes/default/{$filename}.html";
+                $source = IA_ROOT . "/web/themes/default/$filename.html";
             }
         } else {
             $source = $defineDir . "/{$extra}template/mobile/$filename.html";
@@ -140,93 +278,37 @@ class WeModule
 
         if (!is_file($source)) {
             session()->save();
-            exit("Error: template source '{$filename}' is not exist!");
+            exit("Error: template source '$filename' is not exist!");
         }
         $paths = pathinfo($compile);
         $compile = str_replace($paths['filename'], $_W['uniacid'] . '_' . $paths['filename'], $compile);
+        if (!function_exists("tpl_compile")){
+            include_once app_path("Helpers/smarty.php");
+        }
         if (DEVELOPMENT || !is_file($compile) || filemtime($source) > filemtime($compile)) {
-            template_compile($source, $compile, true);
+            tpl_compile($source, $compile, $this->modulename);
         }
 
         return $compile;
     }
 
-
-    protected function fileSave($file_string, $type = 'jpg', $name = 'auto') {
-        global $_W;
-        load()->func('file');
-
-        $allow_ext = array(
-            'images' => array('gif', 'jpg', 'jpeg', 'bmp', 'png', 'ico'),
-            'audios' => array('mp3', 'wma', 'wav', 'amr'),
-            'videos' => array('wmv', 'avi', 'mpg', 'mpeg', 'mp4'),
-        );
-        if (in_array($type, $allow_ext['images'])) {
-            $type_path = 'images';
-        } elseif (in_array($type, $allow_ext['audios'])) {
-            $type_path = 'audios';
-        } elseif (in_array($type, $allow_ext['videos'])) {
-            $type_path = 'videos';
-        }
-
-        if (empty($type_path)) {
-            return error(1, '禁止保存文件类型');
-        }
-
-        $uniacid = intval($_W['uniacid']);
-        if (empty($name) || 'auto' == $name) {
-            $path = "{$type_path}/{$uniacid}/{$this->module['name']}/" . date('Y/m/');
-            FileService::mkdirs(ATTACHMENT_ROOT . '/' . $path);
-
-            $filename = FileService::file_random_name(ATTACHMENT_ROOT . '/' . $path, $type);
-        } else {
-            $path = "{$type_path}/{$uniacid}/{$this->module['name']}/";
-            FileService::mkdirs(dirname(ATTACHMENT_ROOT . '/' . $path));
-
-            $filename = $name;
-            if (!strexists($filename, $type)) {
-                $filename .= '.' . $type;
-            }
-        }
-        if (file_put_contents(ATTACHMENT_ROOT . $path . $filename, $file_string)) {
-            FileService::file_remote_upload($path);
-
-            return $path . $filename;
-        } else {
-            return false;
-        }
-    }
-
-    protected function fileUpload($file_string, $type = 'image') {
-        $types = array('image', 'video', 'audio');
-    }
-
     protected function getFunctionFile($name) {
-        $module_type = str_replace('wemodule', '', strtolower(get_parent_class($this)));
-        if ('site' == $module_type) {
-            $module_type = 0 === stripos($name, 'doWeb') ? 'web' : 'mobile';
-            $function_name = 'web' == $module_type ? strtolower(substr($name, 5)) : strtolower(substr($name, 8));
-        } else {
-            $function_name = strtolower(substr($name, 6));
-        }
-        $dir = IA_ROOT . '/framework/builtin/' . $this->modulename . '/inc/' . $module_type;
-        $file = "$dir/{$function_name}.inc.php";
-        if (!file_exists($file)) {
-            $file = str_replace('framework/builtin', 'addons', $file);
-        }
-
-        return $file;
+        $module_type = 0 === stripos($name, 'doWeb') ? 'web' : 'mobile';
+        $function_name = 'web' == $module_type ? strtolower(substr($name, 5)) : strtolower(substr($name, 8));
+        $dir = IA_ROOT . '/addons/' . $this->modulename . '/inc/' . $module_type;
+        return "$dir/{$function_name}.inc.php";
     }
 
+    /**
+     * @throws \Exception
+     */
     public function __call($name, $param) {
         $file = $this->getFunctionFile($name);
         if (file_exists($file)) {
             require $file;
-            exit;
+            session_exit();
         }
-        trigger_error('模块方法' . $name . '不存在.', E_USER_WARNING);
-
-        return false;
+        abort(404, "模块方法{$name}不存在");
     }
 
 }

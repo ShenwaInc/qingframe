@@ -33,24 +33,45 @@ if(typeof Basetoken == 'undefined'){
         post: function (u, c, d, t, l) {
             return this.request(u, 'POST', d, t, c, l);
         },
-        confirm: function (msg, success = false, cancle = false, option = {icon: 3, title: '温馨提示'}) {
-            layer.confirm(msg, option, function (index) {
+        confirm: function (msg, success = false, cancel = null, option = null) {
+            const defaultOptions = {icon: 3, title: '温馨提示'};
+            const options = option === null || option === undefined
+                ? defaultOptions
+                : {...defaultOptions, ...option};
+            options.skin = 'fui-layer';
+            if(typeof(layer)=='undefined'){
+                let res = window.confirm(msg);
+                if(res){
+                    if (typeof (success) == 'function') {
+                        success();
+                    }
+                }else{
+                    if (typeof (cancel) == 'function') {
+                        cancel();
+                    }
+                }
+                return false;
+            }
+            layer.confirm(msg, options, function (index) {
                 if (typeof (success) == 'function') {
                     success();
                 }
                 layer.close(index);
             }, function () {
-                if (typeof (cancle) == 'function') {
-                    cancle();
+                if (typeof (cancel) == 'function') {
+                    cancel();
                 }
             });
         },
-        request: function (u, m, d, t, c, l) {
+        request: function (u, m, d, t, c, l, f=null) {
             var url = this.url(u);
             var method = m ? m : 'GET';
             var data = d ? d : {};
             var datatype = t ? t : 'json';
             data.inajax = 1;
+            if(typeof(layer)=='undefined'){
+                l = false;
+            }
             if (l && !this.loading) {
                 this.loading = layer.load(1, {shade: 0.3});
             }
@@ -73,14 +94,18 @@ if(typeof Basetoken == 'undefined'){
                     }
                     hreq.report(res);
                 },
-                fail: function (e) {
+                error: function (e) {
+                    console.error('请求失败: ', `${e.statusText}(${e.status})`);
                     if (hreq.loading !== 0) {
                         layer.close(hreq.loading);
                         hreq.loading = 0;
                     }
                     if (Loadajax) Loadajax = false;
-                    layer.msg('操作失败', {icon: 2});
-                    console.log(e);
+                    if(typeof(f)=='function'){
+                        f(e);
+                    }else if(typeof(layer)!='undefined'){
+                        layer.msg(`操作失败(${e.status} ${e.statusText})`, {icon: 2});
+                    }
                 }
             }
             if (method === 'POST') {
@@ -96,7 +121,7 @@ if(typeof Basetoken == 'undefined'){
             }
             return jQuery.ajax(AjaxObj);
         },
-        report: function (res) {
+        report: function (res, timeOut=1200) {
             if (typeof (res) != 'object' && this.isJsonString(res)) {
                 res = jQuery.parseJSON(res);
             }
@@ -106,21 +131,25 @@ if(typeof Basetoken == 'undefined'){
             if (typeof (res) != 'object') return false;
             let act = '',redirect = '';
             if (typeof (res.url) != 'undefined') {
-                act = typeof (res.act) != 'undefined' ? res.act : '';
+                act = typeof (res.act) != 'undefined' ? res.act : 'redirect';
                 redirect = res.url;
             }
             if (typeof (res.message) != 'undefined' && typeof (res.type) != 'undefined') {
                 act = res.type;
                 redirect = res.redirect;
                 let icon = res.type === 'success' ? 1 : 2;
-                layer.msg(res.message, {icon: icon});
+                if(typeof(layer)!='undefined'){
+                    layer.msg(res.message, {icon: icon});
+                }else{
+                    alert(res.message);
+                }
             }
             if (redirect !== '') {
                 let direction = function () {
                     w.location.href = redirect;
                 }
                 if (act==='redirect') return direction();
-                setTimeout(direction, 1200);
+                setTimeout(direction, timeOut);
             }
         },
         isJsonString: function (str){
@@ -140,9 +169,17 @@ if(typeof Basetoken == 'undefined'){
         },
         loading: 0,
         debug: false,
-        StoragePicker(Elem, multi=false) {
+        storageData:{
+            items:[],
+            aids:[]
+        },
+        StoragePicker(Elem, multi=false, CallBack=false) {
+            if(typeof(layer)=='undefined'){
+                alert('缺少必须的JS库(layer)');
+                return false;
+            }
             let WindowId = 'storagepicker' + Wrandom(6);
-            let PickerUrl = this.url("serv/storage/picker");
+            let PickerUrl = this.url("server/storage/picker");
             let PickerTitle = $(Elem).data("title")
             if(Elem.hasAttribute("data-url")){
                 PickerUrl = $(Elem).attr("data-url");
@@ -150,102 +187,9 @@ if(typeof Basetoken == 'undefined'){
             if(Elem.hasAttribute("multiple")){
                 multi = true;
             }
-            let self = this;
-            let PickerItem = function (PItem){
-                let attachid = PItem.data('aid');
-                if(PItem.hasClass("checked")){
-                    let index = self.storagedata.storage.aids.indexOf(attachid);
-                    PItem.removeClass("checked");
-                    if (index>=0){
-                        self.storagedata.storage.aids.splice(index, 1);
-                        self.storagedata.storage.items.splice(index, 1);
-                    }
-                }else{
-                    PItem.addClass("checked");
-                    let item = {
-                        aid:attachid,
-                        path:PItem.data('path'),
-                        url:PItem.data("url")
-                    }
-                    self.storagedata.storage.items.push(item);
-                    self.storagedata.storage.aids.push(attachid);
-                }
-            }
-            let PickerEvent = function (selector){
-                let Ajaxwindow = $(selector);
-                Ajaxwindow.find(".category").on("click","a[gitem]",function (){
-                    let url = $(this).attr('href');
-                    self.get(url, function (Html){
-                        if(self.isJsonString(Html)){
-                            var obj = jQuery.parseJSON(Html);
-                            return self.report(obj);
-                        }
-                        Ajaxwindow.html(Html);
-                        PickerEvent(selector);
-                    },{inajax:1,ajaxhash:WindowId},'html')
-                    return false;
-                });
-                Ajaxwindow.find('.pagination').on("click","a",function (){
-                    let url = $(this).attr('href');
-                    if (url!=="" && url.indexOf("#")!==0 && url.indexOf("javascript:")!==0){
-                        self.get(url, function (Html){
-                            if(self.isJsonString(Html)){
-                                var obj = jQuery.parseJSON(Html);
-                                return self.report(obj);
-                            }
-                            Ajaxwindow.html(Html);
-                            PickerEvent(selector);
-                        },{inajax:1,ajaxhash:WindowId},'html')
-                    }
-                    return false;
-                });
-                Ajaxwindow.find('.attachments').on("click",".attach-item",function (){
-                    PickerItem($(this));
-                    return false;
-                });
-                let UploadBtn = Ajaxwindow.find(".attach-uploader");
-                layupload.render({
-                    elem: UploadBtn.get()[0],
-                    url:UploadBtn.data('url'),
-                    done:function (res){
-                        if(res.type!=='success'){
-                            UploadBtn.removeClass("uploading").addClass('uploaderr');
-                            return self.report(res);
-                        }
-                        let attach = res.message;
-                        let Html = '<div class="layui-col-md2 layui-xs-4 attach-item" data-aid="'+attach.id+'" data-path="'+attach.attachment+'" data-url="'+attach.cover+'">' +
-                            '<div class="attach-thumb" style="background-image: url('+attach.cover+')"></div>' +
-                            '<div title="'+attach.filename+'" class="attach-name text-center">'+attach.filename+'</div>' +
-                            '<div class="action attach-check">' +
-                            '    <span class="layui-icon layui-icon-circle"></span>\n' +
-                            '</div></div>';
-                        if (Ajaxwindow.find('.attachments').find('.attach-item').length>=18){
-                            Ajaxwindow.find('.attachments').find('.attach-item:last').remove();
-                        }
-                        Ajaxwindow.find('.attachments').prepend(Html);
-                        UploadBtn.removeClass("uploading");
-                    },
-                    before:function (){
-                        layui.element.progress('uploadprogress', '0%');
-                        UploadBtn.addClass("uploading").removeClass('uploaderr');
-                    },
-                    data:{
-                        token:Basetoken,
-                        inputname:"file",
-                        frompage:"picker"
-                    },
-                    headers:{
-                        "X-CSRF-TOKEN":Basetoken
-                    },
-                    accept:UploadBtn.data('url'),
-                    error:function (e){
-                        UploadBtn.removeClass("uploading");
-                        layer.msg("上传失败，请重试", {icon:2});
-                    },
-                    progress:function (n, elem, res, index){
-                        layui.element.progress('uploadprogress', n+'%');
-                    }
-                });
+            let self = this, uploadImage = PickerUrl.indexOf('type=1')!==-1;
+            const clipEvent = function (e){
+                self.pasteEvent(e, self.pickerUpload);
             }
             this.get(PickerUrl, function (Html){
                 if(self.isJsonString(Html)){
@@ -263,21 +207,27 @@ if(typeof Basetoken == 'undefined'){
                     shadeClose:true,
                     skin:'fui-layer filepicker',
                     success:function(layero, index){
-                        if(self.storagedata==null){
-                            self.storagedata = {};
+                        let {uploadInstance, UploadBtn, pickerUpload} = self.PickerEvent(WindowId, PickerUrl);
+                        self.pickerUpload = pickerUpload;
+                        if (uploadImage && UploadBtn){
+                            //图片上传，处理剪切板事件监听
+                            document.addEventListener('paste', clipEvent);
+                            layer.tips('支持 Ctrl+V 粘贴图片上传', UploadBtn, {
+                                tips: [1, '#4CAF50'],
+                                time: 3000
+                            });
                         }
-                        if (typeof(self.storagedata.storage)=='undefined'){
-                            self.storagedata.storage = {items:[],aids:[]};
-                        }
-                        PickerEvent("#"+WindowId);
                     },
                     btnAlign:"c",
                     btn:["确定","取消"],
-                    yes:function (){
-                        if (self.storagedata.storage.items.length>0){
+                    yes:function (index){
+                        if (self.storageData.items.length>0){
                             if (multi){
+                                if(typeof(CallBack)=='function'){
+                                    return CallBack(self.storageData.items, index);
+                                }
                                 let inputname = $(Elem).next().val();
-                                let items = self.storagedata.storage.items;
+                                let items = self.storageData.items;
                                 for(let i in items){
                                     let multiItem = '<div class="multi-item">\n' +
                                         '        <img src="'+items[i].url+'" class="img-responsive img-thumbnail">\n' +
@@ -287,27 +237,162 @@ if(typeof Basetoken == 'undefined'){
                                     $(Elem).parent().next().append(multiItem);
                                 }
                             }else {
-                                let item = self.storagedata.storage.items[0];
+                                let item = self.storageData.items[0];
+                                if(typeof(CallBack)=='function'){
+                                    return CallBack(item, index);
+                                }
                                 $(Elem).prev().find('input.layui-input').val(item.path);
                                 $(Elem).parent().next().find('img.img-responsive').attr("src", item.url).removeClass('nopic');
                             }
+                            if(typeof(onStoragePicker)=='function'){
+                                let res = multi ? self.storageData.items : self.storageData.items[0];
+                                onStoragePicker({
+                                    url: PickerUrl,
+                                    multi:multi,
+                                    data: res
+                                });
+                            }
                         }
-                        layer.close(layer.index);
+                        layer.close(index);
                     },
                     end:function (){
-                        self.storagedata.storage = {items:[],aids:[]};
+                        self.storageData = {items:[],aids:[]};
+                        if (uploadImage){
+                            //移出剪切板事件监听
+                            document.removeEventListener('paste', clipEvent);
+                        }
                     }
                 }
                 layer.open(params);
             },{inajax:1,ajaxhash:WindowId},'html',true);
             if (PickerTitle!=="图片选择器") return false;
         },
+        pickerUpload: {gid: 0, url: '', event: null},
+        PickerEvent(WindowId, PickerUrl=''){
+            let Ajaxwindow = $("#"+WindowId);
+            let self = this;
+            let PickerItem = function (PItem){
+                let attachId = PItem.data('aid');
+                if(PItem.hasClass("checked")){
+                    let index = self.storageData.aids.indexOf(attachId);
+                    PItem.removeClass("checked");
+                    if (index>=0){
+                        self.storageData.aids.splice(index, 1);
+                        self.storageData.items.splice(index, 1);
+                    }
+                }else{
+                    PItem.addClass("checked");
+                    let item = {
+                        aid:attachId,
+                        path:PItem.data('path'),
+                        url:PItem.data("url"),
+                        name:PItem.find(".attach-name").attr("title")
+                    }
+                    self.storageData.items.push(item);
+                    self.storageData.aids.push(attachId);
+                }
+            }
+            Ajaxwindow.find(".category").on("click","a[gitem]",function (){
+                let url = $(this).attr('href');
+                self.get(url, function (Html){
+                    if(self.isJsonString(Html)){
+                        var obj = jQuery.parseJSON(Html);
+                        return self.report(obj);
+                    }
+                    Ajaxwindow.html(Html);
+                    Core.PickerEvent(WindowId, PickerUrl);
+                },{inajax:1,ajaxhash:WindowId},'html')
+                return false;
+            });
+            Ajaxwindow.find('.pagination').on("click","a",function (){
+                let url = $(this).attr('href');
+                if (typeof(url)=="undefined" || url==="#" || url.indexOf("javascript:")===0){
+                    url = "";
+                }
+                if (url==="" && typeof($(this).attr('page'))!='undefined'){
+                    let page = $(this).attr('page');
+                    url = PickerUrl;
+                    url += (PickerUrl.indexOf("?")===-1 ? "?page=" : "&page=") + page;
+                }
+                if(url!==""){
+                    self.get(url, function (Html){
+                        if(self.isJsonString(Html)){
+                            var obj = jQuery.parseJSON(Html);
+                            return self.report(obj);
+                        }
+                        Ajaxwindow.html(Html);
+                        Core.PickerEvent(WindowId, PickerUrl);
+                    },{inajax:1,ajaxhash:WindowId},'html');
+                }
+                return false;
+            });
+            Ajaxwindow.find('.attachments').on("click",".attach-item",function (){
+                PickerItem($(this));
+                return false;
+            });
+            let UploadBtn = Ajaxwindow.find(".attach-uploader"), groupId = 0;
+            const uploadUrl = UploadBtn.data('url');
+            if(Ajaxwindow.find('.category .cate-item.active').length>0){
+                groupId = Ajaxwindow.find('.category .cate-item.active').attr('data-id') || 0;
+            }
+            const uploadDone = (res)=>{
+                if(res.type!=='success'){
+                    UploadBtn.removeClass("uploading").addClass('uploaderr');
+                    return self.report(res);
+                }
+                let attach = res.data;
+                let Html = '<div class="layui-col-md2 layui-xs-4 attach-item" data-aid="'+attach.id+'" data-path="'+attach.attachment+'" data-url="'+attach.cover+'">' +
+                    '<div class="attach-thumb" style="background-image: url('+attach.cover+')"></div>' +
+                    '<div title="'+attach.filename+'" class="attach-name text-center">'+attach.filename+'</div>' +
+                    '<div class="action attach-check">' +
+                    '    <span class="layui-icon layui-icon-circle"></span>\n' +
+                    '</div></div>';
+                if (Ajaxwindow.find('.attachments').find('.attach-item').length>=18){
+                    Ajaxwindow.find('.attachments').find('.attach-item:last').remove();
+                }
+                Ajaxwindow.find('.attachments').prepend(Html);
+                UploadBtn.removeClass("uploading");
+            }
+            let pickerUpload = {gid: groupId, url: uploadUrl, event: uploadDone};
+            let UploadOptions = {
+                elem: UploadBtn.get()[0],
+                url: uploadUrl,
+                done:uploadDone,
+                before:function (){
+                    layui.element.progress('uploadprogress', '0%');
+                    UploadBtn.addClass("uploading").removeClass('uploaderr');
+                },
+                data:{
+                    token:Basetoken,
+                    inputname:"file",
+                    frompage:"picker",
+                    gid:groupId
+                },
+                headers:{
+                    "X-CSRF-TOKEN":Basetoken
+                },
+                accept:UploadBtn.data('accept'),
+                error:function (e){
+                    UploadBtn.removeClass("uploading");
+                    layer.msg("上传失败，请重试", {icon:2});
+                },
+                progress:function (n, elem, res, index){
+                    layui.element.progress('uploadprogress', n+'%');
+                }
+            };
+            if(typeof(UploadBtn.attr("data-exts"))!='undefined' && UploadBtn.attr("data-exts")!==""){
+                UploadOptions.exts = UploadBtn.attr("data-exts");
+            }
+            const uploadInstance = layupload.render(UploadOptions);
+            self.pickerUpload = pickerUpload;
+            return {uploadInstance, UploadBtn, pickerUpload}
+        },
         MemberPicker(){
             let self = this;
             $('.member-picker').each(function (index,element) {
                 let Elem = $(element);
                 let PickerId = Elem.attr("data-pid");
-                let PickerUrl = self.url("serv/ucenter/picker");
+                let PickerUrl = self.url("server/ucenter/picker");
                 if(element.hasAttribute("data-url")){
                     PickerUrl = Elem.attr("data-url");
                 }
@@ -335,6 +420,13 @@ if(typeof Basetoken == 'undefined'){
                     Elem.find("input.layui-input").val(InputVal);
                     $("#"+PickerId+"-avatar").attr("src", Curdd.data('avatar'));
                     Elem.find(".layui-form-select").addClass("selected").removeClass("layui-form-selected");
+                    if(typeof(onMemberPick)=='function'){
+                        onMemberPick({
+                            uid:Curuid,
+                            nickname:InputVal,
+                            avatar:Curdd.data('avatar')
+                        });
+                    }
                 });
                 Elem.on("input", ".layui-input", function (e){
                     let Input = $(this);
@@ -359,6 +451,68 @@ if(typeof Basetoken == 'undefined'){
             }
             let img = $(Elem).prev();
             img.attr("src", img.data("val")).addClass("nopic").parent().prev().find('input.layui-input').val("");
+        },
+        pasteEvent: (e, params) => {
+            // 阻止事件默认行为
+            e.preventDefault();
+            // 获取剪贴板数据
+            const clipboardData = e.clipboardData || window.clipboardData;
+
+            if (!clipboardData) {
+                console.warn('无法访问剪贴板数据');
+                return;
+            }
+
+            // 检查剪贴板中是否有图片
+            const items = clipboardData.items;
+            let imageFile = null;
+
+            // 遍历剪贴板项目，寻找图片
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i];
+
+                // 检查是否是图片类型
+                if (item.type.indexOf('image') !== -1) {
+                    imageFile = item.getAsFile();
+                    break;
+                }
+            }
+
+            // 如果找到图片文件，则上传
+            if (imageFile) {
+                console.log('从剪贴板获取到图片:', imageFile, params);
+
+                // 创建FormData对象，用于上传
+                const formData = new FormData();
+                formData.append('file', imageFile, imageFile.name);
+                formData.append('inputname', 'file');
+                formData.append('frompage', 'picker');
+                formData.append('gid', params.gid||0);
+                formData.append('submit', 1);
+
+                let AjaxObj = {
+                    url: params.url,
+                    type: 'POST',
+                    dataType: 'json',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: params.event,
+                    fail: function (e) {
+                        console.log(e);
+                        layer.msg("上传失败，请重试", {icon:2});
+                    }
+                }
+                if (Basetoken !== '') {
+                    AjaxObj.headers = {
+                        'X-CSRF-TOKEN': Basetoken
+                    }
+                }
+                return jQuery.ajax(AjaxObj);
+
+            } else {
+                console.log('剪贴板中没有图片数据');
+            }
         }
     };
 })(window);

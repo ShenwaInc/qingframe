@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\Setting;
+use App\Models\CoreSettings;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -10,17 +10,17 @@ class SettingService{
 
     static function Load($key = '', $nocache=false) {
         global $_W;
-        $cachekey = CacheService::system_key('setting');
+        $cacheKey = CacheService::system_key('setting');
         if($nocache){
-            Cache::forget($cachekey);
+            Cache::forget($cacheKey);
             $settings = array();
         }else{
             //从缓存中读取
-            $settings = Cache::get($cachekey, array());
+            $settings = Cache::get($cacheKey, array());
         }
         if (empty($settings)) {
             //如果找不到缓存则从数据库中读取
-            $_settings = Setting::get()->keyBy('key');
+            $_settings = CoreSettings::get()->keyBy('key');
             if (!empty($_settings)) {
                 foreach ($_settings as $k => $v) {
                     $settings[$k] = $v['value'] ? unserialize($v['value']) : array();
@@ -28,13 +28,14 @@ class SettingService{
             }
             if (empty($key)){
                 //写入缓存
-                Cache::put($cachekey, $settings, 86400*7);
+                Cache::put($cacheKey, $settings, 86400*7);
             }
             unset($_settings);
         }
         $_W['setting'] = array_merge($settings, (array)$_W['setting']);
         if (!empty($key)) {
-            return array($key => $settings[$key]);
+            $key = is_array($key) ? $key : [$key];
+            return post_var($key, $settings);
         } else {
             return $settings;
         }
@@ -46,7 +47,7 @@ class SettingService{
         $cachekey = CacheService::system_key('unisetting', array('uniacid' => $uniacid));
         $unisetting = Cache::get($cachekey,array());
         if (empty($unisetting) || ($name == 'remote' && empty($unisetting['remote']))) {
-            $unisetting = Setting::getUni($uniacid);
+            $unisetting = CoreSettings::getUni($uniacid);
             if (!empty($unisetting)) {
                 $serialize = array('site_info', 'stat', 'oauth', 'passport', 'notify',
                     'creditnames', 'default_message', 'creditbehaviors', 'payment',
@@ -106,8 +107,8 @@ class SettingService{
                 array('value'=>serialize($data))
             );
         }
-        $cachekey = CacheService::system_key('setting');
-        Cache::forget($cachekey);
-        return $return;
+        $cacheKey = CacheService::system_key('setting');
+        Cache::forget($cacheKey);
+        return $return??false;
     }
 }

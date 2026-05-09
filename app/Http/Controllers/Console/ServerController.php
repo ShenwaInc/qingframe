@@ -3,9 +3,13 @@
 namespace App\Http\Controllers\Console;
 
 use App\Http\Controllers\Controller;
+use App\Models\SystemLogs;
 use App\Services\AccountService;
+use App\Services\CloudService;
+use App\Services\FileService;
 use App\Services\MSService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 
 class ServerController extends Controller
 {
@@ -13,9 +17,9 @@ class ServerController extends Controller
     public function HttpRequest($server,$segment1='',$segment2=""){
         global $_W, $_GPC;
         $_W['server'] = trim($server);
-        $_W['inserver'] = true;
+        $_W['inService'] = true;
         $_W['basescript'] = "server";
-        if (!function_exists('tpl_compile')){
+        if (!function_exists('tpl_compile') && defined("IN_SYS")){
             include_once app_path("Helpers/smarty.php");
         }
         $service = serv($_W['server']);
@@ -43,10 +47,13 @@ class ServerController extends Controller
         if (is_error($data)){
             return $this->message($data['message']);
         }
+        if (!is_array($data)){
+            return $data;
+        }
         if (isset($data['message']) && isset($data['type'])){
             return $this->message($data["message"], $data['redirect'], $data['type']);
         }
-        return $this->globalview("server.".str_replace("/",".", $ctrl),$data);
+        return $this->globalView("server.".str_replace("/",".", $ctrl),$data);
     }
 
     public function checkout($refresh=''){
@@ -65,83 +72,238 @@ class ServerController extends Controller
             'uniacid'=>intval($_W['uniacid']),
             'platforms'=>AccountService::OwnerAccounts(array(), -1, true)
         );
-        return $this->globalview("console.server.platform",$data);
+        return $this->globalView("console.server.platform",$data);
+    }
+
+    public function TerminalError($message){
+        MSService::TerminalSend(["mode"=>"err", "message"=>$message], true);
+        return $this->message($message);
+    }
+
+    public function upload(Request $request)
+    {
+        if (!$request->hasFile('file')) return $this->message('attachFileInvalid');
+        $Upload = $request->file('file');
+        $ext = $Upload->getClientOriginalExtension();
+        if ($ext != 'zip'){
+            return $this->message('attachExtInvalid');
+        }
+        $path = "files/0/".date('Y/m');
+        $dirname = "server" . random(10);
+        $filePath = $Upload->storeAs($path, $dirname . ".zip");
+        if (!$filePath){
+            return $this->message('uploadFailed');
+        }
+        $fileRoot = storage_path('app/public/'.$filePath);
+        $patchPath = storage_path('patch/packages/' . $dirname);
+        if (!is_dir($patchPath)){
+            FileService::mkdirs($patchPath);
+        }
+        $zip = new \ZipArchive();
+        $openRes = $zip->open($fileRoot);
+        if ($openRes === TRUE) {
+            $zip->extractTo($patchPath);
+            $zip->close();
+            //删除安装包
+            @unlink($fileRoot);
+        }else{
+            @unlink($fileRoot);
+            FileService::rmdirs($patchPath);
+            return error(-1,'安装包解压失败，请重试');
+        }
+        $manifests = FileService::file_tree($patchPath, array('*/manifest.json'));
+        if (empty($manifests)){
+            FileService::rmdirs($patchPath);
+            return $this->message('安装包解析失败');
+        }
+        $complete = false;
+        try {
+            $MSS = new MSService();
+            foreach ($manifests as $manifest){
+                $serverPath = dirname($manifest);
+                $JSON = file_get_contents($manifest);
+                $service = json_decode($JSON, true);
+                if (empty($service) || empty($service['application']) || empty($service['application']['identity'])){
+                    continue;
+                }
+                $identity = trim($service['application']['identity']);
+                $targetPath = MICRO_SERVER.$identity;
+                if (CloudService::CloudPatch($targetPath . '/', $serverPath . '/', true)){
+                    $res = $MSS->install($identity);
+                    if (!is_error($res)){
+                        $complete = true;
+                    }
+                }
+            }
+            FileService::rmdirs($patchPath);
+            if($complete){
+                return $this->message("installSuccessfully", wurl("server"), "success");
+            }
+        }catch (\Exception $exception){
+            FileService::rmdirs($patchPath);
+        }
+        return $this->message(__('installFailed', ['reason'=>$res['message']??'无可用的安装包']));
     }
 
     public function index(Request $request){
-        $op = $request->get("op","index");
-        $identity = $request->get("nid", "");
-        $return = array("title"=>"微服务管理", "op"=>$op);
+        global $_W;
+        if (empty($_W['config']['site']['id'])){
+            return redirect("console/active");
+        }
+        $_W['inSetting'] = true;
+        $startTime = time();
+        $op = $request->input("op","index");
+        $identity = $request->input("nid", "");
+        $return = array("title"=>__('服务管理'), "op"=>$op);
         $MSS = new MSService();
         switch ($op){
             case "stop" : {
-                $return['title'] .= " - 已停用";
+                $return['title'] .= " - ". __('已停用');
                 $return['servers'] = MSService::InitService(0);
                 break;
             }
             case "local" : {
-                $return['title'] .= " - 未安装";
+                $return['title'] .= " - ". __('moreServices');
                 $return['servers'] = MSService::getlocal();
-                $cloudservers = MSService::cloudservers();
-                if (!empty($cloudservers)){
-                    $return['servers'] = array_merge($return['servers'], $cloudservers);
+                $cloudServers = MSService::cloudServers();
+                if (!empty($cloudServers)){
+                    $return['servers'] = array_merge($cloudServers, $return['servers']);
                 }
+                $return['needServer'] = $request->input('need', '');
                 break;
+            }
+            case "repair" : {
+                try {
+                    Artisan::call('self:repair');
+                    SystemLogs::userOperation('修复系统服务', 'server:repair', '系统服务修复');
+                }catch (\Exception $exception){
+                    SystemLogs::systemRunning(
+                        '修复系统服务异常',
+                        'server:repair',
+                        "修复系统服务过程中发生异常：{$exception->getMessage()}",
+                        false,
+                        [
+                            'exception_file' => $exception->getFile(),
+                            'exception_line' => $exception->getLine(),
+                            'exception_code' => $exception->getCode(),
+                            'exception_trace' => $exception->getTrace()
+                        ]
+                    );
+                    return $this->message($exception->getMessage());
+                }
+                return $this->message("successful", wurl("server"), "success");
             }
             case "install" : {
                 $res = $MSS->install($identity);
-                if (is_error($res)){
-                    return $this->message($res['message']);
+                $status = !is_error($res);
+                SystemLogs::userOperation('安装微服务', 'server:install', "服务：{$identity}", $status, ['identity' => $identity]);
+                if (!$status){
+                    return $this->TerminalError($res['message']);
                 }
-                return $this->message("安装成功", wurl("server"), "success");
+                $stopTime = time();
+                $MSS->TerminalSend(["mode"=>"success", "message"=>"安装成功！总耗时".($stopTime-$startTime)."秒"], true);
+                return $this->message("installSuccessfully", wurl("server"), "success");
             }
             case "uninstall" :{
                 $res = $MSS->uninstall($identity);
-                if (is_error($res)){
-                    return $this->message($res['message']);
+                $status = !is_error($res);
+                SystemLogs::userOperation('卸载微服务', 'server:uninstall', "服务：{$identity}", $status, ['identity' => $identity]);
+                if (!$status){
+                    return $this->TerminalError($res['message']);
                 }
-                return $this->message('服务已卸载完成',wurl("server"),'success');
+                $MSS->TerminalSend(["mode"=>"success", "message"=>"服务卸载完成！"], true);
+                return $this->message('uninstallComplete',wurl("server"),'success');
+            }
+            case "composer" : {
+                $composer = MICRO_SERVER.$identity."/composer.json";
+                if (!file_exists($composer)){
+                    $MSS->TerminalSend(["mode"=>"success", "message"=>"安装成功！"], true);
+                    return $this->message("installSuccessfully", wurl("server"), "success");
+                }
+                $MSS::TerminalSend(["mode"=>"info", "message"=>"即将安装Composer依赖【microserver/{$identity}】"]);
+                $res = $MSS::ComposerRequire(MICRO_SERVER.$identity."/", "microserver/".$identity);
+                if (is_error($res)){
+                    return $this->TerminalError($res['message']);
+                }
+                if (!$res){
+                    $requireName = "microserver/".$identity;
+                    $WorkingDirectory = base_path()."/";
+                    if (DEVELOPMENT){
+                        $WorkingDirectory = str_replace("\\", "/", MICRO_SERVER.$identity."/");
+                    }
+                    $composerErr = MICRO_SERVER.$identity."/composer.error";
+                    if (!file_exists($composerErr)){
+                        $composerErr = "";
+                    }
+                    $composerNext = __('installVendorNext');
+                    $MSS::ComposerPage(array(
+                        'composerVer'=>"",
+                        'composerErr'=>$composerErr,
+                        'WorkingDirectory'=>$WorkingDirectory,
+                        'requireName'=>$requireName,
+                        'composerNext'=>$composerNext
+                    ));
+                }
+                @unlink(MICRO_SERVER.$identity."/composer.error");
+                $MSS->TerminalSend(["mode"=>"success", "message"=>"Composer安装完成"], true);
+                return $this->message("installSuccessfully", wurl("server"), "success");
             }
             case "disable" : {
-                if (MSService::disable($identity)){
-                    return $this->message('操作成功',wurl("server"),'success');
+                $result = MSService::disable($identity);
+                SystemLogs::userOperation('停用微服务', 'server:disable', "服务：{$identity}", $result, ['identity' => $identity]);
+                if ($result){
+                    return $this->success('successful',wurl("server"));
                 }
                 return $this->message();
             }
             case "upgrade" : {
                 $res = $MSS->upgrade($identity);
-                if (is_error($res)){
-                    return $this->message($res['message']);
+                $status = !is_error($res);
+                SystemLogs::userOperation('升级微服务', 'server:upgrade', "服务：{$identity}", $status, ['identity' => $identity]);
+                if (!$status){
+                    return $this->TerminalError($res['message']);
                 }
-                return $this->message("升级成功", wurl("server"), "success");
+                $stopTime = time();
+                $MSS->TerminalSend(["mode"=>"success", "message"=>"升级成功！总耗时".($stopTime-$startTime)."秒"], true);
+                return $this->message("upgradeSuccessfully", wurl("server"), "success");
             }
             case "cloudup" : {
                 $res = $MSS->cloudUpdate($identity);
-                if (is_error($res)){
-                    return $this->message($res['message']);
+                $status = !is_error($res);
+                SystemLogs::userOperation('升级微服务', 'server:cloudup', "服务：{$identity}（云端升级）", $status, ['identity' => $identity]);
+                if (!$status){
+                    return $this->TerminalError($res['message']);
                 }
-                return $this->message("升级成功", wurl("server"), "success");
+                $stopTime = time();
+                $MSS->TerminalSend(["mode"=>"success", "message"=>"升级成功！总耗时".($stopTime-$startTime)."秒"], true);
+                return $this->message("upgradeSuccessfully", wurl("server"), "success");
             }
-            case "cloudinst" : {
+            case "cloudInstall" : {
                 $res = $MSS->cloudInstall($identity);
-                if (is_error($res)){
-                    return $this->message($res['message']);
+                $status = !is_error($res);
+                SystemLogs::userOperation('安装微服务', 'server:cloudInstall', "服务：{$identity}（云端安装）", $status, ['identity' => $identity]);
+                if (!$status){
+                    return $this->TerminalError($res['message']);
                 }
-                return $this->message("安装成功", wurl("server"), "success");
+                $stopTime = time();
+                $MSS->TerminalSend(["mode"=>"success", "message"=>"安装成功！总耗时".($stopTime-$startTime)."秒"], true);
+                return $this->message("installSuccessfully", wurl("server"), "success");
             }
             case "restore" : {
-                if (MSService::restore($identity)){
-                    return $this->message('操作成功',wurl("server", array('op'=>'stop')),'success');
+                $result = MSService::restore($identity);
+                SystemLogs::userOperation('恢复微服务', 'server:restore', "服务：{$identity}", $result, ['identity' => $identity]);
+                if ($result){
+                    return $this->message('successful',wurl("server", array('op'=>'stop')),'success');
                 }
                 return $this->message();
             }
             case "cloudChk" : {
-                $cloudServer = $MSS->cloudserver($identity);
+                $cloudServer = $MSS->cloudServer($identity, true);
                 if (!is_error($cloudServer)){
                     $service = $MSS::getone($identity);
                     $release = $cloudServer['release'];
                     if (version_compare($release['version'], $service['version'], '>') || $release['releasedate']>$service['releases']){
-                        return '<a class="layui-btn layui-btn-sm layui-btn-danger confirm" data-text="升级前请做好数据备份" lay-tips="该服务可升级至V'.$release['version'].'Release'.$release['releasedate'].'" href="'.wurl('server', array('op'=>'cloudup', 'nid'=>$service['identity'])).'">升级</a>';
+                        return $this->message(['release'=>$release], "", "success");
                     }
                 }
                 return $this->message();
@@ -151,21 +313,31 @@ class ServerController extends Controller
                 $return['servers'] = MSService::InitService();
             }
         }
-        return $this->globalview("console.server", $return);
+        $swaSocket = serv('websocket');
+        global $_W;
+        $return['socket'] = [
+            'server'=>"wss://socket.whotalk.com.cn/wss",
+            'userSign'=>md5($_W['config']['setting']['authkey'].":terminal:{$_W['uid']}"),
+            'userId'=>$_W['uid']
+        ];
+        if ($swaSocket->enabled){
+            $return['socket']['server'] = $swaSocket->settings['server'];
+        }
+        $return['activeState'] = CloudService::CloudActive(true);
+        return $this->globalView("console.server", $return);
     }
 
     public function Methods($server=""){
         $server = serv($server);
         $methods = $server->getMethods();
-        if (is_error($methods)) message($methods['message'],"","error");
+        if (is_error($methods)) return $this->message($methods['message'],"","error");
         if (!empty($methods['wiki']) && count($methods)==1){
-            header("location:{$methods['wiki']}");
-            exit();
+            return redirect($methods['wiki']);
         }
         $wiki = $methods['wiki'];
         unset($methods['wiki']);
         $service = $server->service;
-        return $this->globalview("console.server.method", array(
+        return $this->globalView("console.server.method", array(
             'title'=>$service['name'],
             'service'=>$service,
             'classname' => ucfirst($service['identity']),
@@ -179,13 +351,12 @@ class ServerController extends Controller
         $apis = $service->getApis();
         if(empty($apis['schemas'])){
             if (!empty($apis['wiki'])){
-                header("location:{$apis['wiki']}");
-                exit();
+                return redirect($apis['wiki']);
             }else{
-                message("该服务未提供任何接口");
+                return $this->message("serviceWithoutApis");
             }
         }
-        return $this->globalview("console.server.api", array(
+        return $this->globalView("console.server.api", array(
             'title'=>$service->service['name'],
             'schemas'=>$apis['schemas']
         ));

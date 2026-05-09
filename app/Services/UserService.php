@@ -2,8 +2,9 @@
 
 namespace App\Services;
 
-use App\Models\UniAccountUser;
+use App\Models\UniAccountUsers;
 use App\User;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 
@@ -119,22 +120,10 @@ class UserService
                 pdo_delete('users_founder_own_users', array('founder_uid' => $founder_own_user_info['founder_uid'], 'uid' => $founder_own_user_info['uid']));
             }
         }
-        if($record['type'] == 3) {
-            $clerk = pdo_get('activity_clerks', array('uid' => $record['uid']));
-            if(!empty($clerk)) {
-                $record['name'] = $clerk['name'];
-                $record['clerk_id'] = $clerk['id'];
-                $record['store_id'] = $clerk['storeid'];
-                $record['store_name'] = pdo_fetchcolumn('SELECT business_name FROM ' . tablename('activity_stores') . ' WHERE id = :id', array(':id' => $clerk['storeid']));
-                $record['clerk_type'] = '3';
-                $record['uniacid'] = $clerk['uniacid'];
-            }
-        } else {
-            $record['name'] = $record['username'];
-            $record['clerk_id'] = $user['uid'];
-            $record['store_id'] = 0;
-            $record['clerk_type'] = '2';
-        }
+        $record['name'] = $record['username'];
+        $record['clerk_id'] = $user['uid'];
+        $record['store_id'] = 0;
+        $record['clerk_type'] = '2';
         $third_info = pdo_getall('users_bind', array('uid' => $record['uid']), array(), 'third_type');
         if (!empty($third_info) && is_array($third_info)) {
             $record['qq_openid'] = $third_info[1]['bind_sign'];
@@ -207,7 +196,7 @@ class UserService
         }
 
         if (!empty($uniacid)) {
-            $role = (string)UniAccountUser::where(array('uid' => $uid, 'uniacid' => $uniacid))->value('role');
+            $role = (string)UniAccountUsers::where(array('uid' => $uid, 'uniacid' => $uniacid))->value('role');
             if (in_array($role, array('owner','vice_founder','manager','operator','clerk'))){
                 return $role;
             }
@@ -217,7 +206,7 @@ class UserService
                 return 'vice_founder';
             }
 
-            $roles = UniAccountUser::where(array('uid' => $uid))->get(['role'])->toArray();;
+            $roles = UniAccountUsers::where(array('uid' => $uid))->get(['role'])->toArray();;
             $roles = array_keys($roles);
             if (in_array('vice_founder', $roles)) {
                 $role = 'vice_founder';
@@ -238,6 +227,76 @@ class UserService
             ['uniacid' => $uniacid, 'uid' => $uid],
             ['role'=>trim($role)]
         );
+    }
+
+    static function AccountPermission($uniacid, $uid=0, $cache=true){
+        global $_W;
+        if (empty($uid)){
+            $uid = $_W['uid'];
+        }
+        $cacheKey = "uni_account_permission_" . $uniacid . "_" . $uid;
+        if ($cache){
+            $data = Cache::get($cacheKey);
+            if (!empty($data)) return $data;
+        }
+        $modules = $servers = [];
+        //读取可用服务
+        $serverList = pdo_getall("microserver_unilink", array('status'=>1));
+        if (!empty($serverList)){
+            foreach ($serverList as $key=>$server){
+                $service = serv($server['name'], $uniacid);
+                if (!$service->enabled){
+                    unset($servers[$key]);
+                    continue;
+                }
+                $server['entrance'] = $service->url($server['entry']);
+                $servers[$server['name']] = $server;
+            }
+        }
+
+        //读取可用模块
+        $components = AccountService::ExtraModules($uniacid);
+        if (empty($components) && !empty($_W['config']['defaultModule'])){
+            $defaultModule = pdo_get("modules", array('name'=>$_W['config']['defaultModule']));
+            if (!empty($defaultModule)){
+                $modules = [['name'=>$defaultModule['title'],'identity'=>$defaultModule['name'],'logo'=>$defaultModule['logo'],'application_type'=>$defaultModule['application_type']]];
+                DB::table('uni_account_extra_modules')->updateOrInsert(array('uniacid'=>$uniacid), array('modules'=>serialize($components)));
+            }
+        }else{
+            foreach ($components as $component){
+                //判断模块是否可用
+                $module = ModuleService::fetch($component['identity']);
+                if (empty($module)) continue;
+                $component['logo'] = tomedia($component['logo']);
+                $component['application_type'] = $module['application_type'];
+                $modules[$component['identity']] = $component;
+            }
+        }
+        //判断当前用户模块权限（操作员/管理员）
+        $role = UserService::AccountRole($uid, $uniacid);
+        if (in_array($role, ['manager', 'operator'])){
+            //获取权限
+            $permission = DB::table('users_permission')->where(['uid'=>$uid, 'uniacid'=>$uniacid])->value('permission');
+            //为空默认有全部权限(未设置过权限)
+            if(!empty($permission)){
+                $permission=unserialize($permission);
+                foreach ($modules as $key => $value){
+                    //没有权限，移除本应用模块
+                    if(!isset($permission['modules'][$key])){
+                        unset($modules[$key]);
+                    }
+                }
+                foreach ($servers as $key => $value){
+                    //没有权限，移除本服务
+                    if(!isset($permission['servers'][$key])){
+                        unset($servers[$key]);
+                    }
+                }
+            }
+        }
+
+        Cache::forever($cacheKey, array($modules, $servers, $role));
+        return array($modules, $servers, $role);
     }
 
 }

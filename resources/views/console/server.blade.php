@@ -1,34 +1,49 @@
 @include('common.header')
 <div class="layui-fluid">
     <div class="main-content fui-content">
-        <h2>站点设置</h2>
+        <h2>@lang('系统管理')</h2>
         <div class="layui-tab fui-tab margin-bottom-xl">
             <ul class="layui-tab-title title_tab">
                 <li>
-                    <a href="{{ url('console/setting') }}">站点信息</a>
+                    <a href="{{ wurl('setting') }}">@lang('站点信息')</a>
                 </li>
                 <li class="layui-this">
-                    <a href="{{ url('console/server') }}">服务管理</a>
+                    <a href="{{ wurl('server') }}">@lang('服务管理')</a>
                 </li>
                 <li>
-                    <a href="{{ url('console/setting/plugin') }}">应用管理</a>
+                    <a href="{{ wurl('module') }}">@lang('applications')</a>
+                </li>
+                <li>
+                    <a href="{{ wurl('logs') }}">@lang('日志管理')</a>
                 </li>
             </ul>
         </div>
 
+        @if(empty($activeState['hasDomain']))
+            <div class="layui-elem-quote margin-bottom-xl" style="border-color: #FF5722; background-color: #fadbd9;">
+                <p class="text-red">{!! __('domainNotify', ['domain'=>$_SERVER['HTTP_HOST']]) !!}&nbsp;&nbsp;<a href="{{ wurl('active') }}" class="text-blue">@lang('重置云服务')</a></p>
+            </div>
+        @endif
+
         <div class="fui-card layui-card">
             <div class="layui-card-header nobd">
+                <div class="fr">
+                    <a href="{{ wurl('server', ['op'=>'repair']) }}" class="layui-btn layui-btn-sm layui-btn-danger js-terminal" data-text="@lang('只有服务出现不可用的情况才需要使用此功能')">@lang('自动修复')</a>
+                    @if(DEVELOPMENT)
+                        <button class="layui-btn layui-btn-sm layui-btn-normal js-upload">@lang('本地安装')</button>
+                    @endif
+                </div>
                 <span class="title">{{ $title }}</span>
                 <div class="layui-tab fui-tab">
                     <ul class="layui-tab-title title_tab">
                         <li @if($op=='index')  class="layui-this" @endif>
-                            <a href="{{ wurl('server') }}">已安装</a>
+                            <a href="{{ wurl('server') }}">@lang('installed')</a>
                         </li>
                         <li @if($op=='stop')  class="layui-this" @endif>
-                            <a href="{{ wurl('server', array("op"=>"stop")) }}">已停用</a>
+                            <a href="{{ wurl('server', array("op"=>"stop")) }}">@lang('已停用')</a>
                         </li>
                         <li @if($op=='local')  class="layui-this" @endif>
-                            <a href="{{ wurl('server', array("op"=>"local")) }}">未安装</a>
+                            <a href="{{ wurl('server', array("op"=>"local")) }}">@lang('moreServices')</a>
                         </li>
                     </ul>
                 </div>
@@ -37,45 +52,44 @@
                 <table class="layui-table" lay-skin="nob" lay-even>
                     <thead>
                     <tr>
-                        <th>服务名称</th>
-                        <th class="layui-hide-xs">版本号</th>
-                        <th class="layui-hide-xs">简介</th>
-                        <th class="text-right">操作</th>
+                        <th>@lang('service')</th>
+                        <th class="layui-hide-xs">@lang('version')</th>
+                        <th class="layui-hide-xs">@lang('description')</th>
+                        <th class="text-right">@lang('action')</th>
                     </tr>
                     </thead>
                     <tbody>
                     @foreach($servers as $key=>$service)
-                    <tr class="{{ $service['islocal'] ? 'localServer' : '' }}" data-id="{{ $service['identity'] }}">
+                    <tr>
                         <td>
-                            <img class="layui-avatar" src="{{ tomedia($service['cover']) }}" height="36" />
-                            @if($op=='index' && !empty($service['entry']))
-                            <a href="{{ $service['entry'] }}" class="color-default">{{ $service['name'] }}</a>
-                            @else
-                            <span class="color-default">{{ $service['name'] }}</span>
-                            @endif
-                            @if($service['isdelete'])
-                            &nbsp;<span class="layui-badge layui-bg-cyan">已删除</span>
-                            @endif
+                            <div class="text-cut" style="max-width: 40vw;">
+                                <img alt="@lang($service['name'])" class="layui-avatar" src="{{ globalMedia($service['cover']) }}?v={{ QingRelease }}" height="36" />
+                                @if($op=='index' && !empty($service['entry']))
+                                    <a href="{{ $service['entry'] }}" target="_blank" class="color-default">@lang($service['name'])</a>
+                                @else
+                                    <span class="color-default">{{ $service['name'] }}</span>
+                                @endif
+                                <span id="update{{ $service['identity'] }}" class="layui-badge-dot{{ empty($service['upgrade']) ? ' layui-hide' : '' }}" lay-tips="@lang('发现新版本')"></span>
+                                @if($service['isdelete'])
+                                    &nbsp;<span class="layui-badge layui-bg-cyan">@lang('deleted')</span>
+                                @endif
+                            </div>
                         </td>
-                        <td class="layui-hide-xs js-version">
+                        <td class="layui-hide-xs">
                             V{{ $service['version'] }}
-                            <span class="layui-badge layui-bg-red{{ empty($service['upgrade']) ? ' layui-hide' : '' }}">发现新版本</span>
                         </td>
-                        <td class="layui-hide-xs">{{ $service['summary'] }}</td>
+                        <td class="layui-hide-xs">@lang($service['summary'])</td>
                         <td class="text-right">
                             @if(empty($service['binded']))
                             <div class="layui-btn-group text-center">
                                 {!! $service['actions'] !!}
                                 @if($op!="local")
                                     @if($service['status']==1)
-                                        <a class="layui-btn layui-btn-sm layui-btn-warm confirm" data-text="确定要停止使用该服务？" href="{{ wurl('server', array("op"=>"disable", "nid"=>$service['identity'])) }}">停用</a>
+                                        <a class="layui-btn layui-btn-sm layui-btn-warm confirm" data-text="@lang('disableConfirm')" href="{{ wurl('server', array("op"=>"disable", "nid"=>$service['identity'])) }}">@lang('disable')</a>
                                     @else
-                                        <a class="layui-btn layui-btn-sm layui-btn-normal confirm" data-text="确定要恢复该服务？" href="{{ wurl('server', array("op"=>"restore", "nid"=>$service['identity'])) }}">恢复</a>
+                                        <a class="layui-btn layui-btn-sm layui-btn-normal confirm" data-text="@lang('restoreConfirm')" href="{{ wurl('server', array("op"=>"restore", "nid"=>$service['identity'])) }}">@lang('restore')</a>
                                     @endif
-                                    @if(!empty($service['upgrade']['canup']))
-                                    <a class="layui-btn layui-btn-sm layui-btn-danger confirm js-upgrade" data-text="升级前请做好数据备份" lay-tips="该服务可升级至V{{ $service['upgrade']['version'] }}版本" href="{{ wurl('server', array("op"=>"upgrade", "nid"=>$service['identity'])) }}">升级</a>
-                                    @endif
-                                    <a class="layui-btn layui-btn-sm layui-btn-primary confirm js-uninstall" data-text="卸载后该服务相关的数据可能会被删除且不能恢复，是否确定要卸载？" href="{{ wurl('server', array("op"=>"uninstall", "nid"=>$service['identity'])) }}">卸载</a>
+                                    <a class="layui-btn layui-btn-sm layui-btn-primary js-uninstall js-terminal" data-text="@lang('uninstallConfirm')" href="{{ wurl('server', array("op"=>"uninstall", "nid"=>$service['identity'])) }}">@lang('uninstall')</a>
                                 @endif
                             </div>
                             @endif
@@ -83,7 +97,7 @@
                     </tr>
                     @endforeach
                     @if(empty($servers))
-                    <tr><td colspan="4" class="text-muted text-center">暂无数据</td></tr>
+                    <tr><td colspan="4" class="text-muted text-center">@lang('empty')</td></tr>
                     @endif
                     </tbody>
                 </table>
@@ -92,29 +106,49 @@
 
     </div>
 </div>
-@if($op=='index')
+@include('console.terminal')
 <script type="text/javascript">
     $(function (){
-        $('.localServer').each(function (index, element) {
+        @if($op=='index' && !empty($activeState['hasDomain']))
+        $('.js-upgrade').each(function (index, element) {
             let Elem = $(element);
-            let identity = Elem.attr('data-id');
-            if (Elem.find('.js-upgrade').length<=0){
-                Core.get('console/server', function (Html){
-                    if(Core.isJsonString(Html)){
-                        console.log(JSON.parse(Html));
-                        return false;
-                    }
-                    if(Html!==''){
-                        Elem.find('.js-uninstall').before(Html);
-                        Elem.find('.js-version .layui-badge').removeClass('layui-hide');
-                    }
-                }, {
-                    nid:identity,
-                    op:'cloudChk'
-                },'html');
+            let identity = Elem.attr('data-nid');
+            Core.get('console/server', function (res){
+                if(res.type==='success'){
+                    let tips = "{{ __('upgradeTo', array('data'=>__('service'))) }}V" + res.data.release.version + "Release" + res.data.release.releasedate;
+                    Elem.removeClass('layui-hide').attr('lay-tips', tips);
+                    $('#update' + identity).removeClass('layui-hide');
+                }
+            }, {
+                nid:identity,
+                op:'cloudChk'
+            });
+        });
+        @endif
+        @if(!empty($needServer))
+        const serverId = "#install_{{ $needServer }}";
+        layer.tips('@lang("需要安装该服务")', serverId, {
+            tips: [1, '#ff5722']
+        });
+        @endif
+    })
+    function UploadRender(upload) {
+        upload.render({
+            elem: '.js-upload',
+            url: '{!! wurl('server/upload') !!}',
+            data: {
+                _token: '{{ csrf_token() }}'
+            },
+            accept: 'file',
+            acceptMime: 'application/zip',
+            exts: 'zip',
+            done: function(res, index, upload){
+                layer.msg(res.message, {icon: res.type === 'success' ? 1 : 2, skin: 'fui-layer'});
+                if(res.type === 'success'){
+                    window.location.href = '{!! wurl('server') !!}';
+                }
             }
         });
-    })
+    }
 </script>
-@endif
 @include('common.footer')

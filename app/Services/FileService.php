@@ -7,54 +7,106 @@ namespace App\Services;
 use App\Utils\Image;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Storage;
 
 class FileService
 {
 
-    public static function SetAttachUrl() {
+    public static function SetAttachUrl($uniacid=null) {
         global $_W;
+        $uniacid = $uniacid===null ? $_W['uniacid'] : intval($uniacid);
         if(empty($_W['setting']['remote_complete_info'])){
             $_W['setting']['remote_complete_info'] = $_W['setting']['remote'];
         }
-        if (!empty($_W['uniacid'])) {
-            $uni_remote_setting = SettingService::uni_load('remote');
-            if (!empty($uni_remote_setting['remote']['type'])) {
-                $_W['setting']['remote'] = $uni_remote_setting['remote'];
+        $storage = serv('storage', intval($uniacid));
+        if ($storage->enabled){
+            $_W['setting']['remote'] = $storage->settings['remote'];
+            if ($storage->uniacid==0){
+                $_W['setting']['remote_complete_info'] = $_W['setting']['remote'];
             }
         }
-        $attach_url = $_W['attachurl_local'] = $_W['siteroot'] . $_W['config']['upload']['attachdir'] . '/';
+        $attach_url = $_W['siteroot'] . $_W['config']['upload']['attachdir'] . '/';
         if (!empty($_W['setting']['remote']['type'])) {
-            if ($_W['setting']['remote']['type'] == 1) {
-                $attach_url = $_W['attachurl_remote'] = $_W['setting']['remote']['ftp']['url'] . '/';
-            } elseif ($_W['setting']['remote']['type'] == 2) {
-                $attach_url = $_W['attachurl_remote'] = $_W['setting']['remote']['alioss']['url'] . '/';
-            } elseif ($_W['setting']['remote']['type'] == 3) {
-                $attach_url = $_W['attachurl_remote'] = $_W['setting']['remote']['qiniu']['url'] . '/';
-            } elseif ($_W['setting']['remote']['type'] == 4) {
-                $attach_url = $_W['attachurl_remote'] = $_W['setting']['remote']['cos']['url'] . '/';
+            $attach_url = self::getRemoteUrl($_W['setting']['remote']);
+            $_W['attachurl_remote'] = $attach_url;
+        }
+        $_W['attachurl_global_remote'] = '';
+        if ($uniacid===0){
+            $_W['attachurl_global'] = $attach_url;
+            if (!empty($_W['setting']['remote']['type'])){
+                $_W['attachurl_global_remote'] = $attach_url;
             }
         }
         return $attach_url;
     }
 
-    public static function file_write($filename, $data) {
-        global $_W;
-        $filename = ATTACHMENT_ROOT . '/' . $filename;
-        self::mkdirs(dirname($filename));
-        file_put_contents($filename, $data);
-        @chmod($filename, $_W['config']['setting']['filemode']);
-
-        return is_file($filename);
+    public static function getRemoteUrl($remoteSet){
+        switch ($remoteSet['type']) {
+            case 1:
+                $attach_url = $remoteSet['ftp']['url'] . '/';
+                break;
+            case 2:
+                $attach_url = $remoteSet['alioss']['url'] . '/';
+                break;
+            case 3:
+                $attach_url = $remoteSet['qiniu']['url'] . '/';
+                break;
+            case 4:
+                $attach_url = $remoteSet['cos']['url'] . '/';
+                break;
+            default:
+                //aws
+                Config::set('filesystems.default', 's3');
+                $attach_url = config('filesystems.disks.s3.url') . '/';
+        }
+        return $attach_url;
     }
 
-    function file_read($filename) {
-        $filename = ATTACHMENT_ROOT . '/' . $filename;
-        if (!is_file($filename)) {
-            return false;
-        }
+    public static function file_write($filename, $data) {
+        $uri = ATTACHMENT_ROOT . '/' . $filename;
+        $path = dirname($uri);
+        self::mkdirs($path);
+        Storage::put($filename, $data);
+        return is_file($uri);
+    }
 
-        return file_get_contents($filename);
+    public static function file_download($url, $savePath='', $timeout=60){
+        global $_W;
+        if (\Str::startsWith($url, "//")){
+            $url = $_W['sitescheme'] . substr($url, 2);
+        }
+        if(function_exists('curl_init')) {
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_VERBOSE, 1);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($ch, CURLOPT_AUTOREFERER, false);
+            curl_setopt($ch, CURLOPT_REFERER, $_W['siteurl']);
+            curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+            curl_setopt($ch, CURLOPT_HEADER, 0);
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
+            $fileContent = curl_exec($ch);
+            curl_close($ch);
+            if (empty($fileContent) ){
+                return false;
+            }
+        } else {
+            $opts = array(
+                "http"=>array(
+                    "method"=>"GET",
+                    "header"=>"",
+                    "timeout"=>$timeout)
+            );
+            $context = stream_context_create($opts);
+            $fileContent = file_get_contents($url, false, $context);
+            if (empty($fileContent)) return false;
+        }
+        if (!empty($savePath)){
+            return file_put_contents($savePath, $fileContent);
+        }
+        return $fileContent;
     }
 
     public static function file_move($filename, $dest) {
@@ -70,11 +122,16 @@ class FileService
         return is_file($dest);
     }
 
-
-    static function file_tree($path, $include = array()) {
+    static function file_tree($path, $include = null) {
         $files = array();
+        $path = realpath($path);
         if (!empty($include)) {
-            $ds = glob($path . '/{' . implode(',', $include) . '}', GLOB_BRACE);
+            if(is_array($include) && count($include)>1){
+                $ds = glob($path . '/{' . implode(',', $include) . '}', GLOB_BRACE);
+            }else{
+                $pattern = is_array($include) ? $include[0] : $include;
+                $ds = glob($path . "/" . $pattern);
+            }
         } else {
             $ds = glob($path . '/*');
         }
@@ -95,78 +152,6 @@ class FileService
         return $files;
     }
 
-
-    function file_tree_limit($path, $limit = 0, $acquired_files_count = 0) {
-        $files = array();
-        if (is_dir($path)) {
-            if ($dir = opendir($path)) {
-                while (false !== ($file = readdir($dir))) {
-                    if (in_array($file, array('.', '..'))) {
-                        continue;
-                    }
-                    if (is_file($path . '/' . $file)) {
-                        $files[] = $path . '/' . $file;
-                        ++$acquired_files_count;
-                        if ($limit > 0 && $acquired_files_count >= $limit) {
-                            closedir($dir);
-
-                            return $files;
-                        }
-                    }
-                    if (is_dir($path . '/' . $file)) {
-                        $rs = $this->file_tree_limit($path . '/' . $file, $limit, $acquired_files_count);
-                        foreach ($rs as $f) {
-                            $files[] = $f;
-                            ++$acquired_files_count;
-                            if ($limit > 0 && $acquired_files_count >= $limit) {
-                                closedir($dir);
-
-                                return $files;
-                            }
-                        }
-                    }
-                }
-                closedir($dir);
-            }
-        }
-
-        return $files;
-    }
-
-
-    function file_dir_exist_image($path) {
-        if (is_dir($path)) {
-            if ($dir = opendir($path)) {
-                while (false !== ($file = readdir($dir))) {
-                    if (in_array($file, array('.', '..'))) {
-                        continue;
-                    }
-                    if (is_file($path . '/' . $file) && $path != (ATTACHMENT_ROOT . 'images') && $this->file_is_image($path . '/' . $file)) {
-                        if (0 === strpos($path, ATTACHMENT_ROOT)) {
-                            $attachment = str_replace(ATTACHMENT_ROOT . 'images/', '', $path . '/' . $file);
-                            list($file_account) = explode('/', $attachment);
-                            if ('global' == $file_account) {
-                                continue;
-                            }
-                        }
-                        closedir($dir);
-
-                        return true;
-                    }
-                    if (is_dir($path . '/' . $file) && $this->file_dir_exist_image($path . '/' . $file)) {
-                        closedir($dir);
-
-                        return true;
-                    }
-                }
-                closedir($dir);
-            }
-        }
-
-        return false;
-    }
-
-
     public static function mkdirs($path, $perm=0777, $rec=false) {
         if (!is_dir($path)) {
             self::mkdirs(dirname($path));
@@ -176,26 +161,9 @@ class FileService
         return is_dir($path);
     }
 
-
-    function file_copy($src, $des, $filter) {
-        $dir = opendir($src);
-        @mkdir($des);
-        while (false !== ($file = readdir($dir))) {
-            if (('.' != $file) && ('..' != $file)) {
-                if (is_dir($src . '/' . $file)) {
-                    $this->file_copy($src . '/' . $file, $des . '/' . $file, $filter);
-                } elseif (!in_array(substr($file, strrpos($file, '.') + 1), $filter)) {
-                    copy($src . '/' . $file, $des . '/' . $file);
-                }
-            }
-        }
-        closedir($dir);
-    }
-
-
     public static function rmdirs($path, $clean = false) {
         if (!is_dir($path)) {
-            return false;
+            return true;
         }
         $files = glob($path . '/*');
         if ($files) {
@@ -204,24 +172,14 @@ class FileService
             }
         }
 
-        return $clean ? true : @rmdir($path);
-    }
-
-    static function file_upload_path($type='image'){
-        global $_W;
-        $uniacid = intval($_W['uniacid']);
-        $path = "{$type}s/{$uniacid}/" . date('Y/m/');
-        if (!is_dir(ATTACHMENT_ROOT.$path)){
-            self::mkdirs(ATTACHMENT_ROOT.$path);
-        }
-        return $path;
+        return $clean || @rmdir($path);
     }
 
     static function Upload(Request $request,$type='image',$field='file'){
         global $_W;
-        if (!$request->hasFile($field)) return error(-1,'没有上传内容');
+        if (!$request->hasFile($field)) return error(-1,__('uploadValid'));
         if (!in_array($type, array('image', 'media', 'attach'))) {
-            return error(-2, '未知的上传类型');
+            return error(-2, __('uploadValid'));
         }
         $harmtype = array('asp', 'php', 'jsp', 'js', 'css', 'php3', 'php4', 'php5', 'ashx', 'aspx', 'exe', 'cgi');
         $Upload = $request->file($field);
@@ -229,20 +187,20 @@ class FileService
         $size = $Upload->getSize();
         $setting = SettingService::Load('upload');
         if (in_array($ext, $harmtype)){
-            return error(-3, '不允许上传此类文件');
+            return error(-3, __('attachExtInvalid',['ext'=>$ext]));
         }
         if ($type!='attach'){
             $allowExt = $setting['upload'][$type]['extentions'];
             $limit = $setting['upload'][$type]['limit'];
             if (!in_array($ext, $allowExt)) {
-                return error(-3, '不允许上传此类文件');
+                return error(-3, __('attachExtInvalid',['ext'=>$ext]));
             }
             if (!empty($limit) && $limit * 1024 < $size) {
-                return error(-4, "上传的文件超过大小限制({$size}byte)");
+                return error(-4, __('attachSizeInvalid', ['size'=>$size]));
             }
         }
         $path = $Upload->store("{$type}s/{$_W['uniacid']}/".date('Y/m'));
-        if (!$path) return error(-1,'上传失败，请重试');
+        if (!$path) return error(-1,__('uploadFailed'));
         //图片压缩
         if ($type=='image'){
             $quality = intval($setting['upload']['image']['zip_percentage']);
@@ -260,10 +218,10 @@ class FileService
     static function file_upload($file, $type = 'image', $name = '', $compress = false) {
         $harmtype = array('asp', 'php', 'jsp', 'js', 'css', 'php3', 'php4', 'php5', 'ashx', 'aspx', 'exe', 'cgi');
         if (empty($file)) {
-            return error(-1, '没有上传内容');
+            return error(-1, __('uploadValid'));
         }
         if (!in_array($type, array('image', 'thumb', 'voice', 'video', 'audio'))) {
-            return error(-2, '未知的上传类型');
+            return error(-2, __('uploadValid'));
         }
         global $_W;
         $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
@@ -292,10 +250,11 @@ class FileService
             $allowExt = $setting['extentions'];
         }
         if (!in_array(strtolower($ext), $allowExt) || in_array(strtolower($ext), $harmtype)) {
-            return error(-3, '不允许上传此类文件');
+            return error(-3, __('attachExtInvalid',['ext'=>$ext]));
         }
-        if (!empty($limit) && $limit * 1024 < filesize($file['tmp_name'])) {
-            return error(-4, "上传的文件超过大小限制，请上传小于 {$limit}k 的文件");
+        $size = filesize($file['tmp_name']);
+        if (!empty($limit) && $limit * 1024 < $size) {
+            return error(-4, __('attachSizeInvalid', ['size'=>$size]));
         }
 
         $result = array();
@@ -322,15 +281,13 @@ class FileService
             if (!empty($exif['THUMBNAIL']['Orientation'])) {
                 $image = imagecreatefromstring(file_get_contents($file['tmp_name']));
                 switch($exif['THUMBNAIL']['Orientation']) {
-                    case 8:
-                        $image = imagerotate($image,0,0);
-                        break;
                     case 3:
                         $image = imagerotate($image,180,0);
                         break;
                     case 6:
                         $image = imagerotate($image,-90,0);
                         break;
+                    case 8:
                     default:
                         $image = imagerotate($image,0,0);
                         break;
@@ -344,7 +301,7 @@ class FileService
             imagedestroy($image);
         }
         if (empty($newimage)) {
-            return error(-1, '文件上传失败, 请将 attachment 目录权限先777 <br> (如果777上传失败,可尝试将目录设置为755)');
+            return error(-1, __('uploadFailed'));
         }
 
         if ('image' == $type && $compress) {
@@ -358,55 +315,13 @@ class FileService
 
                 return $check_result;
             }
-            $uni_remote_setting = uni_setting_load('remote');
-            if (empty($uni_remote_setting['remote']) && empty($_W['setting']['remote']['type'])) {
+
+            $storage = serv('storage');
+            if (empty($storage->settings['remote']['type'])) {
                 self::file_change_uni_attchsize($save_path);
             }
         }
 
-        $result['success'] = true;
-
-        return $result;
-    }
-
-    function file_wechat_upload($file, $type = 'image', $name = '') {
-        $harmtype = array('asp', 'php', 'jsp', 'js', 'css', 'php3', 'php4', 'php5', 'ashx', 'aspx', 'exe', 'cgi');
-        if (empty($file)) {
-            return error(-1, '没有上传内容');
-        }
-        if (!in_array($type, array('image', 'thumb', 'voice', 'video', 'audio'))) {
-            return error(-2, '未知的上传类型');
-        }
-
-        global $_W;
-        $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
-        $ext = strtolower($ext);
-        if (in_array(strtolower($ext), $harmtype)) {
-            return error(-3, '不允许上传此类文件');
-        }
-
-        $result = array();
-        if (empty($name) || 'auto' == $name) {
-            $uniacid = intval($_W['uniacid']);
-            $path = "{$type}s/{$uniacid}/" . date('Y/m/');
-            $this->mkdirs(ATTACHMENT_ROOT . '/' . $path);
-            $filename = $this->file_random_name(ATTACHMENT_ROOT . '/' . $path, $ext);
-            $result['path'] = $path . $filename;
-        } else {
-            $this->mkdirs(dirname(ATTACHMENT_ROOT . '/' . $name));
-            if (!strexists($name, $ext)) {
-                $name .= '.' . $ext;
-            }
-            $result['path'] = $name;
-        }
-        $save_path = ATTACHMENT_ROOT . '/' . $result['path'];
-        if (!$this->file_move($file['tmp_name'], $save_path)) {
-            return error(-1, '保存上传文件失败');
-        }
-
-        if ('image' == $type) {
-            $this->file_image_quality($save_path, $save_path, $ext);
-        }
         $result['success'] = true;
 
         return $result;
@@ -418,33 +333,6 @@ class FileService
         if ($auto_delete_local) {
             self::file_delete($filename);
         }
-        return true;
-    }
-
-    function file_dir_remote_upload($dir_path, $limit = 200) {
-        global $_W;
-        if (empty($_W['setting']['remote']['type'])) {
-            return error(1, '未开启远程附件');
-        }
-        if (!empty($dir_path)) {
-            $local_attachment = $this->file_tree_limit($dir_path, $limit);
-        } else {
-            $local_attachment = array();
-        }
-        if (is_array($local_attachment) && !empty($local_attachment)) {
-            foreach ($local_attachment as $attachment) {
-                $filename = str_replace(ATTACHMENT_ROOT, '', $attachment);
-                list($image_dir, $file_account) = explode('/', $filename);
-                if ('global' == $file_account || !$this->file_is_image($attachment)) {
-                    continue;
-                }
-                $result = $this->file_remote_upload($filename);
-                if (is_error($result)) {
-                    return $result;
-                }
-            }
-        }
-
         return true;
     }
 
@@ -466,8 +354,8 @@ class FileService
             return false;
         }
 
-        $uni_remote_setting = uni_setting_load('remote');
-        if (empty($uni_remote_setting['remote']) && empty($_W['setting']['remote']['type'])) {
+        $storage = serv('storage');
+        if (empty($storage->settings['remote']['type'])) {
             if (file_exists(ATTACHMENT_ROOT . '/' . $file) && self::file_is_uni_attach(ATTACHMENT_ROOT . '/' . $file)) {
                 self::file_change_uni_attchsize(ATTACHMENT_ROOT . '/' . $file, false);
             }
@@ -477,246 +365,6 @@ class FileService
         }
         if (file_exists(ATTACHMENT_ROOT . '/' . $file)) {
             @unlink(ATTACHMENT_ROOT . '/' . $file);
-        }
-
-        return true;
-    }
-
-    function file_image_thumb($srcfile, $desfile = '', $width = 0) {
-        global $_W;
-
-        if (0 == intval($width)) {
-            $width = intval($_W['setting']['upload']['image']['width']);
-        }
-        if (empty($desfile)) {
-            $ext = pathinfo($srcfile, PATHINFO_EXTENSION);
-            $srcdir = dirname($srcfile);
-            do {
-                $desfile = $srcdir . '/' . random(30) . ".{$ext}";
-            } while (file_exists($desfile));
-        }
-
-        $des = dirname($desfile);
-        if (!file_exists($des)) {
-            if (!$this->mkdirs($des)) {
-                return error('-1', '创建目录失败');
-            }
-        } elseif (!is_writable($des)) {
-            return error('-1', '目录无法写入');
-        }
-        $org_info = @getimagesize($srcfile);
-        if ($org_info) {
-            if (0 == $width || $width > $org_info[0]) {
-                copy($srcfile, $desfile);
-
-                return str_replace(ATTACHMENT_ROOT . '/', '', $desfile);
-            }
-        }
-        $scale_org = $org_info[0] / $org_info[1];
-        $height = $width / $scale_org;
-        $desfile = Image::create($srcfile)->resize($width, $height)->saveTo($desfile);
-        if (!$desfile) {
-            return false;
-        }
-
-        return str_replace(ATTACHMENT_ROOT . '/', '', $desfile);
-    }
-
-    function file_image_crop($src, $desfile, $width = 400, $height = 300, $position = 1) {
-        $des = dirname($desfile);
-        if (!file_exists($des)) {
-            if (!$this->mkdirs($des)) {
-                return error('-1', '创建目录失败');
-            }
-        } elseif (!is_writable($des)) {
-            return error('-1', '目录无法写入');
-        }
-
-        return Image::create($src)
-            ->crop($width, $height, $position)
-            ->saveTo($desfile);
-    }
-
-    function file_lists($filepath, $subdir = 1, $ex = '', $isdir = 0, $md5 = 0, $enforcement = 0) {
-        static $file_list = array();
-        if ($enforcement) {
-            $file_list = array();
-        }
-        $flags = $isdir ? GLOB_ONLYDIR : 0;
-        $list = glob($filepath . '*' . (!empty($ex) && empty($subdir) ? '.' . $ex : ''), $flags);
-        if (!empty($ex)) {
-            $ex_num = strlen($ex);
-        }
-        foreach ($list as $k => $v) {
-            $v = str_replace('\\', '/', $v);
-            $v1 = str_replace(IA_ROOT . '/', '', $v);
-            if ($subdir && is_dir($v)) {
-                $this->file_lists($v . '/', $subdir, $ex, $isdir, $md5);
-                continue;
-            }
-            if (!empty($ex) && strtolower(substr($v, -$ex_num, $ex_num)) == $ex) {
-                if ($md5) {
-                    $file_list[$v1] = md5_file($v);
-                } else {
-                    $file_list[] = $v1;
-                }
-                continue;
-            } elseif (!empty($ex) && strtolower(substr($v, -$ex_num, $ex_num)) != $ex) {
-                unset($list[$k]);
-                continue;
-            }
-        }
-
-        return $file_list;
-    }
-
-    function file_remote_attach_fetch($url, $limit = 0, $path = '') {
-        global $_W;
-        $url = trim($url);
-        if (empty($url)) {
-            return error(-1, '文件地址不存在');
-        }
-        $resp = HttpService::ihttp_get($url);
-
-        if (is_error($resp)) {
-            return error(-1, '提取文件失败, 错误信息: ' . $resp['message']);
-        }
-        if (200 != intval($resp['code'])) {
-            return error(-1, '提取文件失败: 未找到该资源文件.');
-        }
-        $get_headers = $this->file_media_content_type($url);
-        if (empty($get_headers)) {
-            return error(-1, '提取资源失败, 资源文件类型错误.');
-        } else {
-            $ext = $get_headers['ext'];
-            $type = $get_headers['type'];
-        }
-
-        if (empty($path)) {
-            $path = $type . "/{$_W['uniacid']}/" . date('Y/m/');
-        } else {
-            $path = parse_path($path);
-        }
-        if (!$path) {
-            return error(-1, '提取文件失败: 上传路径配置有误.');
-        }
-
-        if (!is_dir(ATTACHMENT_ROOT . $path)) {
-            if (!$this->mkdirs(ATTACHMENT_ROOT . $path, 0755, true)) {
-                return error(-1, '提取文件失败: 权限不足.');
-            }
-        }
-
-
-        if (!$limit) {
-            if ('images' == $type) {
-                $limit = $_W['setting']['upload']['image']['limit'] * 1024;
-            } else {
-                $limit = $_W['setting']['upload']['audio']['limit'] * 1024;
-            }
-        } else {
-            $limit = $limit * 1024;
-        }
-        if (intval($resp['headers']['Content-Length']) > $limit) {
-            return error(-1, '上传的媒体文件过大(' . sizecount($resp['headers']['Content-Length']) . ' > ' . sizecount($limit));
-        }
-        $filename = $this->file_random_name(ATTACHMENT_ROOT . $path, $ext);
-        $pathname = $path . $filename;
-        $fullname = ATTACHMENT_ROOT . $pathname;
-        if (false == file_put_contents($fullname, $resp['content'])) {
-            return error(-1, '提取失败.');
-        }
-
-        return $pathname;
-    }
-
-    public static function file_media_content_type($url) {
-        $file_header = iget_headers($url, 1);
-        if (empty($url) || !is_array($file_header)) {
-            return false;
-        }
-        switch ($file_header['Content-Type']) {
-            case 'application/x-jpg':
-            case 'image/jpg':
-            case 'image/jpeg':
-                $ext = 'jpg';
-                $type = 'images';
-                break;
-            case 'image/png':
-                $ext = 'png';
-                $type = 'images';
-                break;
-            case 'image/gif':
-                $ext = 'gif';
-                $type = 'images';
-                break;
-            case 'video/mp4':
-            case 'video/mpeg4':
-                $ext = 'mp4';
-                $type = 'videos';
-                break;
-            case 'video/x-ms-wmv':
-                $ext = 'wmv';
-                $type = 'videos';
-                break;
-            case 'audio/mpeg':
-                $ext = 'mp3';
-                $type = 'audios';
-                break;
-            case 'audio/mp4':
-                $ext = 'mp4';
-                $type = 'audios';
-                break;
-            case 'audio/x-ms-wma':
-                $ext = 'wma';
-                $type = 'audios';
-                break;
-            default:
-                return false;
-                break;
-        }
-
-        return array('ext' => $ext, 'type' => $type);
-    }
-
-    function file_allowed_media($type) {
-        global $_W;
-        if (!in_array($type, array('image', 'audio'))) {
-            return array();
-        }
-        if (empty($_W['setting']['upload'][$type]['extention']) || !is_array($_W['setting']['upload'][$type]['extention'])) {
-            return $_W['config']['upload'][$type]['extentions'];
-        }
-
-        return $_W['setting']['upload'][$type]['extention'];
-    }
-
-    function file_is_image($url) {
-        global $_W;
-        $allowed_media = $this->file_allowed_media('image');
-
-        if ('//' == substr($url, 0, 2)) {
-            $url = 'http:' . $url;
-        }
-        if (0 == strpos($url, $_W['siteroot'] . 'attachment/')) {
-            $url = str_replace($_W['siteroot'] . 'attachment/', ATTACHMENT_ROOT, $url);
-        }
-        $lower_url = strtolower($url);
-        if (('http://' == substr($lower_url, 0, 7)) || ('https://' == substr($lower_url, 0, 8))) {
-            $analysis_url = parse_url($lower_url);
-            $preg_str = '/.*(\.' . implode('|\.', $allowed_media) . ')$/';
-            if (!empty($analysis_url['query']) || !preg_match($preg_str, $lower_url) || !preg_match($preg_str, $analysis_url['path'])) {
-                return false;
-            }
-            $img_headers = $this->file_media_content_type($url);
-            if (empty($img_headers) || !in_array($img_headers['ext'], $allowed_media)) {
-                return false;
-            }
-        }
-
-        $info = igetimagesize($url);
-        if (!is_array($info)) {
-            return false;
         }
 
         return true;
@@ -751,9 +399,8 @@ class FileService
     }
 
     public static function file_check_uni_space($file) {
-        global $_W;
         if (!is_file($file)) {
-            return error(-1, '未找到上传的文件。');
+            return error(-1, __('uploadValid'));
         }
         $uni_remote_setting = SettingService::uni_load('remote');
         if (empty($uni_remote_setting['remote']['type'])) {
@@ -768,7 +415,7 @@ class FileService
             if ($attachment_limit > 0) {
                 $file_size = max(1, round(filesize($file) / 1024));
                 if (($file_size + $uni_setting['attachment_size']) > ($attachment_limit * 1024)) {
-                    return error(-1, '上传失败，可使用的附件空间不足！');
+                    return error(-1, __('uploadFailedLimit'));
                 }
             }
         }
@@ -779,14 +426,14 @@ class FileService
     public static function file_change_uni_attchsize($file, $is_add = true) {
         global $_W;
         if (!is_file($file)) {
-            return error(-1, '未找到的文件。');
+            return error(-1, __('uploadValid'));
         }
         $file_size = round(filesize($file) / 1024);
         $file_size = max(1, $file_size);
 
         $result = true;
-        $uni_remote_setting = uni_setting_load('remote');
-        if (empty($uni_remote_setting['remote']['type']) && !empty($_W['uniacid'])) {
+        $storage = serv('storage');
+        if (empty($storage->settings['remote']['type']) && !empty($_W['uniacid'])) {
             $uni_settings = pdo_get('uni_settings', array('uniacid' => $_W['uniacid']), array('uniacid','attachment_size'));
             if (empty($uni_settings)) {
                 $result = pdo_insert('uni_settings', array('attachment_size' => $file_size, 'uniacid' => $_W['uniacid']));

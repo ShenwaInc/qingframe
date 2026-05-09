@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\SystemLogs;
+use App\Services\AccountService;
+use App\Services\SettingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -20,14 +23,22 @@ class AuthController extends Controller
         if($request->isMethod('post')){
             global $_W;
             Auth::logout();
+            \session()->flush();
             $_W['uid'] = 0;
             $_W['user'] = array('uid'=>0,'username'=>'未登录');
-            return $this->message('即将退出...',url('/login'),'success');
+            return $this->message('即将退出...',wurl(),'success');
         }
         return $this->message();
     }
 
     public function Login(Request $request){
+        $appSecurityEntrance = env("APP_SECURITY_ENTRANCE", "/");
+        if (!empty($appSecurityEntrance) && $appSecurityEntrance!="/"){
+            $securityEntrance = session()->get("securityEntrance");
+            if (empty($securityEntrance)){
+                abort(403, __('请通过安全入口访问控制台'));
+            }
+        }
         $username = trim((string)$request->input('username'));
         $password = trim((string)$request->input('password'));
         if (empty($username) || empty($password)) return $this->message('您输入的用户名或密码不正确');
@@ -37,11 +48,12 @@ class AuthController extends Controller
         $failed_login = $failed_login_query->orWhere('ip',$this->clientip)->orderByDesc('lastupdate')->first(['id','ip','count','lastupdate']);
         if (!empty($failed_login)){
             $this->failed_loginid = $failed_login['id'];
-            $lastupdate = TIMESTAMP - 900;
-            if ($failed_login['count']>=5 && $failed_login['lastupdate']>$lastupdate  && $failed_login['ip']==$this->clientip){
+            $lastUpdate = TIMESTAMP - 900;
+            if ($failed_login['count']>=5 && $failed_login['lastupdate']>$lastUpdate  && $failed_login['ip']==$this->clientip){
+                SystemLogs::userOperation( '用户反复尝试登录失败', 'core:console', '', false, $request->all());
                 return $this->message('您登录错误次数过多，请15分钟后再试');
             }else{
-                if ($failed_login['lastupdate']<=$lastupdate || $failed_login['ip']!=$this->clientip){
+                if ($failed_login['lastupdate']<=$lastUpdate || $failed_login['ip']!=$this->clientip){
                     DB::table('users_failed_login')->where('ip',$this->clientip)->delete();
                 }else{
                     $this->failed_logins = $failed_login['count'];
@@ -62,9 +74,43 @@ class AuthController extends Controller
                 'city'=>'',
                 'createtime'=>TIMESTAMP
             ));
-            return $this->message('恭喜您，登录成功',url('console'),'success');
+            DB::table('users')->where('uid', $user['uid'])->update(array('lastvisit'=>TIMESTAMP));
+            SystemLogs::userOperation("登录后台【{$username}】");
+            $redirect = wurl();
+            $uniacid = (int)$request->input('uniacid');
+            if (!empty($uniacid)){
+                $redirect = wurl("account") . "/$uniacid";
+            }
+            return $this->message('恭喜您，登录成功', $redirect,'success');
         }
         return $this->failed_login();
+    }
+
+    public function Entry(Request $request, $uniacid){
+        $appSecurityEntrance = env("APP_SECURITY_ENTRANCE", "/");
+        if (!empty($appSecurityEntrance) && $appSecurityEntrance!="/"){
+            $securityEntrance = session()->get("securityEntrance");
+            if (empty($securityEntrance)){
+                abort(403, __('请通过安全入口访问控制台'));
+            }
+        }
+        $account = AccountService::FetchUni($uniacid);
+        if (is_error($account) || empty($account)){
+            abort(404);
+        }
+        if (!empty($account['isdeleted'])){
+            return $this->message("该平台已被删除", wurl());
+        }
+        $user = $request->user();
+        if (!empty($user['uid'])){
+            $redirect = wurl("account") . "/$uniacid";
+            return redirect($redirect);
+        }
+        if ($account['endtime']>0 && $account['endtime']<TIMESTAMP){
+            return $this->message("该平台服务已到期，请联系管理员处理");
+        }
+        SettingService::Load();
+        return $this->globalView(["auth.loginCustom{$account['uniacid']}","auth.login"], array('account'=>$account));
     }
 
     public function failed_login($msg='用户名或密码不正确'){

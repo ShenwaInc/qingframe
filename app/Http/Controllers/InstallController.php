@@ -2,30 +2,39 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Account;
-use App\Models\Module;
-use App\Models\UniAccountUser;
-use App\Services\ModuleService;
-use App\Services\UserService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class InstallController extends Controller
 {
 
-    public $installer = ['isagree'=>0,'database'=>array(),'dbconnect'=>0,'authkey'=>''];
+    public $installer = [
+        'isagree'=>0,
+        'database'=>array(),
+        'dbconnect'=>0,
+        'authkey'=>''
+    ];
+    public $defaultParams = array(
+        "name"=>"轻如云应用服务管理系统",
+        "aName"=>"轻如云系统",
+        "logo"=>"/static/icon200.jpg",
+        "icon"=>"/favicon.ico",
+        "copyright"=>"© 2019-2022 Shenwa Studio. All Rights Reserved.",
+        "website"=>"https://www.qingruyun.com",
+        "accountName"=>"whotalk",
+        "accountDescription"=>"做社交从未如此简单"
+    );
+
+    public function checkInstalled(){
+        if(file_exists(base_path('storage/installed.bin'))){
+            abort(404);
+        }
+    }
 
     function __construct(){
-        $installedfile = base_path('storage/installed.bin');
-        if(file_exists($installedfile)){
-            abort(404);
-            die();
-        }
         $reset = (int)\request()->input('reset',0);
         if ($reset==1){
             Cache::forget('installer');
@@ -34,40 +43,51 @@ class InstallController extends Controller
             $installer = Cache::get('installer',$this->installer);
         }
         if (empty($installer['database'])){
-            $dbconfig = config('database');
-            $installer['database'] = $dbconfig['connections'][$dbconfig['default']];
+            $installer['database'] = config('database.connections.mysql');
         }
         $this->installer = $installer;
+        if (file_exists(storage_path("defaultParams.json"))){
+            $JSON = file_get_contents(storage_path("defaultParams.json"));
+            $defaultParams = (array)json_decode($JSON, true);
+            if (!empty($defaultParams)){
+                $this->defaultParams = array_merge($this->defaultParams, $defaultParams);
+            }
+        }
     }
 
     //
     public function index(){
+        $this->checkInstalled();
         if ($this->installer['isagree']){
-            return redirect()->action('installController@database');
+            return redirect('/installer/database');
         }
-        return view('install.index');
+        return view('install.index', $this->defaultParams);
     }
 
+    /**
+     * @throws \Exception
+     */
     public function install(Request $request){
+        $this->checkInstalled();
         global $_W;
         if (!$request->isMethod('post')){
             return $this->message('安装失败，请重试');
         }
         if (!$this->installer['isagree']){
-            return $this->message('请先同意安装协议',url('installer'));
+            return $this->message('请先同意安装协议',"{$_W['siteroot']}installer");
         }
         if (isset($this->installer['database']['unix_socket'])){
-            return $this->message('数据库未配置',url('installer/database'));
+            return $this->message('数据库未配置', "{$_W['siteroot']}installer/database");
         }
         //写入数据库
-        $dbconnect = $this->dbConnect($this->installer['database']);
-        if ($dbconnect===false){
+        $DBConnect = $this->dbConnect($this->installer['database']);
+        if ($DBConnect===false){
             return $this->message('数据库连接失败，请检查配置信息是否正确');
         }
         $installer = $this->installer;
-        $authkey = $installer['authkey'];
+        $databaseCFG = config('database.connections.mysql');
         if ($installer['dbconnect']==0){
-            $authkey = \Str::random(8);
+            //全新安装
             $manager = $request->input('render');
             if (!isset($manager['username']) || trim($manager['username'])==''){
                 return $this->message('请填写您的超管账号');
@@ -75,172 +95,56 @@ class InstallController extends Controller
             if (!isset($manager['password']) || trim($manager['password'])==''){
                 return $this->message('请设置超管的登录密码');
             }
-
-            $dbconfig = config('database');
-            $databasecfg = $dbconfig['connections'][$dbconfig['default']];
-            foreach ($databasecfg as $key=>$cfg){
+            $appName = !empty($manager['appName']) ? trim($manager['appName']) : $this->defaultParams['aName'];
+            $founderPWD = trim($manager['password']);
+            foreach ($databaseCFG as $key=>$cfg){
                 if(!isset($installer['database'][$key])) continue;
-                $databasecfg[$key] = $installer['database'][$key];
+                $databaseCFG[$key] = $installer['database'][$key];
             }
-            $databasecfg['strict'] = false;
-            Config::set('database.connections.'.$dbconfig['default'],$databasecfg);
+            $databaseCFG['strict'] = false;
+            Config::set('database.default', 'mysql');
+            Config::set('database.connections.mysql',$databaseCFG);
 
             try {
-                @ini_set('max_execution_time',900);
-                //import database
-                Artisan::call('migrate');
+                Artisan::call('self:setup', array('user'=>trim($manager['username']), 'pwd'=>$founderPWD, 'appName'=>$appName));
             }catch (\Exception $exception){
-                return $this->message('数据库安装失败');
+                //系统未完成安装，日志表可能未创建，不记录日志
+                if(DEVELOPMENT){
+                    throw $exception;
+                }
+                return $this->message($exception->getMessage());
             }
 
-            //initialize modules
-            try {
-                //import database
-                ModuleService::Initializer();
-            }catch (\Exception $exception){
-                return $this->message('初始化数据失败');
-            }
 
-            $salt = \Str::random(8);
-            $founderpwd = trim($manager['password']);
-            $pwdhash = sha1("{$founderpwd}-{$salt}-{$authkey}");
-            $founder = array(
-                'groupid'=>1,
-                'founder_groupid'=>1,
-                'username'=>trim($manager['username']),
-                'password'=>$pwdhash,
-                'salt'=>$salt,
-                'status'=>2,
-                'joindate'=>TIMESTAMP,
-                'endtime'=>0
-            );
-            //create founder
-            $uid =  (int)DB::table('users')->insertGetId($founder);
-            if(!$uid) return $this->message('数据写入失败');
-            $_W['uid'] = $founder['uid'] = $uid;
-            $_W['user'] = $founder;
-            DB::table('users_profile')->insert(array(
-                'avatar'=>'/static/icon200.jpg',
-                'edittime'=>TIMESTAMP,
-                'uid'=>$uid,
-                'createtime'=>TIMESTAMP,
-                'nickname'=>$founder['username']
-            ));
-            //create account
-            $post = array('name'=>'Whotalk','description'=>'做社交从未如此简单');
-            $uni_account = DB::table('uni_account');
-            $uniacid = $uni_account->insertGetId(array(
-                'groupid' => 0,
-                'default_acid' => 0,
-                'name' => $post['name'],
-                'description' => $post['description'],
-                'logo'=>'/static/icon200.jpg',
-                'title_initial' => 'W',
-                'createtime' => TIMESTAMP,
-                'create_uid' => $uid
-            ));
-            if (empty($uniacid)) return $this->message('系统初始化失败');
-            $account_data = array('name' => $post['name']);
-
-            $acid = Account::account_create($uniacid,$account_data);
-            $uni_account->where('uniacid',$uniacid)->update(array('default_acid' => $acid));
-            UserService::AccountRoleUpdate($uniacid,$uid);
-
-            //initialize mc group
-            DB::table('mc_groups')->insert(array('uniacid' => $uniacid, 'title' => '默认会员组', 'isdefault' => 1));
-
-            //initialize uni setting
-            DB::table('uni_settings')->insert(array(
-                'creditnames' => serialize(array('credit1' => array('title' => '积分', 'enabled' => 1), 'credit2' => array('title' => '余额', 'enabled' => 1))),
-                'creditbehaviors' => serialize(array('activity' => 'credit1', 'currency' => 'credit2')),
-                'uniacid' => $uniacid,
-                'default_site' => 0,
-                'sync' => serialize(array('switch' => 0, 'acid' => '')),
-            ));
-
-            //initializer laravel framework
-            $config = \config('system');
-            DB::table('gxswa_cloud')->insert(array(
-                'identity'=>'swa_framework_laravel',
-                'name'=>'轻如框架V1',
-                'modulename'=>'',
-                'type'=>0,
-                'logo'=>'//shenwahuanan.oss-cn-shenzhen.aliyuncs.com/images/4/2021/08/pK8iHw0eQg5hHgg4Kqe5E1E1hSBpZS.png',
-                'website'=>'https://www.gxswa.com/laravel/',
-                'rootpath'=>'',
-                'version'=>$config['version'],
-                'releasedate'=>$config['release'],
-                'addtime'=>TIMESTAMP,
-                'dateline'=>TIMESTAMP
-            ));
-
-            //initializer default setting
-            DB::table("core_settings")->insert([
-                array(
-                    'key'=>"page",
-                    'value'=>serialize(array(
-                        'title'=>'Whotalk即时通讯系统',
-                        'icon'=>'/favicon.ico',
-                        'logo'=>'/static/icon200.jpg',
-                        'copyright'=>'© 2019-2022 Shenwa Studio. All Rights Reserved.',
-                        'links'=>'<a class="copyright-link" href="https://www.whotalk.com.cn/" target="_blank">Whotalk官网</a><a class="copyright-link" href="https://chat.gxit.org/app/index.php?i=4&c=entry&m=swa_supersale&do=app&r=whotalkcloud.post" target="_blank">制作APP</a><a class="copyright-link" href="https://shimo.im/docs/XRkgJOKZ41UrFbqM" target="_blank">使用教程</a><a class="copyright-link" href="https://www.yuque.com/docs/share/84abf7ef-7d11-44f1-a510-ed70ef14ef3d?#" target="_blank">更新日志</a>',
-                        'keywords'=>'Whotalk,IM,即时通讯,客服系统,SaaS即时通讯,开源,社交软件,WEB即时通讯,公众号客服,多开聊天软件,在线聊天,群聊,微擎模块,快速生成APP,聊天APP,群聊APP',
-                        'description'=>'Whotalk是一款精巧灵活的SaaS-IM基础服务软件，提供即时通讯软件的基础功能，具备强大的开放能力和极高的自由度，可快速编译为各类平台应用软件。'
-                    ))
-                )
-            ]);
-
-            //servers update
-            Artisan::call('server:update');
-
-        }else{
-            if (empty($authkey)) return $this->message('微擎站点安全码不能为空');
-            $installer['database']['prefix'] = 'ims_';
-            $uid = (int)$dbconnect->table('users')->where('founder_groupid',1)->orderBy('uid','asc')->value('uid');
-            //数据表检测，待完善
-        }
-        //创建文件符号链接
-        try {
-            Artisan::call('storage:link');
-        }catch (\Exception $exception){
-            //创建文件映射失败
-            Log::error('storage_link_fail',array('errno'=>-1,'message'=>$exception->getMessage()));
         }
         //写入配置文件
-        $appname = !empty($manager['appname']) ? trim($manager['appname']) : 'Whotalk';
-        $envfile_tmp = base_path(".env.example");
-        $reader = fopen($envfile_tmp,'r');
-        $envdata = fread($reader,filesize($envfile_tmp));
-        fclose($reader);
-        $baseurl = str_replace('/installer/render','',url()->current());
-        $database = $installer['database'];
-        $envdata = str_replace(array('{APP_NAME}','{AUTHKEY}','{BASEURL}','{FOUNDER}','{DB_HOST}','{DB_PORT}','{DB_DATABASE}','{DB_USERNAME}','{DB_PASSWORD}','{DB_PREFIX}'),array(
-            $appname,$authkey,$baseurl,$uid,$database['host'],$database['port'],$database['database'],$database['username'],$database['password'],$database['prefix']
-        ),$envdata);
-        $envfile = base_path(".env");
-        if (file_exists($envfile)){
-            @unlink($envfile);
+        $baseurl = preg_replace("/\/$/", "", $_W['siteroot']);
+        $database = $databaseCFG;
+        $envText = file_get_contents(base_path(".env"));
+        $replaces = array(
+            "APP_URL"=>$baseurl,
+            "APP_VERSION"=>QingVersion,
+            "APP_RELEASE"=>QingRelease,
+            "DB_HOST"=>$database['host'],
+            "DB_PORT"=>$database['port'],
+            "DB_DATABASE"=>$database['database'],
+            "DB_USERNAME"=>$database['username'],
+            "DB_PASSWORD"=>$database['password'],
+            "DB_PREFIX"=>$database['prefix'],
+            "CACHE_DRIVER"=>"database"
+        );
+        foreach ($replaces as $key=>$value){
+            $envText = preg_replace("/^".$key."=(.+)/m", "$key=".trim($value), $envText);
         }
-        $writer = fopen($envfile,'w');
-        if(!fwrite($writer,$envdata)){
-            fclose($writer);
+        if (!file_put_contents(base_path(".env"), $envText)){
             return $this->message('文件写入失败，请检查根目录权限');
-        }
-        fclose($writer);
-        //写入安装文件
-        $instlock = base_path('storage/installed.bin');
-        $writer = fopen($instlock,'w');
-        $installer['baseurl'] = $baseurl;
-        $complete = fwrite($writer,base64_encode(json_encode($installer)));
-        fclose($writer);
-        if(!$complete){
-            return $this->message('文件写入失败，请检查storage目录权限');
         }
         Cache::forget('installer');
         return $this->message('恭喜您，安装成功！','','success');
     }
 
     public function agreement(){
+        $this->checkInstalled();
         $isagree = (int)\request('isagree');
         $this->installer['isagree'] = $isagree;
         if (!Cache::put('installer',$this->installer,7200)){
@@ -250,45 +154,48 @@ class InstallController extends Controller
     }
 
     public function database(){
+        $this->checkInstalled();
         if (!$this->installer['isagree']){
-            return redirect()->action('installController@index');
+            return redirect('/installer');
         }
         return view('install.database',$this->installer);
     }
 
     public function dbDetect(Request $request){
+        $this->checkInstalled();
         if ($request->isMethod('post')) {
-            $dbconfig = $request->input('dbconfig');
-            if (empty($dbconfig)) return $this->message();
-            $dbconnect = intval($dbconfig['dbconnect']);
-            $authkey = trim($dbconfig['authkey']);
-            $founderpwd = trim($dbconfig['founderpwd']);
+            $DBConfig = $request->input('dbconfig');
+            if (empty($DBConfig)) return $this->message();
+            $DBConnect = intval($DBConfig['dbconnect']);
+            $authKey = trim($DBConfig['authkey']);
+            $founderPWD = trim($DBConfig['founderpwd']);
             $database = array(
                 'driver'=>'mysql',
-                'host'=>trim($dbconfig['db[host']),
-                'port'=>intval($dbconfig['db[port']),
-                'database'=>trim($dbconfig['db[database']),
-                'username'=>trim($dbconfig['db[username']),
-                'password'=>trim($dbconfig['db[password']),
-                'prefix'=>trim($dbconfig['db[prefix'])
+                'host'=>trim($DBConfig['db[host']),
+                'port'=>intval($DBConfig['db[port']),
+                'database'=>trim($DBConfig['db[database']),
+                'username'=>trim($DBConfig['db[username']),
+                'password'=>trim($DBConfig['db[password']),
+                'prefix'=>trim($DBConfig['db[prefix'])
             );
-            if ($dbconnect==1){
-                if (empty($founderpwd)){
+            if ($DBConnect==1){
+                if (empty($founderPWD)){
                     return $this->message('创始人登录密码不能为空');
                 }
-                if (empty($authkey)){
+                if (empty($authKey)){
                     return $this->message('微擎站点安全码不能为空');
                 }
                 $database['prefix'] = 'ims_';
             }
-            $isconnect = $this->dbConnect($database);
-            if ($isconnect===false){
+            $isConnect = $this->dbConnect($database);
+            if ($isConnect===false){
                 return $this->message('数据库连接失败，请检查配置信息是否正确');
             }
-            if ($dbconnect==1){
+            if ($DBConnect==1){
                 try {
-                    $founder = $isconnect->table('users')->select('uid','password','salt')->where('founder_groupid',1)->orderBy('uid','asc')->first();
+                    $founder = $isConnect->table('users')->select('uid','password','salt')->where('founder_groupid',1)->orderBy('uid','asc')->first();
                 }catch (\Exception $e){
+                    //系统未完成安装，日志表可能未创建，不记录日志
                     if (!empty($e->errorInfo) && $e->errorInfo[0]=='42S02'){
                         //Table dosn't exist
                         return $this->message('非微擎站点数据库');
@@ -296,8 +203,8 @@ class InstallController extends Controller
                     return $this->message('数据库连接异常');
                 }
                 if (isset($founder->uid)){
-                    $pwdhash = sha1("{$founderpwd}-{$founder->salt}-{$authkey}");
-                    if ($pwdhash!=$founder->password){
+                    $pwdHash = sha1("{$founderPWD}-{$founder->salt}-{$authKey}");
+                    if ($pwdHash!=$founder->password){
                         return $this->message('创始人密码或安全码不正确');
                     }
                 }else{
@@ -305,19 +212,20 @@ class InstallController extends Controller
                 }
             }else{
                 try {
-                    $accounts = $isconnect->table('account')->count();
+                    $accounts = $isConnect->table('account')->count();
                 }catch (\Exception $e){
+                    //系统未完成安装，日志表可能未创建，不记录日志
                     //Todo something
                     unset($accounts);
                 }
                 if (isset($accounts)){
                     //Table exist
-                    return $this->message('该数据库已经存在对应数据表');
+                    return $this->message('该数据库已经安装过'.$this->defaultParams['aName'].'或其它同类产品');
                 }
             }
-            $this->installer['dbconnect'] = $dbconnect;
+            $this->installer['dbconnect'] = $DBConnect;
             $this->installer['database'] = $database;
-            $this->installer['authkey'] = $authkey;
+            $this->installer['authkey'] = $authKey;
             Cache::forget('installer');
             if (!Cache::put('installer',$this->installer,7200)){
                 return $this->message();
@@ -328,13 +236,16 @@ class InstallController extends Controller
     }
 
     public function render(){
+        $this->checkInstalled();
         if (!$this->installer['isagree']){
             return redirect()->action('installController@index');
         }
         if (isset($this->installer['database']['unix_socket'])){
             return redirect()->action('installController@database');
         }
-        return view('install.render',$this->installer);
+        $data = $this->installer;
+        $data['appName'] = $this->defaultParams['aName'];
+        return view('install.render', $data);
     }
 
     /**
@@ -352,6 +263,7 @@ class InstallController extends Controller
             //$conn->raw()
             return $conn;
         } catch (\Exception $e){
+            //系统未完成安装，日志表可能未创建，不记录日志
             //if (empty($e->errorInfo)) return false;
             return false;//@json_decode(json_encode($e->errorInfo),true);
         }

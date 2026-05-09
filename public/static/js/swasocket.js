@@ -1,8 +1,8 @@
-
 (function(w) {
     w.Swaws = {
         onDisconnect:null,
         onConnect:null,
+        onOpen:null,
         Heartbeat:false,
         HeartInterval:null,
         UserSign:"",
@@ -10,7 +10,8 @@
         init: function (UserSign, Server, Receive = false, Fail = false) {
             this.UserSign = UserSign;
             if (this.io != null) {
-                this.io.close(10001);
+                this.io.close(3089);
+                this.io = null;
                 return this.init(UserSign, Server, Receive, Fail);
             }
             let WsSocket = new WebSocket(Server);
@@ -26,7 +27,9 @@
                     }
                 }
                 WsSocket.send(JSON.stringify(data));
-                console.log(data.Message);
+                if(typeof(self.onOpen) === 'function'){
+                    self.onOpen(event, data);
+                }
             };
             WsSocket.onmessage = function (res) {
                 let socketData = {};
@@ -39,8 +42,9 @@
                 if (typeof (data) != 'object' || data==null) return false;
                 if(data.type===1 && data.method==='User/Connect'){
                     self.Heartbeat = true;
+                    self.socketRetry = 0;
                     self.HeartInterval = setInterval(function (){
-                        let sendHeart = self.doHeartbeat();
+                        let sendHeart = self.doHeartbeat(WsSocket);
                         if (!sendHeart){
                             clearInterval(self.HeartInterval);
                             self.HeartInterval = null;
@@ -87,11 +91,27 @@
                 console.log("Connection closed.", e);
                 self.io = null;
                 self.Heartbeat = false;
+                if (typeof (self.onDisconnect)=='function'){
+                    self.onDisconnect();
+                }
+                if (e.code===1005 || e.code===3089){
+                    //手动停止
+                    clearInterval(self.HeartInterval);
+                    self.HeartInterval = null;
+                    return true;
+                }
                 if (typeof (Fail) == 'function' && e.code!==1005) {
                     Fail();
                 }
-                if (typeof (this.onDisconnect)=='function'){
-                    this.onDisconnect();
+                if((e.code!==1000 && e.code!==1006) || typeof(e.code)=='undefined'){
+                    if(self.socketRetry>=5){
+                        return console.error("通讯服务器连接失败");
+                    }
+                    self.socketRetry += 1;
+                    console.log('开始第'+self.socketRetry+'次重新连接');
+                    setTimeout(function(){
+                        return self.init(UserSign, Server, Receive, Fail);
+                    },2000);
                 }
             }
             WsSocket.onerror = function (event) {
@@ -103,10 +123,21 @@
             this.io = WsSocket;
             return WsSocket;
         },
-        doHeartbeat:function (){
+        Send: function (data, userIds){
+            let socketData = {
+                "Method": "Message/SendToUsers",
+                "Type": 0,
+                "Message": JSON.stringify(data),
+                "data":{
+                    "userIds":userIds
+                }
+            };
+            return this.io.send(JSON.stringify(socketData));
+        },
+        doHeartbeat:function (socket){
             if (!this.Heartbeat){
                 console.log("已经失去心跳急需抢救");
-                this.io.close(3019);
+                socket.close(3019);
                 return false;
             }
             this.Heartbeat = false;
