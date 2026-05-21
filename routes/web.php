@@ -54,6 +54,7 @@ Route::group(['prefix' => 'console', 'namespace' => 'Console', 'middleware'=>['a
     Route::get('/logs', 'LogController@index');
     Route::get('/log/export', 'LogController@export');
     Route::get('/log/{id}', 'LogController@show');
+    Route::get('/openclaw', 'PlatformController@openclaw');
 });
 
 Route::group(['prefix'=>'server', 'namespace' =>'Console', 'middleware'=>['auth', 'app', 'permission']],function (){

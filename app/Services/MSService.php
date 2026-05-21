@@ -293,7 +293,8 @@ class MSService
                     $upgradeAction = "";
                 }elseif (!empty($cloudServer)){
                     $release = $cloudServer['release'];
-                    if (version_compare($release['version'], $server['version'], '>') || $release['releasedate']>$server['releases']){
+                    $version_code = $release['version_code'] ?? $release['releasedate'];
+                    if (version_compare($release['version'], $server['version'], '>') || $version_code>$server['releases']){
                         $tips = __("该服务可升级至V:version版本", ['version'=>$release['version']]);
                         $upgradeAction = '<a class="layui-btn layui-btn-sm layui-btn-danger js-terminal" data-text="升级前请做好数据备份" lay-tips="'.$tips.'" href="'.wurl('server', array('op'=>'cloudup', 'nid'=>$server['identity'])).'">'.__('upgrade').'</a>';
                         $server['upgrade'] = array('version'=>$release['version'],'canup'=>true);

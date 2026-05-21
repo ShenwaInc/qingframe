@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Console;
 use App\Http\Controllers\Controller;
 use App\Services\AccountService;
 use App\Services\ModuleService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -46,6 +47,15 @@ class PlatformController extends Controller
         $_W['consolePage'] = $_W['siteroot'];
 
         return $this->globalView('console.platform', $data);
+    }
+
+    public function openclaw(Request $request)
+    {
+        $openclaw = serv('openclaw');
+        if (!$openclaw->enabled){
+            return $this->message("当前功能需要安装 OpenClaw 插件才能使用！", wurl('server', ['need'=>'openclaw', 'op'=>'local']));
+        }
+        return redirect("server/openclaw/chat");
     }
 
     public function checkout($uniacid){

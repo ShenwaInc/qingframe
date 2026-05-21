@@ -83,7 +83,7 @@ class SettingController extends Controller
     }
 
     public function detection(){
-        $component = DB::table('gxswa_cloud')->where('type',0)->first(['id','identity','type','online','releasedate','rootpath']);
+        $component = DB::table('gxswa_cloud')->where('type',0)->first(['id','identity','type','online','version_code','rootpath']);
         if (empty($component)) return $this->message('系统出现致命错误');
         $cloudInfo = $this->checkCloud($component,1,true);
         if (is_error($cloudInfo)){
@@ -93,7 +93,7 @@ class SettingController extends Controller
     }
 
     public function updateLog(){
-        $component = DB::table('gxswa_cloud')->where('type',0)->first(['id','identity','type','online','releasedate','rootpath']);
+        $component = DB::table('gxswa_cloud')->where('type',0)->first(['id','identity','type','online','version_code','rootpath']);
         if (empty($component)) return $this->message('系统出现致命错误');
         $cloudInfo = $this->checkCloud($component,1,true);
         $curShow = \request('show', 'compare');
@@ -125,7 +125,7 @@ class SettingController extends Controller
         try {
             MSService::TerminalSend(['mode'=>'info', 'message'=>'即将同步系统程序源码：']);
             //同步文件
-            $component = DB::table('gxswa_cloud')->where('type',0)->first(['id','identity','modulename','online','type','releasedate','rootpath']);
+            $component = DB::table('gxswa_cloud')->where('type',0)->first(['id','identity','modulename','online','type','version_code','rootpath']);
             $cloudUpdate = CloudService::CloudUpdate($component['identity'],base_path().'/');
             if (is_error($cloudUpdate)){
                 MSService::TerminalSend(['mode'=>'err', 'message'=>'程序同步失败：'.$cloudUpdate['message']]);
@@ -135,18 +135,19 @@ class SettingController extends Controller
             //更新版本号
             $cloudInfo = $this->checkCloud($component);
             if (is_error($cloudInfo)) return $this->message($cloudInfo['message']);
+            $version_code = $cloudInfo['version_code'] ?? $cloudInfo['releasedate'];
             DB::table('gxswa_cloud')->where('id',$component['id'])->update(array(
                 'version'=>$cloudInfo['version'],
                 'updatetime'=>TIMESTAMP,
                 'dateline'=>TIMESTAMP,
-                'releasedate'=>$cloudInfo['releasedate'],
+                'version_code'=>$version_code,
                 'online'=>serialize(array(
                     'upgradable'=>false,
                     'version'=>$cloudInfo['version'],
-                    'releasedate'=>$cloudInfo['releasedate']
+                    'version_code'=>$version_code
                 ))
             ));
-            CloudService::CloudEnv(array("APP_VERSION=".QingVersion,"APP_RELEASE=".QingRelease), array("APP_VERSION={$cloudInfo['version']}","APP_RELEASE={$cloudInfo['releasedate']}"));
+            CloudService::CloudEnv(array("APP_VERSION=".QingVersion,"APP_RELEASE=".QingRelease), array("APP_VERSION={$cloudInfo['version']}","APP_RELEASE={$version_code}"));
             SystemLogs::userOperation('系统同步源码', 'setting:selfupgrade', "版本：{$cloudInfo['version']}", true, ['version' => $cloudInfo['version']]);
         }catch (\Exception $exception){
             MSService::TerminalSend(['mode'=>'err', 'message'=>"程序同步失败：".$exception->getMessage()]);
@@ -169,7 +170,7 @@ class SettingController extends Controller
 
     public function SystemUpgrade(){
         //升级文件对比
-        $component = DB::table('gxswa_cloud')->where('type',0)->first(['id','identity','type','online','releasedate','rootpath']);
+        $component = DB::table('gxswa_cloud')->where('type',0)->first(['id','identity','type','online','version_code','rootpath']);
         if (!empty($component)){
             $cloudInfo = $this->checkCloud($component);
             if (!is_error($cloudInfo) && !empty($cloudInfo['hasDifference'])){
@@ -227,14 +228,14 @@ class SettingController extends Controller
                 $identifie = str_replace($modulePre, "", $value['identity']);
                 if (empty($identifie)) continue;
                 $release = $value['release'];
-                $releaseDate = intval($value['release']['releasedate']);
+                $releaseDate = intval($value['release']['version_code'] ?? $value['release']['releasedate']);
                 //本地是否存在
                 $com = array(
                     'id'=>0,
                     'name'=>$value['name'],
                     'identifie'=>$identifie,
                     'version'=>$value['release']['version'],
-                    'releasedate'=>$releaseDate,
+                    'version_code'=>$releaseDate,
                     'ability'=>$value['name'],
                     'description'=>$value['summary'],
                     'author'=>$value['author'],
@@ -251,7 +252,7 @@ class SettingController extends Controller
                     if (!is_error($module) && $module->installed){
                         //已安装
                         $application = $module->application;
-                        if (version_compare($release['version'], $application['version'], '>') || $releaseDate>$application['releasedate']){
+                        if (version_compare($release['version'], $application['version'], '>') || $releaseDate>$application['version_code']){
                             $com['action'] .= '<a href="'.wurl('module/update').'?nid='.$identifie.'" class="layui-btn layui-btn-sm layui-btn-danger confirm" data-text="'.__('升级前请做好数据备份').'">'.__('升级').'</a>';
                         }
                         $com['action'] .= '<a href="'.wurl('module/remove').'?nid='.$identifie.'" class="layui-btn layui-btn-sm layui-btn-primary confirm" data-text="'.__('uninstallConfirm').'">'.__('uninstall').'</a></div>';
@@ -381,7 +382,7 @@ class SettingController extends Controller
                 }
                 return $this->message('successful', wurl('setting'), 'success');
             case 'comcheck':
-                $component = DB::table('gxswa_cloud')->where('id', intval($_GPC['cid']))->first(['id', 'identity', 'type', 'online', 'releasedate', 'rootpath', 'modulename']);
+                $component = DB::table('gxswa_cloud')->where('id', intval($_GPC['cid']))->first(['id', 'identity', 'type', 'online', 'version_code', 'rootpath', 'modulename']);
                 if (empty($component)) return $this->message('找不到该服务组件');
                 if (empty($component['identity'])){
                     $component['identity'] = ModuleService::SysPrefix($component['modulename']);
@@ -399,7 +400,7 @@ class SettingController extends Controller
                     'curShow'=>\request('show', 'compare')
                 ));
             default:
-                $framework = DB::table('gxswa_cloud')->where('type', 0)->first(['id', 'version', 'identity', 'type', 'online', 'releasedate', 'rootpath']);
+                $framework = DB::table('gxswa_cloud')->where('type', 0)->first(['id', 'version', 'identity', 'type', 'online', 'version_code', 'rootpath']);
                 $return['framework'] = $framework;
                 $return['cloudInfo'] = !empty($framework['online']) ? unserialize($framework['online']) : array('upgradable' => false);
                 $uniacid = (int)DB::table('uni_settings')->where('bind_domain', \request()->server('HTTP_HOST'))->value('uniacid');
@@ -436,7 +437,8 @@ class SettingController extends Controller
         $upgradeInfo['upgradable'] = false;
         $upgradeInfo['difference'] = $this->compare($component,$upgradeInfo['structure']);
         $upgradeInfo['hasDifference'] = $this->hasdifference($upgradeInfo['difference'],$component['type']);
-        if ($component['releasedate']<$upgradeInfo['releasedate'] && $compare<2){
+        $version_code = $upgradeInfo['version_code'] ?? $upgradeInfo['releasedate'];
+        if ($component['version_code']<$version_code && $compare<2){
             $upgradeInfo['upgradable'] = true;
         }
         if ($fromCache){

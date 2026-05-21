@@ -132,6 +132,9 @@
             tips: [1, '#ff5722']
         });
         @endif
+        @if(!empty($requireUrl))
+            terminalInit('{!! $requireUrl !!}');
+        @endif
     })
     function UploadRender(upload) {
         upload.render({

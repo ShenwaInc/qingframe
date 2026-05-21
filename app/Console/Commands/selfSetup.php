@@ -174,7 +174,7 @@ class selfSetup extends Command
             'website'=>'https://www.gxswa.com/laravel/',
             'rootpath'=>'',
             'version'=>env('APP_VERSION'),
-            'releasedate'=>(int)env('APP_RELEASE'),
+            'version_code'=>(int)env('APP_RELEASE'),
             'addtime'=>time(),
             'dateline'=>time()
         ));

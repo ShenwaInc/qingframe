@@ -154,23 +154,23 @@
 
 **表用途说明：** 云服务表，用于存储云服务相关的模块和应用信息，包括服务标识、名称、模块名、类型、Logo、网站、版本、发布日期等，用于云服务管理和应用商店功能。
 
-| 字段名 | 字段类型 | 默认值 | 额外属性 | 注释 |
-|--------|---------|--------|---------|------|
-| id | integer | - | primary, auto_increment | 云服务ID |
-| identity | string(50) | '' | - | 服务标识 |
-| name | string(50) | '' | - | 服务名称 |
-| modulename | string(50) | '' | - | 模块名称 |
-| type | boolean | 0 | - | 服务类型 |
-| maintenance | boolean | - | - | 是否维护中 |
+| 字段名 | 字段类型 | 默认值 | 额外属性 | 注释       |
+|--------|---------|--------|---------|----------|
+| id | integer | - | primary, auto_increment | 云服务ID    |
+| identity | string(50) | '' | - | 服务标识     |
+| name | string(50) | '' | - | 服务名称     |
+| modulename | string(50) | '' | - | 模块名称     |
+| type | boolean | 0 | - | 服务类型     |
+| maintenance | boolean | - | - | 是否维护中    |
 | logo | string | '' | - | Logo图片路径 |
-| website | string | '' | - | 官方网站 |
-| rootpath | string(50) | '' | - | 根路径 |
-| version | string(20) | '' | - | 版本号 |
-| releasedate | integer | 0 | - | 发布日期（时间戳） |
-| online | text | NULL | nullable | 在线状态信息 |
-| addtime | integer | 0 | - | 添加时间戳 |
-| updatetime | string(10) | '0' | - | 更新时间 |
-| dateline | integer | 0 | - | 数据时间线 |
+| website | string | '' | - | 官方网站     |
+| rootpath | string(50) | '' | - | 根路径      |
+| version | string(20) | '' | - | 版本名称     |
+| version_code | integer | 0 | - | 版本号      |
+| online | text | NULL | nullable | 在线状态信息   |
+| addtime | integer | 0 | - | 添加时间戳    |
+| updatetime | string(10) | '0' | - | 更新时间     |
+| dateline | integer | 0 | - | 数据时间线    |
 
 ---
 
