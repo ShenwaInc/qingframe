@@ -1,9 +1,9 @@
 {
     "application": {
         "name": "Dummy",
-        "identifie": "dummy",
+        "identifier": "dummy",
         "version": "1.0.1",
-        "releasedate": "TIMESTAMP",
+        "version_code": "TIMESTAMP",
         "type": "business",
         "module_type": "1",
         "ability": "Your Module",

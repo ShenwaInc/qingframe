@@ -84,6 +84,17 @@ function assets($path, $secure = null){
     return $path;
 }
 
+if (!function_exists('app_asset')){
+    function app_asset($path, $name){
+        return asset("apps/{$name}/{$path}");
+    }
+
+    function app_assetPath($path, $name)
+    {
+        return base_path("apps/{$name}/public/{$path}");
+    }
+}
+
 if (!function_exists('post_var')){
     function post_var(array $keys, $params=null): array
     {
