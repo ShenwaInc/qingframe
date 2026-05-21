@@ -89,7 +89,7 @@
                             <td class="soild-after">
                                 V{{ QingVersion }} Release{{ QingRelease }}
                                 @if($cloudInfo['upgradable'])
-                                    &nbsp;&nbsp;<span class="layui-badge layui-bg-red" title="V{{ $cloudInfo['version'] }} Release{{ $cloudInfo['releasedate'] }}">@lang('发现新版本')</span>
+                                    &nbsp;&nbsp;<span class="layui-badge layui-bg-red" title="V{{ $cloudInfo['version'] }} Release{{ $cloudInfo['version_code'] ?? $cloudInfo['releasedate'] }}">@lang('发现新版本')</span>
                                 @elseif($cloudInfo['hasDifference'])
                                     <span class="layui-badge layui-badge-dot" lay-tips="@lang('当前系统源码与云端对比有变动')"></span>
                                 @endif

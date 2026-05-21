@@ -55,17 +55,18 @@ class CloudService
                 $com['cloudInfo'] = $cloudInfo;
                 $com['maintenance'] = $selfMaintenance;
                 $com['installed'] = true;
+                $com['base_path'] = str_replace("/" . $com['modulename'] . "/", '', $com['rootpath']);
                 $plugins[$com['modulename']] = $com;
             }
         }
         //获取本地模块
-        $modules = FileService::file_tree(public_path('addons'), array('*/manifest.json'));
+        $modules = FileService::file_tree(base_path('apps'), array('*/manifest.json'));
         if (!empty($modules)){
             foreach ($modules as $value){
-                $identity = str_replace(array(public_path('addons/'),"/manifest.json"),'', $value);
+                $identity = str_replace(array(base_path('apps/'),"/manifest.json"),'', $value);
                 if (empty($identity)) continue;
                 try {
-                    $ManiFest = ModuleService::getManifest($identity);
+                    $ManiFest = ModuleService::getManifest($identity, 'apps');
                     if (is_error($ManiFest)) continue;
                     $com = $ManiFest['application'];
                 }catch (\Exception $exception){
@@ -86,7 +87,7 @@ class CloudService
                 }
                 $comCloud = $plugins[$identity] ?? [];
                 if (empty($com['modulename'])){
-                    $com['modulename'] = $com['identifie'];
+                    $com['modulename'] = $com['identifier'] ?? $com['identifie'];
                 }
                 $com['logo'] = asset($com['logo']);
                 $com['website'] = $com['url'];
@@ -94,6 +95,7 @@ class CloudService
                 $com['addtime'] = 0;
                 $com['installed'] = !empty($comCloud);
                 $com['expireDate'] = !empty($comCloud) ? $comCloud['expireDate'] : '';
+                $com['base_path'] = 'apps';
                 $actions = $comCloud['action']??'';
                 //已安装
                 if ($ManiFest['installed']){
@@ -109,7 +111,7 @@ class CloudService
                         $com['lastUpdated'] = '-';
                         $com['cloudInfo'] = $comCloud ? $comCloud['cloudInfo'] : array('upgradable'=>false, 'isLocal'=>true);
                     }
-                    $com['addtime'] = $com['releasedate'];
+                    $com['addtime'] = $com['version_code'];
                     if (DEVELOPMENT){
                         $Module = ModuleService::fetch($com['identifie']);
                         if (!empty($Module) && !is_error($Module)){
@@ -152,12 +154,12 @@ class CloudService
             foreach ($res['servers'] as $value){
                 $identify = str_replace($modulePre, "", $value['identity']);
                 if (empty($identify) || empty($value['release'])) continue;
-                $releaseDate = intval($value['release']['releasedate']);
+                $releaseDate = intval($value['release']['version_code']??$value['release']['releasedate']);
                 if (isset($plugins[$identify])){
                     //已安装
                     $local = $plugins[$identify];
                     if ($local['addtime']==0 || !empty($local['maintenance'])) continue;
-                    $cloudInfo = array('upgradable'=>$local['cloudInfo']['upgradable'], 'expired'=>false, 'isLocal'=>$local['cloudInfo']['isLocal'],'version'=>$value['release']['version'],'releasedate'=>$releaseDate);
+                    $cloudInfo = array('upgradable'=>$local['cloudInfo']['upgradable'], 'expired'=>false, 'isLocal'=>$local['cloudInfo']['isLocal'],'version'=>$value['release']['version'],'version_code'=>$releaseDate);
                     $cloudInfo['id'] = $value['identity'];
                     $local['expireDate'] = '';
                     if (!$cloudInfo['isLocal']){
@@ -175,7 +177,7 @@ class CloudService
                             $local['expireDate'] = '<span class="text-red">'.__($value['authorize']['message']).'</span>';
                         }
                     }
-                    if (version_compare($local['version'], $value['release']['version'], '<') || $local['releasedate']<$releaseDate){
+                    if (version_compare($local['version'], $value['release']['version'], '<') || $local['version_code']<$releaseDate){
                         //可升级至云端最新版本
                         $cloudInfo['upgradable'] = true;
                         $tips = __('应用可升级至V:version', ['version'=>$value['release']['version']]);
@@ -192,7 +194,7 @@ class CloudService
                         'name'=>$value['name'],
                         'identify'=>$identify,
                         'version'=>$value['release']['version'],
-                        'releasedate'=>$releaseDate,
+                        'version_code'=>$releaseDate,
                         'ability'=>$value['name'],
                         'description'=>$value['summary'],
                         'author'=>$value['author'],
@@ -205,7 +207,7 @@ class CloudService
                     $com['cloudInfo'] = array(
                         'id'=>$value['identity'],
                         'version'=>$value['release']['version'],
-                        'releasedate'=>$releaseDate,
+                        'version_code'=>$releaseDate,
                         'upgradable'=>false,
                         'isLocal'=>false,
                         'expired'=>false
@@ -338,6 +340,7 @@ class CloudService
         );
         $upgradeInfo = self::CloudApi('structure',$data);
         if (is_error($upgradeInfo)) return $upgradeInfo;
+        $upgradeInfo['version_code'] = $upgradeInfo['version_code'] ?? $upgradeInfo['version_code'];
         MSService::TerminalSend(['mode'=>'info', 'message'=>'获取到云端程序信息：V'.$upgradeInfo['version']]);
         if (!empty($upgradeInfo['versionBase'])){
             if (version_compare($upgradeInfo['versionBase'], QingVersion, '>')){
@@ -352,7 +355,8 @@ class CloudService
         $data = array(
             'identity'=>$identity,
             'fp'=>config('system.identity'),
-            'releasedate'=>$upgradeInfo['releasedate'],
+            'releasedate'=>$upgradeInfo['version_code'],
+            'version_code'=>$upgradeInfo['version_code'],
             'difference'=>base64_encode(json_encode($difference))
         );
         $zipContent = self::CloudApi('upgrade',$data,true);
@@ -373,7 +377,7 @@ class CloudService
             MSService::TerminalSend(['mode'=>'err', 'message'=>'云端程序同步失败，请检查文件权限']);
             return error(-1,__('saveFailed'));
         }
-        $patchPath = $patch.$identity.$upgradeInfo['releasedate'].'/';
+        $patchPath = $patch.$identity.$upgradeInfo['version_code'].'/';
         if (is_dir($patchPath)){
             FileService::rmdirs($patchPath);
         }

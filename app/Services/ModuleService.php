@@ -13,8 +13,8 @@ use Illuminate\Support\Facades\DB;
 class ModuleService
 {
 
-    static function getManifest($identity,$path='addons'){
-        $manifestFile = base_path("public/$path/$identity/manifest.json");
+    static function getManifest($identity, $path='public/addons'){
+        $manifestFile = base_path("$path/$identity/manifest.json");
         if(!file_exists($manifestFile)) return error(-1,__('无法解析模块安装包'));
         $JSON = file_get_contents($manifestFile);
         $result = json_decode($JSON, true);
@@ -31,37 +31,13 @@ class ModuleService
         return DB::table('gxswa_cloud')->where('identity', $cloudIdentity)->update(['maintenance'=>intval($maintenance)]);
     }
 
-    static function install($identity,$path='addons',$from='cloud'){
+    static function install($identity,$path='public/addons',$from='cloud'){
         $startTime = time();
         $ManiFest = self::getManifest($identity, $path);
         if (is_error($ManiFest)) return $ManiFest;
         if ($ManiFest['installed']) return true;
         $application = $ManiFest['application'];
         MSService::TerminalSend(['mode'=>'info', 'message'=>"即将安装应用模块【{$application['name']}^{$application['version']}】"]);
-        //运行数据库迁移
-        $migrationPath = base_path("public/$path/$identity/database/migrations");
-        if (is_dir($migrationPath)){
-            MSService::TerminalSend(['mode'=>'info', 'message'=>"即将进行数据结构迁移..."]);
-            try {
-                Artisan::call('migrate', ['--force' => true, '--path' => "public/$path/$identity/database/migrations"]);
-                MSService::TerminalSend(['mode'=>'success', 'message'=>"数据结构迁移完成!"]);
-            }catch (\Exception $exception){
-                SystemLogs::systemRunning(
-                    '模块数据库迁移异常',
-                    'service:ModuleService',
-                    "执行模块数据库迁移时发生异常：{$exception->getMessage()}",
-                    false,
-                    [
-                        'exception_file' => $exception->getFile(),
-                        'exception_line' => $exception->getLine(),
-                        'exception_code' => $exception->getCode(),
-                        'module_identity' => $identity,
-                        'path' => $path,
-                    ]
-                );
-                return error(-1,__('installFailed', ['reason'=>DEVELOPMENT?$exception->getMessage():__('运行数据库迁移时出现异常')]));
-            }
-        }
         //执行安装脚本
         if (!empty($ManiFest['install'])){
             try {
@@ -86,6 +62,30 @@ class ModuleService
                 return error(-1,__('installFailed', ['reason'=>DEVELOPMENT?$exception->getMessage():__('installFailedRender')]));
             }
         }
+        //运行数据库迁移
+        $migrationPath = base_path("public/$path/$identity/database/migrations");
+        if (is_dir($migrationPath)){
+            MSService::TerminalSend(['mode'=>'info', 'message'=>"即将进行数据结构迁移..."]);
+            try {
+                Artisan::call('migrate', ['--force' => true, '--path' => "public/$path/$identity/database/migrations"]);
+                MSService::TerminalSend(['mode'=>'success', 'message'=>"数据结构迁移完成!"]);
+            }catch (\Exception $exception){
+                SystemLogs::systemRunning(
+                    '模块数据库迁移异常',
+                    'service:ModuleService',
+                    "执行模块数据库迁移时发生异常：{$exception->getMessage()}",
+                    false,
+                    [
+                        'exception_file' => $exception->getFile(),
+                        'exception_line' => $exception->getLine(),
+                        'exception_code' => $exception->getCode(),
+                        'module_identity' => $identity,
+                        'path' => $path,
+                    ]
+                );
+                return error(-1,__('installFailed', ['reason'=>DEVELOPMENT?$exception->getMessage():__('运行数据库迁移时出现异常')]));
+            }
+        }
         //写入模块数据表
         $subscribes = $ManiFest['subscribes'] ?: array();
         $handles = $ManiFest['handles'] ?: array();
@@ -106,7 +106,7 @@ class ModuleService
                 'logo'=>$module['logo'],
                 'website'=>$module['url'],
                 'version'=>$application['version'],
-                'releasedate'=>$application['releasedate'],
+                'version_code'=>$application['version_code']??$application['releasedate'],
                 'updatetime'=>TIMESTAMP,
                 'addtime'=>TIMESTAMP,
                 'dateline'=>TIMESTAMP
@@ -185,8 +185,31 @@ class ModuleService
         $component = self::SysComponent($application['identifie']);
         if (!empty($component)){
             //已经是最新版本
-            if ($component['releasedate']>=$application['releasedate']){
+            if ($component['version_code']>=$application['version_code']){
                 return true;
+            }
+        }
+        //执行升级脚本
+        if (!empty($ManiFest['upgrade'])){
+            try {
+                MSService::TerminalSend(['mode'=>'info', 'message'=>"正在运行应用升级脚本..."]);
+                define('MODULE_UPGRADE', 1);
+                script_run($ManiFest['upgrade'], public_path("addons/$identity/"));
+                MSService::TerminalSend(['mode'=>'success', 'message'=>"应用升级脚本运行完成！"]);
+            } catch (\Exception $exception){
+                SystemLogs::systemRunning(
+                    '模块升级脚本执行异常',
+                    'service:ModuleService',
+                    "执行模块升级脚本时发生异常：{$exception->getMessage()}",
+                    false,
+                    [
+                        'exception_file' => $exception->getFile(),
+                        'exception_line' => $exception->getLine(),
+                        'exception_code' => $exception->getCode(),
+                        'module_identity' => $identity,
+                    ]
+                );
+                return error(-1,__('installFailed', ['reason'=>$exception->getMessage()]));
             }
         }
         //运行数据库迁移
@@ -213,29 +236,6 @@ class ModuleService
                 return error(-1,__('installFailed', ['reason'=>DEVELOPMENT?$exception->getMessage():__('运行数据库迁移时出现异常')]));
             }
         }
-        //执行升级脚本
-        if (!empty($ManiFest['upgrade'])){
-            try {
-                MSService::TerminalSend(['mode'=>'info', 'message'=>"正在运行应用升级脚本..."]);
-                define('MODULE_UPGRADE', 1);
-                script_run($ManiFest['upgrade'], public_path("addons/$identity/"));
-                MSService::TerminalSend(['mode'=>'success', 'message'=>"应用升级脚本运行完成！"]);
-            } catch (\Exception $exception){
-                SystemLogs::systemRunning(
-                    '模块升级脚本执行异常',
-                    'service:ModuleService',
-                    "执行模块升级脚本时发生异常：{$exception->getMessage()}",
-                    false,
-                    [
-                        'exception_file' => $exception->getFile(),
-                        'exception_line' => $exception->getLine(),
-                        'exception_code' => $exception->getCode(),
-                        'module_identity' => $identity,
-                    ]
-                );
-                return error(-1,__('installFailed', ['reason'=>$exception->getMessage()]));
-            }
-        }
         //更新模块数据表
         $subscribes = $ManiFest['subscribes'] ?: array();
         $handles = $ManiFest['handles'] ?: array();
@@ -244,19 +244,19 @@ class ModuleService
         DB::table('modules')->where('name',$application['identifie'])->update($moduledata);
         //更新模块数据表
         if (!empty($component) || $from=='cloud'){
-            $cloudinfo = empty($component['online']) ? array() : unserialize($component['online']);
-            $cloudinfo['isnew'] = false;
-            $cloudinfo['releasedate'] = $application['releasedate'];
-            $cloudinfo['version'] = $application['version'];
+            $cloudInfo = empty($component['online']) ? array() : unserialize($component['online']);
+            $cloudInfo['isnew'] = false;
+            $cloudInfo['version_code'] = $application['version_code'] ?? $application['releasedate'];
+            $cloudInfo['version'] = $application['version'];
             $cloudIdentity = self::SysPrefix($identity);
             $comInfo = array(
                 'name'=>$application['name'],
                 'logo'=>$application['logo'],
                 'website'=>$application['url'],
-                'online'=>serialize($cloudinfo),
+                'online'=>serialize($cloudInfo),
                 'version'=>$application['version'],
                 'updatetime'=>TIMESTAMP,
-                'releasedate'=>$application['releasedate'],
+                'version_code'=>$cloudInfo['version_code'],
                 'dateline'=>TIMESTAMP
             );
             if (empty($component)){

@@ -66,7 +66,7 @@
                                         <img src="{{ $com['logo'] }}" class="fl bg-gray radius margin-right-sm" height="48" />
                                         <div class="fui-table-name">
                                             <a href="{{$com['website']}}" class="text-blue" title="@lang($com['description'])" target="_blank">@lang($com['name'])</a><br/>
-                                            <span title="Release {{ $com['releasedate'] }}">V{{$com['version']}}</span>
+                                            <span title="Release {{ $com['version_code'] }}">V{{$com['version']}}</span>
                                         </div>
                                     </td>
                                     <td class="layui-hide-xs">{!! $com['installTime'] !!}</td>
@@ -75,9 +75,9 @@
                                         @if(empty($com['cloudInfo']) || empty($com['cloudInfo']['id']))
                                             -
                                         @else
-                                            V{{ $com['cloudInfo']['version'] }}&nbsp;&nbsp;Release {{ $com['cloudInfo']['releasedate'] }}
+                                            V{{ $com['cloudInfo']['version'] }}&nbsp;&nbsp;Release {{ $com['cloudInfo']['version_code'] }}
                                             @if($com['cloudInfo']['upgradable'])
-                                                @if($com['cloudInfo']['releasedate']==$com['releasedate'])
+                                                @if($com['cloudInfo']['version_code']==$com['version_code'])
                                                     <span class="layui-badge-dot" lay-tips="@lang('当前系统源码与云端对比有变动')"></span>
                                                 @else
                                                     <span class="layui-badge-dot" lay-tips="@lang('发现新版本')"></span>

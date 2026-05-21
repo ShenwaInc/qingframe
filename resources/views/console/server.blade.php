@@ -115,7 +115,8 @@
             let identity = Elem.attr('data-nid');
             Core.get('console/server', function (res){
                 if(res.type==='success'){
-                    let tips = "{{ __('upgradeTo', array('data'=>__('service'))) }}V" + res.data.release.version + "Release" + res.data.release.releasedate;
+                    let version_code = res.data.release.version_code || res.data.release.releasedate;
+                    let tips = "{{ __('upgradeTo', array('data'=>__('service'))) }}V" + res.data.release.version + " Release" + version_code;
                     Elem.removeClass('layui-hide').attr('lay-tips', tips);
                     $('#update' + identity).removeClass('layui-hide');
                 }
