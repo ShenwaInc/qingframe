@@ -36,6 +36,8 @@ class ModuleController extends Controller
         $WeModule = new WeModule();
         try {
             $site = $WeModule->create($moduleName);
+            $basePath = $site->__basePath;
+            $nameSpace = $basePath == 'apps' ? 'Apps' : 'Addons';
             if (empty($site)){
                 SystemLogs::systemRunning(
                     "模块请求异常：{$moduleName}",
@@ -60,10 +62,10 @@ class ModuleController extends Controller
                 return $site->ConsoleRequest($request, $segment1, $segment2);
             }
 
-            $className = "Addons\\".$moduleName."\app\Controllers\web\\".ucfirst($segment1)."Controller";
+            $className = $nameSpace . "\\".$moduleName."\app\Controllers\web\\".ucfirst($segment1)."Controller";
             $method = $segment2;
             if (!class_exists($className)){
-                $className = "Addons\\".$moduleName."\app\Controllers\web\IndexController";
+                $className = $nameSpace . "\\".$moduleName."\app\Controllers\web\IndexController";
                 if (class_exists($className)){
                     $method = $segment1;
                     $segment1 = 'index';
@@ -387,7 +389,8 @@ class ModuleController extends Controller
      */
     public function doInstall(Request $request){
         $identity = $request->input('nid', "");
-        $install = ModuleService::install($identity, 'addons', 'local');
+        $from = $request->input('from', 'apps');
+        $install = ModuleService::install($identity, $from, 'local');
         $status = !is_error($install);
         SystemLogs::userOperation('安装应用模块', 'module:install', "模块：{$identity}（本地安装）", $status, ['module' => $identity]);
         if (!$status){
@@ -401,7 +404,7 @@ class ModuleController extends Controller
     */
     public function doUpgrade(Request $request){
         $identity = $request->input('nid', "");
-        $complete = ModuleService::upgrade($identity);
+        $complete = ModuleService::upgrade($identity, 'local', $request->input('from', 'apps'));
         $status = !is_error($complete);
         SystemLogs::userOperation('升级应用模块', 'module:upgrade', "模块：{$identity}（本地升级）", $status, ['module' => $identity]);
         if (!$status){
@@ -416,7 +419,8 @@ class ModuleController extends Controller
      */
     public function doRequire(Request $request){
         $identity = $request->input('nid', "");
-        $cloudRequire = CloudService::RequireModule($identity);
+        $from = $request->input('from', 'apps');
+        $cloudRequire = CloudService::RequireModule($identity, $from);
         $status = !is_error($cloudRequire);
         SystemLogs::userOperation('安装应用模块', 'module:require', "模块：{$identity}（云端安装）", $status, ['module' => $identity]);
         if (!$status){
@@ -434,6 +438,9 @@ class ModuleController extends Controller
         $identity = $request->input('nid', "");
         $cloudIdentity = ModuleService::SysPrefix($identity);
         $targetPath = public_path("addons/$identity/");
+        if (!is_dir($targetPath)){
+            $targetPath = public_path("apps/$identity/");
+        }
         $res = CloudService::CloudUpdate($cloudIdentity, $targetPath);
         if (is_error($res)){
             MSService::TerminalSend(["mode"=>"err", "message"=>$res['message']], true);
@@ -460,7 +467,7 @@ class ModuleController extends Controller
      */
     public function doRemove(Request $request){
         $identity = $request->input('nid', "");
-        $uninstall = ModuleService::uninstall($identity);
+        $uninstall = ModuleService::uninstall($identity, $request->input('from', 'apps'));
         $status = !is_error($uninstall);
         SystemLogs::userOperation('卸载应用模块', 'module:remove', "模块：{$identity}", $status, ['module' => $identity]);
         if (!$status) return $this->TerminalError($uninstall['message']);

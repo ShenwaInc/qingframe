@@ -14,14 +14,14 @@ class CloudService
     static $cloudApi = 'https://chat.gxit.org/app/index.php?i=4&c=entry&m=swa_supersale&do=api';
     static $apiList = array('rmcom'=>'cloud.vendor.remove','require'=>'cloud.install','structure'=>'cloud.structure','upgrade'=>'cloud.makepatch');
 
-    static function RequireModule($identity,$path='addons'){
+    static function RequireModule($identity, $path='public/addons'){
         $modulePre = ModuleService::SysPrefix();
         $moduleName = str_replace($modulePre, "", $identity);
-        $targetpath = base_path("public/$path/$moduleName");
+        $targetPath = base_path("$path/$moduleName");
         $from = 'local';
-        if (!is_dir($targetpath)){
+        if (!is_dir($targetPath)){
             MSService::TerminalSend(['mode'=>'info', 'message'=>'即将从云端获取模块']);
-            $result = self::CloudRequire($identity,$targetpath);
+            $result = self::CloudRequire($identity, $targetPath);
             if(is_error($result)) return $result;
             $from = 'cloud';
         }
@@ -60,81 +60,7 @@ class CloudService
             }
         }
         //获取本地模块
-        $modules = FileService::file_tree(base_path('apps'), array('*/manifest.json'));
-        if (!empty($modules)){
-            foreach ($modules as $value){
-                $identity = str_replace(array(base_path('apps/'),"/manifest.json"),'', $value);
-                if (empty($identity)) continue;
-                try {
-                    $ManiFest = ModuleService::getManifest($identity, 'apps');
-                    if (is_error($ManiFest)) continue;
-                    $com = $ManiFest['application'];
-                }catch (\Exception $exception){
-                    SystemLogs::systemRunning(
-                        '获取模块清单异常',
-                        'service:CloudService',
-                        "获取本地模块清单时发生异常：{$exception->getMessage()}",
-                        false,
-                        [
-                            'exception_file' => $exception->getFile(),
-                            'exception_line' => $exception->getLine(),
-                            'exception_code' => $exception->getCode(),
-                            'exception_trace' => $exception->getTrace(),
-                            'identity' => $identity,
-                        ]
-                    );
-                    continue;
-                }
-                $comCloud = $plugins[$identity] ?? [];
-                if (empty($com['modulename'])){
-                    $com['modulename'] = $com['identifier'] ?? $com['identifie'];
-                }
-                $com['logo'] = asset($com['logo']);
-                $com['website'] = $com['url'];
-                $com['installTime'] = '<span class="layui-badge layui-bg-orange">'.__('readyToInstall').'</span>';
-                $com['addtime'] = 0;
-                $com['installed'] = !empty($comCloud);
-                $com['expireDate'] = !empty($comCloud) ? $comCloud['expireDate'] : '';
-                $com['base_path'] = 'apps';
-                $actions = $comCloud['action']??'';
-                //已安装
-                if ($ManiFest['installed']){
-                    $com['installed'] = true;
-                    if (!empty($comCloud)){
-                        //从云端安装
-                        $com['installTime'] = $comCloud['installTime'];
-                        $com['lastUpdated'] = $comCloud['lastUpdated'];
-                        $com['cloudInfo'] = $comCloud['cloudInfo'];
-                    }else{
-                        //从本地安装
-                        $com['installTime'] = __('appLocal');
-                        $com['lastUpdated'] = '-';
-                        $com['cloudInfo'] = $comCloud ? $comCloud['cloudInfo'] : array('upgradable'=>false, 'isLocal'=>true);
-                    }
-                    $com['addtime'] = $com['version_code'];
-                    if (DEVELOPMENT){
-                        $Module = ModuleService::fetch($com['identifie']);
-                        if (!empty($Module) && !is_error($Module)){
-                            if (version_compare($com['version'], $Module['version'], '>')){
-                                $tips = __('应用可升级至V:version', ['version'=>$com['version']]);
-                                $actions .= '<a href="'. wurl('module/upgrade', ['nid'=>$com['modulename']]) .'" data-text="'. __('upgradeConfirm') .'" class="layui-btn layui-btn-sm layui-btn-warm js-terminal" lay-tips="'.$tips.'">'. __('本地升级') .'</a>';
-                            }
-                            $com['version'] = $Module['version'];
-                        }
-                    }
-                    $actions .= '<a href="'.wurl('module/allocate', array('nid'=>$identity)).'" title="'.__('分配应用权限').'" class="layui-btn layui-btn-sm ajaxshow">'.__('分配').'</a>';
-                    $actions .= '<a href="'.wurl('module/remove', array('nid'=>$identity)).'" class="layui-btn layui-btn-sm layui-btn-primary js-terminal" data-text="'.__('uninstallConfirm').'">'.__('uninstall').'</a></div>';
-                }else{
-                    $com['lastUpdated'] = '-';
-                    if(DEVELOPMENT){
-                        $actions .= '<a href="'.wurl('module/install', array('nid'=>$identity)).'" class="layui-btn layui-btn-sm layui-btn-normal js-terminal" data-text="'.__('installConfirm').'">'.__('本地安装').'</a>';
-                    }
-                }
-                $com = array_merge($comCloud, $com);
-                $com['action'] = $actions;
-                $plugins[$identity] = $com;
-            }
-        }
+        self::getLocalModules($plugins);
         //获取云端未安装模块
         $cacheKey = "cloud:module_list:1";
         $res = Cache::get($cacheKey, array());
@@ -213,13 +139,101 @@ class CloudService
                         'expired'=>false
                     );
                     $com['installTime'] = '<span class="layui-badge layui-bg-orange">'.__('readyToInstall').'</span>';
-                    $com['action'] = '<a href="'.wurl('module/require', array('nid'=>$value['identity'])).'" class="layui-btn layui-btn-sm layui-btn-normal js-terminal" data-text="'.__('installConfirm').'">'.__('install').'</a>';
+                    $installUrl = wurl('module/require', array('nid'=>$value['identity'], 'from'=>$value['base_path']?:'public/addons'));
+                    $com['action'] = '<a href="'.$installUrl.'" class="layui-btn layui-btn-sm layui-btn-normal js-terminal" data-text="'.__('installConfirm').'">'.__('install').'</a>';
                     $plugins[$identify] = $com;
                 }
             }
         }
-        //dd($plugins);
         return $plugins;
+    }
+
+    static function getLocalModules(&$plugins)
+    {
+        $paths = ['apps', 'public/addons'];
+        $modules = [];
+        foreach ($paths as $path){
+            $list = FileService::file_tree(base_path($path), array('*/manifest.json'));
+            if (!empty($list)){
+                $modules = array_merge($modules, $list);
+                foreach ($list as $value){
+                    $value = str_replace(DIRECTORY_SEPARATOR, "/", $value);
+                    $basePath = str_replace(DIRECTORY_SEPARATOR, "/", base_path($path.'/'));
+                    $identity = str_replace(array($basePath, "/manifest.json"),'', $value);
+                    if (empty($identity)) continue;
+                    try {
+                        $ManiFest = ModuleService::getManifest($identity, $path);
+                        if (is_error($ManiFest)) continue;
+                        $com = $ManiFest['application'];
+                    }catch (\Exception $exception){
+                        SystemLogs::systemRunning(
+                            '获取模块清单异常',
+                            'service:CloudService',
+                            "获取本地模块清单时发生异常：{$exception->getMessage()}",
+                            false,
+                            [
+                                'exception_file' => $exception->getFile(),
+                                'exception_line' => $exception->getLine(),
+                                'exception_code' => $exception->getCode(),
+                                'exception_trace' => $exception->getTrace(),
+                                'identity' => $identity,
+                            ]
+                        );
+                        continue;
+                    }
+
+                    $comCloud = $plugins[$identity] ?? [];
+                    if (empty($com['modulename'])){
+                        $com['modulename'] = $com['identifier'] ?? $com['identifie'];
+                    }
+                    $com['logo'] = asset($com['logo']);
+                    $com['website'] = $com['url'];
+                    $com['installTime'] = '<span class="layui-badge layui-bg-orange">'.__('readyToInstall').'</span>';
+                    $com['addtime'] = 0;
+                    $com['installed'] = !empty($comCloud);
+                    $com['expireDate'] = !empty($comCloud) ? $comCloud['expireDate'] : '';
+                    $com['base_path'] = $path;
+                    $actions = $comCloud['action']??'';
+                    //已安装
+                    if ($ManiFest['installed']){
+                        $com['installed'] = true;
+                        if (!empty($comCloud)){
+                            //从云端安装
+                            $com['installTime'] = $comCloud['installTime'];
+                            $com['lastUpdated'] = $comCloud['lastUpdated'];
+                            $com['cloudInfo'] = $comCloud['cloudInfo'];
+                        }else{
+                            //从本地安装
+                            $com['installTime'] = __('appLocal');
+                            $com['lastUpdated'] = '-';
+                            $com['cloudInfo'] = $comCloud ? $comCloud['cloudInfo'] : array('upgradable'=>false, 'isLocal'=>true);
+                        }
+                        $com['addtime'] = $com['version_code'];
+                        if (DEVELOPMENT){
+                            $Module = ModuleService::fetch($com['identifie']);
+                            if (!empty($Module) && !is_error($Module)){
+                                if (version_compare($com['version'], $Module['version'], '>')){
+                                    $tips = __('应用可升级至V:version', ['version'=>$com['version']]);
+                                    $actions .= '<a href="'. wurl('module/upgrade', ['nid'=>$com['modulename'], 'from'=>$path]) .'" data-text="'. __('upgradeConfirm') .'" class="layui-btn layui-btn-sm layui-btn-warm js-terminal" lay-tips="'.$tips.'">'. __('本地升级') .'</a>';
+                                }
+                                $com['version'] = $Module['version'];
+                            }
+                        }
+                        $actions .= '<a href="'.wurl('module/allocate', array('nid'=>$identity)).'" title="'.__('分配应用权限').'" class="layui-btn layui-btn-sm ajaxshow">'.__('分配').'</a>';
+                        $actions .= '<a href="'.wurl('module/remove', array('nid'=>$identity, 'from'=>$com['base_path'])).'" class="layui-btn layui-btn-sm layui-btn-primary js-terminal" data-text="'.__('uninstallConfirm').'">'.__('uninstall').'</a></div>';
+                    }else{
+                        $com['lastUpdated'] = '-';
+                        if(DEVELOPMENT){
+                            $installUrl = wurl('module/install', array('nid'=>$identity, 'from'=>$path));
+                            $actions .= '<a href="' . $installUrl . '" class="layui-btn layui-btn-sm layui-btn-normal js-terminal" data-text="'.__('installConfirm').'">'.__('本地安装').'</a>';
+                        }
+                    }
+                    $com = array_merge($comCloud, $com);
+                    $com['action'] = $actions;
+                    $plugins[$identity] = $com;
+                }
+            }
+        }
     }
 
     static function MoveDir($from, $to, $overWrite = false){
@@ -279,7 +293,7 @@ class CloudService
         return true;
     }
 
-    static function CloudRequire($identity,$targetpath,$patch=''){
+    static function CloudRequire($identity, $targetPath, $patch=''){
         $data = array(
             'identity'=>$identity,
             'fp'=>config('system.identity')
@@ -310,7 +324,7 @@ class CloudService
         $zip = new \ZipArchive();
         $openRes = $zip->open($patch.$filename);
         if ($openRes === TRUE) {
-            $zip->extractTo($targetpath);
+            $zip->extractTo($targetPath);
             $zip->close();
             //删除补丁包
             @unlink($patch.$filename);
@@ -321,12 +335,12 @@ class CloudService
         }
 
         //如果解压包内嵌则操作搬移
-        if (is_dir($targetpath.$identity.'/')){
+        if (is_dir($targetPath.$identity.'/')){
             if (is_dir($patch.$identity)){
                 FileService::rmdirs($patch.$identity);
             }
-            self::MoveDir($targetpath.$identity,$patch);
-            self::CloudPatch($targetpath,$patch.$identity.'/',true);
+            self::MoveDir($targetPath.$identity,$patch);
+            self::CloudPatch($targetPath,$patch.$identity.'/',true);
             FileService::rmdirs($patch.$identity, true);
         }
         return true;

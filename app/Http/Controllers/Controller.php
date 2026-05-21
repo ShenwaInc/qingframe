@@ -12,6 +12,9 @@ class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
+    public $moduleName;
+    public $moduleSite;
+
     /**
      * 统一抛出响应
      * @param array|string|null $prompt 抛出内容，可以是提示信息或者数据，支持国际化提示词
@@ -58,14 +61,24 @@ class Controller extends BaseController
 
     public function moduleView($view, $data=array())
     {
+        $basePath = 'public/addons';
         if (empty($this->moduleName)){
             $className = static::class;
-            if (!preg_match('/^Addons\\\\([^\\\\]+)\\\\/', $className)){
+            if (preg_match('/^Addons\\\\([^\\\\]+)\\\\/', $className)){
+                $this->moduleName = preg_replace('/^Addons\\\\([^\\\\]+)\\\\.*$/', '$1', $className);
+            }elseif (preg_match('/^Apps\\\\([^\\\\]+)\\\\/', $className)){
+                $this->moduleName = preg_replace('/^Apps\\\\([^\\\\]+)\\\\.*$/', '$1', $className);
+                $basePath = 'apps';
+            }else{
                 return $this->message("无效的应用标识");
             }
-            $this->moduleName = preg_replace('/^Addons\\\\([^\\\\]+)\\\\.*$/', '$1', $className);
+        }elseif(!empty($this->moduleSite)){
+            $viewPath = $this->moduleSite->__basePath;
         }
-        $viewPath = public_path("addons/{$this->moduleName}/views");
+        $viewPath = base_path("$viewPath/{$this->moduleName}/views");
+        if (!is_dir($viewPath)){
+            return $this->message("无效的视图路径：" . $viewPath);
+        }
         try {
             View::addNamespace($this->moduleName, $viewPath);
         }catch (\Exception $e){

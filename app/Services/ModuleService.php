@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\DB;
 class ModuleService
 {
 
-    static function getManifest($identity, $path='public/addons'){
+    static function getManifest($identity, $path='apps'){
         $manifestFile = base_path("$path/$identity/manifest.json");
         if(!file_exists($manifestFile)) return error(-1,__('无法解析模块安装包'));
         $JSON = file_get_contents($manifestFile);
@@ -31,7 +31,7 @@ class ModuleService
         return DB::table('gxswa_cloud')->where('identity', $cloudIdentity)->update(['maintenance'=>intval($maintenance)]);
     }
 
-    static function install($identity,$path='public/addons',$from='cloud'){
+    static function install($identity,$path='apps',$from='cloud'){
         $startTime = time();
         $ManiFest = self::getManifest($identity, $path);
         if (is_error($ManiFest)) return $ManiFest;
@@ -43,7 +43,7 @@ class ModuleService
             try {
                 MSService::TerminalSend(['mode'=>'info', 'message'=>"正在运行应用安装脚本..."]);
                 define('MODULE_INSTALL', 1);
-                script_run($ManiFest['install'], public_path("{$path}/{$identity}/"));
+                script_run($ManiFest['install'], base_path("{$path}/{$identity}/"));
                 MSService::TerminalSend(['mode'=>'success', 'message'=>"应用安装脚本运行完成!"]);
             } catch (\Exception $exception){
                 SystemLogs::systemRunning(
@@ -63,11 +63,11 @@ class ModuleService
             }
         }
         //运行数据库迁移
-        $migrationPath = base_path("public/$path/$identity/database/migrations");
+        $migrationPath = base_path("$path/$identity/database/migrations");
         if (is_dir($migrationPath)){
             MSService::TerminalSend(['mode'=>'info', 'message'=>"即将进行数据结构迁移..."]);
             try {
-                Artisan::call('migrate', ['--force' => true, '--path' => "public/$path/$identity/database/migrations"]);
+                Artisan::call('migrate', ['--force' => true, '--path' => "$path/$identity/database/migrations"]);
                 MSService::TerminalSend(['mode'=>'success', 'message'=>"数据结构迁移完成!"]);
             }catch (\Exception $exception){
                 SystemLogs::systemRunning(
@@ -142,8 +142,8 @@ class ModuleService
         return true;
     }
 
-    static function installCheck($identity){
-        $ManiFest = self::getManifest($identity);
+    static function installCheck($identity, $path="apps"){
+        $ManiFest = self::getManifest($identity, $path);
         if (is_error($ManiFest)) return $ManiFest;
         if (!$ManiFest['installed']) return error(-3,__('applicationNotInstall'));
         return $ManiFest;
@@ -176,13 +176,14 @@ class ModuleService
         return file_exists(base_path("public/addons/$identity/manifest.json"));
     }
 
-    static function upgrade($identity,$from=''){
+    static function upgrade($identity, $from='', $basePath="apps"){
         $startTime = time();
         $ManiFest = self::installCheck($identity);
         if (is_error($ManiFest)) return $ManiFest;
         $application = $ManiFest['application'];
+        $identifier = $application['identifier'] ?? $identity;
         MSService::TerminalSend(['mode'=>'info', 'message'=>"即将升级应用模块【{$application['name']}^{$application['version']}】"]);
-        $component = self::SysComponent($application['identifie']);
+        $component = self::SysComponent($identifier);
         if (!empty($component)){
             //已经是最新版本
             if ($component['version_code']>=$application['version_code']){
@@ -194,7 +195,7 @@ class ModuleService
             try {
                 MSService::TerminalSend(['mode'=>'info', 'message'=>"正在运行应用升级脚本..."]);
                 define('MODULE_UPGRADE', 1);
-                script_run($ManiFest['upgrade'], public_path("addons/$identity/"));
+                script_run($ManiFest['upgrade'], base_path("$basePath/$identity/"));
                 MSService::TerminalSend(['mode'=>'success', 'message'=>"应用升级脚本运行完成！"]);
             } catch (\Exception $exception){
                 SystemLogs::systemRunning(
@@ -213,11 +214,11 @@ class ModuleService
             }
         }
         //运行数据库迁移
-        $migrationPath = base_path("public/addons/$identity/database/migrations");
+        $migrationPath = base_path("$basePath/$identity/database/migrations");
         if (is_dir($migrationPath)){
             MSService::TerminalSend(['mode'=>'info', 'message'=>"即将进行数据结构迁移..."]);
             try {
-                Artisan::call('migrate', ['--force' => true, '--path' => "public/addons/$identity/database/migrations"]);
+                Artisan::call('migrate', ['--force' => true, '--path' => "$basePath/$identity/database/migrations"]);
                 MSService::TerminalSend(['mode'=>'success', 'message'=>"数据结构迁移完成！"]);
             }catch (\Exception $exception){
                 SystemLogs::systemRunning(
@@ -230,7 +231,7 @@ class ModuleService
                         'exception_line' => $exception->getLine(),
                         'exception_code' => $exception->getCode(),
                         'module_identity' => $identity,
-                        'path' => public_path("addons/$identity/"),
+                        'path' => base_path("$basePath/$identity/"),
                     ]
                 );
                 return error(-1,__('installFailed', ['reason'=>DEVELOPMENT?$exception->getMessage():__('运行数据库迁移时出现异常')]));
@@ -239,9 +240,9 @@ class ModuleService
         //更新模块数据表
         $subscribes = $ManiFest['subscribes'] ?: array();
         $handles = $ManiFest['handles'] ?: array();
-        $moduledata = self::ModuleData($application,$subscribes,$handles);
-        $moduledata['permissions'] = empty($ManiFest['permissions']) ? "" : serialize($ManiFest['permissions']);
-        DB::table('modules')->where('name',$application['identifie'])->update($moduledata);
+        $moduleData = self::ModuleData($application,$subscribes,$handles);
+        $moduleData['permissions'] = empty($ManiFest['permissions']) ? "" : serialize($ManiFest['permissions']);
+        DB::table('modules')->where('name', $identifier)->update($moduleData);
         //更新模块数据表
         if (!empty($component) || $from=='cloud'){
             $cloudInfo = empty($component['online']) ? array() : unserialize($component['online']);
@@ -262,7 +263,7 @@ class ModuleService
             if (empty($component)){
                 $comInfo['modulename'] = $identity;
                 $comInfo['type'] = 1;
-                $comInfo['rootpath'] = "public/addons/$identity/";
+                $comInfo['rootpath'] = $basePath . "/$identity/";
                 $comInfo['addtime'] = TIMESTAMP;
                 DB::table('gxswa_cloud')->insert($comInfo);
             }else{
@@ -295,16 +296,17 @@ class ModuleService
         return true;
     }
 
-    static function uninstall($identity){
-        $ManiFest = self::installCheck($identity);
+    static function uninstall($identity, $from="apps"){
+        $ManiFest = self::installCheck($identity, $from);
         if (is_error($ManiFest)) return $ManiFest;
-        $component = self::SysComponent($ManiFest['application']['identifie']);
+        $identifier  = $ManiFest['application']['identifier'] ?? $identity;
+        $component = self::SysComponent($identifier);
         //执行卸载脚本
         if (!empty($ManiFest['uninstall'])){
             try {
                 MSService::TerminalSend(['mode'=>'info', 'message'=>"正在运行应用卸载脚本..."]);
                 define('MODULE_UNINSTALL', 1);
-                script_run($ManiFest['uninstall'], public_path("addons/$identity/"));
+                script_run($ManiFest['uninstall'], base_path("$from/$identity/"));
             } catch (\Exception $exception){
                 SystemLogs::systemRunning(
                     '模块卸载脚本执行异常',
@@ -322,7 +324,7 @@ class ModuleService
             }
         }
         //更新模块数据表
-        DB::table('modules')->where('name',$ManiFest['application']['identifie'])->delete();
+        DB::table('modules')->where('name', $identifier)->delete();
         if (!empty($component)){
             DB::table('gxswa_cloud')->where('id',$component['id'])->delete();
             if (!DEVELOPMENT){
@@ -407,7 +409,7 @@ class ModuleService
 
     static function ModuleData($application,$subscribes=array(),$handles=array()){
         return array(
-            'name'=>$application['identifie'],
+            'name'=>$application['identifier'] ?? $application['identifie'],
             'application_type'=>$application['module_type']??1,
             'type'=>$application['type'],
             'title'=>$application['name'],
