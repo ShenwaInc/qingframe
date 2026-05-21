@@ -53,7 +53,7 @@ class PlatformController extends Controller
     {
         $openclaw = serv('openclaw');
         if (!$openclaw->enabled){
-            return $this->message("当前功能需要安装 OpenClaw 插件才能使用！", wurl('server', ['need'=>'openclaw', 'op'=>'local']));
+            return $this->message("当前功能需要安装 OpenClaw 插件才能使用！", wurl('server', ['require'=>'openclaw', 'op'=>'local']));
         }
         return redirect("server/openclaw/chat");
     }
