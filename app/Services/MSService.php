@@ -13,6 +13,8 @@ use Symfony\Component\Process\Process;
 
 class MSService
 {
+
+    public static $Command = null;
     public static $tableName = 'microserver';
 
     public static function setup(){
@@ -800,6 +802,17 @@ class MSService
     }
 
     public static function TerminalSend($data, $finish=false){
+        if (!empty(self::$Command)){
+            if ($data['mode']=='cmd'){
+                self::$Command->line($data['message']);
+            }elseif($data['mode']=='err'){
+                self::$Command->error($data['message']);
+            }elseif ($data['mode']=='warm'){
+                self::$Command->warn($data['message']);
+            }else{
+                self::$Command->info($data['message']);
+            }
+        }
         global $_W;
         if (!empty($_W['TerminalSilence'])) return true;
         $data['type'] = 'terminal';

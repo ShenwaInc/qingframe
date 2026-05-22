@@ -247,24 +247,25 @@ class SettingController extends Controller
                 if (mb_strlen($com['description'], 'utf8')>50){
                     $com['description'] = mb_substr($com['description'], 0, 50, 'utf8') . '...';
                 }
-                if (ModuleService::localExists($identifie)){
-                    $module = ModuleService::installCheck($identifie);
+                $basePath = $value['base_path'] ?: 'public/addons';
+                if (ModuleService::localExists($identifie, $basePath)){
+                    $module = ModuleService::installCheck($identifie, $basePath);
                     if (!is_error($module) && $module->installed){
                         //已安装
                         $application = $module->application;
                         if (version_compare($release['version'], $application['version'], '>') || $releaseDate>$application['version_code']){
                             $com['action'] .= '<a href="'.wurl('module/update').'?nid='.$identifie.'" class="layui-btn layui-btn-sm layui-btn-danger confirm" data-text="'.__('升级前请做好数据备份').'">'.__('升级').'</a>';
                         }
-                        $com['action'] .= '<a href="'.wurl('module/remove').'?nid='.$identifie.'" class="layui-btn layui-btn-sm layui-btn-primary confirm" data-text="'.__('uninstallConfirm').'">'.__('uninstall').'</a></div>';
+                        $com['action'] .= '<a href="'.wurl('module/remove', ['nid'=>$identifie, 'from'=>$basePath]).'" class="layui-btn layui-btn-sm layui-btn-primary confirm" data-text="'.__('uninstallConfirm').'">'.__('uninstall').'</a></div>';
                     }else{
                         if ($module['errno']!=-1){
                             //已存在但未安装
                         }else{
-                            $com['action'] = '<a href="'.wurl('module/require', array('nid'=>$value['identity'])).'" class="layui-btn layui-btn-sm layui-btn-normal confirm" data-text="'.__('installConfirm').'">'.__('install').'</a>';
+                            $com['action'] = '<a href="'.wurl('module/require', array('nid'=>$value['identity'], 'from'=>$basePath)).'" class="layui-btn layui-btn-sm layui-btn-normal confirm" data-text="'.__('installConfirm').'">'.__('install').'</a>';
                         }
                     }
                 }else{
-                    $com['action'] = '<a href="'.wurl('module/require', array('nid'=>$value['identity'])).'" class="layui-btn layui-btn-sm layui-btn-normal confirm" data-text="'.__('installConfirm').'">'.__('install').'</a>';
+                    $com['action'] = '<a href="'.wurl('module/require', array('nid'=>$value['identity'], 'from'=>$basePath)).'" class="layui-btn layui-btn-sm layui-btn-normal confirm" data-text="'.__('installConfirm').'">'.__('install').'</a>';
                 }
                 $plugins[$identifie] = $com;
             }

@@ -115,7 +115,7 @@
     "applicationEntry": "应用入口",
     "applicationEntryRemind": "第三方应用入口链接需要符合单点登录的规范，<a href=\"https://www.yuque.com/shenwa/tt5ahr/co6qmcz2kicd9wms\" class=\"text-blue\" target=\"_blank\">查看详情</a>",
     "applicationEntryType": "请输入第三方应用入口链接",
-    "applicationNotInstall": "该模块尚未安装",
+    "applicationNotInstall": "该应用尚未安装",
     "appName": "应用名称",
     "appStore": "应用市场",
     "appLocal": "本地应用",

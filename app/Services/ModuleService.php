@@ -172,8 +172,8 @@ class ModuleService
         return $modules;
     }
 
-    static function localExists($identity){
-        return file_exists(base_path("public/addons/$identity/manifest.json"));
+    static function localExists($identity, $path="apps"){
+        return file_exists(base_path("$path/$identity/manifest.json"));
     }
 
     static function upgrade($identity, $from='', $basePath="apps"){

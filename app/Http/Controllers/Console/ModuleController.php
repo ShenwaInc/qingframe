@@ -140,7 +140,7 @@ class ModuleController extends Controller
         if ($request->isMethod('POST')){
             $module = $request->input('module');
             $identifier = trim($module['identifier']);
-            $moduleExist = ModuleService::localExists($identifier);
+            $moduleExist = ModuleService::localExists($identifier, "apps");
             if ($moduleExist){
                 return $this->message('该应用标识已被使用');
             }
@@ -439,7 +439,7 @@ class ModuleController extends Controller
         $cloudIdentity = ModuleService::SysPrefix($identity);
         $targetPath = public_path("addons/$identity/");
         if (!is_dir($targetPath)){
-            $targetPath = public_path("apps/$identity/");
+            $targetPath = base_path("apps/$identity/");
         }
         $res = CloudService::CloudUpdate($cloudIdentity, $targetPath);
         if (is_error($res)){
