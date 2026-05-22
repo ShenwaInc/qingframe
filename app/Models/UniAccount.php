@@ -11,15 +11,13 @@ class UniAccount extends Model
 {
     //
     protected $table = 'uni_account';
+    public $timestamps = false;
     public static $tables = array(
         'wechat'=>'account_wechats',
         'modules'=>'uni_account_extra_modules',
         'moduleset'=>'uni_account_modules',
         'users'=>'uni_account_users'
     );
-
-    const UPDATED_AT = null;
-    const CREATED_AT = null;
 
     public static function account_create($uniacid, $account, $uid=0){
         global $_W;
@@ -74,6 +72,8 @@ class UniAccount extends Model
         $query = self::leftJoin('account','uni_account.uniacid','=','account.uniacid')->leftJoin('uni_account_users','uni_account.uniacid','=','uni_account_users.uniacid')->leftJoin('users','uni_account_users.uid','=','users.uid')->where($condition);
         if ($fields!==false){
             $query = $query->select($fields);
+        }else{
+            $query = $query->select('uni_account.*','account.endtime as expire_time');
         }
         if ($expire=='unexpire'){
             $timestamp = TIMESTAMP;

@@ -359,28 +359,38 @@ class ModuleService
             }
 
             $module_info['recycle_info'] = array();
-            $recycle_info = DB::table('modules_recycle')->where('name',$name)->first();
-            if (!empty($recycle_info)) {
-                $is_delete = true;
-                $account_support = array(
-                    'account_support' => array(
-                        'type' => 'account',
-                        'type_name' => '公众号',
-                        'support' => 2,
-                        'not_support' => 1,
-                        'store_type' => 1,
-                    )
-                );
-                foreach ($account_support as $support => $value) {
-                    if (!empty($recycle_info[2][$support])) {
-                        $module_info['recycle_info'][$support] = 2; 				} else {
-                        $module_info['recycle_info'][$support] = empty($recycle_info[1][$support]) ? 0 : 1;
+            $module_info['base_path'] = 'public/addons';
+            $module_info['is_delete'] = $is_delete = false;
+            if (!is_dir(base_path($module_info['base_path']. '/' . $name))){
+                $module_info['base_path'] = 'apps';
+            }
+            if (!is_dir(base_path($module_info['base_path'] . '/' . $name))){
+                $module_info['is_delete'] = $is_delete = true;
+            }else{
+                $recycle_info = DB::table('modules_recycle')->where('name',$name)->first();
+                if (!empty($recycle_info)) {
+                    $is_delete = true;
+                    $account_support = array(
+                        'account_support' => array(
+                            'type' => 'account',
+                            'type_name' => '公众号',
+                            'support' => 2,
+                            'not_support' => 1,
+                            'store_type' => 1,
+                        )
+                    );
+                    foreach ($account_support as $support => $value) {
+                        if (!empty($recycle_info[2][$support])) {
+                            $module_info['recycle_info'][$support] = 2; 				} else {
+                            $module_info['recycle_info'][$support] = empty($recycle_info[1][$support]) ? 0 : 1;
+                        }
+                        if ($module_info[$support] == $value['support'] && empty($module_info['recycle_info'][$support])) {
+                            $is_delete = false;
+                        }
                     }
-                    if ($module_info[$support] == $value['support'] && empty($module_info['recycle_info'][$support])) {
-                        $is_delete = false;
-                    }
+                    $module_info['is_delete'] = $is_delete;
                 }
-                $module_info['is_delete'] = $is_delete; 		}
+            }
 
             $module = $module_info;
             cache_write($cacheKey, $module_info);

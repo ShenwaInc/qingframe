@@ -84,6 +84,49 @@ class AccountService {
         return $entrances;
     }
 
+    static function remoteAccount($uniacid)
+    {
+        //删除平台
+        DB::table('account')->where('uniacid',$uniacid)->update(array('isdeleted'=>1));
+        DB::table('uni_modules')->where('uniacid',$uniacid)->delete();
+        DB::table('users_operate_star')->where('uniacid',$uniacid)->delete();
+        DB::table('users_operate_history')->where('uniacid', $uniacid)->delete();
+        $cacheKey = CacheService::system_key('user_accounts', array('type' => 'account', 'uid' => $_W['uid']));
+        Cache::forget($cacheKey);
+        $cacheKey = CacheService::system_key('uniaccount', array('uniacid' => $uniacid));
+        Cache::forget($cacheKey);
+    }
+
+    static function createAccount($data, $uid=0)
+    {
+        if (empty($data['name'])){
+            return error(-1, __('platformNameEmpty'));
+        }
+        if (empty($data['logo'])){
+            $data['logo'] = '/static/icon200.jpg';
+        }
+        $uni_account = DB::table('uni_account');
+        $accountData = array(
+            'groupid' => 0,
+            'default_acid' => 0,
+            'name' => $data['name'],
+            'description' => trim($data['description']),
+            'logo'=>$data['logo'],
+            'title_initial' => 'W',
+            'createtime' => TIMESTAMP,
+            'create_uid' => $uid
+        );
+        $uniacid = $uni_account->insertGetId($accountData);
+        if (empty($uniacid)){
+            return error(-1, __('saveFailed'));
+        }
+        $accountData['uniacid'] = $uniacid;
+        $acid = UniAccount::account_create($uniacid,array('name'=>$accountData['name']));
+        $uni_account->where('uniacid',$uniacid)->update(array('default_acid' => $acid));
+        UserService::AccountRoleUpdate($uniacid, $uid);
+        return $accountData;
+    }
+
     static function FetchUni($uniacid = 0) {
         global $_W;
         $uniacid = empty($uniacid) ? $_W['uniacid'] : intval($uniacid);
