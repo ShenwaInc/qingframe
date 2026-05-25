@@ -92,14 +92,14 @@ class UserController extends Controller
             }
             if (!empty($password)){
                 $pwdLen = strlen($password);
-                $passportLen = (int)env('APP_PASSPORT_LEN', 6);
+                $passportLen = (int)config('system.safe.min_password_len', 6);
                 if ($pwdLen<$passportLen) return $this->message(__('newPasswordValid', array('len'=>$passportLen)));
                 if ($uid==0){
                     if (empty($repassword)) return $this->message('reTypePassword');
                     if ($password!=$repassword) return $this->message('rePasswordError');
                 }
                 $data['salt'] = \Str::random(8);
-                $data['password'] = sha1("{$password}-{$data['salt']}-{$_W['config']['setting']['authkey']}");
+                $data['password'] = UserService::GetHash($password, $data['salt']);
             }elseif ($uid==0){
                 return $this->message('typeNewPassword');
             }
@@ -243,7 +243,7 @@ class UserController extends Controller
         $return = array('title'=>__('loginPassword'));
         if ($request->isMethod('post')){
             global $_W;
-            $passportLen = (int)env('APP_PASSPORT_LEN', 6);
+            $passportLen = (int)config('system.safe.min_password_len', 6);
             $password = $request->input('oldpassword');
             if (empty($password)) return $this->message('typeOldPassword');
             $newpassowrd = $request->input('newpassword');

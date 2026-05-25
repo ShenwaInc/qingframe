@@ -34,6 +34,9 @@ return [
         'name'=>env('APP_NAME', 'qingwork'),
         'uniacid'=>env('APP_UNIACID', 0)
     ),
+    'safe'=>array(
+        'min_password_len'=>env('APP_PASSPORT_LEN', 6)
+    ),
     'upload'=>array(
         'image'=>array('extentions'=>['gif', 'jpg', 'jpeg', 'png'],'limit'=>5000),
         'attachdir'=>'storage',
