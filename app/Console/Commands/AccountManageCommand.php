@@ -194,6 +194,7 @@ class AccountManageCommand extends Command
                     $this->error('租户ID不能为空');
                     return;
                 }
+                // 域名为空时表示解除绑定
                 $domain = trim($this->option('domain'));
                 $uni_settings = DB::table('uni_settings')->where('uniacid', $uniacid)->select(['jsauth_acid', 'bind_domain'])->first();
                 if ($domain==$uni_settings['bind_domain']){
