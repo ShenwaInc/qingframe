@@ -13,7 +13,7 @@ class UserManageCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'user:manage {action} {--uid=0} {--username=} {--mobile=} {--email=} {--password=} {--owner-uid=0} {--platform-count=} {--expire-time=} {--remark=} {--avatar=}';
+    protected $signature = 'user:manage {action} {--uid=0} {--username=} {--mobile=null} {--email=null} {--password=} {--owner-uid=0} {--platform-count=null} {--expire-time=null} {--remark=} {--avatar=null}';
 
     /**
      * The console command description.
@@ -43,8 +43,8 @@ class UserManageCommand extends Command
         $action = $this->argument('action');
         $uid = (int)$this->option('uid');
         $username = trim($this->option('username'));
-        $mobile = trim($this->option('mobile'));
-        $email = trim($this->option('email'));
+        $mobile = $this->option('mobile')=='null'?null:trim($this->option('mobile'));
+        $email = $this->option('email')=='null'?null:trim($this->option('email'));
         $password = trim($this->option('password'));
         $ownerUid = (int)$this->option('owner-uid');
         $platformCount = (int)$this->option('platform-count');
@@ -77,7 +77,7 @@ class UserManageCommand extends Command
                     $data['email'] = $email;
                 }
                 if (!empty($expireTime)){
-                    $data['endtime'] = strtotime($expireTime . ' 23:59:59');
+                    $data['endtime'] = $expireTime=='null' ? 0 : strtotime($expireTime . ' 23:59:59');
                 }
                 $data['type'] = 1;
                 $data['status'] = 2;
@@ -92,8 +92,12 @@ class UserManageCommand extends Command
                     $this->info("User ID: " . $uid);
                     $this->info("User name: " . $username);
                     $this->info("User password: " . $password);
+                    $avatar = $this->option('avatar')=='null'?'':$this->option('avatar');
+                    if (!$avatar){
+                        $avatar = '/static/icon200.jpg';
+                    }
                     DB::table('users_profile')->insert(array(
-                        'avatar'=>$this->option('avatar')?:'/static/icon200.jpg',
+                        'avatar'=>$avatar,
                         'edittime'=>TIMESTAMP,
                         'uid'=>$uid,
                         'createtime'=>TIMESTAMP,
@@ -106,6 +110,65 @@ class UserManageCommand extends Command
                     ]);
                 }else{
                     $this->error("Create user failed");
+                }
+                break;
+            case 'update':
+                $update = false;
+                $condition = [];
+                if (!empty($uid)){
+                    $condition = ['uid'=>$uid];
+                }elseif (!empty($username)){
+                    $condition = ['username'=>$username];
+                }
+                $user = DB::table('users')->where($condition)->first();
+                if (!$user){
+                    $this->error(__('userNotfound'));
+                    return;
+                }
+                $userData = [];
+                if (!empty($remark)){
+                    $userData['remark'] = $remark;
+                }
+                if ($expireTime!='null'){
+                    $userData['endtime'] = strexists($expireTime, '-') ? strtotime($expireTime . ' 23:59:59') : 0;
+                }
+                if (!empty($userData)){
+                    if (!DB::table('users')->where('uid', $user['uid'])->update($userData)){
+                        $this->error(__('saveFailed'));
+                        return;
+                    }
+                    $update = true;
+                }
+                $profile = [];
+                if ($this->option('avatar')!='null' && $this->option('avatar')!=''){
+                    $profile['avatar'] = $this->option('avatar');
+                }
+                if (!is_null($mobile)){
+                    $profile['mobile'] = $mobile;
+                }
+                if (!is_null($email)){
+                    $profile['email'] = $email;
+                }
+                if (!empty($profile)){
+                    $profile['edittime'] = TIMESTAMP;
+                    DB::table('users_profile')->where('uid', $user['uid'])->update($profile);
+                    $update = true;
+                }
+                $extra = [];
+                if (isset($userData['endtime'])){
+                    $extra['timelimit'] = (int)$userData['endtime'];
+                }
+                if ($this->option('platform-count')!='null'){
+                    $extra['maxaccount'] = $platformCount;
+                }
+                if (!empty($extra)){
+                    DB::table('users_extra_limit')->updateOrInsert(['uid'=>$user['uid']], $extra);
+                    $update = true;
+                }
+                if ($update){
+                    $this->info(__('saveSuccess'));
+                }else{
+                    $this->info(__('saveFailed'));
                 }
                 break;
             default:

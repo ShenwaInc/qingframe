@@ -42,7 +42,6 @@ class User extends Authenticatable
     public function getAuthPassword()
     {
         return $this->attributes['password'];
-        return ['password' => $this->attributes['password'], 'salt' => $this->attributes['salt']];
     }
 
 }
