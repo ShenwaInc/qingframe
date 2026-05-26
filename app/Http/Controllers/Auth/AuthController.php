@@ -63,7 +63,7 @@ class AuthController extends Controller
         $user = DB::table('users')->where('username',$username)->first(['uid','username','password','salt','remember_token','status','endtime','welcome_link']);
         if (empty($user)) $this->failed_login('找不到该用户');
         $remember = !empty($request->input('remember'));
-        if (Auth::attempt(['username'=>$username,'password'=>$password], $remember)){
+        if (Auth::attempt(['username'=>$username, 'status'=>2, 'password'=>"$password-{$user['salt']}-" . config('system.setting.authkey', '')], $remember)){
             Session::save();
             if ($this->failed_logins>0){
                 DB::table('users_failed_login')->where('ip',$this->clientip)->delete();

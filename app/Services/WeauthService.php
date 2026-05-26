@@ -34,14 +34,10 @@ class WeauthService extends EloquentUserProvider
      * @param  array $credentials
      * @return bool
      */
-    public function validateCredentials(Authenticatable $user, array $credentials)
+    public function validateCredentials(Authenticatable $user, array $credentials): bool
     {
-        //账户已删除
-        if ($user->status!=2) return false;
-        $config = config('system');
-        $plain = $credentials['password'];
         $authPassword = $user->getAuthPassword();
-        return sha1("{$plain}-{$authPassword['salt']}-{$config['setting']['authkey']}") == $authPassword['password'];
+        return sha1($credentials['password']) == $authPassword;
     }
 
 }

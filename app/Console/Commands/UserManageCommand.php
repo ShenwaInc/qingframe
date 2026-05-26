@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Services\UserService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
@@ -64,6 +65,10 @@ class UserManageCommand extends Command
                     $this->error(__('newPasswordValid', array('len'=>$passportLen)));
                     return;
                 }
+                if (DB::table('users')->where('username', $username)->count()){
+                    $this->error(__('该用户名已存在'));
+                    return;
+                }
                 $data = array('remark'=>$remark?:'Artisan 创建于' . date('Y-m-d H:i'),'username'=>$username,'starttime'=>TIMESTAMP, 'endtime'=>0);
                 if (!empty($mobile)){
                     $data['mobile'] = $mobile;
@@ -79,10 +84,14 @@ class UserManageCommand extends Command
                 $data['joindate'] = TIMESTAMP;
                 $data['joinip'] = '127.0.0.1';
                 $data['owner_uid'] = $ownerUid ?: config('system.setting.founder', 1);
+                $data['salt'] = \Str::random(8);
+                $data['password'] = UserService::GetHash($password, $data['salt']);
                 $uid = DB::table('users')->insertGetId($data);
                 if ($uid){
                     $this->info("Create user successfully");
                     $this->info("User ID: " . $uid);
+                    $this->info("User name: " . $username);
+                    $this->info("User password: " . $password);
                     DB::table('users_profile')->insert(array(
                         'avatar'=>$this->option('avatar')?:'/static/icon200.jpg',
                         'edittime'=>TIMESTAMP,
