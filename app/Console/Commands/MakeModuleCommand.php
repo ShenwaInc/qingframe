@@ -112,6 +112,7 @@ class MakeModuleCommand extends Command {
         }
         FileService::mkdirs($package."/views/");
         FileService::mkdirs($package."/public/");
+        @$this->call('make:appLink', ['module'=>$identity, '--force' => 1]);
         $Installer = file_get_contents(resource_path('stub/module.install.stub'));
         if (!file_put_contents($package."/install.php", str_replace('dummy', $identity, $Installer))){
             return $this->report("Create package failed: may not have permission.");

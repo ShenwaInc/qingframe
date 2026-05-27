@@ -21,14 +21,14 @@ class moduleManageCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'module:manage {operation} {--module=default} {--path=apps} {--passcode=} {--uniacid=0} {--maintenance-state=1} {--name=} {--logo=} {--description=} {--sso-url=}';
+    protected $signature = 'module:manage {operation} {--module=default} {--path=apps} {--passcode=} {--uniacid=0} {--maintenance-state=1} {--name=} {--logo=} {--description=} {--sso-url=} {--page=1}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = '应用模块管理工具，operation 可选值：display（展示所有应用）, displayFromCloud（展示云端应用）, install（安装）, upgrade（升级）, uninstall（卸载）, require（从云端请求）, update（从云端升级）, maintenance（关闭云服务）, allocate（分配应用到租户）, cancelAllocate（取消分配到租户）';
+    protected $description = '应用模块管理工具，operation 可选值：display（展示所有应用）|displayFromCloud（展示云端应用）|install（安装）|upgrade（升级）|uninstall（卸载）|require（从云端请求）|update（从云端升级）|maintenance（关闭云服务）|allocate（分配应用到租户）|cancelAllocate（取消分配到租户）|remove（移除应用目录）';
 
     /**
      * Create a new command instance.
@@ -43,7 +43,7 @@ class moduleManageCommand extends Command
     /**
      * Execute the console command.
      *
-     * @return mixed
+     * @return void
      */
     public function handle()
     {
@@ -59,6 +59,7 @@ class moduleManageCommand extends Command
         $module = $this->option('module');
         $path = $this->option('path');
         $passcode = $this->option('passcode');
+        $page = (int)$this->option('page');
         if (empty($path)) $path = 'apps';
         switch ($operation){
             case 'install' : {
@@ -149,7 +150,7 @@ class moduleManageCommand extends Command
                         if (mb_strlen($description, 'utf8')>30){
                             $description = mb_substr($description, 0, 30, 'utf8').'...';
                         }
-                        return [$identify, $module['name'], $module['description'], $module['author'], $module['version'], $module['installed']?'true':'false', $fromLocal?'local':'cloud', $basePath];
+                        return [$identify, $module['name'], $description, $module['author'], $module['version'], $module['installed']?'true':'false', $fromLocal?'local':'cloud', $basePath];
                     }, $moduleList);
                     $this->table(array('identifier', 'name', 'description', 'author', 'version', 'installed', 'from', 'path'), $rows);
                 }else{
@@ -241,7 +242,6 @@ class moduleManageCommand extends Command
                 break;
             }
         }
-        return;
     }
 
     public function consumeCode($code)

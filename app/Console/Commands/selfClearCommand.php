@@ -91,7 +91,11 @@ class selfClearCommand extends Command
             app_path('Console/Commands/ServerInstallCommand.php'),
             app_path('Console/Commands/serverRun.php'),
             app_path('Console/Commands/ServerUpdateCommand.php'),
-            app_path('Console/Commands/selfup.php')
+            app_path('Console/Commands/selfup.php'),
+            app_path('Console/Commands/userrepwd.php'),
+            app_path('Console/Commands/userrestore.php'),
+            app_path('Console/Commands/moduleup.php'),
+            app_path('Console/Commands/moduleRun.php')
         );
         foreach ($unused as $file){
             if (file_exists($file)){

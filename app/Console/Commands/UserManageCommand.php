@@ -20,7 +20,7 @@ class UserManageCommand extends Command
      *
      * @var string
      */
-    protected $description = '系统用户（管理员）管理工具，action 可选值：create（创建用户）|update（更新资料）|delete（删除用户）|display（展示所有用户）|reset-password（重置密码）';
+    protected $description = '系统用户（管理员）管理工具，action 可选值：create（创建用户）|update（更新资料）|delete（删除用户）|display（展示所有子账户）|reset-password（重置密码）|restore(恢复用户)';
 
     /**
      * Create a new command instance.
@@ -114,13 +114,7 @@ class UserManageCommand extends Command
                 break;
             case 'update':
                 $update = false;
-                $condition = [];
-                if (!empty($uid)){
-                    $condition = ['uid'=>$uid];
-                }elseif (!empty($username)){
-                    $condition = ['username'=>$username];
-                }
-                $user = DB::table('users')->where($condition)->first();
+                $user = $this->getUser($uid, $username);
                 if (!$user){
                     $this->error(__('userNotfound'));
                     return;
@@ -171,9 +165,88 @@ class UserManageCommand extends Command
                     $this->info(__('saveFailed'));
                 }
                 break;
+            case 'delete':
+                $user = $this->getUser($uid, $username);
+                if (empty($user)){
+                    $this->error(__('userNotfound'));
+                    return;
+                }
+                if ($user['status']==3 || DB::table('users')->where('uid', $user['uid'])->update(['status' => 3])){
+                    $this->info(__('deleteSuccessfully'));
+                    $this->info("已删除用户：" . $user['username'] . "，UID：" . $user['uid']);
+                }else{
+                    $this->error(__('operationFailed'));
+                }
+                break;
+            case 'restore':
+                $user = $this->getUser($uid, $username);
+                if (empty($user)){
+                    $this->error(__('userNotfound'));
+                    return;
+                }
+                if (DB::table('users')->where('uid', $user['uid'])->update(['status' => 2, 'starttime'=>TIMESTAMP])){
+                    $this->info(__('restoreSuccessfully'));
+                    $this->info("已恢复用户：" . $user['username'] . "，UID：" . $user['uid']);
+                }else{
+                    $this->error(__('operationFailed'));
+                }
+                break;
+            case 'display':
+                if (empty($ownerUid)){
+                    $ownerUid = config('system.setting.founder', 1);
+                }
+                $users = UserService::GetSubs($ownerUid);
+                if (empty($users)){
+                    $this->info(__('empty'));
+                    return;
+                }
+                $rows = array_map(function ($item) {
+                    $expireDate = __('长期');
+                    if ($item['endtime']>0){
+                        $expireDate = date('Y-m-d', $item['endtime']);
+                    }
+                    return [$item['uid'], $item['username'], date('Y-m-d', $item['joindate']), $expireDate, $item['remark']];
+                }, $users);
+                $this->table(['UID', '用户名', '加入时间', '到期时间', '备注'], $rows);
+                break;
+            case 'reset-password':
+                if (empty($password)){
+                    $this->error(__("typeSomething", array('data'=>__('password'))));
+                    return;
+                }
+                $user = $this->getUser($uid, $username);
+                if (empty($user)){
+                    $this->error(__('userNotfound'));
+                    return;
+                }
+                $salt = \Str::random(8);
+                $hash = UserService::GetHash($password, $salt);
+                if (DB::table('users')->where('uid', $user['uid'])->update(['salt'=>$salt, 'password'=>$hash])){
+                    $this->info(__('User password reset successfully.'));
+                    $this->info("用户名：" . $user['username']);
+                    $this->info("密码：" . $password);
+                }else{
+                    $this->error(__('operationFailed'));
+                }
+                break;
             default:
                 $this->error('无效的操作类型！');
                 break;
         }
     }
+
+    public function getUser($uid=0, $username='')
+    {
+        $condition = [];
+        if (!empty($uid)){
+            $condition = ['uid'=>$uid];
+        }elseif (!empty($username)){
+            $condition = ['username'=>$username];
+        }
+        if (empty($condition)){
+            return null;
+        }
+        return DB::table('users')->where($condition)->first();
+    }
+
 }
