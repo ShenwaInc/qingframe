@@ -518,11 +518,11 @@ class CloudService
         $data['t'] = TIMESTAMP;
         $data['siteroot'] = $_W['siteroot'];
         $data['siteid'] = $_W['config']['site']['id'];
-        $data['devmode'] = env('APP_DEVELOPMENT',0);
+        $data['devmode'] = config('system.setting.development', 0) ? 1 : 0;
         $data['versionBase'] = QingVersion;
         $data['clientIP'] = $_W['clientip'];
         $data['sign'] = self::GetSignature($data['appsecret'],$data);
-        $CloudApi = env('APP_CLOUD_API', self::$cloudApi);
+        $CloudApi = config('cloud.api', self::$cloudApi);
         $res = HttpService::ihttp_post($CloudApi,$data);
         $status = is_error($res) || $res['code'] != 200 || empty($res['content']);
         if (is_error($res)) return $res;

@@ -35,7 +35,8 @@ return [
         'uniacid'=>env('APP_UNIACID', 0)
     ),
     'safe'=>array(
-        'min_password_len'=>env('APP_PASSPORT_LEN', 6)
+        'min_password_len'=>env('APP_PASSPORT_LEN', 6),
+        'security_entrance'=>env('APP_SECURITY_ENTRANCE', '')
     ),
     'upload'=>array(
         'image'=>array('extentions'=>['gif', 'jpg', 'jpeg', 'png'],'limit'=>5000),

@@ -3,7 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-$appSecurityEntrance = env("APP_SECURITY_ENTRANCE");
+$appSecurityEntrance = config('system.safe.security_entrance');
 if (!empty($appSecurityEntrance) && $appSecurityEntrance!="/"){
     Route::get("/$appSecurityEntrance", function (Request $request){
         $request->session()->put("securityEntrance", random(12));

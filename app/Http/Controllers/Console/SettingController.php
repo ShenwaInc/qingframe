@@ -371,7 +371,7 @@ class SettingController extends Controller
             case 'pageset':
                 return $this->globalView("console.pageset", $return);
             case 'envdebug':
-                $debug = env('APP_DEBUG', false);
+                $debug = config('system.debugMode');
                 if ($debug) {
                     $complete = CloudService::CloudEnv('APP_DEBUG=true', 'APP_DEBUG=false');
                 } else {
@@ -413,7 +413,7 @@ class SettingController extends Controller
                 break;
         }
         $return['activeState'] = CloudService::CloudActive(true);
-        $return['appSecurityEntrance'] = env("APP_SECURITY_ENTRANCE");
+        $return['appSecurityEntrance'] = config('system.safe.security_entrance');
         return $this->globalView('console.setting', $return);
     }
 
