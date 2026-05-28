@@ -257,8 +257,15 @@ class MSService
         $allServers = array();
         foreach ($servers as $key=>$server){
             $server['actions'] = '';
+            $server['enabled'] = false;
+            $server['isdelete'] = false;
+            $serverPath = self::localExist($server['identity'], DEVELOPMENT);
+            if (!$serverPath){
+                $server['isdelete'] = true;
+            }
             if($server['status']!=1) continue;
             $service = serv($server['identity']);
+            $server['enabled'] = $service->enabled;
             $server['entry'] = "";
             if($service->enabled){
                 $server['entry'] = $service->getEntry();
@@ -306,14 +313,13 @@ class MSService
                 }
             }
             $server['actions'] .= $upgradeAction;
-            $server['isdelete'] = false;
-            $serverPath = self::localExist($server['identity'], DEVELOPMENT);
-            if (!$serverPath){
-                $server['isdelete'] = true;
-            }elseif(file_exists($serverPath . "composer.error")){
-                $server['actions'] .= '<a class="layui-btn layui-btn-sm layui-btn-danger js-terminal" href="'.wurl('server', array('op'=>'composer', 'nid'=>$server['identity'])).'">'.__('修复').'</a>';
-            }elseif (!$service->enabled){
-                $server['actions'] .= '<a class="layui-btn layui-btn-sm layui-btn-danger" lay-tips="'.$service->error.'" href="javascript:" >'.__('不可用').'</a>';
+            if ($serverPath){
+                if(file_exists($serverPath . "composer.error")){
+                    $server['actions'] .= '<a class="layui-btn layui-btn-sm layui-btn-danger js-terminal" href="'.wurl('server', array('op'=>'composer', 'nid'=>$server['identity'])).'">'.__('修复').'</a>';
+                }
+                if (!$service->enabled){
+                    $server['actions'] .= '<a class="layui-btn layui-btn-sm layui-btn-danger" lay-tips="'.$service->error.'" href="javascript:" >'.__('不可用').'</a>';
+                }
             }
             $allServers[$key] = $server;
         }

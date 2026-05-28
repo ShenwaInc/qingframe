@@ -48,7 +48,7 @@ class moduleManageCommand extends Command
     public function handle()
     {
         //
-        if ($this->input instanceof ArgvInput) {
+        if (app()->runningInConsole()){
             // 通过命令行直接运行，终端输出改为通过 Command 类输出
             $this->info('Manage modules in terminal client');
             MSService::$Command = $this;
