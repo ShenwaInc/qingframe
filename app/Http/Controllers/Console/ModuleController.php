@@ -36,8 +36,7 @@ class ModuleController extends Controller
         $WeModule = new WeModule();
         try {
             $site = $WeModule->create($moduleName);
-            $basePath = $site->__basePath;
-            $nameSpace = $basePath == 'apps' ? 'Apps' : 'Addons';
+            $nameSpace = 'Addons';
             if (empty($site)){
                 SystemLogs::systemRunning(
                     "模块请求异常：{$moduleName}",
@@ -140,7 +139,7 @@ class ModuleController extends Controller
         if ($request->isMethod('POST')){
             $module = $request->input('module');
             $identifier = trim($module['identifier']);
-            $moduleExist = ModuleService::localExists($identifier, "apps");
+            $moduleExist = ModuleService::localExists($identifier);
             if ($moduleExist){
                 return $this->message('该应用标识已被使用');
             }
@@ -173,7 +172,7 @@ class ModuleController extends Controller
                 if (!ModuleService::localExists($identifier)){
                     return $this->message('创建应用失败，请重试');
                 }
-                $install = ModuleService::install($identifier, 'addons', 'local');
+                $install = ModuleService::install($identifier, 'local');
                 if (!$install || is_error($install)){
                     return $this->message($install['message']??'应用安装失败，请重试');
                 }
@@ -389,8 +388,7 @@ class ModuleController extends Controller
      */
     public function doInstall(Request $request){
         $identity = $request->input('nid', "");
-        $from = $request->input('from', 'apps');
-        $install = ModuleService::install($identity, $from, 'local');
+        $install = ModuleService::install($identity, 'local');
         $status = !is_error($install);
         SystemLogs::userOperation('安装应用模块', 'module:install', "模块：{$identity}（本地安装）", $status, ['module' => $identity]);
         if (!$status){
@@ -404,7 +402,7 @@ class ModuleController extends Controller
     */
     public function doUpgrade(Request $request){
         $identity = $request->input('nid', "");
-        $complete = ModuleService::upgrade($identity, 'local', $request->input('from', 'apps'));
+        $complete = ModuleService::upgrade($identity, 'local');
         $status = !is_error($complete);
         SystemLogs::userOperation('升级应用模块', 'module:upgrade', "模块：{$identity}（本地升级）", $status, ['module' => $identity]);
         if (!$status){
@@ -419,8 +417,7 @@ class ModuleController extends Controller
      */
     public function doRequire(Request $request){
         $identity = $request->input('nid', "");
-        $from = $request->input('from', 'apps');
-        $cloudRequire = CloudService::RequireModule($identity, $from);
+        $cloudRequire = CloudService::RequireModule($identity);
         $status = !is_error($cloudRequire);
         SystemLogs::userOperation('安装应用模块', 'module:require', "模块：{$identity}（云端安装）", $status, ['module' => $identity]);
         if (!$status){
@@ -467,7 +464,7 @@ class ModuleController extends Controller
      */
     public function doRemove(Request $request){
         $identity = $request->input('nid', "");
-        $uninstall = ModuleService::uninstall($identity, $request->input('from', 'apps'));
+        $uninstall = ModuleService::uninstall($identity);
         $status = !is_error($uninstall);
         SystemLogs::userOperation('卸载应用模块', 'module:remove', "模块：{$identity}", $status, ['module' => $identity]);
         if (!$status) return $this->TerminalError($uninstall['message']);

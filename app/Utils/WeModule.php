@@ -29,32 +29,25 @@ class WeModule
      * @throws \Exception
      */
     public function create($name){
-        static $file;
-        $classname = "\\Apps\\{$name}\\site";
-        $file = base_path("apps/{$name}/site.php");
+        $basePath = config('system.setting.addon_dir', 'addons');
+        $file = base_path("$basePath/{$name}/site.php");
         try {
+            $classname = "\\Addons\\{$name}\\site";
             if (class_exists($classname)) {
                 $Instance = self::createModuleInstance($classname, $name);
-                $Instance->__basePath = "apps";
-            }else{
-                $classname = "\\Addons\\{$name}\\site";
-                $file = public_path("/addons/{$name}/site.php");
-                if (class_exists($classname)) {
-                    $Instance = self::createModuleInstance($classname, $name);
-                }else {
-                    if (!file_exists($file)) {
-                        throw new \Exception('ModuleSite Definition File Not Found ' . $name, E_USER_WARNING);
-                    }
-                    require_once $file;
-                    $classname = "{$name}ModuleSite";
-                    if (!class_exists($classname)) {
-                        trigger_error('ModuleSite Definition Class Not Found', E_USER_WARNING);
-                        return null;
-                    }
-                    $Instance = self::createModuleInstance($classname, $name);
+            }else {
+                if (!file_exists($file)) {
+                    throw new \Exception('ModuleSite Definition File Not Found ' . $name, E_USER_WARNING);
                 }
-                $Instance->__basePath = "public/addons";
+                require_once $file;
+                $classname = "{$name}ModuleSite";
+                if (!class_exists($classname)) {
+                    trigger_error('ModuleSite Definition Class Not Found', E_USER_WARNING);
+                    return null;
+                }
+                $Instance = self::createModuleInstance($classname, $name);
             }
+            $Instance->__basePath = $basePath;
         }catch (\Exception $e){
             SystemLogs::systemRunning(
                 '模块实例创建异常',

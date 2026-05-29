@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\Str;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 
@@ -23,7 +24,7 @@ class MakeAppLinkCommand extends Command
      *
      * @var string
      */
-    protected $description = '在 public/apps 目录下为指定模块创建软链接，指向 apps/{module}/public';
+    protected $description = '在 public/addons 目录下为指定模块创建软链接，指向 addons/{module}/public';
 
     /**
      * Filesystem instance.
@@ -53,11 +54,16 @@ class MakeAppLinkCommand extends Command
     {
         $module = $this->argument('module');
         $force = $this->option('force');
+        $basePath = config('system.setting.addon_dir', 'addons');
+        if (Str::startsWith($basePath, 'public')){
+            $this->error("当前应用已在 public 目录下，无需创建软链接");
+            return 1;
+        }
 
         // 目标源目录（模块的 public 目录）
-        $target = base_path("apps/{$module}/public");
-        // 链接路径（public/apps/{module}）
-        $link = public_path("apps/{$module}");
+        $target = base_path("{$basePath}/{$module}/public");
+        // 链接路径（public/addons/{module}）
+        $link = public_path("addons/{$module}");
 
         // 1. 检查源目录是否存在
         if (! $this->files->isDirectory($target)) {
@@ -66,15 +72,15 @@ class MakeAppLinkCommand extends Command
             return 1;
         }
 
-        // 2. 确保 public/apps 父目录存在
-        $appsDir = public_path('apps');
-        if (! $this->files->isDirectory($appsDir)) {
-            if (! $this->files->makeDirectory($appsDir, 0755, true)) {
-                $this->error("无法创建目录：{$appsDir}");
-                $this->showPermissionSolution($appsDir);
+        // 2. 确保 public/addons 父目录存在
+        $addonDir = public_path('addons');
+        if (! $this->files->isDirectory($addonDir)) {
+            if (! $this->files->makeDirectory($addonDir, 0755, true)) {
+                $this->error("无法创建目录：{$addonDir}");
+                $this->showPermissionSolution($addonDir);
                 return 1;
             }
-            $this->info("已创建目录：{$appsDir}");
+            $this->info("已创建目录：{$addonDir}");
         }
 
         // 3. 处理已存在的链接或文件
@@ -220,7 +226,7 @@ class MakeAppLinkCommand extends Command
             $this->line('3. 手动使用 mklink 命令（需管理员权限）：');
             $this->line("   mklink /D \"{$link}\" \"{$target}\"");
         } else {
-            $this->line('1. 检查您是否有权在 public/apps 目录下创建链接：');
+            $this->line('1. 检查您是否有权在 public/addons 目录下创建链接：');
             $this->line("   ls -ld " . dirname($link));
             $this->line('2. 如无权限，可使用 sudo 运行命令：');
             $this->line("   sudo php artisan make:appLink {$this->argument('module')}");

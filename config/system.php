@@ -26,7 +26,8 @@ return [
             'session'=>1
         ),
         'proxy'=>['host'=>'','auth'=>''],
-        'force_https'=>env('APP_FORCE_HTTPS', 0)
+        'force_https'=>env('APP_FORCE_HTTPS', 0),
+        'addon_dir'=>env('APP_ADDON_DIR', 'public/addons'),
     ),
     'site'=>array(
         'id'=>env('APP_SITEID',0),

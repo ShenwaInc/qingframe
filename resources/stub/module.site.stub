@@ -1,6 +1,6 @@
 <?php
 
-namespace Apps\dummy;
+namespace Addons\dummy;
 use App\Utils\WeModule;
 
 class site extends WeModule{

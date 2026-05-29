@@ -53,7 +53,7 @@ class SettingController extends Controller
                     //自动安装默认微服务
                     Artisan::call('update:service');
                     //自动安装默认应用
-                    $defaultModule = env("APP_MODULE", "");
+                    $defaultModule = config('system.defaultModule', '');
                     if (!empty($defaultModule) && file_exists(public_path("addons/$defaultModule/manifest.json"))) {
                         ModuleService::install($defaultModule);
                     }
@@ -247,9 +247,9 @@ class SettingController extends Controller
                 if (mb_strlen($com['description'], 'utf8')>50){
                     $com['description'] = mb_substr($com['description'], 0, 50, 'utf8') . '...';
                 }
-                $basePath = $value['base_path'] ?: 'public/addons';
-                if (ModuleService::localExists($identifie, $basePath)){
-                    $module = ModuleService::installCheck($identifie, $basePath);
+                $basePath = $value['base_path'] ?: config('system.setting.addon_dir', 'addons');
+                if (ModuleService::localExists($identifie)){
+                    $module = ModuleService::installCheck($identifie);
                     if (!is_error($module) && $module->installed){
                         //已安装
                         $application = $module->application;

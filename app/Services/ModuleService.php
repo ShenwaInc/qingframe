@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Services;
 
 use App\Models\UniAccount;
@@ -9,11 +8,13 @@ use App\Models\SystemLogs;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class ModuleService
 {
 
-    static function getManifest($identity, $path='apps'){
+    static function getManifest($identity){
+        $path = config('system.setting.addon_dir', 'addons');
         $manifestFile = base_path("$path/$identity/manifest.json");
         if(!file_exists($manifestFile)) return error(-1,__('无法解析模块安装包'));
         $JSON = file_get_contents($manifestFile);
@@ -31,9 +32,10 @@ class ModuleService
         return DB::table('gxswa_cloud')->where('identity', $cloudIdentity)->update(['maintenance'=>intval($maintenance)]);
     }
 
-    static function install($identity,$path='apps',$from='cloud'){
+    static function install($identity, $from='cloud'){
+        $path = config('system.setting.addon_dir', 'addons');
         $startTime = time();
-        $ManiFest = self::getManifest($identity, $path);
+        $ManiFest = self::getManifest($identity);
         if (is_error($ManiFest)) return $ManiFest;
         if ($ManiFest['installed']) return true;
         $application = $ManiFest['application'];
@@ -97,6 +99,11 @@ class ModuleService
         if (!DB::table('modules')->insert($module)){
             return error(-1, __('无法解析模块安装包'));
         }
+        //创建软链接
+        if (!Str::startsWith($path, 'public') && is_dir(base_path("$path/$identity/public"))){
+            MSService::TerminalSend(['mode'=>'info', 'message'=>"即将创建公共资源软链接..."]);
+            @Artisan::call('make:appLink', ['module'=>$identity, '--force' => 1]);
+        }
         //写入组件表
         if ($from=='cloud'){
             $comData = array(
@@ -142,8 +149,8 @@ class ModuleService
         return true;
     }
 
-    static function installCheck($identity, $path="apps"){
-        $ManiFest = self::getManifest($identity, $path);
+    static function installCheck($identity){
+        $ManiFest = self::getManifest($identity);
         if (is_error($ManiFest)) return $ManiFest;
         if (!$ManiFest['installed']) return error(-3,__('applicationNotInstall'));
         return $ManiFest;
@@ -172,11 +179,13 @@ class ModuleService
         return $modules;
     }
 
-    static function localExists($identity, $path="apps"){
+    static function localExists($identity){
+        $path = config('system.setting.addon_dir', 'addons');
         return file_exists(base_path("$path/$identity/manifest.json"));
     }
 
-    static function upgrade($identity, $from='', $basePath="apps"){
+    static function upgrade($identity, $from=''){
+        $basePath = config('system.setting.addon_dir', 'addons');
         $startTime = time();
         $ManiFest = self::installCheck($identity);
         if (is_error($ManiFest)) return $ManiFest;
@@ -296,8 +305,9 @@ class ModuleService
         return true;
     }
 
-    static function uninstall($identity, $from="apps"){
-        $ManiFest = self::installCheck($identity, $from);
+    static function uninstall($identity){
+        $ManiFest = self::installCheck($identity);
+        $from = config('system.setting.addon_dir', 'addons');
         if (is_error($ManiFest)) return $ManiFest;
         $identifier  = $ManiFest['application']['identifier'] ?? $identity;
         $component = self::SysComponent($identifier);

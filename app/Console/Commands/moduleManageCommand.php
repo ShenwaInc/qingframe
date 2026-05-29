@@ -60,11 +60,11 @@ class moduleManageCommand extends Command
         $path = $this->option('path');
         $passcode = $this->option('passcode');
         $page = (int)$this->option('page');
-        if (empty($path)) $path = 'apps';
+        if (empty($path)) $path = config('system.setting.addon_dir', 'addons');
         switch ($operation){
             case 'install' : {
                 // 从本地安装
-                $res = ModuleService::install($module, $path, 'local');
+                $res = ModuleService::install($module, 'local');
                 if (is_error($res)){
                     $this->error($res['message']);
                 }else{
@@ -74,7 +74,7 @@ class moduleManageCommand extends Command
             }
             case 'upgrade' : {
                 // 从本地升级
-                $res = ModuleService::upgrade($module, 'local', $path);
+                $res = ModuleService::upgrade($module, 'local');
                 if (is_error($res)){
                     $this->error($res['message']);
                 }else {
@@ -83,7 +83,7 @@ class moduleManageCommand extends Command
                 break;
             }
             case 'uninstall' : {
-                $res = ModuleService::uninstall($module, $path);
+                $res = ModuleService::uninstall($module);
                 if (is_error($res)){
                     $this->error($res['message']);
                 }else{
@@ -101,7 +101,7 @@ class moduleManageCommand extends Command
                         return;
                     }
                 }
-                $res = CloudService::RequireModule($module, $path);
+                $res = CloudService::RequireModule($module);
                 if (is_error($res)){
                     $this->error($res['message']);
                 }else{
@@ -183,9 +183,9 @@ class moduleManageCommand extends Command
                         if (empty($identify)) continue;
                         $installed = false;
                         $base_path = $module['base_path']?:'public/addons';
-                        $localExist = ModuleService::localExists($identify, $base_path);
+                        $localExist = ModuleService::localExists($identify);
                         if ($localExist){
-                            $moduleInfo = ModuleService::installCheck($identify, $base_path);
+                            $moduleInfo = ModuleService::installCheck($identify);
                             if (!is_error($moduleInfo) && $moduleInfo->installed){
                                 $installed = true;
                             }

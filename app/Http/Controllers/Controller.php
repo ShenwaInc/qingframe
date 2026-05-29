@@ -61,21 +61,18 @@ class Controller extends BaseController
 
     public function moduleView($view, $data=array())
     {
-        $basePath = 'public/addons';
+        $basePath = config('system.setting.addon_dir', 'addons');
         if (empty($this->moduleName)){
             $className = static::class;
             if (preg_match('/^Addons\\\\([^\\\\]+)\\\\/', $className)){
                 $this->moduleName = preg_replace('/^Addons\\\\([^\\\\]+)\\\\.*$/', '$1', $className);
-            }elseif (preg_match('/^Apps\\\\([^\\\\]+)\\\\/', $className)){
-                $this->moduleName = preg_replace('/^Apps\\\\([^\\\\]+)\\\\.*$/', '$1', $className);
-                $basePath = 'apps';
             }else{
                 return $this->message("无效的应用标识");
             }
         }elseif(!empty($this->moduleSite)){
-            $viewPath = $this->moduleSite->__basePath;
+            $basePath = $this->moduleSite->__basePath;
         }
-        $viewPath = base_path("$viewPath/{$this->moduleName}/views");
+        $viewPath = base_path("$basePath/{$this->moduleName}/views");
         if (!is_dir($viewPath)){
             return $this->message("无效的视图路径：" . $viewPath);
         }
