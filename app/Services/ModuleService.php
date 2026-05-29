@@ -279,6 +279,11 @@ class ModuleService
                 DB::table('gxswa_cloud')->where('identity', $cloudIdentity)->update($comInfo);
             }
         }
+        //创建软链接
+        if (!Str::startsWith($basePath, 'public') && is_dir(base_path("$basePath/$identity/public"))){
+            MSService::TerminalSend(['mode'=>'info', 'message'=>"即将创建公共资源软链接..."]);
+            @Artisan::call('make:appLink', ['module'=>$identity, '--force' => 1]);
+        }
         //安装模块依赖服务
         if (!empty($ManiFest['servers'])){
             try {
@@ -341,6 +346,11 @@ class ModuleService
                 //删除安装包
                 FileService::rmdirs(base_path($component['rootpath']));
             }
+        }
+        //删除软链接
+        $link = base_path("public/addons/$identity");
+        if (is_link($link)){
+            @unlink($link);
         }
         CacheService::flush();
         return true;
@@ -551,7 +561,7 @@ class ModuleService
     }
 
     static function SysPrefix($identity=""){
-        return env('APP_MODULE_PRE', 'laravel_module_') . $identity;
+        return config('system.setting.addon_prefix', 'laravel_module_') . $identity;
     }
 
     static function SysComponent($identity){

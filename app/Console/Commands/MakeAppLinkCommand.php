@@ -17,7 +17,8 @@ class MakeAppLinkCommand extends Command
      */
     protected $signature = 'make:appLink 
                             {module : 模块名称，例如 my_app}
-                            {--force : 强制覆盖已存在的链接}';
+                            {--force : 强制覆盖已存在的链接}
+                            {--remove : 删除已创建的软链接}';
 
     /**
      * The console command description.
@@ -64,6 +65,16 @@ class MakeAppLinkCommand extends Command
         $target = base_path("{$basePath}/{$module}/public");
         // 链接路径（public/addons/{module}）
         $link = public_path("addons/{$module}");
+
+        $is_remove = (int)$this->option('remove');
+        if ($is_remove) {
+            if (is_link($link)){
+                $this->info("已删除已存在的软链接：{$link}");
+                unlink($link);
+            }
+            $this->line("已删除软链接：{$link}");
+            return 1;
+        }
 
         // 1. 检查源目录是否存在
         if (! $this->files->isDirectory($target)) {

@@ -28,6 +28,7 @@ return [
         'proxy'=>['host'=>'','auth'=>''],
         'force_https'=>env('APP_FORCE_HTTPS', 0),
         'addon_dir'=>env('APP_ADDON_DIR', 'public/addons'),
+        'addon_prefix'=>env('APP_MODULE_PREFIX', 'laravel_module_')
     ),
     'site'=>array(
         'id'=>env('APP_SITEID',0),
