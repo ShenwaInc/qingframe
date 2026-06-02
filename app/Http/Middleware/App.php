@@ -7,7 +7,6 @@ use Closure;
 use Illuminate\Http\Request;
 
 define('IA_ROOT', base_path('public'));
-define('BASE_ROOT', base_path('/'));
 define('QingFrame', true);
 define("MICRO_SERVER", base_path("servers/"));
 define('MAGIC_QUOTES_GPC', (function_exists('get_magic_quotes_gpc') && @get_magic_quotes_gpc()) || @ini_get('magic_quotes_sybase'));
