@@ -47,5 +47,8 @@ return [
     ),
     'cdn'=>[
         'header_column'=>env('CDN_REAL_IP_HEADER', 'x-forwarded-for')
+    ],
+    'log'=>[
+        'slow_query_threshold'=>env('LOG_SLOW_QUERY', 0)
     ]
 ];

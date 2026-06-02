@@ -65,7 +65,7 @@ class AppServiceProvider extends ServiceProvider
                 return;
             }
             // 慢查询阈值（单位：秒，示例为1秒）
-            $slowThreshold = env('LOG_SLOW_QUERY', 0);
+            $slowThreshold = config('system.log.slow_query_threshold', 0);
             if ($slowThreshold && $query->time > $slowThreshold){
                 //记录日志查询
                 $fullSql = SystemLogs::formatSql($query->sql, $query->bindings);
