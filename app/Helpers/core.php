@@ -86,12 +86,16 @@ function assets($path, $secure = null){
 
 if (!function_exists('app_asset')){
     function app_asset($path, $name){
-        return asset("apps/{$name}/{$path}");
+        return asset("addons/{$name}/{$path}");
     }
 
     function app_assetPath($path, $name)
     {
-        return base_path("apps/{$name}/public/{$path}");
+        $addon_dir = config('system.setting.addon_dir', 'addons');
+        if (Str::startsWith($addon_dir, 'public')){
+            return public_path("addons/{$name}/" . $path);
+        }
+        return base_path("addons/{$name}/public/{$path}");
     }
 }
 
