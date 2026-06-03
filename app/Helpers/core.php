@@ -86,16 +86,21 @@ function assets($path, $secure = null){
 
 if (!function_exists('app_asset')){
     function app_asset($path, $name){
-        return asset("addons/{$name}/{$path}");
+        if (Str::startsWith(APP_ADDON_DIR, 'public') && is_dir(public_path("addons/{$name}/public"))){
+            return asset("addons/{$name}/public/" . ltrim($path, '/'));
+        }
+        return asset("addons/{$name}/" . ltrim($path, '/'));
     }
 
     function app_assetPath($path, $name)
     {
-        $addon_dir = config('system.setting.addon_dir', 'addons');
-        if (Str::startsWith($addon_dir, 'public')){
-            return public_path("addons/{$name}/" . $path);
+        if (Str::startsWith(APP_ADDON_DIR, 'public')){
+            if (is_dir(public_path("addons/{$name}/public"))){
+                return public_path("addons/{$name}/public/" . ltrim($path, '/'));
+            }
+            return public_path("addons/{$name}/" . ltrim($path, '/'));
         }
-        return base_path("addons/{$name}/public/{$path}");
+        return base_path("addons/{$name}/public/" . ltrim($path, '/'));
     }
 }
 
@@ -267,7 +272,8 @@ function wurl($segment="", $params = array(), $contain_domain = false){
  * @param $addhost boolean|null 是否添加域名
  * @return string 客户端URL
  */
-function murl($segment, $params = array(), $noredirect = true, $addhost = false) {
+function murl($segment, $params = array(), $noredirect = true, $addhost = false): string
+{
     global $_W;
     if (strexists($segment,'.')){
         $segment = str_replace('.','/',$segment);

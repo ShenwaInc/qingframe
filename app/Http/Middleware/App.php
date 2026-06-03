@@ -17,6 +17,7 @@ define('SITEACID', (int)config('system.site.uniacid', 0));
 define('QingVersion', config('system.version'));
 define('QingRelease', config('system.versionCode'));
 define('QingDebug', config('system.debugMode'));
+define('APP_ADDON_DIR', config('system.setting.addon_dir', 'addons'));
 
 error_reporting(E_ERROR);
 global $_W,$_GPC;
