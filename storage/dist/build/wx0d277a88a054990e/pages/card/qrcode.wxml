@@ -1,0 +1,1 @@
+<view><view class="cu-bar fixed nobg noshadow"><view class="action back" bindtap="{{a}}"><text class="cuIcon-back"></text></view></view><poster wx:if="{{c}}" bindonReload="{{b}}" u-i="04860dac-0" bind:__l="__l" u-p="{{c}}"></poster></view>

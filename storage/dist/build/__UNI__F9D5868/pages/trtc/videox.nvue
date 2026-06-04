@@ -1,0 +1,487 @@
+<template>
+	<div class="bg-grey" :style="{width:sysInfo.screenWidth+'px', height:sysInfo.screenHeight+'px'}">
+		<view class="remoteStream" @click="SwitchStream()" v-if="remoteUserId">
+			<trtc-remote-view class="trtcView" :userId="remoteUserId" :viewId="remoteUserId"></trtc-remote-view>
+		</view>
+		<view :class="[viewMyself?'remoteStream':'localStream']" v-if="loaded">
+			<trtc-local-view class="trtcView" :userId="data.rtcinfo.userId" :viewId="data.rtcinfo.userId"></trtc-local-view>
+		</view>
+		<view class="custom-bar" :style="{top:sysInfo.statusBarHeight+'px'}">
+			<view class="bar-action" @click="doHangup()"><text class="text-white">返回</text></view>
+			<view class="bar-content" :style="{width:(sysInfo.screenWidth-150)+'px'}"><text class="text-white text-center">{{ connecting?duratext:"" }}</text></view>
+		</view>
+		<view class="trtc-user" v-if="!connecting && !client.camera">
+			<view class="trtc-avatar">
+				<image class="trtc-image" :src="data.userinfo.avatar"></image>
+			</view>
+			<view class="padding">
+				<view class="text-center">
+					<text class="text-xxl text-white">{{data.userinfo.nickname}}</text>
+				</view>
+				<view class="text-center">
+					<text class="text-lg grid-text">{{frompage=='call'?'正在等待对方接受邀请':'对方邀请您进行视频通话'}}</text>
+				</view>
+			</view>
+		</view>
+		<block v-if="loaded && showbar">
+			<view class="foot trtc-bar" v-if="data.frompage=='call'||connecting">
+				<view class="grid">
+					<view class="grid-item" @click="RotateCamera()">
+						<view class="roundicon bg-white">
+							<text class="iconfont text-black">&#xe672;</text>
+						</view>
+						<view class="padding-top-sm">
+							<text class="grid-text">翻转</text>
+						</view>
+					</view>
+					<view class="grid-item" @click="SwitchCamera()">
+						<view class="roundicon" :class="client.camera?'bg-white':'line-white'">
+							<text class="iconfont" :class="client.camera?'text-black':''">&#xe67e;</text>
+						</view>
+						<view class="padding-top-sm">
+							<text class="grid-text">摄像头</text>
+						</view>
+					</view>
+					<view class="grid-item" @click="SwitchVoice()" v-if="connecting">
+						<view class="roundicon" :class="client.voice?'bg-white':'line-white'">
+							<text class="iconfont" :class="client.voice?'text-black':''">{{client.voice?'&#xe8c2;':'&#xe60d;'}}</text>
+						</view>
+						<view class="padding-top-sm">
+							<text class="grid-text">麦克风</text>
+						</view>
+					</view>
+					<view class="grid-item" @click="SwitchEarpiece()" v-if="connecting">
+						<view class="roundicon" :class="client.earpiece?'bg-white':'line-white'">
+							<text class="iconfont" :class="client.earpiece?'text-black':''">{{client.earpiece?'&#xe600;':'&#xe675;'}}</text>
+						</view>
+						<view class="padding-top-sm">
+							<text class="grid-text">{{client.earpiece?'扬声器':'听筒'}}</text>
+						</view>
+					</view>
+				</view>
+				<view class="grid">
+					<view class="grid-item" @click="doHangup()">
+						<view class="roundicon bg-red">
+							<text class="iconfont">&#xe67f;</text>
+						</view>
+					</view>
+				</view>
+			</view>
+			<view class="foot trtc-bar" v-else>
+				<view class="grid">
+					<view class="grid-item" @click="doRefuse()">
+						<view class="roundicon bg-red">
+							<text class="iconfont">&#xe67f;</text>
+						</view>
+						<view class="padding-top-sm">
+							<text class="grid-text">拒绝</text>
+						</view>
+					</view>
+					<view class="grid-item" @click="doAnswer()">
+						<view class="roundicon bg-green">
+							<text class="iconfont">&#xe640;</text>
+						</view>
+						<view class="padding-top-sm">
+							<text class="grid-text">接听</text>
+						</view>
+					</view>
+				</view>
+			</view>
+		</block>
+	</div>
+</template>
+
+<script>
+	import {mapState} from 'vuex'
+	import core from "@/core.js"
+	import swasocket from "@/swasocket.js"
+	import TrtcLocalView from '@/TrtcCloud/view/TrtcLocalView';
+	import TrtcRemoteView from '@/TrtcCloud/view/TrtcRemoteView';
+	import TrtcCloud from '@/TrtcCloud/lib/index';
+	import { TRTCAudioQuality, TRTCAppScene, TRTCRoleType, TRTCVideoStreamType } from '@/TrtcCloud/lib/TrtcDefines';
+	import permision from "@/TrtcCloud/permission.js"
+	
+	var localStream = null,intvalStream = null, CoreJs = null;
+	
+	export default {
+		components: {
+		      TrtcLocalView,
+			  TrtcRemoteView
+		},
+		computed: mapState(['userId', 'hasLogin']),
+		data(){
+			return {
+				hasHangup:false,
+				chatid:0,
+				duratext:"0:01",
+				frompage:'call',
+				type:'normal',
+				connecting:false,
+				joined:false,
+				loaded:false,
+				viewMyself:1,
+				showbar:true,
+				joinuids:[],
+				cameras:[],
+				remoteUserId:"",
+				speakers:[],
+				sysInfo:core.Client,
+				trtcCloud:TrtcCloud.createInstance(),
+				client:{
+					voice:true,
+					camera:false,
+					cameraId:0,
+					speakerId:0,
+					connected:false,
+					initialized:false,
+					duration:1,
+					audios:[],
+					earpiece:true
+				},
+				data:{
+					frompage:'call',
+					releasedate:0,
+					roomid:'',
+					rtcinfo:{
+						mode:'rtc',
+						sdkAppId:'',
+						userId:'',
+						userSig:'',
+						type:2
+					},
+					title:"语音通话",
+					userinfo:{
+						uid:0,
+						avatar:core.system.logo,
+						nickname:"加载中...",
+						userID:""
+					}
+				}
+			}
+		},
+		created() {
+			const domModule = weex.requireModule('dom');
+			domModule.addRule('fontFace', {
+			    'fontFamily': "iconfont",
+			    'src': "url('/static/fonts/videox.ttf')"
+			});
+		},
+		onLoad(options) {
+			if(typeof(options.cid)=='undefined' || !options.cid) return core.toast('无效的会话','back','error');
+			this.chatid = parseInt(options.cid);
+			if(typeof(options.fp)!='undefined' && options.fp) this.frompage = options.fp;
+			if(typeof(options.type)!='undefined' && options.type) this.type = options.type;
+			if(this.type!='normal') return core.toast('暂不支持多人通话','back','error');
+			swasocket.TRTC.connecting = true;
+			let self = this;
+			this.trtcCloud.on('onEnterRoom', this.createAppStream);
+			this.trtcCloud.on('onExitRoom', function(res){
+				console.log(self.data.rtcinfo.userId + "已退出房间");
+			});
+			this.trtcCloud.on("onUserVideoAvailable", (res) => {
+				const { userId, available } = res;
+				console.log("远端用户画面变化：", res);
+				if(!available){
+					core.toast("对方已关闭摄像头");
+					self.remoteUserId = "";
+				}else if(userId){
+					self.remoteUserId = userId;
+					self.trtcCloud.startRemoteView(userId, TRTCVideoStreamType.TRTCVideoStreamTypeBig, userId);
+				}
+			});
+			if(plus.os.name == "iOS"){
+				let recorder = permision.judgeIosPermission("record");
+				if(!recorder){
+					core.toast("未授予麦克风权限");
+					//return permision.gotoAppPermissionSetting();
+				}
+			}else{
+				this.requestAndroidPermission('android.permission.RECORD_AUDIO');
+				this.requestAndroidPermission('android.permission.CAMERA');
+			}
+			this.initData('trtc/video' ,{uid:this.chatid,fp:this.frompage,mode:'video',dialogtype:this.type}, function(res){
+				self.frompage = res.frompage;
+				console.log("视频通话场景开始", res);
+				uni.$on('SRtrtc', self.SocketRecive);
+				if(res.frompage!='call'){
+					self.joined = true;
+				}
+			});
+			uni.getSystemInfo({
+				success(res) {
+					res.CustomBar = res.platform == 'android' ? 50 : 45;
+					self.sysInfo = res;
+				}
+			});
+		},
+		onUnload() {
+			uni.$off('SRtrtc');
+			if(intvalStream!=null){
+				clearInterval(intvalStream);
+				intvalStream = null;
+			}
+			swasocket.TRTC.connecting = false;
+			if(this.data.roomid>0 && !this.hasHangup){
+				this.LeaveRoom(true);
+			}
+			this.trtcCloud.off('*');
+			this.trtcCloud = null;
+			TrtcCloud.destroyInstance();
+		},
+		methods:{
+			initData(route, data={}, callback=false){
+				var that = this;
+				core.get(route,function(res){
+					if(typeof(res.message)!='undefined' && typeof(res.type)!='undefined'){
+						return core.report(res, true);
+					}
+					that.data = res;
+					that.loaded = true;
+					uni.setNavigationBarTitle({
+						title:res.title
+					});
+					if(callback){
+						callback(res);
+					}
+				},data);
+			},
+			SocketRecive(socketdata){
+				if(socketdata.roomid!=this.data.roomid && socketdata.uid!=this.chatid) return;
+				console.log('实时通话状态更新:', socketdata);
+				if(socketdata.mode=='dismiss' || (socketdata.mode=='leave' && this.joined)){
+					//对方挂断或退出
+					if(this.client.connected){
+						return this.LeaveRoom(false, '通话已结束');
+					}
+					return core.toast('对方已取消','back');
+				}else if(socketdata.mode=='join'){
+					//对方接听
+					this.JoinRoom();
+					this.joinuids.push(socketdata.uid);
+					this.connecting = true;
+					this.joined = true;
+					this.data.userinfo = {
+						uid:socketdata.uid,
+						avatar:socketdata.avatar,
+						nickname:socketdata.nickname
+					}
+				}else if(socketdata.mode=='refuse'){
+					return core.toast('对方已拒绝','back');
+				}else if(socketdata.mode=='busy'){
+					return core.toast('对方正忙','back');
+				}else if(socketdata.mode=='enter'){
+					//对方进入通话界面
+				}
+			},
+			voiceConnected(){
+				this.connecting = true;
+				this.viewMyself = 0;
+				this.startTime();
+			},
+			RotateCamera(){
+				if(!this.client.camera) return core.toast("请先打开摄像头");
+				let index = 1 - this.client.cameraId;
+				this.trtcCloud.switchCamera(!index);
+				this.client.cameraId = index;
+			},
+			SwitchStream(){
+				return this.showbar = !this.showbar;
+			},
+			SwitchVoice(){
+				this.trtcCloud.muteLocalAudio(this.client.voice?true:false);
+				this.client.voice = !this.client.voice;
+			},
+			SwitchEarpiece(){
+				if(this.joinuids.indexOf(this.userId)==-1) return core.toast('未开始连接');
+				if(!this.joined) return core.toast('对方尚未接入对话');
+				let index = 1 - this.client.speakerId;
+				this.trtcCloud.setAudioRoute(index);
+				this.client.speakerId = index;
+				this.client.earpiece = !index;
+			},
+			SwitchCamera(){
+				if(!this.client.camera){
+					if(!this.connecting){
+						return core.toast("视频尚未接通");
+					}
+					this.trtcCloud.startLocalPreview(!this.client.cameraId, this.data.rtcinfo.userId);
+				}else{
+					this.trtcCloud.stopLocalPreview();
+				}
+				this.client.camera = !this.client.camera;
+			},
+			startTime(){
+				this.duratext = "0:01";
+				let self = this;
+				intvalStream = setInterval(function(){
+					let duration = self.client.duration + 1;
+					let second = duration % 60;
+					let minute;
+					if(duration>3600){
+						let hours = Math.trunc(duration/3600);
+						minute = Math.trunc((duration % 3600)/60);
+						self.duratext = hours + ":"+(minute>9?"":"0")+minute+":"+(second>9?"":"0")+second;
+					}else{
+						minute = Math.trunc(duration/60);
+						self.duratext = minute+":"+(second>9?"":"0")+second;
+					}
+					self.client.duration += 1;
+				}, 1000);
+			},
+			naviTo(page,data={}){
+				return core.navito(page,data);
+			},
+			doHangup(){
+				//取消、挂断
+				let text = this.connecting ? '通话结束' : '已取消';
+				return this.LeaveRoom(false, text);
+			},
+			doRefuse(){
+				//拒绝
+				let self = this;
+				core.post('trtc/refuse',function(res){
+					if(res.type=='success'){
+						core.toast('已拒绝，通话结束','back');
+					}else{
+						core.report(res);
+					}
+				},{roomid:this.data.roomid},'json',true);
+			},
+			doAnswer(){
+				//接听
+				let self = this;
+				core.post('trtc/answer',function(res){
+					if(res.type=='success'){
+						try{
+							self.JoinRoom();
+						}catch(e){
+							//TODO handle the exception
+							console.log(e);
+							//接听失败，挂断并退出
+							self.doHangup();
+						}
+					}else{
+						core.report(res);
+					}
+				},{roomid:this.data.roomid},'json',true);
+			},
+			createAppStream(e){
+				if(e<0){
+					console.log("加入房间结果：", e);
+					//加入房间失败，挂断并退出
+					return this.doHangup();
+				}
+				this.joinuids.push(this.userId);
+				this.client.connected = true;
+				if(this.joined){
+					this.voiceConnected();
+				}
+				console.log("成功加入房间，即将发布本地流...", e);
+				this.trtcCloud.startLocalAudio(TRTCAudioQuality.TRTCAudioQualitySpeech);
+				if(!this.client.camera){
+					this.trtcCloud.startLocalPreview(!this.client.cameraId, this.data.rtcinfo.userId);
+				}
+				this.trtcCloud.on('onUserVoiceVolume', function(res){
+					console.log("远端用户音量变化：",res);
+				});
+				let self = this;
+				this.trtcCloud.on('onRemoteUserEnterRoom', function(userId){
+					if(!self.connecting){
+						self.voiceConnected();
+					}
+					console.log("远端用户加入房间：",userId);
+				});
+				this.trtcCloud.on('onUserAudioAvailable', function(res){
+					console.log("远端用户麦克风状态变化：",res);
+					if(!res.available){
+						core.toast('对方已关闭麦克风');
+					}
+				});
+				this.trtcCloud.on('onSendFirstLocalAudioFrame', function(res){
+					self.client.camera = true;
+					console.log("本地语音流发布成功！");
+				});
+			},
+			async JoinRoom(){
+				const params = {
+					sdkAppId: this.data.rtcinfo.sdkAppId,  // Please replace with your own sdkAppId
+					userId: this.data.rtcinfo.userId,       // Please replace with your own userId
+					roomId: this.data.roomid,       // Please replace with your own room number 
+					userSig: this.data.rtcinfo.userSig
+				};
+				console.log('即将加入房间...', params);
+				await this.trtcCloud.enterRoom(params, TRTCAppScene.TRTCAppSceneVideoCall);
+			},
+			LeaveRoom(autoleave=false,toast=""){
+				if(this.data.roomid<=0) return core.toast('未成功接入会话','back','error');
+				this.hasHangup = true;
+				let self = this;
+				core.post('trtc/leave',function(res){
+					if(self.client.connected){
+						if(self.joinuids.indexOf(self.userId)>-1){
+							self.trtcCloud.stopLocalPreview();
+							self.trtcCloud.stopLocalAudio();
+							self.trtcCloud.stopRemoteView(self.data.userinfo.userID, TRTCVideoStreamType.TRTCVideoStreamTypeBig);
+							self.trtcCloud.exitRoom();
+							if(toast!=""){
+								core.toast(toast, 'back');
+							}
+						}
+						self.connecting = false;
+						self.client.connected = false;
+					}
+					if(!autoleave){
+						return core.back();
+					}else if(res.type!='success'){
+						core.report(res);
+					}
+				},{roomid:this.data.roomid});
+			},
+			async requestAndroidPermission(permisionID) {
+			    var result = await permision.requestAndroidPermission(permisionID);
+			    if(result == -1) {
+			        core.toast(permisionID=="android.permission.CAMERA"?"未授权录像权限":"麦克风已被禁止", "back", "error");
+			    }
+			}
+		}
+		
+	}
+</script>
+
+<style>
+.iconfont {
+    font-family: iconfont;
+	font-size: 72upx;
+	font-style: normal;
+	color:#FFFFFF;
+	text-align: center;
+	line-height: 120upx;
+}
+.bg-grey{background-color: #8799a3; position: relative;}
+.bg-white{background-color: #FFFFFF;}
+.bg-red{background-color: #e54d42;}
+.bg-green {background-color: #39b54a;}
+.remoteStream{position: absolute; top: 0; left: 0; z-index: 10; right: 0; bottom: 0;}
+.localStream{position: absolute; right: 15px; top: 84px; width: 90px; height: 178px; z-index: 15; background-color: #8799a3; border-radius: 10upx;}
+.trtcView{position: absolute; top: 0; left: 0; right: 0; bottom: 0;}
+.custom-bar{display: flex; position: absolute; align-items: center; justify-content: flex-start; z-index: 990; left: 0; right: 0; height: 100upx; line-height: 100upx;}
+.bar-action{position: absolute; width: 75px; left: 0; bottom: 0; top: 0;}
+.bar-content{position: absolute; left: 75px; right: 75px; bottom: 0; top: 0; overflow: hidden;}
+.text-white{color: #FFFFFF; line-height: 45px; text-align: center;}
+.text-black{color: #333333;}
+.text-red{color: #e54d42;}
+.trtc-bar{position: fixed; left: 0; bottom: 0; right: 0;}
+.grid{display: flex; flex-wrap: wrap; flex-direction: row; justify-content: center; align-items: center;}
+.grid-item{flex: 1; text-align: center; line-height: 120upx; padding: 10px; margin: 5px; display: flex; justify-content:center; align-items: center;}
+.grid-text{color: #e0e0e0;}
+.roundicon{width: 120upx; height: 120upx; border-radius: 50%; position: relative; flex: 1;}
+.padding-top-sm{padding-top: 20upx;}
+.line-white{border: 2px solid #FFFFFF; border-radius: 50%;}
+.text-lg{font-size: 32upx; text-align: center;}
+.text-xxl{font-size: 44upx;}
+.trtc-user{padding: 50upx; padding-top: 80px;}
+.trtc-avatar{display: flex; justify-content: center; align-items: center;}
+.trtc-image{flex: 1; width: 180upx;	height: 180upx; border-radius: 6upx;}
+.margin-top{margin-top: 30upx;}
+.padding{padding: 30upx;}
+</style>

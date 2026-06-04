@@ -1,0 +1,1 @@
+<view style="{{'background:' + d + ';' + ('padding:' + e)}}"><view style="{{'border-top-style:' + a + ';' + ('border-top-width:' + b) + ';' + ('border-top-color:' + c)}}"></view></view>

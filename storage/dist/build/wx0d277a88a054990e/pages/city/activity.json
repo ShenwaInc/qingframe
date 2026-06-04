@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "活动管理",
+  "usingComponents": {
+    "city-list": "../../tuniaoui/city-list"
+  }
+}

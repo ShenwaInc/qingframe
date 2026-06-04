@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "绑定手机号",
+  "usingComponents": {
+    "zmm-slider-verify": "../../uni_modules/zmm-slider-verify/components/zmm-slider-verify/zmm-slider-verify"
+  }
+}

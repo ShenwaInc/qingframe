@@ -1,0 +1,1 @@
+<view><cu-custom wx:if="{{b}}" u-s="{{['content']}}" u-i="b89bff40-0" bind:__l="__l" u-p="{{b}}"><view slot="content">{{a}}</view></cu-custom><swaload wx:if="{{c}}" u-i="b89bff40-1" bind:__l="__l" u-p="{{d}}"></swaload><view wx:else class="text-center"></view></view>

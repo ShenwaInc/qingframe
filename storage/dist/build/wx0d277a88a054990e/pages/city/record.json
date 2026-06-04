@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "阅读记录",
+  "usingComponents": {
+    "city-list": "../../tuniaoui/city-list"
+  }
+}

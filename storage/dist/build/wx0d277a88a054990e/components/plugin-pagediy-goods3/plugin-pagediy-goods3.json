@@ -1,0 +1,6 @@
+{
+  "component": true,
+  "usingComponents": {
+    "swa-more": "../swa-more/swa-more"
+  }
+}

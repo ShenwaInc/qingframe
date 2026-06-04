@@ -1,0 +1,1 @@
+<view class="_hover-button"><view wx:for="{{a}}" wx:for-item="item" wx:key="c" class="_hover-button-item"><view bindtap="{{item.b}}"><image src="{{item.a}}"></image></view></view></view>

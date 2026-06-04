@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "发表动态",
+  "usingComponents": {
+    "image-crop": "../../components/util/ImageCrop"
+  }
+}

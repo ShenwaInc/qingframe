@@ -1,0 +1,1 @@
+<view><cu-custom wx:if="{{b}}" u-s="{{['content']}}" u-i="5655fe26-0" bind:__l="__l" u-p="{{b}}"><view slot="content">{{a}}</view></cu-custom><authorizing wx:if="{{c}}" u-i="5655fe26-1" bind:__l="__l" u-p="{{c}}"></authorizing></view>

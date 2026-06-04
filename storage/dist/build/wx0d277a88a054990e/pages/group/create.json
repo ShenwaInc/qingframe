@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "创建群组",
+  "enablePullDownRefresh": true,
+  "usingComponents": {
+    "friend": "../friend/friend"
+  }
+}

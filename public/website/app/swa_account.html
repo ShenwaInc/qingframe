@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+    <title>轻记账 - 多人协同记账利器 | 永久买断全开源</title>
+    <meta name="keywords"
+          content="SaaS应用, 多租户, 模块化, 微信商城, 公众号, 小程序, App开发, PHP框架, PHP建站, 微信小程序, 抖音小程序, PHP源码, 轻记账, 协同记账, 开源记账">
+    <meta name="description"
+          content="轻记账 — 多人协同记账利器，支持家庭/团队AA记账、多账本管理、资产盘点。永久买断1999元/全开源，并创新集成OpenClaw+命令行极速记账。">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#10b981',
+                        dark: '#1e293b'
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
+
+        .hero-gradient {
+            background: linear-gradient(135deg, #3b82f6 0%, #10b981 100%);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+        }
+
+        .screenshot-img {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .screenshot-img:hover {
+            transform: scale(1.02);
+            box-shadow: 0 20px 25px -12px rgba(0, 0, 0, 0.2);
+        }
+
+        .cli-panel {
+            background: #0f172a;
+            border-radius: 1rem;
+            box-shadow: 0 25px 40px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .cli-line {
+            font-family: 'Menlo', 'Monaco', 'Cascadia Code', monospace;
+        }
+
+        .sticky-nav {
+            position: fixed;
+            width: 100%;
+            top: 0;
+            left: 0;
+            z-index: 999;
+        }
+
+        .active-menu, .sticky-nav nav a:hover {
+            color: #3690C4 !important;
+            font-weight: 600;
+        }
+
+        @media screen and (min-width: 960px) {
+            .sticky-nav + header {
+                top: 72px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+<!-- 顶部独立导航栏（保留原品牌导航，不影响主站） -->
+<header class="sticky-nav bg-white shadow-sm py-3 px-4 md:px-8 hidden md:block">
+    <div class="container mx-auto flex justify-between items-center">
+        <div class="flex items-center"><a href="/" title="轻如云开放平台 - 首页"><img
+                src="/static/tailwind/images/logo.png" alt="@lang('轻如云系统')" class="h-12 w-auto logo"/></a></div>
+        <nav class="items-center space-x-1 md:space-x-6 flex">
+            <a href="/" class="px-3 py-2 text-sm md:text-base">首页</a>
+            <a href="/console/setting/market" target="_blank" class="px-3 py-2 text-sm md:text-base">应用市场</a>
+            <div class="relative group">
+                <a href="javascript:void(0);" class="active-menu px-3 py-2 text-sm md:text-base flex items-center">解决方案<i
+                        class="fas fa-angle-down ml-1"></i></a>
+                <div class="absolute left-0 mt-6 w-60 bg-white shadow-lg rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
+                    <a href="https://v3.whotalk.com.cn/" target="_blank"
+                       class="block px-4 py-2 text-gray-700 hover:bg-gray-100">社交IM即时通讯系统</a>
+                    <a href="https://demo.gxswa.com/login/6" target="_blank"
+                       class="block px-4 py-2 text-gray-700 hover:bg-gray-100">智慧健康管理系统</a>
+                    <a href="https://demo.gxswa.com/login/2" target="_blank"
+                       class="block px-4 py-2 text-gray-700 hover:bg-gray-100">智能化集成系统</a>
+                    <a href="https://demo.gxswa.com/login/11" target="_blank"
+                       class="block px-4 py-2 text-gray-700 hover:bg-gray-100">供应链电商系统</a>
+                    <a href="https://demo.gxswa.com/login/18" target="_blank"
+                       class="block px-4 py-2 text-gray-700 hover:bg-gray-100">AI智能体集成系统</a>
+                    <a href="https://demo.gxswa.com/login/4" target="_blank"
+                       class="block px-4 py-2 text-gray-700 hover:bg-gray-100">知识付费云点播系统</a>
+                    <a href="/website/swa_account.html" target="_blank"
+                       class="active-menu block px-4 py-2 text-gray-700 hover:bg-gray-100">轻记账-多人协同记账系统</a>
+                </div>
+            </div>
+            <div class="relative group">
+                <a href="javascript:void(0)" class="px-3 py-2 text-sm md:text-base flex items-center">集团官网<i
+                        class="fas fa-angle-down ml-1"></i></a>
+                <div class="absolute left-0 mt-6 w-60 bg-white shadow-lg rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
+                    <a href="https://www.gxit.org/" target="_blank"
+                       class="block px-4 py-2 text-gray-700 hover:bg-gray-100">广西神蛙网络科技有限公司</a>
+                    <a href="https://binglan.gghs.cc/" target="_blank"
+                       class="block px-4 py-2 text-gray-700 hover:bg-gray-100">广西冰蓝科技有限公司</a>
+                    <a href="https://www.yingxiaogx.com/" target="_blank"
+                       class="block px-4 py-2 text-gray-700 hover:bg-gray-100">广西慧云物联网科技有限公司</a>
+                </div>
+            </div>
+            <a href="/#download" class="px-3 py-2 text-sm md:text-base">免费下载</a>
+            <a href="https://www.yuque.com/shenwa/qingru" target="_blank"
+               class="px-3 py-2 text-sm md:text-base">文档</a>
+            <a href="https://bbs.qingruyun.com/forum.php" class="px-3 py-2 text-sm md:text-base">社区</a>
+            <div class="ml-2"><a href="/console/user/profile"><img src="/static/tailwind/images/avatar.png" alt="登录"
+                                                                   class="w-8 h-8 rounded-full object-cover"/></a></div>
+        </nav>
+    </div>
+</header>
+
+<!-- 主固定导航栏（移动端/PC共用，更新链接去掉技术架构） -->
+<header class="fixed top-0 left-0 right-0 bg-white/90 backdrop-blur-md shadow-sm z-50 transition-shadow duration-200">
+    <div class="container mx-auto px-4 py-4 flex items-center justify-between">
+        <a class="flex items-center gap-2" href="#"><img src="/addons/swa_account/resource/icon.jpg"
+                                                         class="w-8 h-8 rounded" alt="轻记账图标"/><span
+                class="text-xl font-bold text-dark">轻记账</span></a>
+        <nav class="hidden md:flex items-center gap-6 lg:gap-8">
+            <a class="text-gray-600 hover:text-primary transition-colors scroll-smooth" href="#features">产品特色</a>
+            <a class="text-gray-600 hover:text-primary transition-colors scroll-smooth" href="#scenarios">适用场景</a>
+            <a class="text-gray-600 hover:text-primary transition-colors scroll-smooth" href="#comparison">竞品对比</a>
+            <a class="text-gray-600 hover:text-primary transition-colors scroll-smooth" href="#screenshots">应用展示</a>
+            <a class="text-gray-600 hover:text-primary transition-colors scroll-smooth" href="#claw">龙虾记账</a>
+            <a class="text-gray-600 hover:text-primary transition-colors scroll-smooth"
+               href="#pricing-merged">收费标准</a>
+        </nav>
+        <a class="hidden md:block bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-full transition-all cursor-pointer"
+           id="nav-demo-btn">立即体验</a>
+        <button class="md:hidden text-gray-700 text-xl" id="mobile-menu-btn"><i class="fas fa-bars"></i></button>
+    </div>
+    <!-- 移动端菜单（同步移除技术架构链接） -->
+    <div class="hidden md:hidden bg-white border-t" id="mobile-menu">
+        <div class="container mx-auto px-4 py-3 flex flex-col gap-3">
+            <a class="py-2 text-gray-600 hover:text-primary scroll-smooth" href="#features">产品特色</a>
+            <a class="py-2 text-gray-600 hover:text-primary scroll-smooth" href="#scenarios">适用场景</a>
+            <a class="py-2 text-gray-600 hover:text-primary scroll-smooth" href="#comparison">竞品对比</a>
+            <a class="py-2 text-gray-600 hover:text-primary scroll-smooth" href="#screenshots">应用展示</a>
+            <a class="py-2 text-gray-600 hover:text-primary scroll-smooth" href="#claw">龙虾记账</a>
+            <a class="py-2 text-gray-600 hover:text-primary scroll-smooth" href="#pricing-merged">收费标准</a>
+            <a class="bg-primary text-white py-2 px-4 rounded-full text-center cursor-pointer" id="mobile-nav-demo-btn">立即体验</a>
+        </div>
+    </div>
+</header>
+
+<!-- 英雄区 Hero -->
+<section class="hero-gradient pb-20 text-white" style="padding-top: 14rem">
+    <div class="container mx-auto px-4">
+        <div class="max-w-4xl mx-auto text-center">
+            <div class="flex items-center justify-center gap-3 mb-6"><img src="/addons/swa_account/resource/icon.jpg"
+                                                                          class="w-14 h-14 md:w-16 md:h-16 rounded-xl shadow-md object-cover"
+                                                                          alt="轻记账图标"/>
+                <h1 class="text-4xl md:text-6xl font-bold">轻记账</h1></div>
+            <p class="text-xl md:text-2xl mb-2 opacity-90">多人协同记账利器</p>
+            <p class="text-lg md:text-xl mt-6 opacity-80 max-w-2xl mx-auto">
+                基于轻如云生态构建。家庭记账、AA分摊、团队经费，开箱即用。现已支持OpenClaw+命令行极客记账！</p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center mt-10">
+                <button class="bg-white text-primary font-semibold px-8 py-3 rounded-full hover:bg-gray-100 transition-all shadow-lg"
+                        id="demo-btn"><i class="fas fa-qrcode mr-2"></i> 立即体验
+                </button>
+                <button class="bg-transparent border-2 border-white text-white font-semibold px-8 py-3 rounded-full hover:bg-white/10 transition-all"
+                        id="buy-btn"><i class="fas fa-shopping-cart mr-2"></i> 立即购买
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 产品特色区域 (保留原始) -->
+<section class="pb-16 pt-40 bg-white" id="features">
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-12"><h2 class="text-3xl md:text-4xl font-bold mb-4">📱 产品特色</h2>
+            <div class="w-20 h-1 bg-primary mx-auto rounded-full"></div>
+        </div>
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div class="feature-card bg-gray-50 p-6 rounded-xl shadow-md transition-all duration-300">
+                <div class="w-14 h-14 bg-blue-100 text-primary rounded-full flex items-center justify-center text-2xl mb-4">
+                    <i class="fas fa-users"></i></div>
+                <h3 class="text-xl font-semibold mb-3">多人协同，实时同步</h3>
+                <p class="text-gray-600 mb-4">告别"一人记账全家翻"。家庭成员扫码加入同一账本，账目实时同步。</p>
+                <ul class="text-sm text-gray-600 space-y-2">
+                    <li class="flex items-start"><i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i><span>扫码加入，邀请二维码</span>
+                    </li>
+                    <li class="flex items-start"><i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i><span>权限分级：创始人/管理员/操作员/观察员</span>
+                    </li>
+                    <li class="flex items-start"><i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i><span>审核机制，控制谁看账本</span>
+                    </li>
+                </ul>
+            </div>
+            <div class="feature-card bg-gray-50 p-6 rounded-xl shadow-md transition-all duration-300">
+                <div class="w-14 h-14 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-2xl mb-4">
+                    <i class="fas fa-book"></i></div>
+                <h3 class="text-xl font-semibold mb-3">多账本管理</h3>
+                <p class="text-gray-600 mb-4">生活账、出差账、项目账分开记，一个账户管理所有账本。</p>
+                <ul class="text-sm text-gray-600 space-y-2">
+                    <li class="flex items-start"><i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i><span>一个人可拥有多个账本</span>
+                    </li>
+                    <li class="flex items-start"><i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i><span>一键快速切换账本</span>
+                    </li>
+                    <li class="flex items-start"><i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i><span>每个账本独立分类与资产</span>
+                    </li>
+                </ul>
+            </div>
+            <div class="feature-card bg-gray-50 p-6 rounded-xl shadow-md transition-all duration-300">
+                <div class="w-14 h-14 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-2xl mb-4">
+                    <i class="fas fa-tags"></i></div>
+                <h3 class="text-xl font-semibold mb-3">智能账单分类</h3>
+                <p class="text-gray-600 mb-4">收支分类一目了然，支持自定义分类满足个性化需求。</p>
+                <ul class="text-sm text-gray-600 space-y-2">
+                    <li class="flex items-start"><i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i><span>三层分类自动合并</span>
+                    </li>
+                    <li class="flex items-start"><i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i><span>颜色标签一眼可辨</span>
+                    </li>
+                    <li class="flex items-start"><i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i><span>删除分类自动迁移数据</span>
+                    </li>
+                </ul>
+            </div>
+            <div class="feature-card bg-gray-50 p-6 rounded-xl shadow-md transition-all duration-300">
+                <div class="w-14 h-14 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center text-2xl mb-4">
+                    <i class="fas fa-coins"></i></div>
+                <h3 class="text-xl font-semibold mb-3">资产管理</h3>
+                <p class="text-gray-600 mb-4">不只看流水，也管资产。全面掌握财务状况。</p>
+                <ul class="text-sm text-gray-600 space-y-2">
+                    <li class="flex items-start"><i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i><span>多资产钱包管理</span>
+                    </li>
+                    <li class="flex items-start"><i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i><span>总资产 / 净资产一目了然</span>
+                    </li>
+                    <li class="flex items-start"><i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i><span>资产转账可追溯</span>
+                    </li>
+                </ul>
+            </div>
+            <div class="feature-card bg-gray-50 p-6 rounded-xl shadow-md transition-all duration-300">
+                <div class="w-14 h-14 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-2xl mb-4">
+                    <i class="fas fa-shield-alt"></i></div>
+                <h3 class="text-xl font-semibold mb-3">数据安全</h3>
+                <p class="text-gray-600 mb-4">每个账本数据隔离，多租户架构保障数据安全。</p>
+                <ul class="text-sm text-gray-600 space-y-2">
+                    <li class="flex items-start"><i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i><span>租户级数据隔离</span>
+                    </li>
+                    <li class="flex items-start"><i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i><span>系统分类不可误删</span>
+                    </li>
+                    <li class="flex items-start"><i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i><span>软删除可恢复</span>
+                    </li>
+                </ul>
+            </div>
+            <div class="feature-card bg-gray-50 p-6 rounded-xl shadow-md transition-all duration-300">
+                <div class="w-14 h-14 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-2xl mb-4">
+                    <i class="fas fa-mobile-alt"></i></div>
+                <h3 class="text-xl font-semibold mb-3">多端运行</h3>
+                <p class="text-gray-600 mb-4">基于 Uni-App，一套代码覆盖多个端。</p>
+                <ul class="text-sm text-gray-600 space-y-2">
+                    <li class="flex items-start"><i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i><span>📱 App（iOS / Android）</span>
+                    </li>
+                    <li class="flex items-start"><i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i><span>🌐 H5 网页版</span>
+                    </li>
+                    <li class="flex items-start"><i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i><span>💬 微信小程序（可选）</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 适用场景区域 (保留) -->
+<section class="pb-16 pt-40 bg-gray-50" id="scenarios">
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-12"><h2 class="text-3xl md:text-4xl font-bold mb-4">🎯 适用场景</h2>
+            <div class="w-20 h-1 bg-primary mx-auto rounded-full"></div>
+            <p class="text-gray-600 mt-4">不同场景，一样好用</p></div>
+        <div class="overflow-x-auto">
+            <table class="w-full bg-white rounded-xl shadow-md">
+                <thead>
+                <tr class="border-b border-gray-200 bg-gray-50">
+                    <th class="px-6 py-4 text-left text-lg font-semibold text-gray-700">场景</th>
+                    <th class="px-6 py-4 text-left text-lg font-semibold text-gray-700">痛点</th>
+                    <th class="px-6 py-4 text-left text-lg font-semibold text-gray-700">轻记账方案</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr class="border-b border-gray-100 hover:bg-gray-50">
+                    <td class="px-6 py-4 font-medium">🏠 <strong>家庭记账</strong></td>
+                    <td class="px-6 py-4 text-gray-600">各花各的，月底对不上账</td>
+                    <td class="px-6 py-4 text-gray-600">全家加入同一账本，谁花的随手记</td>
+                </tr>
+                <tr class="border-b border-gray-100 hover:bg-gray-50">
+                    <td class="px-6 py-4 font-medium">👫 <strong>合租室友</strong></td>
+                    <td class="px-6 py-4 text-gray-600">水电费、日用品分摊乱</td>
+                    <td class="px-6 py-4 text-gray-600">账本内记录公共支出，一目了然</td>
+                </tr>
+                <tr class="border-b border-gray-100 hover:bg-gray-50">
+                    <td class="px-6 py-4 font-medium">🎓 <strong>学生团队</strong></td>
+                    <td class="px-6 py-4 text-gray-600">社团经费去向不明</td>
+                    <td class="px-6 py-4 text-gray-600">不同项目建不同账本，观察员只看不记</td>
+                </tr>
+                <tr class="border-b border-gray-100 hover:bg-gray-50">
+                    <td class="px-6 py-4 font-medium">🏢 <strong>小团队</strong></td>
+                    <td class="px-6 py-4 text-gray-600">团建费、项目经费报销不清</td>
+                    <td class="px-6 py-4 text-gray-600">管理员审核记账，月底导出明细</td>
+                </tr>
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 font-medium">✈️ <strong>出差/旅行</strong></td>
+                    <td class="px-6 py-4 text-gray-600">同行垫付太多记不清</td>
+                    <td class="px-6 py-4 text-gray-600">创建旅行账本，AA 结算</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<!-- 竞品对比区域 -->
+<section class="pb-16 pt-40 bg-white" id="comparison">
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-12"><h2 class="text-3xl md:text-4xl font-bold mb-4">📊 与竞品对比</h2>
+            <div class="w-20 h-1 bg-primary mx-auto rounded-full"></div>
+            <p class="text-gray-600 mt-4">能力全面开放，更多功能免费</p></div>
+        <div class="overflow-x-auto">
+            <table class="w-full bg-white rounded-xl shadow-md">
+                <thead>
+                <tr class="border-b border-gray-200 bg-gray-50">
+                    <th class="px-6 py-4 text-left font-semibold text-gray-700">能力</th>
+                    <th class="px-6 py-4 text-left font-semibold text-gray-700">轻记账</th>
+                    <th class="px-6 py-4 text-left font-semibold text-gray-700">随手记</th>
+                    <th class="px-6 py-4 text-left font-semibold text-gray-700">鲨鱼记账</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr class="border-b border-gray-100">
+                    <td class="px-6 py-4">多人协同</td>
+                    <td class="px-6 py-4 text-green-600 font-medium">✅ 不限人数</td>
+                    <td class="px-6 py-4 text-red-600">❌ 单人</td>
+                    <td class="px-6 py-4 text-red-600">❌ 单人</td>
+                </tr>
+                <tr class="border-b border-gray-100">
+                    <td class="px-6 py-4">多账本</td>
+                    <td class="px-6 py-4 text-green-600 font-medium">✅ 无限数量</td>
+                    <td class="px-6 py-4 text-gray-600">✅ Pro</td>
+                    <td class="px-6 py-4 text-red-600">❌</td>
+                </tr>
+                <tr class="border-b border-gray-100">
+                    <td class="px-6 py-4">成员权限</td>
+                    <td class="px-6 py-4 text-green-600 font-medium">✅ 四级</td>
+                    <td class="px-6 py-4 text-red-600">❌</td>
+                    <td class="px-6 py-4 text-red-600">❌</td>
+                </tr>
+                <tr class="border-b border-gray-100">
+                    <td class="px-6 py-4">微信集成</td>
+                    <td class="px-6 py-4 text-green-600 font-medium">✅</td>
+                    <td class="px-6 py-4 text-red-600">❌</td>
+                    <td class="px-6 py-4 text-red-600">❌</td>
+                </tr>
+                <tr class="border-b border-gray-100">
+                    <td class="px-6 py-4">私有部署</td>
+                    <td class="px-6 py-4 text-green-600 font-medium">✅ 数据安全可靠</td>
+                    <td class="px-6 py-4 text-red-600">❌</td>
+                    <td class="px-6 py-4 text-red-600">❌</td>
+                </tr>
+                <tr class="border-b border-gray-100">
+                    <td class="px-6 py-4">开源自建</td>
+                    <td class="px-6 py-4 text-green-600 font-medium">✅ 轻如云系统</td>
+                    <td class="px-6 py-4 text-red-600">❌</td>
+                    <td class="px-6 py-4 text-red-600">❌</td>
+                </tr>
+                <tr class="border-b border-gray-100">
+                    <td class="px-6 py-4">资产转账</td>
+                    <td class="px-6 py-4 text-green-600 font-medium">✅</td>
+                    <td class="px-6 py-4">✅</td>
+                    <td class="px-6 py-4 text-red-600">❌</td>
+                </tr>
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4">数据导出</td>
+                    <td class="px-6 py-4 text-green-600 font-medium">✅</td>
+                    <td class="px-6 py-4 text-gray-600">✅ Pro</td>
+                    <td class="px-6 py-4 text-red-600">❌</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<!-- 客户案例区域 -->
+<section class="pb-16 pt-40 bg-gray-50">
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-12"><h2 class="text-3xl md:text-4xl font-bold mb-4">🌟 客户案例</h2>
+            <div class="w-20 h-1 bg-primary mx-auto rounded-full"></div>
+        </div>
+        <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-primary">
+                <div class="text-gray-600 italic mb-4"><i class="fas fa-quote-left text-primary opacity-50 mr-2"></i>一家三口用了三个月，月底终于不用翻聊天记录对账了。
+                </div>
+                <p class="text-right text-gray-500 font-medium">— — 王先生，深圳</p></div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-secondary">
+                <div class="text-gray-600 italic mb-4"><i class="fas fa-quote-left text-secondary opacity-50 mr-2"></i>学生会十几个社团都用这个管经费，一个平台管完所有账，太省事了。
+                </div>
+                <p class="text-right text-gray-500 font-medium">— — 李老师，某高校</p></div>
+        </div>
+    </div>
+</section>
+
+<!-- 快速体验区域 -->
+<section class="pb-16 pt-40 bg-gradient-to-br from-blue-50 to-green-50" id="demo">
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-12"><h2 class="text-3xl md:text-4xl font-bold mb-4">🚀 快速体验</h2>
+            <div class="w-20 h-1 bg-primary mx-auto rounded-full"></div>
+        </div>
+        <div class="max-w-3xl mx-auto">
+            <ol class="bg-white p-8 rounded-xl shadow-md mb-8">
+                <li class="flex items-start mb-4"><span
+                        class="flex items-center justify-center w-8 h-8 bg-primary text-white rounded-full font-bold mr-4 flex-shrink-0">1</span>
+                    <p class="text-gray-700 pt-1">管理员后台 → 应用管理 → 安装「轻记账」</p></li>
+                <li class="flex items-start mb-4"><span
+                        class="flex items-center justify-center w-8 h-8 bg-primary text-white rounded-full font-bold mr-4 flex-shrink-0">2</span>
+                    <p class="text-gray-700 pt-1">配置短信服务（可选，用于验证码登录）</p></li>
+                <li class="flex items-start mb-4"><span
+                        class="flex items-center justify-center w-8 h-8 bg-primary text-white rounded-full font-bold mr-4 flex-shrink-0">3</span>
+                    <p class="text-gray-700 pt-1">H5 页面自动生成，分享到微信群即可使用</p></li>
+                <li class="flex items-start"><span
+                        class="flex items-center justify-center w-8 h-8 bg-primary text-white rounded-full font-bold mr-4 flex-shrink-0">4</span>
+                    <p class="text-gray-700 pt-1">创建第一个账本，邀请家人加入</p></li>
+            </ol>
+            <div class="text-center"><p class="mb-4 text-gray-700 font-medium">或者扫码体验 Demo</p>
+                <div class="inline-block bg-white p-4 rounded-xl shadow-md"><img
+                        src="https://mall-1253887929.file.myqcloud.com/images/1/2026/04/koRdvR2Y7SXpE7S3PtDB5BZqWXavvtAU.png"
+                        class="w-48 h-auto mx-auto rounded-lg" alt="演示二维码"/></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 【应用展示板块】改为3个展示项（移动端响应式） -->
+<section class="pb-16 pt-40 bg-white" id="screenshots">
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-12"><h2 class="text-3xl md:text-4xl font-bold mb-4">🖼️ 应用展示</h2>
+            <div class="w-20 h-1 bg-primary mx-auto rounded-full"></div>
+            <p class="text-gray-600 mt-4">多端界面预览 · 轻松掌控财务</p></div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="bg-white rounded-2xl shadow-lg overflow-hidden transition-all hover:shadow-xl">
+                <div class="relative bg-gradient-to-br from-blue-50 to-indigo-50 p-4 flex justify-center items-center h-64">
+                    <img src="https://picsum.photos/id/20/600/400" alt="账单列表截图"
+                         class="screenshot-img rounded-xl shadow-md object-cover w-full h-full border-4 border-white">
+                    <div class="absolute top-3 left-3 bg-black/50 text-white text-xs px-2 py-1 rounded-full backdrop-blur-sm">
+                        <i class="fas fa-mobile-alt mr-1"></i>账单流水
+                    </div>
+                </div>
+                <div class="p-5"><h3 class="font-bold text-lg mb-1">智能账单流水</h3>
+                    <p class="text-gray-500 text-sm">收支分类可视化，筛选、月度统计，一眼看懂钱花在哪。</p></div>
+            </div>
+            <div class="bg-white rounded-2xl shadow-lg overflow-hidden transition-all hover:shadow-xl">
+                <div class="relative bg-gradient-to-br from-green-50 to-teal-50 p-4 flex justify-center items-center h-64">
+                    <img src="https://picsum.photos/id/26/600/400" alt="多账本协同"
+                         class="screenshot-img rounded-xl shadow-md object-cover w-full h-full border-4 border-white">
+                    <div class="absolute top-3 left-3 bg-black/50 text-white text-xs px-2 py-1 rounded-full backdrop-blur-sm">
+                        <i class="fas fa-users"></i> 协同账本
+                    </div>
+                </div>
+                <div class="p-5"><h3 class="font-bold text-lg mb-1">多人协同空间</h3>
+                    <p class="text-gray-500 text-sm">家庭账、社团账一键切换，成员权限细粒度控制。</p></div>
+            </div>
+            <div class="bg-white rounded-2xl shadow-lg overflow-hidden transition-all hover:shadow-xl">
+                <div class="relative bg-gradient-to-br from-purple-50 to-pink-50 p-4 flex justify-center items-center h-64">
+                    <img src="https://picsum.photos/id/104/600/400" alt="数据分析报表"
+                         class="screenshot-img rounded-xl shadow-md object-cover w-full h-full border-4 border-white">
+                    <div class="absolute top-3 left-3 bg-black/50 text-white text-xs px-2 py-1 rounded-full backdrop-blur-sm">
+                        <i class="fas fa-chart-pie"></i> 统计报表
+                    </div>
+                </div>
+                <div class="p-5"><h3 class="font-bold text-lg mb-1">多维报表分析</h3>
+                    <p class="text-gray-500 text-sm">饼图、柱状图、趋势曲线，资产变动一目了然。</p></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 【龙虾记账】原有区块，命令行特色 -->
+<section class="pb-16 pt-40 bg-gray-50" id="claw">
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-12"><h2 class="text-3xl md:text-4xl font-bold mb-4">🦞 龙虾记账 · 命令行极客模式</h2>
+            <div class="w-20 h-1 bg-primary mx-auto rounded-full"></div>
+            <p class="text-gray-600 mt-4">集成OpenClaw引擎 · 终端即账本 · 效率飙升300%</p></div>
+        <div class="max-w-5xl mx-auto">
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div class="space-y-5">
+                    <div class="flex items-start gap-3"><i class="fas fa-terminal text-primary text-3xl mt-1"></i>
+                        <div><h3 class="font-bold text-xl">原生命令行支持</h3>
+                            <p class="text-gray-600">
+                                无需打开APP，在命令行中直接输入记账指令，AI自动识别金额、分类，并同步至账本。</p></div>
+                    </div>
+                    <div class="flex items-start gap-3"><i class="fas fa-bolt text-secondary text-3xl mt-1"></i>
+                        <div><h3 class="font-bold text-xl">支持龙虾记账</h3>
+                            <p class="text-gray-600">训练龙虾记住规则后可以直接通过自然语言交给龙虾自动记账。</p></div>
+                    </div>
+                    <div class="flex items-start gap-3"><i class="fas fa-code-branch text-purple-500 text-3xl mt-1"></i>
+                        <div><h3 class="font-bold text-xl">API开放 + Webhook</h3>
+                            <p class="text-gray-600">可将龙虾对接到微信、飞书、企业微信、钉钉，对着微信说话就能记账</p></div>
+                    </div>
+                </div>
+                <div class="cli-panel p-5 rounded-2xl">
+                    <div class="flex items-center space-x-2 mb-4 px-2">
+                        <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                        <span class="text-gray-400 text-xs ml-2">QingFrame · Terminal</span></div>
+                    <div class="space-y-2 cli-line text-sm text-green-300 bg-slate-900 p-4 rounded-xl font-mono"><p>
+                        <span class="text-cyan-400">$</span> php artisan app:account createBook "用途" 金额 "类型名" "资产名" --family_id=账本ID --uniacid=租户ID --uid=用户UID</p>
+                        <p><span class="text-cyan-400">$</span> php artisan app:account createBook "黑坑钓鱼一整天" 120.00 "钓鱼" "交行信用卡" --family_id=1 --uniacid=1 --uid=1</p>
+                        <p><span class="text-green-400">✓ 记账成功 #id: 28471 | 家庭账本今日累计: 120.00</span></p>
+                        <p><span class="text-cyan-400">$</span> claw stats --month 2026-05 --group 分类</p>
+                        <p><span
+                                class="text-yellow-300">钓鱼: ¥120 &nbsp;&nbsp;交通: ¥124 &nbsp;&nbsp;吃饭: ¥50</span>
+                        </p></div>
+                    <div class="mt-4 text-center text-gray-300 text-xs">也可以直接对龙虾说: <span
+                            class="bg-slate-800 px-2 py-1 rounded">"我今天钓鱼花了120元，刷的是交行信用卡，请帮我记账"</span></div>
+                </div>
+            </div>
+            <div class="mt-10 text-center bg-white/70 backdrop-blur-sm rounded-xl p-5 border border-primary/30"><i
+                    class="fas fa-rocket text-primary mr-2"></i> <strong class="text-dark">最新下单福利：</strong>
+                购买轻记账全开源版，免费安装龙虾并训练记账规则。
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 【合并收费标准+商业合作】全新板块，位于最后，包含立即购买按钮 (点击与英雄区购买按钮相同) -->
+<section class="pb-16 pt-40 bg-white" id="pricing-merged">
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl md:text-4xl font-bold mb-4">💰 收费标准</h2>
+            <div class="w-20 h-1 bg-primary mx-auto rounded-full"></div>
+            <p class="text-gray-600 mt-4">一次付费 · 永久使用 · 源码全开放 · 灵活商业合作</p>
+        </div>
+        <div class="max-w-5xl mx-auto">
+            <!-- 价格卡片 + 立即购买 -->
+            <div class="bg-gradient-to-r from-blue-50 to-green-50 rounded-2xl shadow-xl p-8 md:p-10 text-center border border-primary/20 mb-12">
+                <div class="inline-block bg-white rounded-full px-4 py-1 text-sm font-semibold text-primary shadow-sm mb-6">
+                    <i class="fas fa-gem mr-1"></i> 终极买断权益
+                </div>
+                <div class="text-5xl md:text-7xl font-extrabold text-dark mb-3">¥1999 <span
+                        class="text-2xl font-medium text-gray-500">/ 永久</span></div>
+                <p class="text-gray-700 text-lg mb-6">前后端全开源 · 无加密 · 无年费 · 私有化部署自由</p>
+                <ul class="space-y-3 text-left max-w-sm mx-auto mb-8">
+                    <li class="flex items-center"><i class="fas fa-check-circle text-green-600 w-6 mr-3"></i><span>完整PHP + Uni-App 源码交付</span>
+                    </li>
+                    <li class="flex items-center"><i class="fas fa-check-circle text-green-600 w-6 mr-3"></i><span>享受免费升级服务 (一年)</span>
+                    </li>
+                    <li class="flex items-center"><i class="fas fa-check-circle text-green-600 w-6 mr-3"></i><span>可商用、可二次开发、支持OEM</span>
+                    </li>
+                    <li class="flex items-center"><i class="fas fa-check-circle text-green-600 w-6 mr-3"></i><span>官方售后技术支持 12 个月</span>
+                    </li>
+                </ul>
+                <!-- 立即购买按钮，与英雄区购买按钮行为一致：弹出售买二维码 -->
+                <button class="bg-primary hover:bg-primary/90 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-all text-lg buy-trigger-btn"
+                        id="merged-buy-btn"><i class="fas fa-shopping-cart mr-2"></i> 立即购买
+                </button>
+                <p class="text-gray-500 text-sm mt-5">支持对公转账/合同发票，企业级采购无忧</p>
+            </div>
+
+            <!-- 原“商业合作”内容：灵活合作方式 (SaaS订阅/私有化部署/二次开发/OEM) -->
+            <div class="text-center mb-8">
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="p-6 bg-gray-50 rounded-xl text-center hover:shadow-md transition-all">
+                    <div class="w-12 h-12 bg-blue-100 text-primary rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-cloud"></i></div>
+                    <h3 class="font-semibold mb-2">SaaS 按需订阅</h3>
+                    <p class="text-sm text-gray-600">随轻如云平台一起提供，按需付费使用</p></div>
+                <div class="p-6 bg-gray-50 rounded-xl text-center hover:shadow-md transition-all">
+                    <div class="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-server"></i></div>
+                    <h3 class="font-semibold mb-2">私有化部署</h3>
+                    <p class="text-sm text-gray-600">独立部署在客户的服务器上，数据自主掌控</p></div>
+                <div class="p-6 bg-gray-50 rounded-xl text-center hover:shadow-md transition-all">
+                    <div class="w-12 h-12 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-code-branch"></i></div>
+                    <h3 class="font-semibold mb-2">二次开发</h3>
+                    <p class="text-sm text-gray-600">基于源码定制功能、界面、品牌，满足个性需求</p></div>
+                <div class="p-6 bg-gray-50 rounded-xl text-center hover:shadow-md transition-all">
+                    <div class="w-12 h-12 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-trademark"></i></div>
+                    <h3 class="font-semibold mb-2">OEM 白标</h3>
+                    <p class="text-sm text-gray-600">打上您的品牌 Logo，作为自有产品交付</p></div>
+            </div>
+            <div class="text-center mt-12">
+                <p class="text-gray-700 text-lg mb-2"><i class="fas fa-envelope text-primary mr-2"></i> 📧 商务联系：<a
+                        class="text-primary hover:underline" href="mailto:shenwa@gxit.org">shenwa@gxit.org</a></p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 页脚区域 -->
+<footer class="bg-dark text-gray-400 py-12">
+    <div class="container mx-auto px-4 text-center">
+        <div class="flex items-center justify-center gap-2 mb-4"><i class="fas fa-wallet text-2xl text-white"></i><span
+                class="text-2xl font-bold text-white">轻记账</span></div>
+        <p class="mb-6">和你在乎的人，一起把账算清。支持OpenClaw命令行 · 永久开源买断</p>
+        <div class="flex justify-center gap-6 mb-8 flex-wrap"><a
+                class="hover:text-white transition-colors scroll-smooth" href="#features">产品特色</a><a
+                class="hover:text-white transition-colors scroll-smooth" href="#scenarios">适用场景</a><a
+                class="hover:text-white transition-colors scroll-smooth" href="#comparison">竞品对比</a><a
+                class="hover:text-white transition-colors scroll-smooth" href="#screenshots">应用展示</a><a
+                class="hover:text-white transition-colors scroll-smooth" href="#claw">龙虾记账</a><a
+                class="hover:text-white transition-colors" href="https://work.weixin.qq.com/kfid/kfc54a08558b8eecbb3"
+                target="_blank">联系我们</a></div>
+        <div class="border-t border-gray-700 pt-6"><p>© 2025 轻记账. 基于轻如云生态构建 · 龙虾记账模块已集成OpenClaw</p>
+        </div>
+    </div>
+</footer>
+
+<!-- 弹窗: 体验二维码 + 购买二维码 -->
+<div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden" id="demo-modal">
+    <div class="bg-white p-6 rounded-xl shadow-xl relative max-w-sm mx-4">
+        <button class="absolute top-3 right-3 text-gray-500 hover:text-gray-700" id="close-demo-modal"><i
+                class="fas fa-times text-xl"></i></button>
+        <div class="text-center"><h3 class="text-xl font-bold mb-4">📱 体验轻记账</h3><img
+                src="https://mall-1253887929.file.myqcloud.com/images/1/2026/04/koRdvR2Y7SXpE7S3PtDB5BZqWXavvtAU.png"
+                class="w-[220px] h-auto mx-auto rounded-lg shadow-sm" alt="体验二维码"/>
+            <p class="mt-4 text-gray-600">微信/浏览器扫码立即体验</p></div>
+    </div>
+</div>
+<div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden" id="buy-modal">
+    <div class="bg-white p-6 rounded-xl shadow-xl relative max-w-sm mx-4">
+        <button class="absolute top-3 right-3 text-gray-500 hover:text-gray-700" id="close-buy-modal"><i
+                class="fas fa-times text-xl"></i></button>
+        <div class="text-center"><h3 class="text-xl font-bold mb-4">💰 购买轻记账</h3><img
+                src="https://mall-1253887929.file.myqcloud.com/images/1/2026/04/CIQTOu9k1CzcBvZWqQzfkUjLOntbi9hm.png"
+                class="w-[540px] h-auto mx-auto rounded-lg shadow-sm" alt="购买二维码"/>
+            <p class="mt-4 text-gray-600">扫码购买，立即开启协同记账</p></div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        function init() {
+            // 移动端菜单交互
+            const menuBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            if (menuBtn && mobileMenu) {
+                menuBtn.addEventListener('click', () => {
+                    if (mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.remove('hidden');
+                        menuBtn.innerHTML = '<i class="fas fa-times"></i>';
+                    } else {
+                        mobileMenu.classList.add('hidden');
+                        menuBtn.innerHTML = '<i class="fas fa-bars"></i>';
+                    }
+                });
+                mobileMenu.querySelectorAll('a').forEach(link => link.addEventListener('click', () => {
+                    mobileMenu.classList.add('hidden');
+                    menuBtn.innerHTML = '<i class="fas fa-bars"></i>';
+                }));
+            }
+            const demoModal = document.getElementById('demo-modal');
+            const buyModal = document.getElementById('buy-modal');
+            const showDemo = (e) => {
+                if (e) e.preventDefault();
+                demoModal?.classList.remove('hidden');
+            };
+            const hideDemo = () => demoModal?.classList.add('hidden');
+            const showBuy = (e) => {
+                if (e) e.preventDefault();
+                buyModal?.classList.remove('hidden');
+            };
+            const hideBuy = () => buyModal?.classList.add('hidden');
+            document.getElementById('demo-btn')?.addEventListener('click', showDemo);
+            document.getElementById('buy-btn')?.addEventListener('click', showBuy);
+            document.getElementById('nav-demo-btn')?.addEventListener('click', showDemo);
+            document.getElementById('mobile-nav-demo-btn')?.addEventListener('click', showDemo);
+            // 合并收费标准板块内的立即购买按钮，触发相同购买弹窗
+            document.getElementById('merged-buy-btn')?.addEventListener('click', showBuy);
+            document.getElementById('close-demo-modal')?.addEventListener('click', hideDemo);
+            document.getElementById('close-buy-modal')?.addEventListener('click', hideBuy);
+            if (demoModal) demoModal.addEventListener('click', (e) => {
+                if (e.target === demoModal) hideDemo();
+            });
+            if (buyModal) buyModal.addEventListener('click', (e) => {
+                if (e.target === buyModal) hideBuy();
+            });
+            // 滚动阴影效果
+            const header = document.querySelector('header');
+            if (header) window.addEventListener('scroll', () => header.classList[window.scrollY > 50 ? 'add' : 'remove']('shadow-md'));
+        }
+
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+        else init();
+    })();
+</script>
+</body>
+</html>

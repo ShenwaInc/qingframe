@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "二维码名片",
+  "usingComponents": {
+    "poster": "../../components/poster"
+  }
+}

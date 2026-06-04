@@ -1,0 +1,14 @@
+/*!
+       * The buffer module from node.js, for the browser.
+       *
+       * @author   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
+       * @license  MIT
+       */
+
+/*!
+ * vuex v3.6.2
+ * (c) 2021 Evan You
+ * @license MIT
+ */
+
+/*! https://mths.be/utf8js v2.1.2 by @mathias */

@@ -1,0 +1,1 @@
+page{background-color:#fff;padding-bottom:100rpx}.head{height:100rpx;overflow:hidden;position:relative}.head-rd{width:1600rpx;height:1600rpx;bottom:0;position:absolute;left:50%;margin-left:-800rpx;border-radius:50%}.cu-list.menu-avatar>.cu-item .content{width:calc(100% - 346rpx)}.cu-list.menu-avatar>.cu-item .action{width:150rpx}

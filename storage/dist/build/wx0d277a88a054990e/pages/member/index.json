@@ -1,0 +1,9 @@
+{
+  "navigationBarTitleText": "个人名片",
+  "navigationBarTextStyle": "black",
+  "enablePullDownRefresh": true,
+  "usingComponents": {
+    "user-card": "../../components/userCard",
+    "merchant-card": "../../components/merchant"
+  }
+}

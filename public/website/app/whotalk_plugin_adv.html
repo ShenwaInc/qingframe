@@ -1,0 +1,261 @@
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>IM+ 视频激励广告插件 - 产品众筹</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+            href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+            rel="stylesheet"
+    />
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        secondary: '#FF7D00',
+                        dark: '#1E293B'
+                    },
+                    spacing: {
+                        '18': '4.5rem'
+                    }
+                }
+            }
+        };
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .shadow-card {
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-dark">
+<!-- [MODULE] 7gk_页面容器 -->
+<div class="max-w-md mx-auto bg-white min-h-screen pb-16">
+    <!-- [MODULE] 9a2_顶部横幅区域 -->
+    <header
+            class="bg-gradient-to-r from-primary to-blue-700 text-white py-8 px-4"
+    >
+        <div class="text-center">
+            <h1 class="text-2xl font-bold mb-2">IM + 视频激励广告插件</h1>
+            <p class="text-blue-100 text-lg">限时众筹进行中</p>
+        </div>
+    </header>
+    <!-- [/MODULE] 9a2_顶部横幅区域 -- 展示产品标题和活动名称 -->
+    <!-- [MODULE] 2bc_插件介绍区域 -->
+    <section class="px-4 -mt-4">
+        <div class="bg-white rounded-xl shadow-card p-5">
+            <h2 class="text-lg font-bold mb-4 text-primary border-b pb-2">
+                插件介绍
+            </h2>
+            <p class="text-gray-700 leading-relaxed">
+                即时通讯系统拓展插件【视频激励广告插件】，对接广告联盟，以用户观看激励广告获取奖励的方式为平台创收。
+            </p>
+            <div class="mt-5 text-center">
+                <p class="text-gray-600 mb-3">扫码查看演示</p>
+                <div class="inline-block bg-gray-100 p-3 rounded-lg">
+                    <img
+                            src="https://design.gemcoder.com/api/upload/appResource/WdR5pj7SL6DLLxsg9vR3G.png"
+                            alt="众筹二维码"
+                            class="w-48 h-48"
+                    />
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- [/MODULE] 2bc_插件介绍区域 -- 展示插件基本介绍和架构图 -->
+    <!-- [MODULE] f47_众筹信息卡片 -->
+    <section class="px-4 mt-6">
+        <div class="bg-white rounded-xl shadow-card p-5">
+            <h2 class="text-lg font-bold mb-4 text-primary border-b pb-2">
+                众筹信息
+            </h2>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-gray-50 p-3 rounded-lg">
+                    <p class="text-gray-500 text-sm">插件原价</p>
+                    <p class="text-xl font-medium line-through text-gray-400">
+                        ¥2000
+                    </p>
+                </div>
+                <div class="bg-orange-50 p-3 rounded-lg">
+                    <p class="text-orange-600 text-sm">众筹价格</p>
+                    <p class="text-2xl font-bold text-secondary">¥800</p>
+                </div>
+                <div class="bg-gray-50 p-3 rounded-lg">
+                    <p class="text-gray-500 text-sm">众筹名额</p>
+                    <p
+                            class="text-xl font-medium yt-editor"
+                            contenteditable="false"
+                            style="outline: none;"
+                    >
+                        仅剩
+                        <span
+                                class="text-red-500 font-bold"
+                                contenteditable="false"
+                                style="display: inline-block; outline: none;"
+                        >
+                  9
+                </span>
+                        人
+                    </p>
+                </div>
+                <div class="bg-gray-50 p-3 rounded-lg">
+                    <p class="text-gray-500 text-sm">截止时间</p>
+                    <p class="text-xl font-medium">2026-05-07</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- [/MODULE] f47_众筹信息卡片 -- 展示所有众筹相关信息和参与二维码 -->
+    <!-- [MODULE] 5a3_功能说明区域 -->
+    <section class="px-4 mt-6">
+        <div class="bg-white rounded-xl shadow-card p-5">
+            <h2 class="text-lg font-bold mb-4 text-primary border-b pb-2">
+                功能说明
+            </h2>
+            <!-- [MODULE] z7x_用户端功能 -->
+            <div class="mb-5">
+                <h3 class="font-semibold mb-3 text-gray-700 flex items-center">
+                    <i class="fas fa-user text-primary mr-2"> </i>
+                    用户端功能
+                </h3>
+                <ul class="space-y-3 pl-2">
+                    <li class="flex">
+                        <i
+                                class="fas fa-check-circle text-green-500 mt-1 mr-2 flex-shrink-0"
+                        >
+                        </i>
+                        <div>
+                            <p class="font-medium">个人贡献值</p>
+                            <p class="text-sm text-gray-600">
+                                用户每观看 1
+                                个广告，即可获取对应个人贡献值奖励，该奖励为用户独立观看行为的权益核算依据。
+                            </p>
+                        </div>
+                    </li>
+                    <li class="flex">
+                        <i
+                                class="fas fa-check-circle text-green-500 mt-1 mr-2 flex-shrink-0"
+                        >
+                        </i>
+                        <div>
+                            <p class="font-medium">团队贡献值</p>
+                            <p class="text-sm text-gray-600">
+                                团队成员观看广告时，团队可同步获取团队贡献值奖励，实现团队协作式的激励权益共享。
+                            </p>
+                        </div>
+                    </li>
+                    <li class="flex">
+                        <i
+                                class="fas fa-check-circle text-green-500 mt-1 mr-2 flex-shrink-0"
+                        >
+                        </i>
+                        <div>
+                            <p class="font-medium">任务数量</p>
+                            <p class="text-sm text-gray-600">
+                                展示用户当日完成广告数与当日限额广告数的对应情况，直观呈现用户广告观看任务的推进进度。
+                            </p>
+                        </div>
+                    </li>
+                    <li class="flex">
+                        <i
+                                class="fas fa-check-circle text-green-500 mt-1 mr-2 flex-shrink-0"
+                        >
+                        </i>
+                        <div>
+                            <p class="font-medium">广告展示</p>
+                            <p class="text-sm text-gray-600">
+                                观看激励广告获得贡献值奖励；入口页面默认展示广告（无奖励）。
+                            </p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <!-- [/MODULE] z7x_用户端功能 -- 列出所有用户端功能 -->
+            <!-- [MODULE] hq4_管理端功能 -->
+            <div>
+                <h3 class="font-semibold mb-3 text-gray-700 flex items-center">
+                    <i class="fas fa-cog text-primary mr-2"> </i>
+                    管理端功能
+                </h3>
+                <ul class="space-y-3 pl-2">
+                    <li class="flex">
+                        <i
+                                class="fas fa-check-circle text-green-500 mt-1 mr-2 flex-shrink-0"
+                        >
+                        </i>
+                        <div>
+                            <p class="font-medium">广告设置</p>
+                            <p class="text-sm text-gray-600">
+                                支持个人贡献值比例设置、团队贡献值比例设置、每日任务数限额配置。
+                            </p>
+                        </div>
+                    </li>
+                    <li class="flex">
+                        <i
+                                class="fas fa-check-circle text-green-500 mt-1 mr-2 flex-shrink-0"
+                        >
+                        </i>
+                        <div>
+                            <p class="font-medium">广告任务数统计</p>
+                            <p class="text-sm text-gray-600">
+                                统计每个用户每日广告完成数量，生成用户级广告观看数据台账。
+                            </p>
+                        </div>
+                    </li>
+                    <li class="flex">
+                        <i
+                                class="fas fa-check-circle text-green-500 mt-1 mr-2 flex-shrink-0"
+                        >
+                        </i>
+                        <div>
+                            <p class="font-medium">广告贡献值明细</p>
+                            <p class="text-sm text-gray-600">
+                                统计每个广告发放贡献值的详细详情，涵盖个人与团队贡献值维度。
+                            </p>
+                        </div>
+                    </li>
+                    <li class="flex">
+                        <i
+                                class="fas fa-check-circle text-green-500 mt-1 mr-2 flex-shrink-0"
+                        >
+                        </i>
+                        <div>
+                            <p class="font-medium">广告结算</p>
+                            <p class="text-sm text-gray-600">
+                                管理员输入每日发放积分的总额，作为当日积分分红的总基数。
+                            </p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <!-- [/MODULE] hq4_管理端功能 -- 列出所有管理端功能 -->
+        </div>
+    </section>
+    <!-- [/MODULE] 5a3_功能说明区域 -- 包含用户端和管理端功能说明 -->
+    <!-- [MODULE] ec2_底部行动召唤区域 -->
+    <section class="px-4 mt-8">
+        <div class="text-center">
+            <a
+                    href="javascript:void(0);"
+                    class="block bg-secondary text-white py-4 rounded-xl text-lg font-bold shadow-lg shadow-orange-200 yt-editor"
+                    contenteditable="false"
+                    style="outline: none;"
+            >
+                <i class="fas fa-qrcode mr-2"> </i>
+                长按二维码参与众筹
+            </a>
+            <p class="text-gray-400 text-sm mt-3">名额有限 先到先得</p>
+        </div>
+    </section>
+    <!-- [/MODULE] ec2_底部行动召唤区域 -- 底部的行动召唤按钮 -->
+</div>
+<!-- [/MODULE] 7gk_页面容器 -- 整个移动端页面容器 -->
+</body>
+</html>

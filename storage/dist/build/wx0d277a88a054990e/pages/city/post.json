@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "发布信息",
+  "usingComponents": {
+    "custom-form": "../../components/custom-form",
+    "citypicker": "../../components/util/citypicker"
+  }
+}

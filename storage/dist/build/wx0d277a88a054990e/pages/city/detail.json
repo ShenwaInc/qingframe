@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "同城信息详情",
+  "enablePullDownRefresh": true,
+  "usingComponents": {
+    "comment": "../../components/util/comment"
+  }
+}

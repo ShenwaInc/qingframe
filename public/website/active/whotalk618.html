@@ -1,0 +1,495 @@
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>618拼单活动 - Whotalk即时通讯系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#ff4d4f',
+                        secondary: '#ff7875',
+                        dark: '#1f2937'
+                    },
+                    spacing: {
+                        '18': '4.5rem'
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+        .price-original {
+            text-decoration-line: line-through;
+        }
+        .countdown-item {
+            @apply bg-white rounded-lg flex flex-col items-center justify-center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .countdown-item span:first-child {
+            @apply text-xl font-bold text-primary;
+        }
+        .countdown-item span:last-child {
+            @apply text-xs text-gray-500;
+        }
+        .benefit-card {
+            @apply bg-gradient-to-br from-red-50 to-white p-4 rounded-xl border border-red-100 shadow-sm;
+        }
+        .package-card {
+            @apply bg-white rounded-xl p-5 shadow-md border-2 transition-all duration-300;
+        }
+        .package-card.recommended {
+            @apply border-primary scale-105 shadow-lg;
+        }
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        .animate-pulse-slow {
+            animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-red-50 to-orange-50 min-h-screen">
+<!-- [MODULE] 7k2_整体页面容器 -->
+<div class="container mx-auto px-4 pb-16">
+    <!-- [MODULE] x92_顶部横幅区域 -->
+    <div class="w-full pt-6 pb-4">
+        <div
+                class="bg-gradient-to-r from-primary to-secondary rounded-2xl p-6 text-white text-center relative overflow-hidden shadow-xl"
+        >
+            <div
+                    class="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full"
+            ></div>
+            <div
+                    class="absolute -bottom-10 -left-10 w-24 h-24 bg-white/10 rounded-full"
+            ></div>
+            <h1 class="text-3xl font-bold mb-2 relative z-10">
+                🔥 618 年中拼单狂欢
+            </h1>
+            <p class="text-lg opacity-90 mb-4 relative z-10">
+                Whotalk 即时通讯系统 限时特惠
+            </p>
+            <!-- 产品特写图片 -->
+            <div class="relative z-10">
+                <img
+                        alt="产品特写"
+                        class="w-full h-auto rounded-lg object-cover"
+                        src="https://shenwahuanan.oss-cn-shenzhen.aliyuncs.com/images/2/2026/05/5uJawWcC3W6MrlpP6iDapgoLGlhPmPap.png"
+                />
+            </div>
+        </div>
+    </div>
+    <!-- [/MODULE] x92_顶部横幅区域 -->
+    <!-- [MODULE] p45_产品介绍区域 -->
+    <div class="mt-4 bg-white rounded-2xl p-6 shadow-md">
+        <h2 class="text-xl font-bold text-dark mb-3 flex items-center">
+            <i class="fas fa-comments text-primary mr-2"> </i>
+            产品介绍
+        </h2>
+        <p class="text-gray-600 leading-relaxed mb-4">
+            Whotalk
+            是一款成品可商用的即时通讯系统，支持单聊、群聊、音视频通话、朋友圈等功能，可快速搭建属于自己的通讯平台。
+        </p>
+        <a
+                class="inline-flex items-center text-primary font-medium hover:text-secondary transition-colors hidden"
+                href="https://mp.weixin.qq.com/s/j516UNnbekOEt3MpYWeV0w"
+                target="_blank"
+        >
+            <span> 点击查看详细介绍 </span>
+            <i class="fas fa-external-link-alt ml-2"> </i>
+        </a>
+        <div class="mt-4 rounded-xl overflow-hidden">
+            <img
+                    alt="Whotalk界面展示"
+                    class="w-full h-auto object-cover"
+                    src="https://shenwahuanan.oss-cn-shenzhen.aliyuncs.com/images/2/2026/05/qNNb7J6ksvzeNVAeIzgspU0nLSOFbNgZ.png"
+            />
+        </div>
+    </div>
+    <!-- [/MODULE] p45_产品介绍区域 -->
+    <!-- [MODULE] f88_套餐价格区域 -->
+    <div class="mt-8">
+        <h2 class="text-xl font-bold text-dark mb-5 flex items-center px-1">
+            <i class="fas fa-tags text-primary mr-2"> </i>
+            拼单特惠套餐
+        </h2>
+        <div class="grid gap-6">
+            <!-- 独立版基础 -->
+            <div class="package-card">
+                <div class="flex justify-between items-start mb-4">
+                    <h3 class="text-lg font-bold text-dark">独立版</h3>
+                    <span
+                            class="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-medium yt-editor"
+                            contenteditable="false"
+                            style="outline: none;"
+                    >
+                国际版
+              </span>
+                </div>
+                <div class="flex items-baseline gap-3 mb-4">
+                    <span class="text-3xl font-bold text-primary"> ¥ 4930 </span>
+                    <span class="price-original text-gray-400"> ¥ 5800 </span>
+                </div>
+                <ul class="text-gray-600 space-y-2 mb-4">
+                    <li class="flex items-start">
+                        <i class="fas fa-check text-green-500 mt-1 mr-2"> </i>
+                        <span> 独立部署服务器 </span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check text-green-500 mt-1 mr-2"> </i>
+                        <span> 官方一年免费更新 </span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check text-green-500 mt-1 mr-2"> </i>
+                        <span> 基础功能全部开放 </span>
+                    </li>
+                </ul>
+                <button
+                        class="w-full bg-primary/20 text-primary py-3 rounded-lg font-medium hover:bg-primary/30 transition-colors contact-btn hidden"
+                >
+                    立即咨询参团
+                </button>
+            </div>
+            <!-- 独立版含App -->
+            <div class="package-card recommended">
+                <div class="flex justify-between items-start mb-4">
+                    <h3 class="text-xl font-bold text-dark">独立版含App</h3>
+                    <span
+                            class="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-medium"
+                    >
+                国际版+App
+              </span>
+                </div>
+                <div class="flex items-baseline gap-3 mb-4">
+                    <span class="text-4xl font-bold text-primary"> ¥ 5930 </span>
+                    <span class="price-original text-gray-400 text-lg"> ¥ 7800 </span>
+                </div>
+                <ul class="text-gray-600 space-y-2 mb-4">
+                    <li class="flex items-start">
+                        <i class="fas fa-check text-green-500 mt-1 mr-2"> </i>
+                        <span
+                                class="yt-editor"
+                                contenteditable="false"
+                                style="outline: none;"
+                        >
+                  包含Android + iOS App安装包
+                </span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check text-green-500 mt-1 mr-2"> </i>
+                        <span> 独立部署服务器 </span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check text-green-500 mt-1 mr-2"> </i>
+                        <span> 官方一年免费更新 </span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check text-green-500 mt-1 mr-2"> </i>
+                        <span> 支持在线升级 </span>
+                    </li>
+                </ul>
+                <button
+                        class="w-full bg-primary text-white py-3 rounded-lg font-medium hover:bg-secondary transition-colors shadow-lg contact-btn hidden"
+                >
+                    立即咨询参团
+                </button>
+            </div>
+            <!-- 全插件版 -->
+            <div class="package-card">
+                <div class="flex justify-between items-start mb-4">
+                    <h3 class="text-lg font-bold text-dark">全插件完整版</h3>
+                    <span
+                            class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-medium"
+                    >
+                国际版+App+全插件
+              </span>
+                </div>
+                <div class="flex items-baseline gap-3 mb-4">
+                    <span class="text-3xl font-bold text-primary"> ¥ 8700 </span>
+                    <span class="price-original text-gray-400"> ¥ 11600 </span>
+                </div>
+                <ul class="text-gray-600 space-y-2 mb-4">
+                    <li class="flex items-start">
+                        <i class="fas fa-check text-green-500 mt-1 mr-2"> </i>
+                        <span> 包含App+所有官方插件 </span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check text-green-500 mt-1 mr-2"> </i>
+                        <span> 音视频通话全功能开放 </span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check text-green-500 mt-1 mr-2"> </i>
+                        <span> 独立部署服务器 </span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check text-green-500 mt-1 mr-2"> </i>
+                        <span> 终身免费更新授权 </span>
+                    </li>
+                </ul>
+                <button
+                        class="w-full bg-primary/20 text-primary py-3 rounded-lg font-medium hover:bg-primary/30 transition-colors contact-btn hidden"
+                >
+                    立即咨询参团
+                </button>
+            </div>
+            <!-- 全开源版 -->
+            <div class="package-card">
+                <div class="flex justify-between items-start mb-4">
+                    <h3 class="text-lg font-bold text-dark">前后端全开源</h3>
+                    <span
+                            class="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-xs font-medium yt-editor"
+                            contenteditable="false"
+                            style="outline: none;"
+                    >
+                全插件+前后端全开源
+              </span>
+                </div>
+                <div class="flex items-baseline gap-3 mb-4">
+                    <span class="text-3xl font-bold text-primary"> ¥ 29800 </span>
+                    <span class="price-original text-gray-400"> ¥ 58000 </span>
+                </div>
+                <ul class="text-gray-600 space-y-2 mb-4">
+                    <li class="flex items-start">
+                        <i class="fas fa-check text-green-500 mt-1 mr-2"> </i>
+                        <span> 前端后端完整开源 </span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check text-green-500 mt-1 mr-2"> </i>
+                        <span> 所有插件全部包含 </span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check text-green-500 mt-1 mr-2"> </i>
+                        <span> 可二开可定制任意功能 </span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check text-green-500 mt-1 mr-2"> </i>
+                        <span> 终身商业授权 </span>
+                    </li>
+                </ul>
+                <button
+                        class="w-full bg-primary/20 text-primary py-3 rounded-lg font-medium hover:bg-primary/30 transition-colors contact-btn hidden"
+                >
+                    立即咨询参团
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- [/MODULE] f88_套餐价格区域 -->
+    <!-- [MODULE] 2a1_拼单福利区域 -->
+    <div class="mt-10">
+        <h2 class="text-xl font-bold text-dark mb-5 flex items-center px-1">
+            <i class="fas fa-gift text-primary mr-2"> </i>
+            拼单专属福利
+        </h2>
+        <div class="grid grid-cols-1 gap-4">
+            <!-- [MODULE] 9bc_福利列表 -->
+            <div class="benefit-card">
+                <div class="flex items-start gap-3">
+                    <div class="bg-primary/10 p-2 rounded-lg">
+                        <i class="fas fa-star text-primary text-xl"> </i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-dark text-base">
+                            前5位新购用户直减300元
+                        </h3>
+                        <p class="text-gray-500 text-sm mt-1">
+                            活动期间前五名下单直接再减300元，先到先得
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <!-- [/MODULE] 9bc_福利列表 -->
+            <div class="benefit-card">
+                <div class="flex items-start gap-3">
+                    <div class="bg-primary/10 p-2 rounded-lg">
+                        <i class="fas fa-user-friends text-primary text-xl"> </i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-dark text-base">
+                            推荐好友再减300元
+                        </h3>
+                        <p class="text-gray-500 text-sm mt-1">
+                            推荐3位意向用户进群，拼单价再直减300元
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="benefit-card">
+                <div class="flex items-start gap-3">
+                    <div class="bg-primary/10 p-2 rounded-lg">
+                        <i class="fas fa-exchange-alt text-primary text-xl"> </i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-dark text-base">迁移8折优惠</h3>
+                        <p class="text-gray-500 text-sm mt-1">
+                            微擎版迁移至独立版，补差价享受8折优惠
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="benefit-card">
+                <div class="flex items-start gap-3">
+                    <div
+                            class="bg-primary/10 p-2 rounded-lg"
+                            style="width:34px;height:44px"
+                            data-ytextravalue="extra-9c9omyk5e"
+                    >
+                        <i
+                                class="fas fa-mobile-alt text-primary text-xl yt-editor"
+                                data-ytparentvalue="extra-9c9omyk5e"
+                                data-ytoriginindex="0"
+                                data-ytindex="0"
+                                style='opacity: 1; color: rgb(255, 77, 79); font-family: "Font Awesome 6 Free"; font-size: 20px; font-weight: 900; font-style: normal; line-height: 28px; text-align: start; text-indent: 0px;padding-right:0px'
+                        >
+                        </i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-dark text-base">
+                            赠送发布小程序（活动期间）
+                        </h3>
+                        <p class="text-gray-500 text-sm mt-1">
+                            参与拼单即可免费一键发布小程序，不限次数
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="benefit-card">
+                <div class="flex items-start gap-3">
+                    <div class="bg-primary/10 p-2 rounded-lg">
+                        <i class="fas fa-handshake text-primary text-xl"> </i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-dark text-base">免费安装服务</h3>
+                        <p class="text-gray-500 text-sm mt-1">
+                            免费获得专业的龙虾（OpenClaw）安装部署服务
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="benefit-card">
+                <div class="flex items-start gap-3">
+                    <div
+                            class="bg-primary/10 p-2 rounded-lg"
+                            style="width:37px;height:46px"
+                    >
+                        <i class="fas fa-honey text-primary text-xl"> </i>
+                        <i
+                                class="fas fa-leaf text-primary text-xl"
+                                style="padding-bottom:25px;padding-right:0px;padding-left:0px;width:6px;height:65px"
+                        >
+                        </i>
+                    </div>
+                    <div>
+                        <h3
+                                class="font-semibold text-dark text-base"
+                                contenteditable="false"
+                                style="outline: none;"
+                        >
+                            赠送野生土蜂蜜（仅限10名）
+                        </h3>
+                        <p
+                                class="text-gray-500 text-sm mt-1 yt-editor"
+                                contenteditable="false"
+                                style="outline: none; width: 309px; height: 36px;"
+                        >
+                            老板亲自上山采摘，纯天然美味
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- [/MODULE] 2a1_拼单福利区域 -->
+    <!-- [MODULE] c33_联系咨询区域 -->
+    <div
+            class="mt-10 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-2xl p-6 text-center shadow-md"
+    >
+        <h2 class="text-xl font-bold text-dark mb-3">立即参团咨询</h2>
+        <p class="text-gray-600 mb-6">扫描下方二维码，添加客服进群参与拼单</p>
+        <div
+                class="bg-white inline-block p-4 rounded-xl shadow-lg animate-float mx-auto"
+        >
+            <img
+                    alt="咨询二维码"
+                    class="w-48 h-48 object-cover"
+                    src="https://shenwahuanan.oss-cn-shenzhen.aliyuncs.com/images/2/2026/05/WJWNip7v4WLeTXr2mrOhXKaE8yNxsjao.png"
+            />
+            <p class="mt-2 text-gray-500 text-sm">扫码添加客服进群</p>
+        </div>
+        <div class="mt-8 grid grid-cols-1 gap-3">
+            <a
+                    class="bg-primary text-white py-4 px-6 rounded-xl font-bold text-lg shadow-lg hover:bg-secondary transition-colors hidden"
+                    href="https://work.weixin.qq.com/kfid/kfc54a08558b8eecbb3"
+                    onclick
+                    target="_top"
+                    is-page="false"
+                    is-add="false"
+                    custom-href
+            >
+                <i class="fas fa-comments mr-2"> </i>
+                立即咨询了解详情
+            </a>
+            <p class="text-gray-500 text-sm">
+                客服工作时间：9:00 - 22:00，工作日当天回复
+            </p>
+        </div>
+        <div class="mt-6 bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+            <p class="text-yellow-700 text-sm flex items-start">
+                <i class="fas fa-exclamation-circle mt-1 mr-2"> </i>
+                <span>
+              活动截止时间：
+              <strong
+                      class="yt-editor"
+                      contenteditable="false"
+                      style="display: inline-block; outline: none;"
+              >
+                2026年6月31日
+              </strong>
+              ，活动结束后价格恢复原价，7月1日活动群解散，请尽快参团享受优惠！
+            </span>
+            </p>
+        </div>
+    </div>
+    <!-- [/MODULE] c33_联系咨询区域 -->
+    <!-- [MODULE] q2w_页脚区域 -->
+    <div class="mt-10 text-center text-gray-500 text-sm">
+        <p>© 2026 Whotalk 即时通讯系统 - 618拼单活动</p>
+        <p class="mt-2">活动最终解释权归神蛙科技所有</p>
+    </div>
+    <!-- [/MODULE] q2w_页脚区域 -->
+</div>
+<!-- [/MODULE] 7k2_整体页面容器 -->
+<!-- [JSMOD] k4f_交互功能 -->
+<script id="interaction-script">
+    window.addEventListener('load', function () {
+        // 所有咨询按钮点击滚动到咨询区域
+        var contactButtons = document.querySelectorAll('.contact-btn');
+        var contactSection = document.querySelector('.mt-10.bg-gradient-to-r');
+        contactButtons.forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                contactSection.scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    });
+    function scrollToTop() {
+        window.scrollTo({
+            top: document.body.scrollHeight,
+            behavior: 'smooth'
+        });
+    }
+</script>
+<!-- [/JSMOD] k4f_交互功能 -->
+</body>
+</html>

@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "创建群组",
+  "usingComponents": {
+    "image-crop": "../../components/util/ImageCrop",
+    "citypicker": "../../components/util/citypicker"
+  }
+}

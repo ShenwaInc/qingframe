@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "红包记录",
+  "navigationBarTextStyle": "white",
+  "enablePullDownRefresh": true,
+  "usingComponents": {}
+}

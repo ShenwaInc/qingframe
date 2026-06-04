@@ -1,0 +1,7 @@
+{
+  "navigationStyle": "custom",
+  "navigationBarTitleText": "漂流瓶",
+  "usingComponents": {
+    "advs": "../../components/util/advs"
+  }
+}

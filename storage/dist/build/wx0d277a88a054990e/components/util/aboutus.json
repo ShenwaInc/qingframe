@@ -1,0 +1,8 @@
+{
+  "component": true,
+  "usingComponents": {
+    "dynamic": "./dynamic",
+    "mine": "../../pages/member/mine",
+    "swa-diy": "../swa-diy/swa-diy"
+  }
+}

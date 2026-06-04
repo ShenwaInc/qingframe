@@ -1,0 +1,1 @@
+<view><cu-custom wx:if="{{b}}" u-s="{{['content']}}" u-i="41c9b91e-0" bind:__l="__l" u-p="{{b}}"><view slot="content">{{a}}</view></cu-custom><friend wx:if="{{e}}" u-s="{{['selectedDisplay']}}" bindtapItem="{{d}}" u-i="41c9b91e-1" bind:__l="__l" u-p="{{e}}"><text class="text-gray" slot="selectedDisplay">{{c}}</text></friend></view>

@@ -1,0 +1,1 @@
+.cu-list.menu>.cu-item.arrow.arrow-up:before{content:"\e6de"}.account-qrcode{position:relative}.account-qrcode .qrcode{width:480rpx}.cu-form-group .text-lg{line-height:46rpx!important;font-size:30rpx!important;height:6em}.crop-container{height:100vh;width:100vw}

@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "浏览",
+  "navigationBarTextStyle": "white",
+  "usingComponents": {
+    "comment": "../../components/util/comment"
+  }
+}

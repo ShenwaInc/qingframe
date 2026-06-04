@@ -1,0 +1,20 @@
+{
+  "component": true,
+  "usingComponents": {
+    "plugin-pagediy-search": "../plugin-pagediy-search/plugin-pagediy-search",
+    "plugin-pagediy-banner": "../plugin-pagediy-banner/plugin-pagediy-banner",
+    "plugin-pagediy-notice": "../plugin-pagediy-notice/plugin-pagediy-notice",
+    "plugin-pagediy-nav": "../plugin-pagediy-nav/plugin-pagediy-nav",
+    "plugin-pagediy-imgwindow": "../plugin-pagediy-imgwindow/plugin-pagediy-imgwindow",
+    "plugin-pagediy-title": "../plugin-pagediy-title/plugin-pagediy-title",
+    "plugin-pagediy-guide": "../plugin-pagediy-guide/plugin-pagediy-guide",
+    "plugin-pagediy-hover": "../plugin-pagediy-hover/plugin-pagediy-hover",
+    "plugin-pagediy-goods1": "../plugin-pagediy-goods1/plugin-pagediy-goods1",
+    "plugin-pagediy-goods2": "../plugin-pagediy-goods2/plugin-pagediy-goods2",
+    "plugin-pagediy-goods3": "../plugin-pagediy-goods3/plugin-pagediy-goods3",
+    "plugin-pagediy-user": "../plugin-pagediy-user/plugin-pagediy-user",
+    "plugin-pagediy-shoporder": "../plugin-pagediy-shoporder/plugin-pagediy-shoporder",
+    "plugin-pagediy-goodsorder": "../plugin-pagediy-goodsorder/plugin-pagediy-goodsorder",
+    "plugin-pagediy-listnav": "../plugin-pagediy-listnav/plugin-pagediy-listnav"
+  }
+}

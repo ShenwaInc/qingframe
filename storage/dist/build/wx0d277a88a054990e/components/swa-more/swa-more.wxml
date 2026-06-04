@@ -1,0 +1,1 @@
+<view class="swa-more"><view class="swa-more-text"><view wx:if="{{a}}"><text class="lg text-gray cuIcon-loading2 swa-more-icon"></text>{{b}}</view><view wx:else>{{c}}</view><view wx:if="{{d}}" class="swa-more-bottom"></view></view><view wx:if="{{e}}" class="swa-more-goTop"><view class="swa-more-bg"></view><text class="lg text-gray cuIcon-top" bindtap="{{f}}"></text></view></view>

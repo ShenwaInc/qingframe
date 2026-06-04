@@ -1,0 +1,197 @@
+{
+    "name": "华信",
+    "appid": "__UNI__A8FE217",
+    "description": "沟通是一种信仰",
+    "versionName": "1.1.112",
+    "versionCode": 1212,
+    "transformPx": false,
+    "app-plus": {
+        "usingComponents": true,
+        "nvueCompiler": "uni-app",
+        "compilerVersion": 3,
+        "splashscreen": {
+            "alwaysShowBeforeRender": true,
+            "waiting": true,
+            "autoclose": true,
+            "delay": 0
+        },
+        "modules": {
+            "Speech": {},
+            "VideoPlayer": {},
+            "Webview-x5": {},
+            "Push": {},
+            "Payment": {},
+            "OAuth": {},
+            "Share": {},
+            "Geolocation": {},
+            "Barcode": {},
+            "Camera": {},
+            "Record": {}
+        },
+        "distribute": {
+            "android": {
+                "permissions": [
+                    "<uses-permission android:name=\"android.permission.ACCESS_COARSE_LOCATION\"/>",
+                    "<uses-permission android:name=\"android.permission.ACCESS_FINE_LOCATION\"/>",
+                    "<uses-permission android:name=\"android.permission.ACCESS_NETWORK_STATE\"/>",
+                    "<uses-permission android:name=\"android.permission.ACCESS_WIFI_STATE\"/>",
+                    "<uses-permission android:name=\"android.permission.CALL_PHONE\"/>",
+                    "<uses-permission android:name=\"android.permission.CHANGE_NETWORK_STATE\"/>",
+                    "<uses-permission android:name=\"android.permission.CHANGE_WIFI_STATE\"/>",
+                    "<uses-permission android:name=\"android.permission.INTERNET\"/>",
+                    "<uses-permission android:name=\"android.permission.MODIFY_AUDIO_SETTINGS\"/>",
+                    "<uses-permission android:name=\"android.permission.MOUNT_UNMOUNT_FILESYSTEMS\"/>",
+                    "<uses-permission android:name=\"android.permission.READ_PHONE_STATE\"/>",
+                    "<uses-permission android:name=\"android.permission.VIBRATE\"/>",
+                    "<uses-permission android:name=\"android.permission.WAKE_LOCK\"/>",
+                    "<uses-permission android:name=\"android.permission.WRITE_EXTERNAL_STORAGE\"/>",
+                    "<uses-permission android:name=\"android.permission.WRITE_SETTINGS\"/>"
+                ],
+                "schemes": "",
+                "abiFilters": [
+                    "armeabi-v7a",
+                    "arm64-v8a"
+                ],
+                "minSdkVersion": 27,
+                "targetSdkVersion": 31
+            },
+            "ios": {
+                "privacyDescription": {
+                    "NSPhotoLibraryUsageDescription": "将喜欢的照片分享给好友或朋友圈",
+                    "NSPhotoLibraryAddUsageDescription": "将收到的好友照片保存到相册",
+                    "NSCameraUsageDescription": "直接拍照发送给好友",
+                    "NSMicrophoneUsageDescription": "向好友发送语音消息",
+                    "NSLocationWhenInUseUsageDescription": "浏览附近的信息和查看附近的好友",
+                    "NSLocationAlwaysUsageDescription": "向好友提示与我的距离",
+                    "NSLocationAlwaysAndWhenInUseUsageDescription": "向好友发送定位等功能",
+                    "NSUserTrackingUsageDescription": "请放心，开启权限不会获取您在其他站点的隐私信息，该权限仅用于标识设备并保障服务安全与提示浏览体验"
+                }
+            },
+            "sdkConfigs": {
+                "geolocation": {
+                    "system": {
+                        "__platform__": [
+                            "ios",
+                            "android"
+                        ]
+                    }
+                },
+                "oauth": {},
+                "payment": {
+                    "alipay": {
+                        "__platform__": [
+                            "android"
+                        ]
+                    }
+                },
+                "push": {},
+                "share": {},
+                "speech": {},
+                "ad": {},
+                "statics": {}
+            },
+            "icons": {
+                "android": {
+                    "hdpi": "unpackage/res/icons/72x72.png",
+                    "xhdpi": "unpackage/res/icons/96x96.png",
+                    "xxhdpi": "unpackage/res/icons/144x144.png",
+                    "xxxhdpi": "unpackage/res/icons/192x192.png"
+                },
+                "ios": {
+                    "appstore": "unpackage/res/icons/1024x1024.png",
+                    "ipad": {
+                        "app": "unpackage/res/icons/76x76.png",
+                        "app@2x": "unpackage/res/icons/152x152.png",
+                        "notification": "unpackage/res/icons/20x20.png",
+                        "notification@2x": "unpackage/res/icons/40x40.png",
+                        "proapp@2x": "unpackage/res/icons/167x167.png",
+                        "settings": "unpackage/res/icons/29x29.png",
+                        "settings@2x": "unpackage/res/icons/58x58.png",
+                        "spotlight": "unpackage/res/icons/40x40.png",
+                        "spotlight@2x": "unpackage/res/icons/80x80.png"
+                    },
+                    "iphone": {
+                        "app@2x": "unpackage/res/icons/120x120.png",
+                        "app@3x": "unpackage/res/icons/180x180.png",
+                        "notification@2x": "unpackage/res/icons/40x40.png",
+                        "notification@3x": "unpackage/res/icons/60x60.png",
+                        "settings@2x": "unpackage/res/icons/58x58.png",
+                        "settings@3x": "unpackage/res/icons/87x87.png",
+                        "spotlight@2x": "unpackage/res/icons/80x80.png",
+                        "spotlight@3x": "unpackage/res/icons/120x120.png"
+                    }
+                }
+            },
+            "splashscreen": {
+                "androidStyle": "common",
+                "android": {
+                    "hdpi": "",
+                    "xhdpi": "",
+                    "xxhdpi": ""
+                },
+                "iosStyle": "common",
+                "ios": {
+                    "iphone": {
+                        "portrait-896h@3x": "",
+                        "landscape-896h@3x": "",
+                        "portrait-896h@2x": "",
+                        "landscape-896h@2x": "",
+                        "iphonex": "",
+                        "retina55": "",
+                        "retina47": "",
+                        "retina40": "",
+                        "retina35": ""
+                    }
+                },
+                "useOriginalMsgbox": true
+            }
+        },
+        "error": {
+            "url": "error.html"
+        },
+        "nativePlugins": {}
+    },
+    "quickapp": {},
+    "mp-weixin": {
+        "appid": "wx0d277a88a054990e",
+        "setting": {
+            "urlCheck": false
+        },
+        "usingComponents": true,
+        "permission": {
+            "scope.userLocation": {
+                "desc": "获取用户当前位置，用于筛选浏览附近的信息"
+            }
+        },
+        "lazyCodeLoading": "requiredComponents"
+    },
+    "mp-alipay": {
+        "usingComponents": true
+    },
+    "mp-baidu": {
+        "usingComponents": true
+    },
+    "mp-toutiao": {
+        "usingComponents": true,
+        "appid": "tt694e1ff3f6756d55"
+    },
+    "uniStatistics": {
+        "enable": false
+    },
+    "h5": {
+        "template": "build.html",
+        "router": {
+            "base": "/addons/xfy_whotalk/h5/"
+        },
+        "sdkConfigs": {
+            "maps": {
+                "qqmap": {
+                    "key": "4XBBZ-3KPWS-IRQOC-6464Z-BWRF6-5YBFW"
+                }
+            }
+        }
+    },
+    "locale": "zh-Hans",
+    "fallbackLocale": "en",
+    "vueVersion": "2"
+}

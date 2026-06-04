@@ -1,0 +1,1 @@
+<view><cu-custom wx:if="{{b}}" u-s="{{['content']}}" u-i="da737ea2-0" bind:__l="__l" u-p="{{b}}"><view slot="content">{{a}}</view></cu-custom><poster wx:if="{{e}}" bindonShare="{{c}}" bindonReload="{{d}}" u-i="da737ea2-1" bind:__l="__l" u-p="{{e}}"></poster></view>

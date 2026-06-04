@@ -1,0 +1,41 @@
+@charset "UTF-8";
+
+.float-right{float: right}
+.modal-open .layui-body{z-index: 1021;}
+.modal-open .layui-body::after {content: ' '; position: absolute; top: 0; left: 0; background: rgba(0,0,0,0.5); width: 100%; height: 100%;}
+.modal-open .layui-layer-page{z-index: 1030 !important;}
+.modal-open .layui-layer-shade{z-index: 1019 !important;}
+.we7-native *{-webkit-box-sizing:border-box;box-sizing:border-box;}
+.layui-body .we7-page-tab{margin: 0 0 30px !important;}
+
+.layui-fluid{padding: 24px;}
+
+.radius-lg{border-radius: 8px;}
+.radius-lg.layui-card{box-shadow: 0 0 8px 0 rgb(0 0 0 / 2%); padding: 24px 40px;}
+.radius-lg.layui-card .layui-card-header{border-bottom: none; padding: 16px 0 24px; height: auto; line-height: 1; font-size: 20px; font-weight: 400;}
+
+.overviews{margin-bottom: 24px;}
+.overviews p{padding-top: 16px;}
+.overviews p a{color: #1a1b1c; font-size: 42px}
+
+.layui-col-space24{margin: -12px;}
+.layui-col-space24>*{padding: 12px;}
+
+.wx-action{padding:16px 0}
+.wx-action-item{min-height: 150px; justify-content:center;-webkit-box-pack:center; -webkit-box-align:center; align-items:center;display: flex; text-decoration: none; text-align: center; border: 1px dashed #e7e7eb;}
+.wx-action-item:hover{color: #07c160; background: #f6f7f8;}
+.wx-action-icon{font-size: 26px; color: #4c4d4e; margin-bottom: 15px;}
+.wx-action-item:hover .wx-action-icon{color: #07c160;}
+
+.wx-detail{padding: 0}
+.wx-detail-ver{padding: 0 0 4px;}
+.wx-detail-ver .wx-item{line-height: 1.1em; font-size: 1.3em; vertical-align: middle; cursor: pointer; background-color: transparent; color: inherit; padding: 6px 12px;}
+.wx-detail-logo img{box-shadow: 0 0 0 4px rgb(0 0 0 / 10%); border-radius: 50%;}
+.wx-detail-name{font-weight: 600; color: #2b425b; font-size: 1.2em;}
+.wx-detail-name ~ p{margin: 5px 0 10px; font-size: .9em; color: #afb9c3; height: 24px;}
+.wx-detail-param .we7-table{margin-bottom: 0}
+.wx-detail-param .table-form>tbody>tr>td{height: 34.8px; line-height: 34.8px !important; padding-top: 0; padding-bottom: 0}
+.wx-detail-param .we7-table>tbody>tr:last-child{border-bottom: none;}
+.wx-account-upimg .layui-input-inline{width: 80% !important;}
+
+.bg-white{background: #ffffff;}

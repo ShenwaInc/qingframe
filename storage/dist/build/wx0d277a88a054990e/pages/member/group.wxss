@@ -1,0 +1,1 @@
+.cu-list.menu-avatar>.cu-item .content{width:calc(100% - 216rpx)!important}

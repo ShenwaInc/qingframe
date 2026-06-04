@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "收银台",
+  "navigationStyle": "default",
+  "enablePullDownRefresh": true,
+  "usingComponents": {
+    "keyboard-package": "../../components/keyboard-package/keyboard-package"
+  }
+}

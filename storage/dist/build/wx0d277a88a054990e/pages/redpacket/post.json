@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "加载中...",
+  "navigationBarTextStyle": "white",
+  "usingComponents": {
+    "userpicker": "../../components/util/userpicker"
+  }
+}

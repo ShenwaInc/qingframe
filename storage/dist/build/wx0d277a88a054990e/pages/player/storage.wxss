@@ -1,0 +1,1 @@
+page{background-color:#fff}.normal .cu-list .cu-item .content{max-width:calc(100% - 120rpx);overflow:hidden}.cu-list .cu-item .content [class*=cuIcon-]{font-size:40rpx}.cu-progress+.text-sm{margin-top:-8rpx}

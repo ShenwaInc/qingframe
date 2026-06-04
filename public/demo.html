@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>测试</title>
+</head>
+<body>
+
+<p><button onclick="test1()">支付</button></p>
+<p><button onclick="test2()">扫码</button></p>
+<p><button onclick="checkoutBar()">测试点击第一个底部菜单</button></p>
+<p><button onclick="home()">返回首页</button></p>
+<p><button onclick="login()">跳转登录页</button></p>
+<p><button onclick="back()">返回上一页</button></p>
+<p><button onclick="navigate('member/vip')">跳转</button></p>
+
+
+<script type="text/javascript">
+
+    function postMessage(data) {
+        window.parent.postMessage(data, '*');
+    }
+    function test1() {
+        let postData = {
+            eventName: 'pay',
+            data: {
+                tid: 'RE20250805941221'
+            }
+        }
+        console.log('测试支付', postData);
+        postMessage(postData);
+    }
+    function test2() {
+        let postData = {
+            eventName: 'scanCode',
+            data: {}
+        }
+        console.log('测试扫码', postData);
+        postMessage(postData);
+    }
+
+    function checkoutBar() {
+        let postData = {
+            eventName: 'checkoutBar',
+            data: {
+                index: 0
+            }
+        }
+        console.log('测试点击第一个底部菜单', postData);
+        postMessage(postData);
+    }
+
+    function home(){
+        let postData = {
+            eventName: 'whotalkHome',
+            data: {}
+        }
+        console.log('测试返回首页', postData);
+        postMessage(postData);
+    }
+
+    function login(){
+        let postData = {
+            eventName: 'login',
+            data: {
+                rd: 'http://lar.whotalk.cn/demo.html'
+            }
+        }
+        console.log('测试跳转登录页', postData);
+        postMessage(postData);
+    }
+
+    function navigate(page, params={}) {
+        let postData = {
+            eventName: 'navigate',
+            data: {
+                page: page,
+                param: params
+            }
+        }
+        console.log('测试跳转页面', postData);
+        postMessage(postData);
+    }
+
+    function back(){
+        let postData = {
+            eventName: 'back',
+            data: {
+                page: 1,
+                param: {},
+                naviType: 3
+            }
+        }
+        console.log('测试返回上一页', postData);
+        postMessage(postData);
+    }
+</script>
+
+</body>
+</html>

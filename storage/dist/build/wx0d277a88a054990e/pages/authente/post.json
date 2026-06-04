@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "认证信息填写",
+  "usingComponents": {
+    "custom-form": "../../components/custom-form"
+  }
+}

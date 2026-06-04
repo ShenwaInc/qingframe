@@ -1,0 +1,1 @@
+.wtweb_tabs{bottom:calc(55px + env(safe-area-inset-bottom)/2)!important}

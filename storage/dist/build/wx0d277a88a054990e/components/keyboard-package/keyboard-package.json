@@ -1,0 +1,7 @@
+{
+  "component": true,
+  "usingComponents": {
+    "uni-popup": "../uni-popup/uni-popup",
+    "password-input": "../password-input/password-input"
+  }
+}

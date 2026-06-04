@@ -1,0 +1,1 @@
+page{padding-bottom:100rpx;background-color:#fff}.summary{width:auto;height:180rpx}.grid-square .v-item .foot{position:absolute;bottom:4rpx;left:4rpx;width:calc(100% - 8rpx);text-align:center;line-height:50rpx;z-index:99}.cu-bar .flex view+view{margin-left:30rpx}.text-green[class*=cuIcon-]{color:#39b54a!important}.grid.grid-square .cu-tag.bg-red{background-color:#e54d42}

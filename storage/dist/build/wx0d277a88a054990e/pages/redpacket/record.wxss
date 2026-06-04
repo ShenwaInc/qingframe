@@ -1,0 +1,1 @@
+page{background-color:#fff}.records .cu-item{background-color:#e54d42!important}.cu-list.menu-avatar>.cu-item{height:164rpx}.cu-list.menu-avatar:not(.special-content)>.cu-item.arrow .content{width:calc(100% - 216rpx)}.cu-list.menu-avatar>.cu-item.arrow:before{color:#fff}

@@ -1,0 +1,1 @@
+"use strict";const s={created(){"message"===this.type&&(this.maskShow=!1,this.childrenMsg=null)},methods:{customOpen(){this.childrenMsg&&this.childrenMsg.open()},customClose(){this.childrenMsg&&this.childrenMsg.close()}}};exports.message=s;

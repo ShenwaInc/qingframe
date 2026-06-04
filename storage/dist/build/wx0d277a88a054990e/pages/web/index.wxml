@@ -1,0 +1,1 @@
+<view class="{{['data-v-046cda96', h]}}"><web-view name="whotalkwebview" bindmessage="{{a}}" class="{{['data-v-046cda96', b]}}" webview-styles="{{c}}" src="{{d}}"></web-view><footbar wx:if="{{e}}" class="data-v-046cda96" bindonChange="{{f}}" id="MainNavView" u-i="046cda96-0" bind:__l="__l" u-p="{{g}}"></footbar></view>

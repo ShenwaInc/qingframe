@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "创建名片",
+  "usingComponents": {
+    "custom-form": "../../components/custom-form",
+    "image-crop": "../../components/util/ImageCrop"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "页面管理",
+  "usingComponents": {
+    "image-crop": "../../components/util/ImageCrop"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "navigationBarTitleText": "首页",
+  "enablePullDownRefresh": true,
+  "usingComponents": {
+    "dynamic": "../../components/util/dynamic",
+    "aboutus": "../../components/util/aboutus",
+    "discovery": "../../components/util/discovery",
+    "mine": "../member/mine",
+    "friend": "../friend/friend",
+    "swa-diy": "../../components/swa-diy/swa-diy"
+  }
+}

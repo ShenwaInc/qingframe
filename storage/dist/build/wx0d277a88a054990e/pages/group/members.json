@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "群成员",
+  "enablePullDownRefresh": true,
+  "usingComponents": {
+    "userpicker": "../../components/util/userpicker"
+  }
+}

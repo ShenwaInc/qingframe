@@ -1,0 +1,1 @@
+page{background-color:#fff;padding-bottom:120rpx}.head{width:100%;min-height:320rpx;overflow:hidden}.round-square{background-color:rgba(55,55,55,.1);padding:40rpx;border-radius:50%}.round-square .cuIcon-safe{font-size:72rpx}.cu-form-group .title{min-width:calc(4em + 15px)}.cu-form-group~.cu-bar:not(.no-border){border-top:.5px solid #eee}

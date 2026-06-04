@@ -1,0 +1,10 @@
+{
+  "navigationBarTitleText": "",
+  "navigationStyle": "default",
+  "navigationBarBackgroundColor": "#ECEDF1",
+  "disableScroll": true,
+  "usingComponents": {
+    "userpicker": "../../components/util/userpicker",
+    "face": "../../components/util/face"
+  }
+}

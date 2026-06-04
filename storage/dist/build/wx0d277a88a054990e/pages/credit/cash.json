@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "余额提现",
+  "usingComponents": {
+    "keyboard-package": "../../components/keyboard-package/keyboard-package"
+  }
+}

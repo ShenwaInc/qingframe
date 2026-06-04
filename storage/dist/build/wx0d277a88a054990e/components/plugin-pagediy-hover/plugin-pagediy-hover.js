@@ -1,0 +1,1 @@
+"use strict";const r=require("../../common/vendor.js"),t={data:()=>({}),props:{data:{type:Array,default:function(){return[]}}},methods:{jumpToUrl(r=""){this.$emit("jumpToUrl",r)}}};const e=r._export_sfc(t,[["render",function(t,e,o,n,a,u){return{a:r.f(o.data,((t,e,o)=>({a:t.img,b:r.o((r=>u.jumpToUrl(t.url)),e),c:e})))}}]]);wx.createComponent(e);

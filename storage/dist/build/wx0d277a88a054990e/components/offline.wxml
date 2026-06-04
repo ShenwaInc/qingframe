@@ -1,0 +1,1 @@
+<view class="{{['light', 'bg-red', 'status_bar', c]}}" bindtap="{{d}}"><view class="padding-sm text-lg text-center"><text class="cuIcon-warnfill"></text><text class="margin-left-sm text-red">{{a}}</text><text class="margin-left-sm text-blue">{{b}}</text></view></view>

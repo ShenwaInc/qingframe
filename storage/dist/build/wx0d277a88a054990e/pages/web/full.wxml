@@ -1,0 +1,1 @@
+<view class="{{[g]}}"><web-view name="whotalkwebview" class="{{a}}" webview-styles="{{b}}" src="{{c}}"></web-view><footbar wx:if="{{d}}" bindonChange="{{e}}" id="MainNavView" u-i="3d117306-0" bind:__l="__l" u-p="{{f}}"></footbar></view>

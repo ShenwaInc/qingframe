@@ -1,0 +1,26 @@
+{
+    "project": "D:/wamp/www/whotalklar/storage/dist/build/__UNI__F9D5868/",
+    "platform": "android",
+    "iscustom": false,
+    "safemode": false,
+    "android": {
+        "packagename": "com.gxit.org.whotalk",
+        "androidpacktype": 0,
+        "certalias": "gxswacom.pv",
+        "certfile": "D:/wamp/www/whotalklar/storage/dist/cert/__UNI__F9D5868.keystore",
+        "certpassword": "shenwa1234",
+        "channels": ""
+    },
+    "ios": {
+        "bundle": "com.qingruyun.app",
+        "supporteddevice": "iPhone",
+        "profile": "D:/wamp/www/whotalklar/servers/clitool/cert/TZ5WUX8S46.mobileprovision",
+        "certfile": "D:/wamp/www/whotalklar/servers/clitool/cert/ios_development.p12",
+        "certpassword": "123456"
+    },
+    "isconfusion": false,
+    "splashads": false,
+    "rpads": false,
+    "pushads": false,
+    "exchange": false
+}

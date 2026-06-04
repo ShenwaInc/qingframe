@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "同城信息分类",
+  "enablePullDownRefresh": true,
+  "usingComponents": {
+    "city-list": "../../tuniaoui/city-list"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "分享",
+  "enablePullDownRefresh": true,
+  "usingComponents": {
+    "friend": "../friend/friend"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "component": true,
+  "usingComponents": {
+    "plugin-pagediy-title": "../plugin-pagediy-title/plugin-pagediy-title"
+  }
+}
