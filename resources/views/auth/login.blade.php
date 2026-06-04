@@ -1,6 +1,13 @@
 <!DOCTYPE html>
-<html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
+    @php
+        global $_W;
+        if (empty($_W['setting']['page'])){
+            App\Services\SettingService::Load();
+            $_W['page'] = $_W['setting']['page'];
+        }
+    @endphp
     <meta charset="UTF-8">
     <meta name="renderer" content="webkit">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -9,18 +16,15 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="format-detection" content="telephone=no">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="shortcut icon" href="{{ asset('/favicon.ico') }}" />
+    <link rel="shortcut icon" href="{{ $_W ? tomedia($_W['setting']['page']['icon']) : assets('/favicon.ico') }}" />
     <title>后台管理系统</title>
-    @php
-        !(defined('TIMESTAMP')) && define('TIMESTAMP', time());
-    @endphp
-    <link rel="stylesheet" href="{{ asset('/static/bootstrap/css/bootstrap.min.css') }}?v={{ TIMESTAMP }}" />
-    <link rel="stylesheet" href="{{ asset('/static/layui/css/layui.css') }}?v={{ TIMESTAMP }}" />
-    <link rel="stylesheet" href="{{ asset('/static/fului/fului-for-lay.css') }}?v={{ TIMESTAMP }}" />
-    <script type="text/javascript" src="{{ asset('/static/layui/layui.js') }}?v={{ TIMESTAMP }}"></script>
-    <script type="text/javascript" src="{{ asset('/static/js/jquery-1.11.1.min.js') }}?v={{ TIMESTAMP }}"></script>
-    <script type="text/javascript" src="{{ asset('/static/js/core.jquery.js') }}?v={{ TIMESTAMP }}"></script>
-    <link rel="stylesheet" href="{{ asset('/static/css/auth.css') }}?v={{ TIMESTAMP }}" />
+    <link rel="stylesheet" href="{{ assets('/static/bootstrap/css/bootstrap.min.css') }}?v={{ QingRelease }}" />
+    <link rel="stylesheet" href="{{ assets('/static/layui/css/layui.css') }}?v={{ QingRelease }}" />
+    <link rel="stylesheet" href="{{ assets('/static/css/console.css') }}?v={{ QingRelease }}" />
+    <script type="text/javascript" src="{{ assets('/static/layui/layui.js') }}?v={{ QingRelease }}"></script>
+    <script type="text/javascript" src="{{ assets('/static/js/jquery-1.11.1.min.js') }}?v={{ QingRelease }}"></script>
+    <script type="text/javascript" src="{{ assets('/static/js/core.jquery.js') }}?v={{ QingRelease }}"></script>
+    <link rel="stylesheet" href="{{ assets('/static/css/auth.css') }}?v={{ QingRelease }}" />
 </head>
 
 <body layadmin-themealias="ocean-header" class="layui-layout-body" style="position:inherit !important;">
@@ -31,11 +35,14 @@
 
                 <div class="layadmin-user-login-main">
                     <div class="layadmin-user-login-box layadmin-user-login-header">
-                        <p class="text-lg">{{ env('APP_NAME','Whotalk') }}后台管理系统</p>
+                        <p class="text-lg">{{ empty($account) ? $_W['setting']['page']['title'] : $account['name'] }}</p>
                     </div>
                     <div class="layadmin-user-login-box layadmin-user-login-body layui-form">
-                        <form action="{{ url('auth/login') }}" id="loginform" method="post">
+                        <form action="/auth/login" id="loginform" method="post">
                             @csrf
+                            @if(!empty($account))
+                                <input type="hidden" name="uniacid" value="{{ $account['uniacid'] }}" />
+                            @endif
                             <div class="layui-form-item">
                                 <label class="layadmin-user-login-icon layui-icon layui-icon-username" for="LAY-user-login-username"></label>
                                 <input type="text" name="username" value="{{ old('email') }}" autocomplete="username" required lay-verify="required" placeholder="用户名" class="layui-input @error('username') is-invalid @enderror" autofocus />
@@ -53,7 +60,11 @@
                         </form>
                     </div>
                 </div>
-
+                <div class="fui-footer">
+                    <div class="fui-footer-extra text-center">
+                        <p class="fui-footer-copyright">{!! $_W['page']['copyright'] !!}</p>
+                    </div>
+                </div>
             </div>
         </div>
         <!-- 辅助元素，一般用于移动设备下遮罩 -->
@@ -65,14 +76,25 @@
             form.on('submit(formLogin)',function (data){
                 Core.post('auth.login',function (res){
                     if (res.type!=='success') return Core.report(res);
-                    layer.msg(res.message,{icon:1});
+                    layer.msg(res.message,{icon:1, skin: 'fui-layer'});
                     setTimeout(function (){
-                        window.location.href = '{{ url($_GPC['referer']) }}';
+                        @if(empty($account))
+                        window.location.href = '{{ empty($_GPC["referer"]) ? "/console" : url($_GPC["referer"]) }}';
+                        @else
+                        window.location.href = '/console/account/{{ $account['uniacid'] }}';
+                        @endif
                     },1200);
                 },data.field);
                 return false;
             });
         });
     </script>
+    <style>
+        .layui-layout-admin .layui-body{padding-top: 0;}
+        .fui-footer{position: absolute; left: 0; width: 100%; bottom: 0; max-width: unset; padding-bottom: 30px;}
+        .fui-footer-copyright{color: #ffffff; font-size: inherit}
+        .fui-footer-copyright a{color: #0081ff;}
+        .layui-btn-fluid{box-sizing: border-box;}
+    </style>
 </body>
 </html>

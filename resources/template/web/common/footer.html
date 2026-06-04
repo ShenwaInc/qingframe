@@ -16,18 +16,33 @@
 	<div class="layadmin-body-shade" layadmin-event="shade"></div>
 </div>
 <script type="text/javascript">
-	var layform, layupload, laydropdown;
+	var layform, layupload, laydropdown, layCode;
+    require.config({
+        baseUrl: '/static/js',
+        paths:{
+            'clipboard':'clipboard.min',
+            'hljs':'highlight.min'
+        }
+    });
 	layui.use(['element', 'dropdown', 'form','laydate','upload','code'],function (){
 		var form = layui.form,dropdown = layui.dropdown,element = layui.element, upload = layui.upload;
 		form.on('radio(ctrls)', function(data){
 			var target = $(data.elem).data('target');
-			$(target).addClass('layui-hide');;
+			$(target).addClass('layui-hide');
 			$(target+'.form-item'+data.value).removeClass('layui-hide');
 		});
+        form.on('switch(ctrls)',function(data){
+            var ctrltarget = jQuery(data.elem).attr('data-target');
+            if(data.elem.checked){
+                jQuery(ctrltarget).removeClass('layui-hide');
+            }else{
+                jQuery(ctrltarget).addClass('layui-hide');
+            }
+        });
 		$('.showmenu').on('click',this,function(){
 			$(this).dropdown();
 		});
-		$('a.confirm').on('click',this,function(){
+		$('a.confirm').not('.ajaxshow').on('click',this,function(){
 			var comfirmText = $(this).data('text');
 			var redirect = $(this).attr('href');
 			layer.confirm(comfirmText, {icon: 3, title:'提示'}, function(index){
@@ -60,13 +75,20 @@
 		layform = form;
 		layupload = upload;
 		laydropdown = dropdown;
+        layCode = layui.code;
 	});
 	function DateInit(Obj){
 		if (Obj.find('.layui-input-laydate').length>0){
 			Obj.find('.layui-input-laydate').each(function(index, element) {
+                let type = 'date', format = 'yyyy-MM-dd';
+                if (typeof($(element).attr('data-format')) != 'undefined'){
+                    type = 'datetime';
+                    format = $(element).attr('data-format');
+                }
 				layui.laydate.render({
 					elem: element //指定元素
-					,format:'yyyy-MM-dd'
+                    ,type: type
+					,format:format
 				});
 			});
 		}
@@ -146,10 +168,12 @@
 			return false;
 		});
 		Obj.find('.ajaxshow').click(function(){
+            if($(this).hasClass('layui-disabled')) return false;
 			let Elem = $(this);
 			let geturl = Elem.attr('href');
 			let title = typeof(Elem.attr('title'))!='undefined' ? Elem.attr('title') : Elem.text();
 			let width = typeof(Elem.attr('data-width'))!='undefined' ? Elem.attr('data-width') + 'px' : '990px';
+            let confirmText = typeof(Elem.attr('data-text'))=='undefined' ? '' : Elem.attr('data-text');
 			if(typeof(Elem.attr('data-height'))!='undefined'){
 				let height = Elem.attr('data-height') + 'px';
 				options.area = [width, height];
@@ -159,9 +183,19 @@
 			if(typeof(Elem.attr('ajaxhash'))!='undefined'){
 				options.id = Elem.attr('ajaxhash');
 			}
+            if(confirmText!==''){
+                layer.confirm(confirmText, {icon: 3, title:'提示'}, function(index){
+                    layer.close(index);
+                    Ajaxget(geturl, title, options);
+                });
+                return false;
+            }
 			Ajaxget(geturl, title, options);
 			return false;
 		});
+        Obj.find(".js-clip").each(function () {
+            ClipInit(this, $(this).attr("data-url"))
+        })
 		if(inajax && Obj.find('.pagination').length>0){
 			Obj.find('.pagination').on("click","a",function (){
 				let url = $(this).attr('href');
@@ -235,6 +269,21 @@
 		}
 		return code;
 	}
+    function ClipInit(Elem, text=''){
+        require(["clipboard"], function (clip) {
+            var e = new clip(Elem, {
+                text: function () {
+                    return text;
+                }
+            });
+            e.on("success", function (t) {
+                layer.msg("复制成功！",{icon:1});
+            });
+            e.on("error", function (t) {
+                layer.msg("复制失败，请重试！",{icon:2});
+            })
+        });
+    }
 	function FormInit(filter){
 		layui.form.render(null, filter);
 	}

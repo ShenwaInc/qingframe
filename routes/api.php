@@ -1,24 +1,5 @@
 <?php
 
-use Illuminate\Http\Request;
-
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| is assigned the "api" middleware group. Enjoy building your API!
-|
-*/
-
-/*
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
-});
-*/
-
 Route::group(['prefix' => 'auth/{uniacid}', 'namespace' => 'Auth'], function () {
     //账户相关路由
     Route::get('/', 'MainController@Main');
@@ -31,12 +12,13 @@ Route::group(['prefix' => 'auth/{uniacid}', 'namespace' => 'Auth'], function () 
 });
 
 Route::group(['prefix'=>'server', 'middleware'=>['app']],function (){
+    Route::any('/run/{server}/{segment1?}', 'HttpController@ServerRun')->where('server','[a-z]+');
     Route::any('/{server}/{segment1?}/{segment2?}', 'HttpController@ServerApi')->where('server','[a-z]+');
 });
 
 Route::group(['prefix' => 'm/', 'namespace' => 'App','middleware'=>['app','runtime']], function () {
     //模块接口路由
-    Route::match(['get', 'post'],'/{modulename}', 'ModuleController@Api');
+    Route::match(['get', 'post'],'/{module}/{segment1?}/{segment2?}', 'ModuleController@Api');
 });
 
 Route::group(['prefix'=>'payment', 'namespace' => 'App', 'middleware'=>['app']],function (){
@@ -44,8 +26,8 @@ Route::group(['prefix'=>'payment', 'namespace' => 'App', 'middleware'=>['app']],
     Route::any('/{payment}', 'PaymentController@notify')->where('payment','[a-z]+');
 });
 
-Route::group(['prefix' => 'api', 'namespace'=>'Api','middleware'=>['app']],function (){
-    Route::any('/wechat/{uniacid}', 'WechatController@recived');
+Route::group(['prefix'=>'report', 'namespace' => 'App', 'middleware'=>['app']],function (){
+    Route::any('/{option?}', 'ReportController@httpReq')->where('payment','[a-z]+');
 });
 
 Route::group(['prefix' => 'member/', 'namespace' => 'Auth'], function () {

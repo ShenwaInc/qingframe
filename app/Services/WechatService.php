@@ -4,8 +4,8 @@
 namespace App\Services;
 
 
-use App\Models\Account;
-use App\Models\AccountWechat;
+use App\Models\UniAccount;
+use App\Models\AccountWechats;
 use App\Utils\WeAccount;
 use Illuminate\Support\Facades\Cache;
 
@@ -25,20 +25,21 @@ class WechatService extends WeAccount
     );
 
     public static function getAccountInfo($uniacid) {
-        $account = AccountWechat::where('uniacid',$uniacid)->first();
+        $account = AccountWechats::where('uniacid',$uniacid)->first();
         if (empty($account)) return array();
         $account['encrypt_key'] = $account['key'];
         return $account;
     }
 
     public function checkSign() {
+        global $_GPC;
         $token = $this->account['token'];
-        $signkey = array($token, $_GET['timestamp'], $_GET['nonce']);
+        $signkey = array($token, $_GPC['timestamp'], $_GPC['nonce']);
         sort($signkey, SORT_STRING);
         $signString = implode($signkey);
         $signString = sha1($signString);
 
-        return $signString == $_GET['signature'];
+        return $signString == $_GPC['signature'];
     }
 
 
@@ -371,10 +372,9 @@ class WechatService extends WeAccount
                 $menu['matchrule']['city'] = urlencode($data_array['matchrule']['city']);
             }
         }
-        if (!empty($data_array['matchrule']['language'])) {
+        if (!empty($data_array['matchrule']['language']) && function_exists('menu_languages')) {
             $inarray = 0;
-            $MenuService = new MenuService;
-            $languages = $MenuService->menu_languages();
+            $languages = menu_languages();
             foreach ($languages as $key => $value) {
                 if (in_array($data_array['matchrule']['language'], $value, true)) {
                     $inarray = 1;
@@ -668,6 +668,8 @@ class WechatService extends WeAccount
         $record = array();
         $record['token'] = $token['access_token'];
         $record_expire = $token['expires_in'] - 200;
+        $record['expired'] = $record_expire;
+        $record['cacheTime'] = TIMESTAMP;
         $this->account['access_token'] = $record;
         Cache::put($cachekey, $record, $record_expire);
 
@@ -686,7 +688,7 @@ class WechatService extends WeAccount
             $acid = $account['acid'];
             break;
         }
-        $account = Account::create($acid);
+        $account = UniAccount::create($acid);
 
         return $account->getAccessToken();
     }
@@ -744,7 +746,7 @@ class WechatService extends WeAccount
 
 
     public function getJssdkConfig($url = '') {
-        global $_W, $urls;
+        global $urls;
         $jsapiTicket = $this->getJsApiTicket();
         if (is_error($jsapiTicket)) {
             $jsapiTicket = $jsapiTicket['message'];
@@ -1230,7 +1232,7 @@ class WechatService extends WeAccount
     }
 
 
-    public function uploadMediaFixed($path, $type = 'images') {
+    public function uploadMediaFixed($path, $type = 'images', $title='') {
         global $_W;
         if (empty($path)) {
             return error(-1, '参数错误');
@@ -1245,18 +1247,19 @@ class WechatService extends WeAccount
         if (is_error($token)) {
             return $token;
         }
-        $url = "https://api.weixin.qq.com/cgi-bin/material/add_material?access_token={$token}&type={$type}";
+        $url = "https://api.weixin.qq.com/cgi-bin/material/add_material?access_token=$token";
         $data = array(
-            'media' => '@' . $path,
+            'media' => '@'. str_replace('\\', '/', realpath($path)),
+            'type' => $type
         );
 
-        if ('videos' == $type) {
+        if ('video' == $type) {
             $video_filename = ltrim($path, ATTACHMENT_ROOT);
-            $material = $material = pdo_get('core_attachment', array('uniacid' => $_W['uniacid'], 'attachment' => $video_filename));
+            $material = pdo_get('core_attachment', array('uniacid' => $_W['uniacid'], 'attachment' => $video_filename));
         }
-        $filename = pathinfo($path, PATHINFO_FILENAME);
+        $filename = $title ?: pathinfo($path, PATHINFO_FILENAME);
         $description = array(
-            'title' => 'videos' == $type ? $material['filename'] : $filename,
+            'title' => 'video' == $type ? $material['filename'] : $filename,
             'introduction' => $filename,
         );
         $data['description'] = urldecode(json_encode($description));
@@ -1484,7 +1487,7 @@ class WechatService extends WeAccount
             preg_match('/filename=\"?([^"]*)/', $response['headers']['Content-disposition'], $match);
             $filename = $_W['uniacid'] . '/' . date('Y/m/') . $match[1];
             $pathinfo = pathinfo($filename);
-            if (in_array(strtolower($pathinfo['extension']), array('mp4'))) {
+            if (strtolower($pathinfo['extension']) == 'mp4') {
                 $filename = 'videos/' . $filename;
             } elseif (in_array(strtolower($pathinfo['extension']), array('amr', 'mp3', 'wma', 'wmv'))) {
                 $filename = 'audios/' . $filename;
@@ -1563,12 +1566,12 @@ class WechatService extends WeAccount
     }
 
     public function getOauthInfo($code = '') {
-        global $_W, $_GPC;
+        global $_GPC;
         if (!empty($_GPC['code'])) {
             $code = $_GPC['code'];
         }
         if (empty($code)) {
-            $oauth_url = uni_account_oauth_host();
+            $oauth_url = AccountService::OauthHost();
             $url = $oauth_url . "app/index.php?{$_SERVER['QUERY_STRING']}";
             $forward = $this->getOauthCodeUrl(urlencode($url));
             header('Location: ' . $forward);
@@ -1800,6 +1803,10 @@ class WechatService extends WeAccount
         if (empty($result)) {
             return error(-1, "接口调用失败, 元数据: {$response['meta']}");
         } elseif (!empty($result['errcode'])) {
+            if(strexists($result['errmsg'], 'access_token is invalid or not latest')){
+                $cachekey = CacheService::system_key('accesstoken', array('uniacid' => $this->account['uniacid']));
+                //Cache::forget($cachekey);
+            }
             return error($result['errcode'], "访问公众平台接口失败, 错误: {$result['errmsg']}");
         }
 

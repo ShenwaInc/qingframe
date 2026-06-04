@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="UTF-8">
     <meta name="renderer" content="webkit">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="format-detection" content="telephone=no">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="description" content="{{ $_W['page']['description'] }}" />
@@ -15,11 +15,14 @@
     <title>
         @if(!empty($title))
             {{ $title }} -
-        @endif{{$_W['page']['title']}}
+        @endif
+            @lang($_W['page']['title'])
     </title>
-    <link rel="stylesheet" href="//dl.gxswa.com/res/css/bootstrap-icons.css?v={{ $_W['config']['release'] }}" />
-    <link rel="stylesheet" href="//dl.gxswa.com/res/layui/css/layui.css?v={{ $_W['config']['release'] }}" />
-    <script type="text/javascript" src="//dl.gxswa.com/res/layui/layui.js?v={{ $_W['config']['release'] }}"></script>
-    <script type="text/javascript" src="//dl.gxswa.com/res/js/jquery-1.11.1.min.js?v={{ $_W['config']['release'] }}"></script>
-    <script type="text/javascript" src="{{ asset('/static/js/core.jquery.js') }}?v={{ $_W['config']['release'] }}"></script>
+    <link rel="stylesheet" href="{{ assets('/static/css/font-awesome.min.css') }}?v={{ QingRelease }}" />
+    <link rel="stylesheet" href="{{ assets('/static/layui/css/layui.css') }}?v={{ QingRelease }}" />
+    <link rel="stylesheet" href="{{ assets('/static/css/console.css') }}?v={{ QingRelease }}" />
+    <script type="text/javascript" src="{{ assets('/static/layui/layui.js') }}?v={{ QingRelease }}"></script>
+    <script type="text/javascript" src="{{ assets('/static/js/jquery-1.11.1.min.js') }}?v={{ QingRelease }}"></script>
+    <script type="text/javascript" src="{{ assets('/static/js/core.jquery.js') }}?v={{ QingRelease }}"></script>
+    <script type="text/javascript" src="{{ assets('/static/js/require.js') }}?v={{ QingRelease }}"></script>
 </head>

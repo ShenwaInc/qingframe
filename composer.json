@@ -1,5 +1,6 @@
 {
     "name": "laravel/laravel",
+    "version": "1.7.01",
     "type": "project",
     "description": "The Laravel Framework.",
     "keywords": [
@@ -7,27 +8,35 @@
         "laravel"
     ],
     "license": "MIT",
+    "repositories": [
+        {
+            "type": "path",
+            "url": "./servers/*",
+            "options": {
+                "symlink": false
+            }
+        }
+    ],
     "require": {
         "php": "^7.2",
         "ext-curl": "*",
-        "ext-exif": "*",
         "ext-gd": "*",
         "ext-json": "*",
         "ext-libxml": "*",
         "ext-openssl": "*",
+        "ext-pdo": "*",
         "ext-simplexml": "*",
         "ext-zip": "*",
         "ext-zlib": "*",
         "fideloper/proxy": "^4.0",
-        "johnlui/aliyun-oss": "^2.2",
+        "guzzlehttp/guzzle": "^7.8",
         "laravel/framework": "^6.0",
         "laravel/tinker": "^1.0",
-        "ext-pdo": "*"
+        "maatwebsite/excel": "*"
     },
     "require-dev": {
         "facade/ignition": "^1.4",
         "fzaninotto/faker": "^1.4",
-        "laravel/ui": "^1.0",
         "mockery/mockery": "^1.0",
         "nunomaduro/collision": "^3.0",
         "phpunit/phpunit": "^8.0"
@@ -44,7 +53,9 @@
     },
     "autoload": {
         "psr-4": {
-            "App\\": "app/"
+            "App\\": "app/",
+            "Addons\\": "public/addons/",
+            "Server\\": "servers/"
         },
         "classmap": [
             "database/seeds",

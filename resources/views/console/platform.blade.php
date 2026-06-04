@@ -3,35 +3,28 @@
 <div class="main-content">
 
     <div class="fui-card layui-card" style="min-height: 480px;">
-        @if(empty($list) && !$cancreate)
+        @if(empty($list) && !$creatable)
             <div class="fui-empty text-center" style="line-height: 480px;">
-                <span class="text-gray" style="font-size: 22px;">暂无可用平台</span>
+                <span class="text-gray" style="font-size: 22px;">@lang('noPlatformAvailable')</span>
             </div>
         @else
         <div class="layui-row layui-col-space15 fui-list card">
             @foreach($list as $key=>$item)
-            <div class="layui-col-md3 layui-col-xs12 fui-item">
-                <a href="{{ url("console/account",array('uniacid'=>$item['uniacid'])) }}" target="_blank" class="fui-content">
+            <div class="layui-col-md3 layui-col-sm4 layui-col-xs12 fui-item platform-item" data-id="{{ $item['uniacid'] }}">
+                <a href="{{ wurl("account") }}/{{ $item['uniacid'] }}" class="fui-content">
                     <div class="fui-info">
-                        <img alt="{{ $item['name'] }}" class="round" src="{{ tomedia($item['logo']) }}" />
-                        <strong class="card-name">{{ $item['name'] }}</strong>
+                        <img alt="{{ $item['name'] }}" class="radius" src="{{ globalMedia($item['logo']) }}" />
+                        <strong class="card-name">@lang($item['name'])</strong>
                     </div>
                 </a>
-                <div class="js-dropdown layui-nav-item">
-                    <dl class="layui-nav-child layui-anim layui-anim-upbit js-dropdown-menu">
-                        <dd><a href="{{ wurl('account/profile') }}?uniacid={{ $item['uniacid'] }}">管理</a></dd>
-                        <dd><a href="{{ wurl('account/remove') }}?uniacid={{ $item['uniacid'] }}" class="text-red confirm" data-text="删除后前台将无法使用，是否确定要删除？">删除</a></dd>
-                    </dl>
-                    <span class="layui-icon layui-icon-down text-gray"></span>
-                </div>
             </div>
             @endforeach
-            @if($cancreate)
-            <div class="layui-col-md3 layui-col-xs12 fui-item">
-                <a href="{{ url("console/account/create") }}" title="创建新平台" class="fui-content dashed ajaxshow">
+            @if($creatable)
+            <div class="layui-col-md3 layui-col-sm4 layui-col-xs12 fui-item">
+                <a href="{{ wurl("account/create") }}" title="{{ __('createNewData', array('data'=>__('platform'))) }}" class="fui-content dashed ajaxshow">
                     <div class="fui-info">
                         <span class="card-icon layui-icon layui-icon-add-1 text-gray"></span>
-                        <strong class="card-name text-gray">新建平台</strong>
+                        <strong class="card-name text-gray">{{ __('createNewData', array('data'=>__('platform'))) }}</strong>
                     </div>
                 </a>
             </div>
@@ -41,16 +34,45 @@
     </div>
 
 </div>
-
+@php
+$tplStr = '{{d.title}}';
+@endphp
 <script type="text/javascript">
-    layui.use(['element'],function (){
-        var element = layui.element;
-        layer.ready(function (){
-            @if($_W['isfounder'] && $_W['config']['site']['id']==0)
-            $('#layui-admin-usermenu').addClass('layui-show');
-            @endif
+    function DropRender(dropdown) {
+        $('.platform-item').each(function (i){
+            let Elem = $(this);
+            let uniacid = Elem.data('id');
+            let menus = [
+                {title:"@lang('新窗口打开')",id:"newTab"},
+                {title:"@lang('manage')",id:"profile"},
+                {title:"@lang('delete')",id:"remove",templet:'<span class="text-red">{{ $tplStr }}</span>'}
+            ];
+            dropdown.render({
+                elem:this,
+                data:menus,
+                trigger:"contextmenu",
+                click:function (obj){
+                    switch (obj.id) {
+                        case "remove":{
+                            layer.confirm("@lang('deletePlatformRemain')", {icon: 3, title:'@lang("confirm")', skin: 'fui-layer', btn:['@lang("delete")', '@lang("取消")']}, function(index){
+                                window.location.href = '{{ wurl('account/remove') }}?uniacid=' + uniacid;
+                                layer.close(index);
+                            });
+                            break;
+                        }
+                        case "newTab":{
+                            window.open('{{ wurl('account') }}/' + uniacid, '_blank');
+                            break;
+                        }
+                        default : {
+                            window.location.href = '{{ wurl('account/profile') }}?uniacid=' + uniacid;
+                            break;
+                        }
+                    }
+                }
+            });
         });
-    });
+    }
 </script>
 
 @include('common.footer')

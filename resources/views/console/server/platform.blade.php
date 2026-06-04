@@ -3,13 +3,13 @@
     <div class="{{ $_GPC['inajax'] ? '' : 'main-content' }}">
         <div class="{{ $_GPC['inajax'] ? '' : 'layui-card fui-card' }}">
             <div class="layui-card-header layui-hide-layer">
-                <span class="title">选择平台</span>
-                <p class="layui-word-aux">当前服务的管理需要区分不同平台</p>
+                <span class="title">{{ __('chooseData', array('data'=>__('platform'))) }}</span>
+                <p class="layui-word-aux">@lang('当前应用的运行需要区分不同平台')</p>
             </div>
             <div class="layui-card-body">
-                @if(empty($platforms) && !$cancreate)
+                @if(empty($platforms) && !$creatable)
                     <div class="fui-empty text-center" style="line-height: 480px;">
-                        <span class="text-gray" style="font-size: 22px;">暂无可用平台</span>
+                        <span class="text-gray" style="font-size: 22px;">@lang('noPlatformAvailable')</span>
                     </div>
                 @else
                     <div class="layui-row layui-col-space15 fui-list card">
@@ -17,7 +17,7 @@
                             <div class="layui-col-md{{ $_GPC['inajax'] ? '4' : '3' }} layui-col-xs12 fui-item">
                                 <a href="{{ wurl('server/account', array('uniacid'=>$item['uniacid'])) }}" class="fui-content{{ $item['uniacid']==$uniacid ? ' checked':'' }}">
                                     <div class="fui-info">
-                                        <img alt="{{ $item['name'] }}" class="round" src="{{ tomedia($item['logo']) }}" />
+                                        <img alt="{{ $item['name'] }}" class="round" src="{{ globalMedia($item['logo']) }}" />
                                         <strong class="card-name">{{ $item['name'] }}</strong>
                                     </div>
                                 </a>

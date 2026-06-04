@@ -6,7 +6,9 @@ class DummyService extends MicroService
 {
 
     function __construct(){
-        parent::__construct('dummy');
+        parent::__construct('dummy');       //请不要删除这一行
+        $this->Unique=false;                //该服务是否区分不同平台
+        $this->CompileDrive = "smarty";     //视图编译方式，可选smarty,blade
     }
 
 }

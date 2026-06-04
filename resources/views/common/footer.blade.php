@@ -2,17 +2,28 @@
 <div class="fui-footer">
     <div class="fui-footer-info soild-after">
         <div class="fui-footer-link">
-            @php
-                echo htmlspecialchars_decode($_W['page']['links'], ENT_QUOTES);
-            @endphp
+            {!! $_W['page']['links'] !!}
         </div>
     </div>
     <div class="fui-footer-extra">
-        <p class="fui-footer-copyright">{{ $_W['page']['copyright'] }}</p>
+        <p class="fui-footer-copyright">
+            @if(!empty($_W['setting']['languages']))
+                @php $locale = config('app.locale', 'zh'); @endphp
+                <span style="cursor: pointer" class="fr js-languages text-blue margin-left">{{ $_W['setting']['languages'][$locale]['name'] }}&nbsp;<i style="font-size: 12px" class="layui-icon layui-icon-down text-gray"></i></span>
+            @endif
+            <span class="fr layui-hide-xs">{{ now() }}@if($debugInfo = debugInfo()), Processed in {{ $debugInfo['runtime'] }} second(s)@endif</span>
+            {!! $_W['page']['copyright'] !!}
+        </p>
     </div>
 </div>
 <script type="text/javascript">
-    var layform, layupload, laydropdown;
+    var layform, layupload, laydropdown, layCode, layElement;
+    require.config({
+        baseUrl: '/static/js',
+        paths:{
+            'clipboard':'clipboard.min'
+        }
+    });
     layui.use(['element','form','laydate','upload','code','dropdown'],function (){
         var form = layui.form,element = layui.element, upload = layui.upload, dropdown = layui.dropdown;
         form.on('radio(ctrls)', function(data){
@@ -20,17 +31,11 @@
             $(target).addClass('layui-hide');;
             $(target+'.form-item'+data.value).removeClass('layui-hide');
         });
-        $('.layui-fluid [lay-tips]').each(function (index,element) {
-            $(element).on({
-                mouseenter:function () {
-                    var tipstr = jQuery(this).attr('lay-tips');
-                    laytips = layer.tips(tipstr,this,{tips:1,time:0});
-                },
-                mouseleave:function () {
-                    layer.close(laytips);
-                }
-            });
-        });
+        layform = form;
+        layupload = upload;
+        laydropdown = dropdown;
+        layCode = layui.code;
+        layElement = element;
         EventInit($('body'));
         if(typeof (FormRender)=='function'){
             FormRender(form);
@@ -41,33 +46,70 @@
         if(typeof (DropRender)=='function'){
             DropRender(dropdown);
         }
-        layform = form;
-        layupload = upload;
-        laydropdown = dropdown;
-    });
-    $('.showmenu').on('click',this,function(){
-        $(this).dropdown();
-    });
-    $('a.confirm').on('click',this,function(){
-        var comfirmText = $(this).data('text');
-        var redirect = $(this).attr('href');
-        layer.confirm(comfirmText, {icon: 3, title:'提示'}, function(index){
-            window.location.href = redirect;
-            layer.close(index);
+        @if(!empty($_W['setting']['languages']))
+        dropdown.render({
+            elem: ".js-languages",
+            data:[
+                @foreach($_W['setting']['languages'] as $key=>$value)
+                {title:"{{ $value['name'] }}", id:"{{ $key }}"},
+                @endforeach
+            ],
+            click:function (e) {
+                checkLocale(e.id);
+            }
         });
-        return false;
+        @endif
     });
+    function checkLocale(locale) {
+        Core.post('server/language/checkout', function (res) {
+            if(res.type==="success"){
+                window.location.reload();
+            }else{
+                Core.report(res);
+            }
+        }, {locale: locale})
+    }
     function DateInit(Obj){
         if (Obj.find('.layui-input-laydate').length>0){
             Obj.find('.layui-input-laydate').each(function(index, element) {
+                let type = 'date', format = 'yyyy-MM-dd';
+                if (typeof($(element).attr('data-format')) != 'undefined'){
+                    type = 'datetime';
+                    format = $(element).attr('data-format');
+                }
                 layui.laydate.render({
                     elem: element //指定元素
-                    ,format:'yyyy-MM-dd'
+                    ,type: type
+                    ,format:format
                 });
             });
         }
     }
     function EventInit(Obj){
+        Obj.find('[lay-tips]').each(function (index,element) {
+            $(element).on({
+                mouseenter:function () {
+                    var tipstr = jQuery(this).attr('lay-tips');
+                    laytips = layer.tips(tipstr,this,{tips:1,time:0});
+                },
+                mouseleave:function () {
+                    layer.close(laytips);
+                }
+            });
+        });
+        Obj.find('.showmenu').click(function(){
+            $(this).dropdown();
+            return false;
+        });
+        Obj.find('a.confirm').not('.ajaxshow').click(function(){
+            var comfirmText = $(this).data('text');
+            var redirect = $(this).attr('href');
+            layer.confirm(comfirmText, {icon: 3, title:'@lang("confirm")', skin: 'fui-layer', btn:['@lang("确定")', '@lang("取消")']}, function(index){
+                window.location.href = redirect;
+                layer.close(index);
+            });
+            return false;
+        });
         Obj.find('[layadmin-event]').click(function () {
             let layevent = $(this).attr('layadmin-event');
             let WinBody = $('body');
@@ -83,23 +125,16 @@
                     $(datapicker).val(''),$(datapicker+'-i').val('').dropdown('toggle').focus();
                     break;
                 case 'updateCache' :
-                    layui.use('layer', function(){
-                        var index = layer.load(0,{shade: false,time: 3000});
-                        $.post('./index.php?c=system&a=updatecache&do=updatecache', {}, function(data) {
-                            console.log(data);
-                            layer.close(index);
-                            layer.msg('缓存更新成功',{icon:1})
-                        })
-                    });
-                    break;
+                    return Core.cacheclear();
                 case 'showqrcode' :
                     var qrcode = $(this).data('url');
-                    let title = typeof($(this).data('title'))=='undefined' ? '使用微信扫描二维码' : $(this).data('title');
+                    let title = typeof($(this).data('title'))=='undefined' ? '@lang("WeChatToScanCode")' : $(this).data('title');
                     layer.open({
                         title:title,
                         content: '<div style="width: 200px; height: 200px; margin: 0 auto;"><img src="'+qrcode+'" height="200" width="200" /></div>',
                         shade:0.5,
-                        shadeClose:true
+                        shadeClose:true,
+                        skin: 'fui-layer'
                     });
                     break;
                 case 'fullscreen' :
@@ -126,7 +161,7 @@
                     let src = typeof($(this).attr('src'))!='undefined' ? $(this).attr('src') : $(this).attr('data-src');
                     let imgtitle = typeof($(this).attr('title'))!='undefined' ? $(this).attr('title') : $(this).attr('data-alt');
                     let potos = {
-                        "title": "图片预览", //相册标题
+                        "title": "@lang('preview')", //相册标题
                         "id": 1, //相册id
                         "start": 0, //初始显示的图片序号，默认0
                         "data": [   //相册包含的图片，数组格式
@@ -148,30 +183,87 @@
             return false;
         });
         Obj.find('.ajaxshow').click(function(){
+            if($(this).hasClass('layui-disabled')) return false;
             let geturl = $(this).attr('href');
             let title = typeof($(this).attr('title'))!='undefined' ? $(this).attr('title') : $(this).text();
             let width = typeof($(this).attr('data-width'))!='undefined' ? $(this).attr('data-width') + 'px' : '990px';
-            Core.get(geturl,function(Html){
-                if(Core.isJsonString(Html)){
-                    var obj = jQuery.parseJSON(Html);
-                    return Core.report(obj);
-                }else{
-                    let WindowId = 'ajaxwindow' + Wrandom(6);
-                    layer.open({type:1,content:Html,id:WindowId,title:title,shade:0.3,area:width,shadeClose:true,skin:'fui-layer'});
-                    let Ajaxwindow = $('#'+WindowId);
-                    if(Ajaxwindow.find('form.layui-form').length>0){
-                        var filter = Ajaxwindow.find('form.layui-form').attr('lay-filter');
-                        FormInit(filter);
+            let confirmText = typeof($(this).attr('data-text'))=='undefined' ? '' : $(this).attr('data-text');
+            let ajaxhash = typeof($(this).attr('data-ajaxhash'))!='undefined' ? $(this).attr('data-ajaxhash') : '';
+            if(!ajaxhash || ajaxhash==''){
+                ajaxhash = Wrandom(6);
+            }
+            let WindowId = 'ajaxwindow' + ajaxhash;
+            let callBack = function (){
+                Core.get(geturl,function(Html){
+                    if(Core.isJsonString(Html)){
+                        var obj = jQuery.parseJSON(Html);
+                        return Core.report(obj);
+                    }else{
+                        let EventWindow = function(Elem){
+                            if(Elem.find('form.layui-form').length>0){
+                                var filter = Elem.find('form.layui-form').attr('lay-filter');
+                                FormInit(filter);
+                            }
+                            if(Elem.find('.layui-code').length>0){
+                                layui.code();
+                            }
+                            EventInit(Elem);
+                        }
+                        let Ajaxwindow = $('#'+WindowId);
+                        if(Ajaxwindow.length==0){
+                            let options = {type:1,content:Html,id:WindowId,title:title,shade:0.3,area:width,shadeClose:true,skin:'fui-layer'};
+                            options.success = function(layero){
+                                EventWindow(layero.find('.layui-layer-content'));
+                            }
+                            layer.open(options);
+                        }else{
+                            Ajaxwindow.html(Html);
+                            EventWindow(Ajaxwindow);
+                        }
+                           
                     }
-                    if(Ajaxwindow.find('.layui-code').length>0){
-                        layui.code();
-                    }
-                    EventInit(Ajaxwindow);
-                }
-            },{inajax:1},'html',true);
+                },{inajax:1,ajaxhash:ajaxhash},'html',true);
+            }
+            if(confirmText!==''){
+                layer.confirm(confirmText, {icon: 3, title:'@lang("confirm")', skin: 'fui-layer'}, function(index){
+                    layer.close(index);
+                    callBack();
+                });
+                return false;
+            }
+            callBack();
             return false;
         });
+        Obj.find(".js-clip").each(function () {
+            ClipInit(this, $(this).attr("data-url"))
+        })
+        Obj.find('.layui-code').each(function (index, Elem) {
+            layCode({
+                elem: Elem
+            });
+        });
+        Obj.find('.layui-collapse').each(function (i, Elem) {
+            if($(Elem).attr('lay-filter')){
+                let filter = $(Elem).attr('lay-filter');
+                layElement.render('collapse', filter);
+            }
+        });
         DateInit(Obj);
+    }
+    function ClipInit(Elem, text=''){
+        require(["clipboard"], function (clip) {
+            var e = new clip(Elem, {
+                text: function () {
+                    return text;
+                }
+            });
+            e.on("success", function (t) {
+                layer.msg("@lang('copySuccessfully')",{icon:1, skin: 'fui-layer'});
+            });
+            e.on("error", function (t) {
+                layer.msg("@lang('copyFailed')",{icon:2, skin: 'fui-layer'});
+            })
+        });
     }
     function Wrandom(len=8, id){
         let codes = 'ABCDEFGHIJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';

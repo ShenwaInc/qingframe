@@ -1,0 +1,18 @@
+<?php
+
+use App\Utils\QuickModule;
+
+class DummyModuleSite extends QuickModule{
+
+	public $WebIndex = ''; //默认入口链接，如https://example.com/
+    //该链接需符合单点登录接口规范，如留空则首次访问需要超管后台设置
+    //更多说明请参考：https://www.yuque.com/shenwa/qingru/dae7wpppwv8lhzrz#lyQFY
+
+
+    //默认使用masterSecret进行接口签名验证，如果要使用单独平台secret验证请把注释去掉
+    //public $SsoMaster = false;
+
+}
+
+
+?>

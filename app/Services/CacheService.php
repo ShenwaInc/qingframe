@@ -2,7 +2,9 @@
 
 namespace App\Services;
 
-use App\Models\Module;
+use App\Models\SystemLogs;
+
+use App\Models\Modules;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -411,7 +413,6 @@ class CacheService
     static function system_key($cache_key) {
         $cache_key_all = self::key_all();
 
-        $params = array();
         $args = func_get_args();
         if (empty($args[1])) {
             $args[1] = '';
@@ -436,7 +437,7 @@ class CacheService
                 $key = $cache_key;
             }
             if (empty($cache_key_all['caches'][$key])) {
-                return error(1, '缓存' . $key . ' 不存在!');
+                return error(1, 'Cache' . $key . ' does not exist!');
             } else {
                 $cache_info_key = $cache_key_all['caches'][$key]['key'];
                 preg_match_all('/\%([a-zA-Z\_\-0-9]+)/', $cache_info_key, $key_params);
@@ -460,7 +461,7 @@ class CacheService
                     }
 
                     if (strexists($cache_info_key, '%')) {
-                        return error(1, '缺少缓存参数或参数不正确!');
+                        return error(1, 'Missing or incorrect cache parameter!');
                     } else {
                         return ':' . $cache_info_key;
                     }
@@ -474,7 +475,7 @@ class CacheService
         $cache_common_params = $cache_key_all['common_params'];
 
         if (empty($cache_info)) {
-            return error(2, '缓存 ' . $cache_key . ' 不存在!');
+            return error(2, 'Cache ' . $cache_key . ' does not exist!');
         } else {
             $cache_key = $cache_info['key'];
         }
@@ -492,11 +493,11 @@ class CacheService
             }
 
             if (strexists($cache_key, '%')) {
-                return error(1, '缺少缓存参数或参数不正确!');
+                return error(1, 'Missing or incorrect cache parameter!');
             }
         }
 
-        $cache_key = ':' . $cache_key;
+        $cache_key = env('APP_AUTHKEY') . ':' . $cache_key;
         if (strlen($cache_key) > 100) {
             trigger_error('Cache name is over the maximum length');
         }
@@ -511,7 +512,7 @@ class CacheService
 
     static function build_module_subscribe(){
         global $_W;
-        $modules = Module::where('subscribes','!=','')->select(['name', 'subscribes'])->get()->toArray();
+        $modules = Modules::where('subscribes','!=','')->select(['name', 'subscribes'])->get()->toArray();
         if (empty($modules)) {
             return array();
         }
@@ -560,12 +561,28 @@ class CacheService
         Artisan::call('view:clear');
         //更新配置缓存
         Artisan::call('config:clear');
-        //更新最新版本号，已忽略
-        //CloudService::CloudEnv("APP_RELEASE={$_W['config']['release']}", "APP_RELEASE=".TIMESTAMP);
         //重建系统配置
         SettingService::Load();
         if ($_W['uniacid']){
             SettingService::uni_load('',$_W['uniacid']);
+        }
+        //自动清理日志
+        SystemLogs::autoClear();
+        try {
+            serv('language')->langUsable(false);
+        }catch (\Exception $exception){
+            SystemLogs::systemRunning(
+                '语言服务初始化异常',
+                'service:CacheService',
+                "初始化语言服务时发生异常：{$exception->getMessage()}",
+                false,
+                [
+                    'exception_file' => $exception->getFile(),
+                    'exception_line' => $exception->getLine(),
+                    'exception_code' => $exception->getCode(),
+                    'exception_trace' => $exception->getTrace(),
+                ]
+            );
         }
         return true;
     }

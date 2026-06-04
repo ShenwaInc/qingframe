@@ -3,9 +3,10 @@
 namespace App\Http\Controllers\Console;
 
 use App\Http\Controllers\Controller;
+use App\Models\SystemLogs;
 use App\Services\CacheService;
-use App\Services\FileService;
-use App\Services\SettingService;
+use App\Services\CloudService;
+use App\Services\HttpService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -20,18 +21,43 @@ class UtilController extends Controller
         return $this->message();
     }
 
-    public function doCache(Request $request){
-        $do = (string)$request->input('do','');
-        if($do=='clear'){
-            //清理系统缓存
-            try {
-                CacheService::flush();
-            }catch (\Exception $exception){
-                return $this->message($exception->getMessage());
+    /**
+     * @throws \Exception
+     */
+    public function doWxcode(Request $request){
+        $attach = $request->get('attach');
+        $type = $request->get('a');
+        if ($type=='image'){
+            $content = HttpService::ihttp_post($attach,"");
+            if (is_error($content)){
+                throw new \Exception($content['message']);
             }
-            return $this->message('清理完成！','','success');
+            session_exit($content['content']);
         }
-        return $this->message();
+        return "";
+    }
+
+    public function doCache(Request $request){
+        //清理系统缓存
+        try {
+            CacheService::flush();
+            SystemLogs::userOperation('更新系统缓存');
+        }catch (\Exception $exception){
+            SystemLogs::systemRunning(
+                '清理系统缓存异常',
+                'util:cache',
+                "清理系统缓存过程中发生异常：{$exception->getMessage()}",
+                false,
+                [
+                    'exception_file' => $exception->getFile(),
+                    'exception_line' => $exception->getLine(),
+                    'exception_code' => $exception->getCode(),
+                    'exception_trace' => $exception->getTrace()
+                ]
+            );
+            return $this->message($exception->getMessage());
+        }
+        return $this->message('successful','','success');
     }
 
     public function doFile(Request $request){
@@ -129,8 +155,6 @@ class UtilController extends Controller
                 }
             }
 
-            serv("weengine")->func("web");
-
             $pager = pagination($total, $page, $page_size, '', $context = array('before' => 5, 'after' => 4, 'isajax' => $_W['isajax']));
             $result = array(
                 'list' => $list,
@@ -142,17 +166,98 @@ class UtilController extends Controller
             );
             return $this->message(error(0,$result),'','success');
         }
+        if ('keyword' == $do) {
+            $keyword = addslashes($_GPC['keyword']);
+            $pindex = max(1, $_GPC['page']);
+            $psize = 24;
+            $condition = array('uniacid' => $uniacid, 'status' => 1);
+            $offset = ($pindex-1)*$psize;
+            if (!empty($keyword)) {
+                $condition['content like'] = '%' . $keyword . '%';
+            }
 
-        return $this->message(error(-1,'操作失败，请重试'));
+            $query = DB::table('rule_keyword')->where($condition);
+            $total = $query->count();
+            $keyword_lists = $query->limit($psize)->offset($offset)->get()->keyBy('id')->toArray();
+            $result = array(
+                'items' => $keyword_lists,
+                'pager' => pagination($total, $pindex, $psize, '', array('before' => '2', 'after' => '3', 'ajaxcallback' => 'null', 'isajax' => 1)),
+            );
+            return $this->message(error(0,$result),'','ajax');
+        }
+
+        return $this->message(error(-1,__('operationFailed')));
     }
 
     //
     public function save(Request $request,$op='index'){
         global $_W,$_GPC;
-        $uniacid = (int)$request->input('uniacid');
+        if ($op=='cloudcode'){
+            if (checksubmit('sendcode')){
+                $mobile = $request->input('mobile');
+                if (empty($mobile) || !preg_match('/^(\+)?(86)?0?1\d{10}$/', $mobile)) return $this->message("typeAValidPhoneNumber");
+                $data = array('r'=>'util.code', 'token'=>1,'mobile'=>$mobile,"sendcode"=>"1","from"=>"autocheck");
+                $res = CloudService::CloudApi("", $data);
+                SystemLogs::userOperation(
+                    '获取云端验证码',
+                    'core:cloud',
+                    "手机号：" . $mobile,
+                    $res&&!is_error($res),
+                    ['result'=>$res, 'request'=>$data]
+                );
+                if (is_error($res)){
+                    return $this->message($res['message']);
+                }
+                if (!$res){
+                    return $this->message();
+                }
+                return $this->message($res['message'], "", $res["type"]);
+            }
+            return $this->message();
+        }
+        if ($op=='file'){
+            $do = $request->input('do');
+            if ('delete' == $do){
+                $id = $_GPC['id'];
+                $condition = array();
+                $query = DB::table('core_attachment')->whereIn('id', $id);
+                if (empty($_W['uniacid'])){
+                    $condition['uid'] = $_W['uid'];
+                }else{
+                    $condition['uniacid'] = $_W['uniacid'];
+                }
+                $attachments = $query->where($condition)->get()->toArray();
+                if (!empty($attachments)){
+                    foreach ($attachments as $key=>$value){
+                        serv('storage')->removeFile($value['attachment']);
+                    }
+                    $query->where($condition)->delete();
+                }
+                return $this->message(error(0,__('deleteSuccessfully')),'','success');
+            }
+            if ($do=='wechat_upload'){
+                $type = trim($_GPC['upload_type']);
+                $mode = trim($_GPC['mode']);
+                $acceptMime = $type=='voice' ? 'audio' : $type;
+                $result = serv('storage')->saveFile('file', $acceptMime);
+                if (is_error($result)) return $this->message($result, referer(), 'error');
+                $res = serv('wechat')->uploadMaterial($result['path'], $acceptMime, $result['name']);
+                if (is_error($res)) return $this->message($res, referer());
+                $size = intval($_FILES['file']['size']);
+                $res['error'] = 0;
+                if ($type=='image'){
+                    $res['width'] = $size[0];
+                    $res['hieght'] = $size[1];
+                }
+                $res['type'] = $type;
+                $res['url'] = tomedia($result['path']);
+                $res['mode'] = $mode;
+                die(json_encode($res));
+            }
+        }
         if ($op=='upload'){
             $type = $request->input('type', 'image');
-            $path = FileService::Upload($request,$type);
+            $path = serv('storage')->putFile('file');
             if (is_error($path)){
                 return $this->message($path['message']);
             }
@@ -165,9 +270,9 @@ class UtilController extends Controller
             $info = array(
                 'name' => htmlspecialchars_decode($request->file('file')->getClientOriginalName(), ENT_QUOTES),
                 'ext' => $request->file('file')->getClientOriginalExtension(),
-                'filename' => $path,
-                'attachment' => $path,
-                'url' => tomedia($path),
+                'filename' => $path['name'],
+                'attachment' => $path['path'],
+                'url' => tomedia($path['path']),
                 'is_image' => 'image' == $type ? 1 : 0,
                 'filesize' => $request->file('file')->getSize(),
                 'group_id' => $group_id
@@ -176,7 +281,7 @@ class UtilController extends Controller
                 'uniacid' => $_W['uniacid'],
                 'uid' => $_W['uid'],
                 'filename' => $info['name'],
-                'attachment' => $path,
+                'attachment' => $path['path'],
                 //1图片2媒体3附件
                 'type' => 'image' == $type ? 1 : ('media' == $type ? 2 : 3),
                 'createtime' => TIMESTAMP,

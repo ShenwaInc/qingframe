@@ -3,14 +3,9 @@
 namespace App\Http\Controllers\Console;
 
 use App\Http\Controllers\Controller;
-use App\Models\Account;
 use App\Services\AccountService;
-use App\Services\CacheService;
 use App\Services\ModuleService;
-use App\Services\UserService;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class PlatformController extends Controller
@@ -19,52 +14,63 @@ class PlatformController extends Controller
     public function index(){
         global $_W,$_GPC;
 
-        session()->forget('uniacid');
         if (empty($_W['isfounder']) && !empty($_W['user']) && ($_W['user']['status'] == 1 || $_W['user']['status'] == 3)) {
             Auth::logout();
-            return $this->message('您的账号正在审核或是已经被系统禁止，请联系网站管理员解决！');
+            return $this->message('accountUnavailable');
         }
         if (($_W['setting']['site']['close'] == 1) && empty($_W['isfounder'])) {
             Auth::logout();
-            return $this->message('站点已关闭，关闭原因：' . $_W['setting']['site']['closereason'], url('login'), 'error');
+            return $this->message(__('closingFor', array('reason'=>$_W['setting']['site']['closereason'])), wurl());
         }
 
-        $data = array('cancreate'=>true);
+        if (SITEACID){
+            return redirect("console/account/".SITEACID);
+        }
 
+        //session()->forget('uniacid');
+        $data = array('creatable'=>true, 'consoleHome'=>true);
         $params = post_var(array('keyword'));
 
         if ($_W['isadmin']) {
             $params['founder_id'] = intval($_GPC['founder_id']);
         }
 
-        list($data['list'], $data['total']) = AccountService::OwnerAccounts($params, $_GPC['page']);
+        list($data['list'], $data['total'], $data['created']) = AccountService::OwnerAccounts($params, $_GPC['page']);
 
         if (!$_W['isfounder']){
             $maxCreate = (int)DB::table('users_extra_limit')->where('uid',$_W['uid'])->value('maxaccount');
-            if ($maxCreate<=$data['total']){
-                $data['cancreate'] = false;
+            if ($maxCreate<=$data['created']){
+                $data['creatable'] = false;
             }
         }
+        $_W['consolePage'] = $_W['siteroot'];
 
-        return $this->globalview('console.platform', $data);
+        return $this->globalView('console.platform', $data);
     }
 
-    public function checkout(Request $request,$uniacid){
+    public function checkout($uniacid){
         global $_W;
+        if ($_W['config']['site']['id']==0){
+            return redirect("console/active");
+        }
         $_W['uniacid'] = intval($uniacid);
         session()->put('uniacid',$_W['uniacid']);
-        $module = $request->input('module');
-        if (empty($module)){
-            $module = DB::table('users_operate_history')->where(array('uid'=>$_W['uid'],'uniacid'=>$_W['uniacid']))->orderBy('createtime','desc')->value('module_name');
-            if (empty($module)){
-                $module = $_W['config']['defaultmodule'];
+        list($controller, $method) = AccountService::GetEntrance($_W['uid'], $_W['uniacid']);
+        if ($controller=='module'){
+            $module_exists = ModuleService::fetch($method);
+            if (empty($module_exists) || is_error($module_exists)){
+                $controller = 'account';
+                $method = "profile";
+            }else{
+                return redirect("console/m/$method");
             }
         }
-        $moduleObj = ModuleService::fetch($module);
-        if (empty($moduleObj)){
-            return redirect("console/account/profile?uniacid={$_W['uniacid']}");
+        if ($controller=='account'){
+            return redirect("console/account/{$method}?uniacid={$_W['uniacid']}");
+        }else{
+            $redirect = serv($method)->getEntry();
+            return redirect($redirect);
         }
-        return redirect("console/m/$module");
     }
 
 }
