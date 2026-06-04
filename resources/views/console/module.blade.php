@@ -21,7 +21,11 @@
             </ul>
         </div>
 
-        @if(empty($activeState['hasDomain']))
+        @if(empty($activeState['siteid']))
+            <div class="layui-elem-quote margin-bottom-xl" style="border-color: #FF5722; background-color: #fadbd9;">
+                <p class="text-red">{!! $activeState['state'] !!}&nbsp;&nbsp;<a href="{{ wurl('active') }}" class="text-blue">@lang('重置云服务')</a></p>
+            </div>
+        @elseif(empty($activeState['hasDomain']))
             <div class="layui-elem-quote margin-bottom-xl" style="border-color: #FF5722; background-color: #fadbd9;">
                 <p class="text-red">{!! __('domainNotify', ['domain'=>$_SERVER['HTTP_HOST']]) !!}&nbsp;&nbsp;<a href="{{ wurl('active') }}" class="text-blue">@lang('重置云服务')</a></p>
             </div>
@@ -66,7 +70,7 @@
                                         <img src="{{ $com['logo'] }}" class="fl bg-gray radius margin-right-sm" height="48" />
                                         <div class="fui-table-name">
                                             <a href="{{$com['website']}}" class="text-blue" title="@lang($com['description'])" target="_blank">@lang($com['name'])</a><br/>
-                                            <span title="Release {{ $com['releasedate'] }}">V{{$com['version']}}</span>
+                                            <span title="Release {{ $com['version_code'] }}">V{{$com['version']}}</span>
                                         </div>
                                     </td>
                                     <td class="layui-hide-xs">{!! $com['installTime'] !!}</td>
@@ -75,9 +79,9 @@
                                         @if(empty($com['cloudInfo']) || empty($com['cloudInfo']['id']))
                                             -
                                         @else
-                                            V{{ $com['cloudInfo']['version'] }}&nbsp;&nbsp;Release {{ $com['cloudInfo']['releasedate'] }}
+                                            V{{ $com['cloudInfo']['version'] }}&nbsp;&nbsp;Release {{ $com['cloudInfo']['version_code'] }}
                                             @if($com['cloudInfo']['upgradable'])
-                                                @if($com['cloudInfo']['releasedate']==$com['releasedate'])
+                                                @if($com['cloudInfo']['version_code']==$com['version_code'])
                                                     <span class="layui-badge-dot" lay-tips="@lang('当前系统源码与云端对比有变动')"></span>
                                                 @else
                                                     <span class="layui-badge-dot" lay-tips="@lang('发现新版本')"></span>

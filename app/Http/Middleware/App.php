@@ -7,7 +7,6 @@ use Closure;
 use Illuminate\Http\Request;
 
 define('IA_ROOT', base_path('public'));
-define('BASE_ROOT', base_path('/'));
 define('QingFrame', true);
 define("MICRO_SERVER", base_path("servers/"));
 define('MAGIC_QUOTES_GPC', (function_exists('get_magic_quotes_gpc') && @get_magic_quotes_gpc()) || @ini_get('magic_quotes_sybase'));
@@ -18,6 +17,7 @@ define('SITEACID', (int)config('system.site.uniacid', 0));
 define('QingVersion', config('system.version'));
 define('QingRelease', config('system.versionCode'));
 define('QingDebug', config('system.debugMode'));
+define('APP_ADDON_DIR', config('system.setting.addon_dir', 'addons'));
 
 error_reporting(E_ERROR);
 global $_W,$_GPC;

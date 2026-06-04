@@ -44,13 +44,13 @@ class UserService
         return true;
     }
 
-    static function GetHash($passwordinput, $salt, $authkey=''){
-        global $_W;
-        if (empty($authkey) && isset($_W['config'])){
-            $authkey = $_W['config']['setting']['authkey'];
+    static function GetHash($password, $salt, $authKey=''): string
+    {
+        if (empty($authKey)){
+            $authKey = config('system.setting.authkey');
         }
-        $passwordinput = "{$passwordinput}-{$salt}-{$authkey}";
-        return sha1($passwordinput);
+        $password = "{$password}-{$salt}-{$authKey}";
+        return sha1($password);
     }
 
     static function GetOne($user_or_uid){

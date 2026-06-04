@@ -16,7 +16,7 @@ class selfRepair extends Command
      *
      * @var string
      */
-    protected $signature = 'self:repair';
+    protected $signature = 'self:repair {--server=}';
 
     /**
      * The console command description.
@@ -46,14 +46,43 @@ class selfRepair extends Command
     public function handle()
     {
         //1.解析需要安装的库
-        global $_W;
-        if(!empty($_W['siteroot'])){
+        if(!app()->runningInConsole()){
             $this->terminalState = 'web';
             $this->terminalShow("建议使用其它终端工具运行修复指令，<a href='https://www.yuque.com/shenwa/qingru/gqea6plg3g4w99c5#xE7AC' target='_blank'>点此查看详细方法</a>", "line:warm");
         }
-        //$this->info("The site origin is : ".$_W['siteroot']);
-        //$this->info('Time: '.TIMESTAMP);
         $this->terminalShow('Terminal mode : '.$this->terminalState, "success");
+        $WorkingDirectory = base_path("/");
+        $server = $this->option('server');
+        if (!empty($server)){
+            if (!is_dir(base_path("servers/{$server}")) || !file_exists(base_path("servers/{$server}/composer.json"))){
+                return $this->terminalShow("该服务不存在或未定义 composer 依赖包，无需该指令修复", "error", 1);
+            }
+            if (DEVELOPMENT){
+                $WorkingDirectory = base_path("servers/{$server}/");
+                Storage::deleteDirectory("servers/{$server}/vendor");
+                Storage::delete("servers/{$server}/composer.lock");
+                $process = new Process(['composer','update']);
+            }else{
+                $process = new Process(['composer','remove', 'microserver/' . $server]);
+            }
+            $process->setWorkingDirectory($WorkingDirectory);
+            $process->setEnv(['COMPOSER_HOME'=>MSService::ComposerHome()]);
+            $takes = microtime(true) - LARAVEL_START + 10;
+            $maxTime = (int)ini_get('max_execution_time') ?: 100;
+            $timeout = max(50, $maxTime - $takes);
+            $process->setTimeout($timeout);
+            $process->run(function ($type, $buffer) {
+                $mode = str_replace('err', 'warm', $type);
+                $this->terminalShow($buffer, "line:" . $mode);
+            });
+            $process->wait();
+            if ($process->isSuccessful()) {
+                $this->terminalShow("composer update complete.", "success");
+                Storage::delete("servers/{$server}/composer.error");
+            }else{
+                return $this->terminalShow('composer update failed.', 'err', true);
+            }
+        }
         $composerPath = base_path('composer.json');
         $json = file_get_contents($composerPath);
         $flags = JSON_UNESCAPED_UNICODE+JSON_PRETTY_PRINT+JSON_UNESCAPED_SLASHES;
@@ -66,7 +95,6 @@ class selfRepair extends Command
             }
         }
         unset($key, $value);
-        $WorkingDirectory = base_path("/");
         //1.更新Composer
         if ($composerUpdate){
             if (!file_put_contents($composerPath, json_encode($composer, $flags))){

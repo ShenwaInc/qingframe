@@ -26,13 +26,19 @@ return [
             'session'=>1
         ),
         'proxy'=>['host'=>'','auth'=>''],
-        'force_https'=>env('APP_FORCE_HTTPS', 0)
+        'force_https'=>env('APP_FORCE_HTTPS', 0),
+        'addon_dir'=>env('APP_ADDON_DIR', 'public/addons'),
+        'addon_prefix'=>env('APP_MODULE_PREFIX', 'laravel_module_')
     ),
     'site'=>array(
         'id'=>env('APP_SITEID',0),
         'key'=>env('APP_AUTHKEY',''),
         'name'=>env('APP_NAME', 'qingwork'),
         'uniacid'=>env('APP_UNIACID', 0)
+    ),
+    'safe'=>array(
+        'min_password_len'=>env('APP_PASSPORT_LEN', 6),
+        'security_entrance'=>env('APP_SECURITY_ENTRANCE', '')
     ),
     'upload'=>array(
         'image'=>array('extentions'=>['gif', 'jpg', 'jpeg', 'png'],'limit'=>5000),
@@ -41,5 +47,8 @@ return [
     ),
     'cdn'=>[
         'header_column'=>env('CDN_REAL_IP_HEADER', 'x-forwarded-for')
+    ],
+    'log'=>[
+        'slow_query_threshold'=>env('LOG_SLOW_QUERY', 0)
     ]
 ];

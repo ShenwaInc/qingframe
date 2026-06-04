@@ -13,6 +13,8 @@ use Symfony\Component\Process\Process;
 
 class MSService
 {
+
+    public static $Command = null;
     public static $tableName = 'microserver';
 
     public static function setup(){
@@ -255,8 +257,15 @@ class MSService
         $allServers = array();
         foreach ($servers as $key=>$server){
             $server['actions'] = '';
+            $server['enabled'] = false;
+            $server['isdelete'] = false;
+            $serverPath = self::localExist($server['identity'], DEVELOPMENT);
+            if (!$serverPath){
+                $server['isdelete'] = true;
+            }
             if($server['status']!=1) continue;
             $service = serv($server['identity']);
+            $server['enabled'] = $service->enabled;
             $server['entry'] = "";
             if($service->enabled){
                 $server['entry'] = $service->getEntry();
@@ -293,7 +302,8 @@ class MSService
                     $upgradeAction = "";
                 }elseif (!empty($cloudServer)){
                     $release = $cloudServer['release'];
-                    if (version_compare($release['version'], $server['version'], '>') || $release['releasedate']>$server['releases']){
+                    $version_code = $release['version_code'] ?? $release['releasedate'];
+                    if (version_compare($release['version'], $server['version'], '>') || $version_code>$server['releases']){
                         $tips = __("该服务可升级至V:version版本", ['version'=>$release['version']]);
                         $upgradeAction = '<a class="layui-btn layui-btn-sm layui-btn-danger js-terminal" data-text="升级前请做好数据备份" lay-tips="'.$tips.'" href="'.wurl('server', array('op'=>'cloudup', 'nid'=>$server['identity'])).'">'.__('upgrade').'</a>';
                         $server['upgrade'] = array('version'=>$release['version'],'canup'=>true);
@@ -303,14 +313,13 @@ class MSService
                 }
             }
             $server['actions'] .= $upgradeAction;
-            $server['isdelete'] = false;
-            $serverPath = self::localExist($server['identity'], DEVELOPMENT);
-            if (!$serverPath){
-                $server['isdelete'] = true;
-            }elseif(file_exists($serverPath . "composer.error")){
-                $server['actions'] .= '<a class="layui-btn layui-btn-sm layui-btn-danger js-terminal" href="'.wurl('server', array('op'=>'composer', 'nid'=>$server['identity'])).'">'.__('修复').'</a>';
-            }elseif (!$service->enabled){
-                $server['actions'] .= '<a class="layui-btn layui-btn-sm layui-btn-danger" lay-tips="'.$service->error.'" href="javascript:" >'.__('不可用').'</a>';
+            if ($serverPath){
+                if(file_exists($serverPath . "composer.error")){
+                    $server['actions'] .= '<a class="layui-btn layui-btn-sm layui-btn-danger js-terminal" href="'.wurl('server', array('op'=>'composer', 'nid'=>$server['identity'])).'">'.__('修复').'</a>';
+                }
+                if (!$service->enabled){
+                    $server['actions'] .= '<a class="layui-btn layui-btn-sm layui-btn-danger" lay-tips="'.$service->error.'" href="javascript:" >'.__('不可用').'</a>';
+                }
             }
             $allServers[$key] = $server;
         }
@@ -799,6 +808,17 @@ class MSService
     }
 
     public static function TerminalSend($data, $finish=false){
+        if (!empty(self::$Command)){
+            if ($data['mode']=='cmd'){
+                self::$Command->line($data['message']);
+            }elseif($data['mode']=='err'){
+                self::$Command->error($data['message']);
+            }elseif ($data['mode']=='warm'){
+                self::$Command->warn($data['message']);
+            }else{
+                self::$Command->info($data['message']);
+            }
+        }
         global $_W;
         if (!empty($_W['TerminalSilence'])) return true;
         $data['type'] = 'terminal';

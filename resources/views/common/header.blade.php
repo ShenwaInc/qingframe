@@ -43,6 +43,12 @@
                         <li class="layui-nav-item layui-hide-xs{{ $_W['inReport']?' layui-this':'' }}">
                             <a href="{{wurl('report')}}">@lang('提交工单')</a>
                         </li>
+                        <li class="layui-nav-item layui-hide-xs">
+                            <a href="/console/openclaw">
+                                <img alt="OpenClaw" src="{{ asset('static/images/openclaw.jpg') }}" class="layui-nav-img user-avatar" />
+                                @lang('OpenClaw')
+                            </a>
+                        </li>
                     @endif
                     <li class="layui-nav-item layui-hide-xs js-fullscreen" lay-unselect>
                         <a href="javascript:" layadmin-event="fullscreen">

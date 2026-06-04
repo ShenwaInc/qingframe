@@ -53,7 +53,7 @@ class SelfUpdateCommand extends Command
             if (empty($appUrl)) return $this->error('Invaild website url.') || "";
             $_W['siteroot'] = $appUrl . "/";
         }
-        $component = DB::table('gxswa_cloud')->where('type',0)->first(['id','identity','modulename','type','releasedate','rootpath']);
+        $component = DB::table('gxswa_cloud')->where('type',0)->first(['id','identity','modulename','type','version_code','rootpath']);
         if (!empty($arguments['version']) && $arguments['version']!='local'){
             //从云端升级
             $cloudUpdate = CloudService::CloudUpdate($component['identity'],base_path().'/');
@@ -81,7 +81,7 @@ class SelfUpdateCommand extends Command
                 $arguments['release'] = $system['release'] + 1;
             }else{
                 $arguments['version'] = $upgradeInfo['version'];
-                $arguments['release'] = $upgradeInfo['releasedate'];
+                $arguments['release'] = $upgradeInfo['version_code'] ?? $upgradeInfo['releasedate'];
             }
         }
         if ($arguments['version']=='local'){
@@ -89,15 +89,16 @@ class SelfUpdateCommand extends Command
             $arguments['version'] = $system['version'];
             $arguments['release'] = $system['release'];
         }
+        $version_code = intval($arguments['release']);
         DB::table('gxswa_cloud')->where('id',$component['id'])->update(array(
             'version'=>$arguments['version'],
             'updatetime'=>TIMESTAMP,
             'dateline'=>TIMESTAMP,
-            'releasedate'=>intval($arguments['release']),
+            'version_code'=>$version_code,
             'online'=>serialize(array(
                 'isnew'=>false,
                 'version'=>$arguments['version'],
-                'releasedate'=>intval($arguments['release'])
+                'version_code'=>$version_code,
             ))
         ));
         CloudService::CloudEnv(array("APP_VERSION={$system['version']}","APP_RELEASE={$system['release']}"), array("APP_VERSION={$arguments['version']}","APP_RELEASE={$arguments['release']}"));

@@ -3,7 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-$appSecurityEntrance = env("APP_SECURITY_ENTRANCE");
+$appSecurityEntrance = config('system.safe.security_entrance');
 if (!empty($appSecurityEntrance) && $appSecurityEntrance!="/"){
     Route::get("/$appSecurityEntrance", function (Request $request){
         $request->session()->put("securityEntrance", random(12));
@@ -54,6 +54,7 @@ Route::group(['prefix' => 'console', 'namespace' => 'Console', 'middleware'=>['a
     Route::get('/logs', 'LogController@index');
     Route::get('/log/export', 'LogController@export');
     Route::get('/log/{id}', 'LogController@show');
+    Route::get('/openclaw', 'PlatformController@openclaw');
 });
 
 Route::group(['prefix'=>'server', 'namespace' =>'Console', 'middleware'=>['auth', 'app', 'permission']],function (){

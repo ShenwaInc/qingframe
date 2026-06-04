@@ -154,7 +154,7 @@ class ServerController extends Controller
         $startTime = time();
         $op = $request->input("op","index");
         $identity = $request->input("nid", "");
-        $return = array("title"=>__('服务管理'), "op"=>$op);
+        $return = array("title"=>__('服务管理'), "op"=>$op, "requireUrl"=>"");
         $MSS = new MSService();
         switch ($op){
             case "stop" : {
@@ -302,7 +302,8 @@ class ServerController extends Controller
                 if (!is_error($cloudServer)){
                     $service = $MSS::getone($identity);
                     $release = $cloudServer['release'];
-                    if (version_compare($release['version'], $service['version'], '>') || $release['releasedate']>$service['releases']){
+                    $version_code = $release['version_code'] ?? $release['releasedate'];
+                    if (version_compare($release['version'], $service['version'], '>') || $version_code>$service['releases']){
                         return $this->message(['release'=>$release], "", "success");
                     }
                 }
@@ -324,6 +325,16 @@ class ServerController extends Controller
             $return['socket']['server'] = $swaSocket->settings['server'];
         }
         $return['activeState'] = CloudService::CloudActive(true);
+        $require = $request->input('require');
+        if (!empty($require) && !$MSS->isExist($require)){
+            if($MSS->localExist($require)){
+                // 从本地安装
+                $return['requireUrl'] = wurl('server', ['nid'=>$require, 'op'=>'install']);
+            }else{
+                // 从云端安装
+                $return['requireUrl'] = wurl('server', ['nid'=>$require, 'op'=>'cloudInstall']);
+            }
+        }
         return $this->globalView("console.server", $return);
     }
 

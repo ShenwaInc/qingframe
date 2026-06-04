@@ -21,7 +21,11 @@
             </ul>
         </div>
 
-        @if(empty($activeState['hasDomain']))
+        @if(empty($activeState['siteid']))
+            <div class="layui-elem-quote margin-bottom-xl" style="border-color: #FF5722; background-color: #fadbd9;">
+                <p class="text-red">{!! $activeState['state'] !!}&nbsp;&nbsp;<a href="{{ wurl('active') }}" class="text-blue">@lang('重置云服务')</a></p>
+            </div>
+        @elseif(empty($activeState['hasDomain']))
             <div class="layui-elem-quote margin-bottom-xl" style="border-color: #FF5722; background-color: #fadbd9;">
                 <p class="text-red">{!! __('domainNotify', ['domain'=>$_SERVER['HTTP_HOST']]) !!}&nbsp;&nbsp;<a href="{{ wurl('active') }}" class="text-blue">@lang('重置云服务')</a></p>
             </div>
@@ -89,7 +93,7 @@
                             <td class="soild-after">
                                 V{{ QingVersion }} Release{{ QingRelease }}
                                 @if($cloudInfo['upgradable'])
-                                    &nbsp;&nbsp;<span class="layui-badge layui-bg-red" title="V{{ $cloudInfo['version'] }} Release{{ $cloudInfo['releasedate'] }}">@lang('发现新版本')</span>
+                                    &nbsp;&nbsp;<span class="layui-badge layui-bg-red" title="V{{ $cloudInfo['version'] }} Release{{ $cloudInfo['version_code'] ?? $cloudInfo['releasedate'] }}">@lang('发现新版本')</span>
                                 @elseif($cloudInfo['hasDifference'])
                                     <span class="layui-badge layui-badge-dot" lay-tips="@lang('当前系统源码与云端对比有变动')"></span>
                                 @endif

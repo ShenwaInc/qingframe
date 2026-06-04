@@ -19,7 +19,11 @@
             </ul>
         </div>
 
-        @if(empty($activeState['hasDomain']))
+        @if(empty($activeState['siteid']))
+            <div class="layui-elem-quote margin-bottom-xl" style="border-color: #FF5722; background-color: #fadbd9;">
+                <p class="text-red">{!! $activeState['state'] !!}&nbsp;&nbsp;<a href="{{ wurl('active') }}" class="text-blue">@lang('重置云服务')</a></p>
+            </div>
+        @elseif(empty($activeState['hasDomain']))
             <div class="layui-elem-quote margin-bottom-xl" style="border-color: #FF5722; background-color: #fadbd9;">
                 <p class="text-red">{!! __('domainNotify', ['domain'=>$_SERVER['HTTP_HOST']]) !!}&nbsp;&nbsp;<a href="{{ wurl('active') }}" class="text-blue">@lang('重置云服务')</a></p>
             </div>
@@ -115,7 +119,8 @@
             let identity = Elem.attr('data-nid');
             Core.get('console/server', function (res){
                 if(res.type==='success'){
-                    let tips = "{{ __('upgradeTo', array('data'=>__('service'))) }}V" + res.data.release.version + "Release" + res.data.release.releasedate;
+                    let version_code = res.data.release.version_code || res.data.release.releasedate;
+                    let tips = "{{ __('upgradeTo', array('data'=>__('service'))) }}V" + res.data.release.version + " Release" + version_code;
                     Elem.removeClass('layui-hide').attr('lay-tips', tips);
                     $('#update' + identity).removeClass('layui-hide');
                 }
@@ -130,6 +135,9 @@
         layer.tips('@lang("需要安装该服务")', serverId, {
             tips: [1, '#ff5722']
         });
+        @endif
+        @if(!empty($requireUrl))
+            terminalInit('{!! $requireUrl !!}');
         @endif
     })
     function UploadRender(upload) {

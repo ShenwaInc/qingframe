@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Services;
 
 use App\Models\UniAccount;
@@ -9,12 +8,14 @@ use App\Models\SystemLogs;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class ModuleService
 {
 
-    static function getManifest($identity,$path='addons'){
-        $manifestFile = base_path("public/$path/$identity/manifest.json");
+    static function getManifest($identity){
+        $path = config('system.setting.addon_dir', 'addons');
+        $manifestFile = base_path("$path/$identity/manifest.json");
         if(!file_exists($manifestFile)) return error(-1,__('无法解析模块安装包'));
         $JSON = file_get_contents($manifestFile);
         $result = json_decode($JSON, true);
@@ -31,43 +32,20 @@ class ModuleService
         return DB::table('gxswa_cloud')->where('identity', $cloudIdentity)->update(['maintenance'=>intval($maintenance)]);
     }
 
-    static function install($identity,$path='addons',$from='cloud'){
+    static function install($identity, $from='cloud'){
+        $path = config('system.setting.addon_dir', 'addons');
         $startTime = time();
-        $ManiFest = self::getManifest($identity, $path);
+        $ManiFest = self::getManifest($identity);
         if (is_error($ManiFest)) return $ManiFest;
         if ($ManiFest['installed']) return true;
         $application = $ManiFest['application'];
         MSService::TerminalSend(['mode'=>'info', 'message'=>"即将安装应用模块【{$application['name']}^{$application['version']}】"]);
-        //运行数据库迁移
-        $migrationPath = base_path("public/$path/$identity/database/migrations");
-        if (is_dir($migrationPath)){
-            MSService::TerminalSend(['mode'=>'info', 'message'=>"即将进行数据结构迁移..."]);
-            try {
-                Artisan::call('migrate', ['--force' => true, '--path' => "public/$path/$identity/database/migrations"]);
-                MSService::TerminalSend(['mode'=>'success', 'message'=>"数据结构迁移完成!"]);
-            }catch (\Exception $exception){
-                SystemLogs::systemRunning(
-                    '模块数据库迁移异常',
-                    'service:ModuleService',
-                    "执行模块数据库迁移时发生异常：{$exception->getMessage()}",
-                    false,
-                    [
-                        'exception_file' => $exception->getFile(),
-                        'exception_line' => $exception->getLine(),
-                        'exception_code' => $exception->getCode(),
-                        'module_identity' => $identity,
-                        'path' => $path,
-                    ]
-                );
-                return error(-1,__('installFailed', ['reason'=>DEVELOPMENT?$exception->getMessage():__('运行数据库迁移时出现异常')]));
-            }
-        }
         //执行安装脚本
         if (!empty($ManiFest['install'])){
             try {
                 MSService::TerminalSend(['mode'=>'info', 'message'=>"正在运行应用安装脚本..."]);
                 define('MODULE_INSTALL', 1);
-                script_run($ManiFest['install'], public_path("{$path}/{$identity}/"));
+                script_run($ManiFest['install'], base_path("{$path}/{$identity}/"));
                 MSService::TerminalSend(['mode'=>'success', 'message'=>"应用安装脚本运行完成!"]);
             } catch (\Exception $exception){
                 SystemLogs::systemRunning(
@@ -86,6 +64,30 @@ class ModuleService
                 return error(-1,__('installFailed', ['reason'=>DEVELOPMENT?$exception->getMessage():__('installFailedRender')]));
             }
         }
+        //运行数据库迁移
+        $migrationPath = base_path("$path/$identity/database/migrations");
+        if (is_dir($migrationPath)){
+            MSService::TerminalSend(['mode'=>'info', 'message'=>"即将进行数据结构迁移..."]);
+            try {
+                Artisan::call('migrate', ['--force' => true, '--path' => "$path/$identity/database/migrations"]);
+                MSService::TerminalSend(['mode'=>'success', 'message'=>"数据结构迁移完成!"]);
+            }catch (\Exception $exception){
+                SystemLogs::systemRunning(
+                    '模块数据库迁移异常',
+                    'service:ModuleService',
+                    "执行模块数据库迁移时发生异常：{$exception->getMessage()}",
+                    false,
+                    [
+                        'exception_file' => $exception->getFile(),
+                        'exception_line' => $exception->getLine(),
+                        'exception_code' => $exception->getCode(),
+                        'module_identity' => $identity,
+                        'path' => $path,
+                    ]
+                );
+                return error(-1,__('installFailed', ['reason'=>DEVELOPMENT?$exception->getMessage():__('运行数据库迁移时出现异常')]));
+            }
+        }
         //写入模块数据表
         $subscribes = $ManiFest['subscribes'] ?: array();
         $handles = $ManiFest['handles'] ?: array();
@@ -97,6 +99,11 @@ class ModuleService
         if (!DB::table('modules')->insert($module)){
             return error(-1, __('无法解析模块安装包'));
         }
+        //创建软链接
+        if (!Str::startsWith($path, 'public') && is_dir(base_path("$path/$identity/public"))){
+            MSService::TerminalSend(['mode'=>'info', 'message'=>"即将创建公共资源软链接..."]);
+            @Artisan::call('make:appLink', ['module'=>$identity, '--force' => 1]);
+        }
         //写入组件表
         if ($from=='cloud'){
             $comData = array(
@@ -106,7 +113,7 @@ class ModuleService
                 'logo'=>$module['logo'],
                 'website'=>$module['url'],
                 'version'=>$application['version'],
-                'releasedate'=>$application['releasedate'],
+                'version_code'=>$application['version_code']??$application['releasedate'],
                 'updatetime'=>TIMESTAMP,
                 'addtime'=>TIMESTAMP,
                 'dateline'=>TIMESTAMP
@@ -173,44 +180,23 @@ class ModuleService
     }
 
     static function localExists($identity){
-        return file_exists(base_path("public/addons/$identity/manifest.json"));
+        $path = config('system.setting.addon_dir', 'addons');
+        return file_exists(base_path("$path/$identity/manifest.json"));
     }
 
-    static function upgrade($identity,$from=''){
+    static function upgrade($identity, $from=''){
+        $basePath = config('system.setting.addon_dir', 'addons');
         $startTime = time();
         $ManiFest = self::installCheck($identity);
         if (is_error($ManiFest)) return $ManiFest;
         $application = $ManiFest['application'];
+        $identifier = $application['identifier'] ?? $identity;
         MSService::TerminalSend(['mode'=>'info', 'message'=>"即将升级应用模块【{$application['name']}^{$application['version']}】"]);
-        $component = self::SysComponent($application['identifie']);
+        $component = self::SysComponent($identifier);
         if (!empty($component)){
             //已经是最新版本
-            if ($component['releasedate']>=$application['releasedate']){
+            if ($component['version_code']>=$application['version_code']){
                 return true;
-            }
-        }
-        //运行数据库迁移
-        $migrationPath = base_path("public/addons/$identity/database/migrations");
-        if (is_dir($migrationPath)){
-            MSService::TerminalSend(['mode'=>'info', 'message'=>"即将进行数据结构迁移..."]);
-            try {
-                Artisan::call('migrate', ['--force' => true, '--path' => "public/addons/$identity/database/migrations"]);
-                MSService::TerminalSend(['mode'=>'success', 'message'=>"数据结构迁移完成！"]);
-            }catch (\Exception $exception){
-                SystemLogs::systemRunning(
-                    '模块数据库迁移异常',
-                    'service:ModuleService',
-                    "执行模块数据库迁移时发生异常：{$exception->getMessage()}",
-                    false,
-                    [
-                        'exception_file' => $exception->getFile(),
-                        'exception_line' => $exception->getLine(),
-                        'exception_code' => $exception->getCode(),
-                        'module_identity' => $identity,
-                        'path' => public_path("addons/$identity/"),
-                    ]
-                );
-                return error(-1,__('installFailed', ['reason'=>DEVELOPMENT?$exception->getMessage():__('运行数据库迁移时出现异常')]));
             }
         }
         //执行升级脚本
@@ -218,7 +204,7 @@ class ModuleService
             try {
                 MSService::TerminalSend(['mode'=>'info', 'message'=>"正在运行应用升级脚本..."]);
                 define('MODULE_UPGRADE', 1);
-                script_run($ManiFest['upgrade'], public_path("addons/$identity/"));
+                script_run($ManiFest['upgrade'], base_path("$basePath/$identity/"));
                 MSService::TerminalSend(['mode'=>'success', 'message'=>"应用升级脚本运行完成！"]);
             } catch (\Exception $exception){
                 SystemLogs::systemRunning(
@@ -236,38 +222,67 @@ class ModuleService
                 return error(-1,__('installFailed', ['reason'=>$exception->getMessage()]));
             }
         }
+        //运行数据库迁移
+        $migrationPath = base_path("$basePath/$identity/database/migrations");
+        if (is_dir($migrationPath)){
+            MSService::TerminalSend(['mode'=>'info', 'message'=>"即将进行数据结构迁移..."]);
+            try {
+                Artisan::call('migrate', ['--force' => true, '--path' => "$basePath/$identity/database/migrations"]);
+                MSService::TerminalSend(['mode'=>'success', 'message'=>"数据结构迁移完成！"]);
+            }catch (\Exception $exception){
+                SystemLogs::systemRunning(
+                    '模块数据库迁移异常',
+                    'service:ModuleService',
+                    "执行模块数据库迁移时发生异常：{$exception->getMessage()}",
+                    false,
+                    [
+                        'exception_file' => $exception->getFile(),
+                        'exception_line' => $exception->getLine(),
+                        'exception_code' => $exception->getCode(),
+                        'module_identity' => $identity,
+                        'path' => base_path("$basePath/$identity/"),
+                    ]
+                );
+                return error(-1,__('installFailed', ['reason'=>DEVELOPMENT?$exception->getMessage():__('运行数据库迁移时出现异常')]));
+            }
+        }
         //更新模块数据表
         $subscribes = $ManiFest['subscribes'] ?: array();
         $handles = $ManiFest['handles'] ?: array();
-        $moduledata = self::ModuleData($application,$subscribes,$handles);
-        $moduledata['permissions'] = empty($ManiFest['permissions']) ? "" : serialize($ManiFest['permissions']);
-        DB::table('modules')->where('name',$application['identifie'])->update($moduledata);
+        $moduleData = self::ModuleData($application,$subscribes,$handles);
+        $moduleData['permissions'] = empty($ManiFest['permissions']) ? "" : serialize($ManiFest['permissions']);
+        DB::table('modules')->where('name', $identifier)->update($moduleData);
         //更新模块数据表
         if (!empty($component) || $from=='cloud'){
-            $cloudinfo = empty($component['online']) ? array() : unserialize($component['online']);
-            $cloudinfo['isnew'] = false;
-            $cloudinfo['releasedate'] = $application['releasedate'];
-            $cloudinfo['version'] = $application['version'];
+            $cloudInfo = empty($component['online']) ? array() : unserialize($component['online']);
+            $cloudInfo['isnew'] = false;
+            $cloudInfo['version_code'] = $application['version_code'] ?? $application['releasedate'];
+            $cloudInfo['version'] = $application['version'];
             $cloudIdentity = self::SysPrefix($identity);
             $comInfo = array(
                 'name'=>$application['name'],
                 'logo'=>$application['logo'],
                 'website'=>$application['url'],
-                'online'=>serialize($cloudinfo),
+                'online'=>serialize($cloudInfo),
                 'version'=>$application['version'],
                 'updatetime'=>TIMESTAMP,
-                'releasedate'=>$application['releasedate'],
+                'version_code'=>$cloudInfo['version_code'],
                 'dateline'=>TIMESTAMP
             );
             if (empty($component)){
                 $comInfo['modulename'] = $identity;
                 $comInfo['type'] = 1;
-                $comInfo['rootpath'] = "public/addons/$identity/";
+                $comInfo['rootpath'] = $basePath . "/$identity/";
                 $comInfo['addtime'] = TIMESTAMP;
                 DB::table('gxswa_cloud')->insert($comInfo);
             }else{
                 DB::table('gxswa_cloud')->where('identity', $cloudIdentity)->update($comInfo);
             }
+        }
+        //创建软链接
+        if (!Str::startsWith($basePath, 'public') && is_dir(base_path("$basePath/$identity/public"))){
+            MSService::TerminalSend(['mode'=>'info', 'message'=>"即将创建公共资源软链接..."]);
+            @Artisan::call('make:appLink', ['module'=>$identity, '--force' => 1]);
         }
         //安装模块依赖服务
         if (!empty($ManiFest['servers'])){
@@ -297,14 +312,16 @@ class ModuleService
 
     static function uninstall($identity){
         $ManiFest = self::installCheck($identity);
+        $from = config('system.setting.addon_dir', 'addons');
         if (is_error($ManiFest)) return $ManiFest;
-        $component = self::SysComponent($ManiFest['application']['identifie']);
+        $identifier  = $ManiFest['application']['identifier'] ?? $identity;
+        $component = self::SysComponent($identifier);
         //执行卸载脚本
         if (!empty($ManiFest['uninstall'])){
             try {
                 MSService::TerminalSend(['mode'=>'info', 'message'=>"正在运行应用卸载脚本..."]);
                 define('MODULE_UNINSTALL', 1);
-                script_run($ManiFest['uninstall'], public_path("addons/$identity/"));
+                script_run($ManiFest['uninstall'], base_path("$from/$identity/"));
             } catch (\Exception $exception){
                 SystemLogs::systemRunning(
                     '模块卸载脚本执行异常',
@@ -322,13 +339,18 @@ class ModuleService
             }
         }
         //更新模块数据表
-        DB::table('modules')->where('name',$ManiFest['application']['identifie'])->delete();
+        DB::table('modules')->where('name', $identifier)->delete();
         if (!empty($component)){
             DB::table('gxswa_cloud')->where('id',$component['id'])->delete();
             if (!DEVELOPMENT){
                 //删除安装包
                 FileService::rmdirs(base_path($component['rootpath']));
             }
+        }
+        //删除软链接
+        $link = base_path("public/addons/$identity");
+        if (is_link($link)){
+            @unlink($link);
         }
         CacheService::flush();
         return true;
@@ -357,28 +379,38 @@ class ModuleService
             }
 
             $module_info['recycle_info'] = array();
-            $recycle_info = DB::table('modules_recycle')->where('name',$name)->first();
-            if (!empty($recycle_info)) {
-                $is_delete = true;
-                $account_support = array(
-                    'account_support' => array(
-                        'type' => 'account',
-                        'type_name' => '公众号',
-                        'support' => 2,
-                        'not_support' => 1,
-                        'store_type' => 1,
-                    )
-                );
-                foreach ($account_support as $support => $value) {
-                    if (!empty($recycle_info[2][$support])) {
-                        $module_info['recycle_info'][$support] = 2; 				} else {
-                        $module_info['recycle_info'][$support] = empty($recycle_info[1][$support]) ? 0 : 1;
+            $module_info['base_path'] = 'public/addons';
+            $module_info['is_delete'] = $is_delete = false;
+            if (!is_dir(base_path($module_info['base_path']. '/' . $name))){
+                $module_info['base_path'] = 'apps';
+            }
+            if (!is_dir(base_path($module_info['base_path'] . '/' . $name))){
+                $module_info['is_delete'] = $is_delete = true;
+            }else{
+                $recycle_info = DB::table('modules_recycle')->where('name',$name)->first();
+                if (!empty($recycle_info)) {
+                    $is_delete = true;
+                    $account_support = array(
+                        'account_support' => array(
+                            'type' => 'account',
+                            'type_name' => '公众号',
+                            'support' => 2,
+                            'not_support' => 1,
+                            'store_type' => 1,
+                        )
+                    );
+                    foreach ($account_support as $support => $value) {
+                        if (!empty($recycle_info[2][$support])) {
+                            $module_info['recycle_info'][$support] = 2; 				} else {
+                            $module_info['recycle_info'][$support] = empty($recycle_info[1][$support]) ? 0 : 1;
+                        }
+                        if ($module_info[$support] == $value['support'] && empty($module_info['recycle_info'][$support])) {
+                            $is_delete = false;
+                        }
                     }
-                    if ($module_info[$support] == $value['support'] && empty($module_info['recycle_info'][$support])) {
-                        $is_delete = false;
-                    }
+                    $module_info['is_delete'] = $is_delete;
                 }
-                $module_info['is_delete'] = $is_delete; 		}
+            }
 
             $module = $module_info;
             cache_write($cacheKey, $module_info);
@@ -407,7 +439,7 @@ class ModuleService
 
     static function ModuleData($application,$subscribes=array(),$handles=array()){
         return array(
-            'name'=>$application['identifie'],
+            'name'=>$application['identifier'] ?? $application['identifie'],
             'application_type'=>$application['module_type']??1,
             'type'=>$application['type'],
             'title'=>$application['name'],
@@ -529,7 +561,7 @@ class ModuleService
     }
 
     static function SysPrefix($identity=""){
-        return env('APP_MODULE_PRE', 'laravel_module_') . $identity;
+        return config('system.setting.addon_prefix', 'laravel_module_') . $identity;
     }
 
     static function SysComponent($identity){

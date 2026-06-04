@@ -32,36 +32,39 @@ if (empty($socket)){
         terminalState = true;
         let html = '<div class="layui-code layui-code-notepad unpadding" id="TerminalInfo" style="margin: 0; height: 480px; width: 960px;">'+terminalPrefix+"正在连接终端服务器...</div>";
         let layerElem = null;
-        layer.open({
-            type: 1,
-            skin: 'fui-layer fui-terminal', //样式类名
-            id:"TerminalPopup",
-            anim: 2,
-            title:'@lang("轻如云终端")<span class="layui-icon layui-icon-loading layui-anim layui-anim-rotate layui-anim-loop margin-left-sm"></span>',
-            shadeClose: false, //开启遮罩关闭
-            content: html,
-            success:function (layero, index){
-                layerElem = layero;
-                terminalRunning = true;
-                layCode({elem: '#TerminalInfo', copy: false});
-                if(show){
-                    terminalShow(show.message, show.mode);
-                }else{
-                    terminalShow("请不要关闭或刷新浏览器，否则可能会造成进程中断。如果因超时而失去响应，请增大程序最大运行时间（当前设置：{{ ini_get('max_execution_time') }}秒）", "warm");
+        layui.use(['code'], function () {
+            const code = layui.code;
+            layer.open({
+                type: 1,
+                skin: 'fui-layer fui-terminal', //样式类名
+                id:"TerminalPopup",
+                anim: 2,
+                title:'@lang("轻如云终端")<span class="layui-icon layui-icon-loading layui-anim layui-anim-rotate layui-anim-loop margin-left-sm"></span>',
+                shadeClose: false, //开启遮罩关闭
+                content: html,
+                success:function (layero, index){
+                    layerElem = layero;
+                    terminalRunning = true;
+                    code({elem: '#TerminalInfo', copy: false});
+                    if(show){
+                        terminalShow(show.message, show.mode);
+                    }else{
+                        terminalShow("请不要关闭或刷新浏览器，否则可能会造成进程中断。如果因超时而失去响应，请增大程序最大运行时间（当前设置：{{ ini_get('max_execution_time') }}秒）", "warm");
+                    }
+                },
+                cancel: function (index, layero) {
+                    if(terminalRunning){
+                        layer.msg("程序仍在后台运行", {icon:3, skin: 'fui-layer'});
+                    }
+                },
+                end: function (){
+                    terminalState = false;
+                    layerElem = null;
+                    if(Swaws.io){
+                        Swaws.io.close();
+                    }
                 }
-            },
-            cancel: function (index, layero) {
-                if(terminalRunning){
-                    layer.msg("程序仍在后台运行", {icon:3, skin: 'fui-layer'});
-                }
-            },
-            end: function (){
-                terminalState = false;
-                layerElem = null;
-                if(Swaws.io){
-                    Swaws.io.close();
-                }
-            }
+            });
         });
         Swaws.onConnect = (res)=>{
             console.log("Terminal Server connected.", res);

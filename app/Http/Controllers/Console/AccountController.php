@@ -169,7 +169,7 @@ class AccountController extends Controller
         if ($request->isMethod('post')){
             $post = $request->input('data');
             if (empty($post['name'])) return $this->message('platformNameEmpty');
-            if (empty($post['logo'])) return $this->message('platformLogoEmpty');
+            if (empty($post['logo'])) unset($post['logo']);
             $post['description'] = trim($post['description']);
             $complete = UniAccount::where('uniacid',$this->uniacid)->update($post);
             SystemLogs::userOperation('编辑平台信息', 'account:edit', "平台ID：{$this->uniacid}，名称：{$post['name']}", (bool)$complete, ['uniacid' => $this->uniacid]);
@@ -229,7 +229,7 @@ class AccountController extends Controller
         if (!empty($enabled_modules)){
             foreach ($enabled_modules as $key=>$value){
                 $module = ModuleService::fetch($key);
-                if (empty($module)) continue;
+                if (empty($module) || !empty($module['is_delete'])) continue;
                 $value['logo'] = tomedia($value['logo']);
                 $return['modules'][$key] = $value;
             }
@@ -350,15 +350,7 @@ class AccountController extends Controller
         if (!in_array($role,array('founder','owner')) && !$_W['isfounder']){
             return $this->message(__('暂无权限'));
         }
-        //删除平台
-        DB::table('account')->where('uniacid',$uniacid)->update(array('isdeleted'=>1));
-        DB::table('uni_modules')->where('uniacid',$uniacid)->delete();
-        DB::table('users_operate_star')->where('uniacid',$uniacid)->delete();
-        DB::table('users_operate_history')->where('uniacid', $uniacid)->delete();
-        $cacheKey = CacheService::system_key('user_accounts', array('type' => 'account', 'uid' => $_W['uid']));
-        Cache::forget($cacheKey);
-        $cacheKey = CacheService::system_key('uniaccount', array('uniacid' => $uniacid));
-        Cache::forget($cacheKey);
+        AccountService::remoteAccount($uniacid);
         SystemLogs::userOperation('删除平台', 'account:remove', "平台ID：{$uniacid}", true, ['uniacid' => $uniacid]);
         return $this->message('deleteSuccessfully',wurl(''),'success');
     }
@@ -368,28 +360,14 @@ class AccountController extends Controller
             global $_W;
             $post = $request->input('data');
             if (empty($post['name'])) return $this->message('platformNameEmpty');
-            if (empty($post['logo'])) return $this->message('platformLogoEmpty');
-            $uni_account = DB::table('uni_account');
-            $data = array(
-                'groupid' => 0,
-                'default_acid' => 0,
-                'name' => $post['name'],
-                'description' => trim($post['description']),
-                'logo'=>$post['logo'],
-                'title_initial' => 'W',
-                'createtime' => TIMESTAMP,
-                'create_uid' => $_W['uid']
-            );
-            $uniacid = $uni_account->insertGetId($data);
-            $data['uniacid'] = $uniacid;
-            SystemLogs::userOperation('创建平台', 'account:create', "平台ID：{$uniacid}，名称：{$post['name']}", (bool)$uniacid, $data);
-            if (!empty($uniacid)){
-                $acid = UniAccount::account_create($uniacid,array('name'=>$post['name']));
-                $uni_account->where('uniacid',$uniacid)->update(array('default_acid' => $acid));
-                UserService::AccountRoleUpdate($uniacid,$_W['uid']);
-                return $this->message('createSuccessfully',wurl('account/profile',array('uniacid'=>$uniacid)),'success');
+            $post['description'] = trim($post['description']);
+            $res = AccountService::createAccount($post, $_W['uid']);
+            $status = !is_error($res);
+            SystemLogs::userOperation('创建平台', 'account:create', $res['message']??"平台ID：{$uniacid}，名称：{$post['name']}", (bool)$status, $res);
+            if (!$status){
+                return $this->message('saveFailed');
             }
-            return $this->message('saveFailed');
+            return $this->message('createSuccessfully',wurl('account/profile',array('uniacid'=>$uniacid)),'success');
         }
         $storage = serv('storage', 0);
         if (!$storage->enabled){

@@ -84,6 +84,49 @@ class AccountService {
         return $entrances;
     }
 
+    static function remoteAccount($uniacid)
+    {
+        //删除平台
+        DB::table('account')->where('uniacid',$uniacid)->update(array('isdeleted'=>1));
+        DB::table('uni_modules')->where('uniacid',$uniacid)->delete();
+        DB::table('users_operate_star')->where('uniacid',$uniacid)->delete();
+        DB::table('users_operate_history')->where('uniacid', $uniacid)->delete();
+        $cacheKey = CacheService::system_key('user_accounts', array('type' => 'account', 'uid' => $_W['uid']));
+        Cache::forget($cacheKey);
+        $cacheKey = CacheService::system_key('uniaccount', array('uniacid' => $uniacid));
+        Cache::forget($cacheKey);
+    }
+
+    static function createAccount($data, $uid=0)
+    {
+        if (empty($data['name'])){
+            return error(-1, __('platformNameEmpty'));
+        }
+        if (empty($data['logo'])){
+            $data['logo'] = '/static/icon200.jpg';
+        }
+        $uni_account = DB::table('uni_account');
+        $accountData = array(
+            'groupid' => 0,
+            'default_acid' => 0,
+            'name' => $data['name'],
+            'description' => trim($data['description']),
+            'logo'=>$data['logo'],
+            'title_initial' => 'W',
+            'createtime' => TIMESTAMP,
+            'create_uid' => $uid
+        );
+        $uniacid = $uni_account->insertGetId($accountData);
+        if (empty($uniacid)){
+            return error(-1, __('saveFailed'));
+        }
+        $accountData['uniacid'] = $uniacid;
+        $acid = UniAccount::account_create($uniacid,array('name'=>$accountData['name']));
+        $uni_account->where('uniacid',$uniacid)->update(array('default_acid' => $acid));
+        UserService::AccountRoleUpdate($uniacid, $uid);
+        return $accountData;
+    }
+
     static function FetchUni($uniacid = 0) {
         global $_W;
         $uniacid = empty($uniacid) ? $_W['uniacid'] : intval($uniacid);
@@ -238,35 +281,13 @@ class AccountService {
             if (!$_W['isfounder']) {
                 $account_user_roles = DB::table('uni_account_users')->where('uid', $_W['uid'])->get()->keyBy('uniacid')->toArray();
             }
-            foreach ($list as $k => &$account) {
-                $account = AccountService::FetchUni($account['uniacid']);
-                $account['manageurl'] .= '&iscontroller=0';
-                if (!in_array($account_user_roles[$account['uniacid']]['role'], array('owner', 'manager')) && !$_W['isfounder']) {
-                    unset($account['manageurl']);
-                }
-                $account['list_type'] = 'account';
-                $account['support_version'] = $account->supportVersion;
-                $account['type_name'] = $account->typeName;
-                $account['level'] = $account_all_type_sign[$account['type_sign']]['level'][$account['level']];
-                $account['user_role'] = $account_user_roles[$account['uniacid']]['role'];
-                if ('clerk' == $account['user_role']) {
+            foreach ($list as $k => $account) {
+                $account = self::parseAccount($account);
+                if (empty($account)){
                     unset($list[$k]);
                     continue;
                 }
-                if ($account['user_role']=='owner' || $account['user_role']=='founder'){
-                    $created += 1;
-                }
-                $account['is_star'] = DB::table('users_operate_star')->where(array(
-                    ['uid',$_W['uid']],
-                    ['uniacid',$account['uniacid']],
-                    ['module_name','']
-                ))->exists() ? 1 : 0;
-                if (0 != $account['endtime'] && 2 != $account['endtime'] && $account['endtime'] < TIMESTAMP) {
-                    $account['endtime_status'] = 1;
-                } else {
-                    $account['endtime_status'] = 0;
-                }
-
+                $list[$k] = $account;
             }
             if (!empty($list)) {
                 $list = array_values($list);
@@ -276,6 +297,38 @@ class AccountService {
         if ($getlist) return $list ?: [];
 
         return array($list, $total, $created);
+    }
+
+    static function parseAccount($account)
+    {
+        global $_W;
+        $account = AccountService::FetchUni($account['uniacid']);
+        $account['manageUrl'] .= '&iscontroller=0';
+        if (!in_array($account_user_roles[$account['uniacid']]['role'], array('owner', 'manager')) && !$_W['isfounder']) {
+            unset($account['manageUrl']);
+        }
+        $account['list_type'] = 'account';
+        $account['support_version'] = $account->supportVersion;
+        $account['type_name'] = $account->typeName;
+        $account['level'] = $account_all_type_sign[$account['type_sign']]['level'][$account['level']];
+        $account['user_role'] = $account_user_roles[$account['uniacid']]['role'];
+        if ('clerk' == $account['user_role']) {
+            return [];
+        }
+        if ($account['user_role']=='owner' || $account['user_role']=='founder'){
+            $created += 1;
+        }
+        $account['is_star'] = DB::table('users_operate_star')->where(array(
+            ['uid', $_W['uid']],
+            ['uniacid',$account['uniacid']],
+            ['module_name','']
+        ))->exists() ? 1 : 0;
+        if (0 != $account['endtime'] && 2 != $account['endtime'] && $account['endtime'] < TIMESTAMP) {
+            $account['endtime_status'] = 1;
+        } else {
+            $account['endtime_status'] = 0;
+        }
+        return $account;
     }
 
     static function OauthHost(){

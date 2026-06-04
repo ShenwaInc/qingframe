@@ -23,29 +23,32 @@ class WeModule
     public $uniacid;
 
     public $__define;
+    public $__basePath = "public/addons";
 
     /**
      * @throws \Exception
      */
     public function create($name){
-        static $file;
-        $classname = "\\Addons\\{$name}\\site";
-        $file = public_path("/addons/{$name}/site.php");
+        $basePath = config('system.setting.addon_dir', 'addons');
+        $file = base_path("$basePath/{$name}/site.php");
         try {
-            if (class_exists($classname)) {
-                $Instance =   self::createModuleInstance($classname, $name);
-            }else{
-                if (!file_exists($file)) {
-                    throw new \Exception('ModuleSite Definition File Not Found ' . $name, E_USER_WARNING);
+            $classname = "\\Addons\\{$name}\\site";
+            if (!class_exists($classname)) {
+                $classname = "\\Addons\\{$name}\\{$name}";
+                if (!class_exists($classname)){
+                    if (!file_exists($file)) {
+                        throw new \Exception('ModuleSite Definition File Not Found ' . $name, E_USER_WARNING);
+                    }
+                    require_once $file;
+                    $classname = "{$name}ModuleSite";
+                    if (!class_exists($classname)) {
+                        trigger_error('ModuleSite Definition Class Not Found', E_USER_WARNING);
+                        return null;
+                    }
                 }
-                require_once $file;
-                $classname = "{$name}ModuleSite";
-                if (!class_exists($classname)) {
-                    trigger_error('ModuleSite Definition Class Not Found', E_USER_WARNING);
-                    return null;
-                }
-                $Instance = self::createModuleInstance($classname, $name);
             }
+            $Instance = self::createModuleInstance($classname, $name);
+            $Instance->__basePath = $basePath;
         }catch (\Exception $e){
             SystemLogs::systemRunning(
                 '模块实例创建异常',

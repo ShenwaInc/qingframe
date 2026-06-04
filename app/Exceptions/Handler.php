@@ -90,7 +90,7 @@ class Handler extends ExceptionHandler
         }
         if ($exception instanceof NotFoundHttpException){
             //不记录未找到路由异常捕捉（开发环境除外）
-            return (bool)env('APP_DEVELOPMENT',0);
+            return (bool)config('system.setting.development');
         }
 
         return true;

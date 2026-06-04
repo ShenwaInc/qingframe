@@ -79,7 +79,8 @@ class MakeModuleCommand extends Command {
             );
             return $this->report($exception->getMessage());
         }
-        $package = public_path("addons/$identity/");
+        $modulePath = config('system.setting.addon_dir', 'addons');
+        $package = base_path($modulePath . "/$identity/");
         if (!is_dir($package)){
             if (!FileService::mkdirs($package)){
                 return $this->report("Create package faild: may not have permission.");
@@ -111,7 +112,7 @@ class MakeModuleCommand extends Command {
             return $this->report("Create package failed: may not have permission.");
         }
         FileService::mkdirs($package."/views/");
-        FileService::mkdirs($package."/static/");
+        FileService::mkdirs($package."/public/");
         $Installer = file_get_contents(resource_path('stub/module.install.stub'));
         if (!file_put_contents($package."/install.php", str_replace('dummy', $identity, $Installer))){
             return $this->report("Create package failed: may not have permission.");
