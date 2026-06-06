@@ -36,14 +36,14 @@ class RouteServiceProvider extends ServiceProvider
      */
     public function map()
     {
+        // 加载模块自定义路由
+        $this->mapModuleCustomRoutes();
+
         $this->mapApiRoutes();
 
         $this->mapWebRoutes();
 
         $this->mapAppRoutes();
-
-        // 加载模块自定义路由
-        $this->mapModuleCustomRoutes();
     }
 
     /**

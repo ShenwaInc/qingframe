@@ -181,7 +181,7 @@ class SettingController extends Controller
             }
         }
         try {
-            Artisan::call('self:migrate');
+            Artisan::call('self:migrate', ['--no-interaction'=>true]);
             Artisan::call('route:clear');
             Artisan::call('update:service');
             Artisan::call('self:clear');

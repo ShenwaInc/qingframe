@@ -24,10 +24,13 @@ class ModuleController extends Controller
         return $this->HttpRequest($request, $moduleName, $do);
     }
 
+    /**
+     * @throws \Exception
+     */
     public function HttpRequest(Request $request, $moduleName, $segment1='index', $segment2='main'){
         global $_W;
         if (empty($_W['uniacid'])){
-            return $this->account($request, $moduleName);
+            return $this->moduleAccount($request, $moduleName);
         }
         $moduleExist = ModuleService::fetch($moduleName);
         if (empty($moduleExist)){
@@ -116,17 +119,6 @@ class ModuleController extends Controller
             );
             return $this->message($exception->getMessage());
         }
-    }
-
-    public function account(Request $request, $moduleName)
-    {
-        global $_W;
-        $data = array(
-            'refresh'=>$_W['siteurl'],
-            'uniacid'=>intval($_W['uniacid']),
-            'platforms'=>AccountService::OwnerAccounts(array(), -1, true),
-        );
-        return $this->globalView("console.server.platform",$data);
     }
 
     public function doQuickCreate(Request $request)

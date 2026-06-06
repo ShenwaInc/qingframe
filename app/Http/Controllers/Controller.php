@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\AccountService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\View;
 
@@ -82,6 +84,19 @@ class Controller extends BaseController
             app('view')->addNamespace($this->moduleName, $viewPath);
         }
         return View::make($this->moduleName . "::$view", $data, ['_W'=>$GLOBALS['_W'], '_GPC'=>$GLOBALS['_GPC']]);
+    }
+
+    public function moduleAccount(Request $request, $moduleName='')
+    {
+        global $_W;
+        $data = array(
+            'refresh'=>$_W['siteurl'],
+            'uniacid'=>intval($_W['uniacid']),
+            'platforms'=>AccountService::OwnerAccounts(array(), -1, true),
+            'module'=>$moduleName,
+            'redirectUrl' => $request->fullUrl()
+        );
+        return $this->globalView("console.server.platform",$data);
     }
 
     public function serverView($view, $data=array())
