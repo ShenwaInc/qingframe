@@ -84,6 +84,13 @@ class ModuleController extends Controller
                 $instance->uniacid = $_W['uniacid'];
                 $_W['moduleController'] = $segment1;
                 $_W['moduleMethod'] = $method;
+                DB::table('users_operate_history')->updateOrInsert(
+                    array('uid'=>$_W['uid'],'uniacid'=>$_W['uniacid'],'module_name'=>$moduleName),
+                    array('createtime'=>TIMESTAMP,'type'=>2)
+                );
+                if (method_exists($instance, 'init')){
+                    $instance->init($request);
+                }
                 return $instance->$method($request);
             }else{
                 $method = "doWeb" . ucfirst($segment1);

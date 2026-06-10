@@ -59,6 +59,9 @@ class ModuleController extends Controller
                 $instance->moduleConfig = (array)$site->module['config'];
                 $_W['moduleController'] = $segment1;
                 $_W['moduleMethod'] = $method;
+                if (method_exists($instance, 'init')){
+                    $instance->init($request);
+                }
                 return $instance->$method($request);
             }else{
                 $method = "doMobile" . ucfirst($segment1);
@@ -136,6 +139,9 @@ class ModuleController extends Controller
                 $instance->moduleConfig = (array)$site->module['config'];
                 $_W['moduleController'] = $segment1;
                 $_W['moduleMethod'] = $method;
+                if (method_exists($instance, 'init')){
+                    $instance->init($request);
+                }
                 return $instance->$method($request);
             }else{
                 $method = "doApi" . ucfirst($segment1);
