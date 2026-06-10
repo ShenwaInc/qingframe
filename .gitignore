@@ -58,3 +58,4 @@ yarn-error.log
 /app/Console/Commands/Server*.php
 /app/Console/Commands/App*.php
 /config/cloud.php
+/agent/Todo.md
