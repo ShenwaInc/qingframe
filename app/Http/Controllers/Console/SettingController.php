@@ -83,7 +83,7 @@ class SettingController extends Controller
     }
 
     public function detection(){
-        $component = DB::table('gxswa_cloud')->where('type',0)->first(['id','identity','type','online','version_code','rootpath']);
+        $component = DB::table('gxswa_cloud')->where('type',0)->first();
         if (empty($component)) return $this->message('系统出现致命错误');
         $cloudInfo = $this->checkCloud($component,1,true);
         if (is_error($cloudInfo)){
@@ -93,7 +93,7 @@ class SettingController extends Controller
     }
 
     public function updateLog(){
-        $component = DB::table('gxswa_cloud')->where('type',0)->first(['id','identity','type','online','version_code','rootpath']);
+        $component = DB::table('gxswa_cloud')->where('type',0)->first();
         if (empty($component)) return $this->message('系统出现致命错误');
         $cloudInfo = $this->checkCloud($component,1,true);
         $curShow = \request('show', 'compare');
@@ -125,7 +125,7 @@ class SettingController extends Controller
         try {
             MSService::TerminalSend(['mode'=>'info', 'message'=>'即将同步系统程序源码：']);
             //同步文件
-            $component = DB::table('gxswa_cloud')->where('type',0)->first(['id','identity','modulename','online','type','version_code','rootpath']);
+            $component = DB::table('gxswa_cloud')->where('type',0)->first();
             $cloudUpdate = CloudService::CloudUpdate($component['identity'],base_path().'/');
             if (is_error($cloudUpdate)){
                 MSService::TerminalSend(['mode'=>'err', 'message'=>'程序同步失败：'.$cloudUpdate['message']]);
@@ -170,7 +170,7 @@ class SettingController extends Controller
 
     public function SystemUpgrade(){
         //升级文件对比
-        $component = DB::table('gxswa_cloud')->where('type',0)->first(['id','identity','type','online','version_code','rootpath']);
+        $component = DB::table('gxswa_cloud')->where('type',0)->first();
         if (!empty($component)){
             $cloudInfo = $this->checkCloud($component);
             if (!is_error($cloudInfo) && !empty($cloudInfo['hasDifference'])){
@@ -386,7 +386,7 @@ class SettingController extends Controller
                 }
                 return $this->message('successful', wurl('setting'), 'success');
             case 'comcheck':
-                $component = DB::table('gxswa_cloud')->where('id', intval($_GPC['cid']))->first(['id', 'identity', 'type', 'online', 'version_code', 'rootpath', 'modulename']);
+                $component = DB::table('gxswa_cloud')->where('id', intval($_GPC['cid']))->first();
                 if (empty($component)) return $this->message('找不到该服务组件');
                 if (empty($component['identity'])){
                     $component['identity'] = ModuleService::SysPrefix($component['modulename']);
@@ -404,7 +404,7 @@ class SettingController extends Controller
                     'curShow'=>\request('show', 'compare')
                 ));
             default:
-                $framework = DB::table('gxswa_cloud')->where('type', 0)->first(['id', 'version', 'identity', 'type', 'online', 'version_code', 'rootpath']);
+                $framework = DB::table('gxswa_cloud')->where('type', 0)->first();
                 $return['framework'] = $framework;
                 $return['cloudInfo'] = !empty($framework['online']) ? unserialize($framework['online']) : array('upgradable' => false);
                 $uniacid = (int)DB::table('uni_settings')->where('bind_domain', \request()->server('HTTP_HOST'))->value('uniacid');
