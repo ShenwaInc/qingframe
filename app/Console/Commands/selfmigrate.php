@@ -27,7 +27,7 @@ class selfmigrate extends Command
      *
      * @var string
      */
-    protected $description = 'Whotalk framework migrate';
+    protected $description = 'Run Qingframe migrations';
     protected $application;
 
     /**
@@ -58,7 +58,8 @@ class selfmigrate extends Command
             if (!Schema::hasColumn('uni_account_users', 'entrance')){
                 DB::statement("ALTER TABLE ".tablename('uni_account_users')." ADD `entrance` VARCHAR(100) NOT NULL DEFAULT '' AFTER `rank`;");
             }
-            self::call('migrate');
+            $inTerminal = app()->runningInConsole();
+            self::call('migrate', ['--no-interaction'=>!$inTerminal]);
             $MSS = new MSService();
             $MSS->setup();
             $MSS->autoInstall();

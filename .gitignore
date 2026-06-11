@@ -59,3 +59,4 @@ yarn-error.log
 /app/Console/Commands/App*.php
 /config/cloud.php
 /agent/Todo.md
+/needUpdate.bin

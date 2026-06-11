@@ -7,6 +7,7 @@ use App\Services\FileService;
 use App\Services\SettingService;
 use App\Services\UserService;
 use Closure;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\View;
@@ -19,11 +20,11 @@ class ConsolePermission
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param Request $request
      * @param  \Closure  $next
      * @return mixed
      */
-    public function handle($request, Closure $next)
+    public function handle(Request $request, Closure $next)
     {
         global $_W;
         SettingService::Load();
@@ -63,13 +64,18 @@ class ConsolePermission
         //DB::table('users')->where('uid',$_W['uid'])->update(array('lastvisit'=>TIMESTAMP));
         //路由权限判断
         if (!$_W['isfounder']) $this->checkPermission($request, $_W['uid'], $_W['uniacid']);
+        $needUpdate = file_exists(base_path("needUpdate.bin"));
+        if ($needUpdate && $request->path()!='console/setting/sysupgrade'){
+            echo response()->view('message',array('message'=>'系统即将自动升级...','redirect'=>'/console/setting/sysupgrade','type'=>'success', '_W'=>$_W))->content();
+            session_exit();
+        }
         return $next($request);
     }
 
     /**
      * 路由权限判断
      * 目前只判断了是否可以进入应用和服务
-     * @param \Illuminate\Http\Request $request  Request
+     * @param Request $request  Request
      * @param int  $uniacid 平台id
      * @param int  $uid 当前用户id
      */

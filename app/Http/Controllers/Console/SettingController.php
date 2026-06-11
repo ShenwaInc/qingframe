@@ -186,6 +186,9 @@ class SettingController extends Controller
             Artisan::call('update:service');
             Artisan::call('self:clear');
             CacheService::flush();
+            if (file_exists(base_path("needUpdate.bin"))){
+                @unlink(base_path("needUpdate.bin"));
+            }
             SystemLogs::userOperation('系统升级', 'setting:sysupgrade', '执行系统升级流程');
         }catch (\Exception $exception){
             SystemLogs::error(
