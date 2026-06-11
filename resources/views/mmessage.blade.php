@@ -153,11 +153,11 @@
                 </div>
                 <div class="weui-msg__opr-area">
                     <p class="weui-btn-area">
-                        <a href="{{ $redirect=='' ? 'javascript:history.back();' : $redirect }}" class="weui-btn weui-btn_primary">确定</a>
+                        <a href="{!! empty($redirect) ? 'javascript:history.back();' : $redirect !!}" class="weui-btn weui-btn_primary">确定</a>
                     </p>
                 </div>
                 <div class="weui-msg__tips-area">
-                    @if($redirect!='')
+                    @if(empty($redirect))
                     <p class="weui-msg__tips"><a href="javascript:">即将自动跳转...</a></p>
                     @endif
                 </div>
@@ -167,8 +167,8 @@
 @if($redirect!='')
     <script type="text/javascript">
         setTimeout(function (){
-            window.location.href = '{{ $redirect }}';
-        },1200);
+            window.location.href = '{!! $redirect !!}';
+        }, 1200);
     </script>
 @endif
 </body>
