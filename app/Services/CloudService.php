@@ -184,7 +184,7 @@ class CloudService
                 if (empty($com['modulename'])){
                     $com['modulename'] = $com['identifier'] ?? $com['identifie'];
                 }
-                $com['logo'] = asset($com['logo']);
+                $com['logo'] = app_asset($com['logo'], $identity);
                 $com['website'] = $com['url'];
                 $com['installTime'] = '<span class="layui-badge layui-bg-orange">'.__('readyToInstall').'</span>';
                 $com['addtime'] = 0;
@@ -205,14 +205,17 @@ class CloudService
                         $com['installTime'] = __('appLocal');
                         $com['lastUpdated'] = '-';
                         $com['cloudInfo'] = $comCloud ? $comCloud['cloudInfo'] : array('upgradable'=>false, 'isLocal'=>true);
+                        $com['version_code'] = '';
                     }
                     $com['addtime'] = $com['version_code'];
+                    $com['localUpgradable'] = false;
                     if (DEVELOPMENT){
-                        $Module = ModuleService::fetch($com['identifie']);
+                        $Module = ModuleService::fetch($com['identifier']??$identity);
                         if (!empty($Module) && !is_error($Module)){
                             if (version_compare($com['version'], $Module['version'], '>')){
                                 $tips = __('应用可升级至V:version', ['version'=>$com['version']]);
                                 $actions .= '<a href="'. wurl('module/upgrade', ['nid'=>$com['modulename'], 'from'=>$path]) .'" data-text="'. __('upgradeConfirm') .'" class="layui-btn layui-btn-sm layui-btn-warm js-terminal" lay-tips="'.$tips.'">'. __('本地升级') .'</a>';
+                                $com['localUpgradable'] = true;
                             }
                             $com['version'] = $Module['version'];
                         }
@@ -231,6 +234,8 @@ class CloudService
                 $plugins[$identity] = $com;
             }
         }
+
+        //dd($ManiFests, $modules);
     }
 
     static function MoveDir($from, $to, $overWrite = false){

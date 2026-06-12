@@ -70,7 +70,10 @@
                                         <img src="{{ $com['logo'] }}" class="fl bg-gray radius margin-right-sm" height="48" />
                                         <div class="fui-table-name">
                                             <a href="{{$com['website']}}" class="text-blue" title="@lang($com['description'])" target="_blank">@lang($com['name'])</a><br/>
-                                            <span title="Release {{ $com['version_code'] }}">V{{$com['version']}}</span>
+                                            <span title="{{ $com['version_code'] ? 'Release '.$com['version_code'] : '' }}">V{{$com['version']}}</span>
+                                            @if(!empty($com['localUpgradable']))
+                                                <span class="layui-badge-dot" lay-tips="@lang('发现新版本')"></span>
+                                            @endif
                                         </div>
                                     </td>
                                     <td class="layui-hide-xs">{!! $com['installTime'] !!}</td>

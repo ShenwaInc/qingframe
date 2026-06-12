@@ -85,11 +85,16 @@ function assets($path, $secure = null){
 }
 
 if (!function_exists('app_asset')){
-    function app_asset($path, $name){
-        if (Str::startsWith(APP_ADDON_DIR, 'public') && is_dir(public_path("addons/{$name}/public"))){
-            return asset("addons/{$name}/public/" . ltrim($path, '/'));
+    function app_asset($path, $name): string
+    {
+        $path = ltrim($path, '/');
+        if (Str::startsWith($path, "addons/{$name}")){
+            $path = str_replace("addons/{$name}", "", $path);
         }
-        return asset("addons/{$name}/" . ltrim($path, '/'));
+        if (Str::startsWith(APP_ADDON_DIR, 'public') && is_dir(public_path("addons/{$name}/public"))){
+            return asset("addons/{$name}/public/" . $path);
+        }
+        return asset("addons/{$name}/" . $path);
     }
 
     function app_assetPath($path, $name)
