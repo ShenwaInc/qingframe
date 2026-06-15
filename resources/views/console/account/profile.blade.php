@@ -35,7 +35,7 @@
                             <div class="layui-col-lg6 layui-col-sm12 fui-item arrow">
                                 <a target="_blank" href="{{ wurl("m/".$item['identity']) }}" class="fui-content margin-0">
                                     <div class="fui-info">
-                                        <img alt="{{ $item['name'] }}" class="radius" src="{{ $item['logo'] }}" />
+                                        <img alt="{{ $item['name'] }}" class="radius" src="{{ app_asset($item['logo'], $item['identity']) }}" />
                                         <strong class="card-name">@lang($item['name'])</strong>
                                     </div>
                                 </a>

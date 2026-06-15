@@ -184,7 +184,6 @@ class CloudService
                 if (empty($com['modulename'])){
                     $com['modulename'] = $com['identifier'] ?? $com['identifie'];
                 }
-                $com['logo'] = app_asset($com['logo'], $identity);
                 $com['website'] = $com['url'];
                 $com['installTime'] = '<span class="layui-badge layui-bg-orange">'.__('readyToInstall').'</span>';
                 $com['addtime'] = 0;
@@ -194,6 +193,7 @@ class CloudService
                 $actions = $comCloud['action']??'';
                 //已安装
                 if ($ManiFest['installed']){
+                    $com['logo'] = app_asset($com['logo'], $identity);
                     $com['installed'] = true;
                     if (!empty($comCloud)){
                         //从云端安装
@@ -223,6 +223,7 @@ class CloudService
                     $actions .= '<a href="'.wurl('module/allocate', array('nid'=>$identity)).'" title="'.__('分配应用权限').'" class="layui-btn layui-btn-sm ajaxshow">'.__('分配').'</a>';
                     $actions .= '<a href="'.wurl('module/remove', array('nid'=>$identity, 'from'=>$com['base_path'])).'" class="layui-btn layui-btn-sm layui-btn-primary js-terminal" data-text="'.__('uninstallConfirm').'">'.__('uninstall').'</a></div>';
                 }else{
+                    $com['logo'] = route('admin.addons.logo', ['name'=>$identity, 'path'=>$com['logo']]);
                     $com['lastUpdated'] = '-';
                     if(DEVELOPMENT){
                         $installUrl = wurl('module/install', array('nid'=>$identity, 'from'=>$path));

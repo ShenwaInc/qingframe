@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\App\ModuleController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -85,3 +86,7 @@ Route::get('/admin/{modulename}', 'HomeController@module');
 if (file_exists(app_path('Http/Controllers/DebugController.php'))){
     Route::match(['get', 'post'], '/debug', 'DebugController@index')->middleware(['app']);
 }
+
+Route::get('/show/addons/{name}/logo/{path}', [ModuleController::class, 'show'])
+    ->where('name', '[A-Za-z0-9\-_]+')
+    ->name('admin.addons.logo')->middleware(['app']);

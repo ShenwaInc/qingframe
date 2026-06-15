@@ -284,6 +284,25 @@ class ModuleService
             MSService::TerminalSend(['mode'=>'info', 'message'=>"即将创建公共资源软链接..."]);
             @Artisan::call('make:appLink', ['module'=>$identity, '--force' => 1]);
         }
+        //更新租户模块信息
+        $extraModules = DB::table('uni_account_extra_modules')->where('modules', 'like', "%$identity%")->get();
+        foreach ($extraModules as $item){
+            $modules = unserialize($item->modules);
+            foreach ($modules as $key=>$module){
+                if ($module['identity']==$identity){
+                    $modules[$key] = [
+                        'name'=>$application['name'],
+                        'identity'=>$identity,
+                        'logo'=>$application['logo'],
+                        'profile'=>'default'
+                    ];
+                    break;
+                }
+            }
+            DB::table('uni_account_extra_modules')->where('id', $item->id)->update([
+                'modules'=>serialize($modules)
+            ]);
+        }
         //安装模块依赖服务
         if (!empty($ManiFest['servers'])){
             try {
@@ -366,7 +385,7 @@ class ModuleService
                 return array();
             }
             $module_info['isdisplay'] = 1;
-            $module_info['logo'] = tomedia($module_info['logo']);
+            //$module_info['logo'] = tomedia($module_info['logo']);
             $module_info['preview'] = tomedia(IA_ROOT . '/addons/' . $module_info['name'] . '/preview.jpg', '', true);
             if (file_exists(IA_ROOT . '/addons/' . $module_info['name'] . '/preview-custom.jpg')) {
                 $module_info['preview'] = tomedia(IA_ROOT . '/addons/' . $module_info['name'] . '/preview-custom.jpg', '', true);

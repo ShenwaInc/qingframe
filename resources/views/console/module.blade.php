@@ -67,7 +67,7 @@
                             @foreach ($components as $com)
                                 <tr>
                                     <td>
-                                        <img src="{{ $com['logo'] }}" class="fl bg-gray radius margin-right-sm" height="48" />
+                                        <img src="{{ $com['logo'] }}" class="fl bg-gray radius margin-right-sm" height="48"  alt="@lang($com['name'])"/>
                                         <div class="fui-table-name">
                                             <a href="{{$com['website']}}" class="text-blue" title="@lang($com['description'])" target="_blank">@lang($com['name'])</a><br/>
                                             <span title="{{ $com['version_code'] ? 'Release '.$com['version_code'] : '' }}">V{{$com['version']}}</span>

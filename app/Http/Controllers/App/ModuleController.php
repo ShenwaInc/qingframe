@@ -174,4 +174,40 @@ class ModuleController extends Controller
         }
     }
 
+    public function show(Request $request, string $name, string $path)
+    {
+
+        // 1. 安全校验：禁止路径遍历
+        if (strpos($name, '..') !== false || strpos($name, '/') !== false) {
+            abort(404);
+        }
+
+
+        if (empty($path)){
+            // 3. 支持的 LOGO 文件名（按优先级）
+            $logoFiles = ['logo.png', 'logo.jpg', 'logo.svg', 'icon.png', 'icon.jpg'];
+            $logoPath = null;
+            foreach ($logoFiles as $file) {
+                $candidate = app_assetPath($file, $name);
+                if (file_exists($candidate)) {
+                    $logoPath = $candidate;
+                    break;
+                }
+            }
+        }else{
+            $logoPath = app_assetPath($path, $name);
+        }
+
+        if (!$logoPath) {
+            // 可返回默认占位图，或 404
+            return response()->file(public_path('static/icon200.jpg'));
+        }
+
+        // 4. 返回图片响应（自动处理 Content-Type）
+        return response()->file($logoPath, [
+            'Cache-Control' => 'public, max-age=86400', // 缓存一天
+        ]);
+
+    }
+
 }

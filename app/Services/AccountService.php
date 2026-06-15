@@ -276,13 +276,17 @@ class AccountService {
             $query = $query->offset($offset)->limit($pSize);
         }
         $list = $query->orderBy('uni_account.createtime','desc')->groupBy('uni_account.uniacid')->get()->keyBy('uniacid')->toArray();
+        $account_user_roles = [];
 
         if (!empty($list)) {
             if (!$_W['isfounder']) {
                 $account_user_roles = DB::table('uni_account_users')->where('uid', $_W['uid'])->get()->keyBy('uniacid')->toArray();
             }
             foreach ($list as $k => $account) {
-                $account = self::parseAccount($account);
+                $account = self::parseAccount($account, $account_user_roles, $account_all_type_sign);
+                if ($account['user_role']=='owner' || $account['user_role']=='founder'){
+                    $created += 1;
+                }
                 if (empty($account)){
                     unset($list[$k]);
                     continue;
@@ -299,7 +303,7 @@ class AccountService {
         return array($list, $total, $created);
     }
 
-    static function parseAccount($account)
+    static function parseAccount($account, $account_user_roles=[], $account_all_type_sign=[])
     {
         global $_W;
         $account = AccountService::FetchUni($account['uniacid']);
@@ -314,9 +318,6 @@ class AccountService {
         $account['user_role'] = $account_user_roles[$account['uniacid']]['role'];
         if ('clerk' == $account['user_role']) {
             return [];
-        }
-        if ($account['user_role']=='owner' || $account['user_role']=='founder'){
-            $created += 1;
         }
         $account['is_star'] = DB::table('users_operate_star')->where(array(
             ['uid', $_W['uid']],

@@ -18,7 +18,7 @@
                                 <div class="fui-content{{ empty($extras[$key])?'':' checked' }}">
                                     <input type="hidden" name="extras_modules[{{ $key }}]" value="{{ empty($extras[$key])?'0':'1' }}">
                                     <div class="fui-info">
-                                        <img alt="{{ $item['title'] }}" class="radius" src="{{ tomedia($item['logo']) }}" />
+                                        <img alt="{{ $item['title'] }}" class="radius" src="{{ app_asset($item['logo'], $key) }}" />
                                         <strong class="card-name">{{ $item['title'] }}</strong>
                                     </div>
                                 </div>

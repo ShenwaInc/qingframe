@@ -267,7 +267,6 @@ class UserService
                 //判断模块是否可用
                 $module = ModuleService::fetch($component['identity']);
                 if (empty($module)) continue;
-                $component['logo'] = tomedia($component['logo']);
                 $component['application_type'] = $module['application_type'];
                 $modules[$component['identity']] = $component;
             }

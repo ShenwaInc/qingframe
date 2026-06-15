@@ -88,8 +88,8 @@ if (!function_exists('app_asset')){
     function app_asset($path, $name): string
     {
         $path = ltrim($path, '/');
-        if (Str::startsWith($path, "addons/{$name}")){
-            $path = str_replace("addons/{$name}", "", $path);
+        if (Str::startsWith($path, "addons/{$name}/")){
+            $path = str_replace("addons/{$name}/", "", $path);
         }
         if (Str::startsWith(APP_ADDON_DIR, 'public') && is_dir(public_path("addons/{$name}/public"))){
             return asset("addons/{$name}/public/" . $path);

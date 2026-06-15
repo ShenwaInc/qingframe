@@ -230,7 +230,7 @@ class AccountController extends Controller
             foreach ($enabled_modules as $key=>$value){
                 $module = ModuleService::fetch($key);
                 if (empty($module) || !empty($module['is_delete'])) continue;
-                $value['logo'] = tomedia($value['logo']);
+                //$value['logo'] = tomedia($value['logo']);
                 $return['modules'][$key] = $value;
             }
         }
@@ -333,7 +333,7 @@ class AccountController extends Controller
             $siteUrl = $_W['sitescheme'] . $uni_settings['bind_domain'] . "/";
         }
         $return['loginUrl'] = $siteUrl . "login/".$account['uniacid'];
-        $appSecurityEntrance = env("APP_SECURITY_ENTRANCE", "");
+        $appSecurityEntrance = config('system.safe.security_entrance', '');
         if (!empty($appSecurityEntrance)){
             $return['loginUrl'] = $siteUrl . $appSecurityEntrance . "/" . $account['uniacid'];
         }
@@ -363,6 +363,7 @@ class AccountController extends Controller
             $post['description'] = trim($post['description']);
             $res = AccountService::createAccount($post, $_W['uid']);
             $status = !is_error($res);
+            $uniacid = $res['uniacid'] ?? 0;
             SystemLogs::userOperation('创建平台', 'account:create', $res['message']??"平台ID：{$uniacid}，名称：{$post['name']}", (bool)$status, $res);
             if (!$status){
                 return $this->message('saveFailed');
