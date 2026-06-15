@@ -371,6 +371,20 @@ class ModuleService
         if (is_link($link)){
             @unlink($link);
         }
+        //删除已分配给租户的模块信息
+        $extraModules = DB::table('uni_account_extra_modules')->where('modules', 'like', "%$identity%")->get();
+        foreach ($extraModules as $item){
+            $modules = unserialize($item->modules);
+            foreach ($modules as $key=>$module){
+                if ($module['identity']==$identity){
+                    unset($modules[$key]);
+                    break;
+                }
+            }
+            DB::table('uni_account_extra_modules')->where('id', $item->id)->update([
+                'modules'=>serialize($modules)
+            ]);
+        }
         CacheService::flush();
         return true;
     }
