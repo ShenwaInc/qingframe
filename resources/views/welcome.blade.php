@@ -53,7 +53,7 @@
                     <a href="https://www.yuque.com/shenwa/qingru/wq6gs0omqb3gb82h" target="_blank">@lang('使用指南')</a>
                     <a href="https://www.gxit.org/" target="_blank">@lang('技术支持')</a>
                     <a href="https://www.gxit.org/forum.php?mod=forumdisplay&fid=44" target="_blank">@lang('产品论坛')</a>
-                    <a href="/console/module" target="_blank">@lang('应用市场')</a>
+                    <a href="/market" target="_blank">@lang('应用市场')</a>
                     <a href="/console/report" target="_blank">@lang('提交工单')</a>
                     <a href="javascript:" onclick="QuickAI.open('https://ai.qingruyun.com/wem/swa_quickai/quick?i=3&aid=1')"><img src="{{ asset('static/images/ai.png') }}" height="18" alt="QuickAi" /></a>
                 </div>

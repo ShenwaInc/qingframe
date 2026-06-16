@@ -188,7 +188,7 @@ class MSService
         return $res;
     }
 
-    public static function cloudServers($page=1, $keyword=""){
+    public static function cloudServers($page=1, $keyword="", $localExist=false){
         $cachekey = "cloud:microserver_list";
         $res = Cache::get($cachekey, array());
         if (empty($res)){
@@ -206,12 +206,12 @@ class MSService
         if (!empty($res['servers'])){
             foreach ($res['servers'] as $value){
                 $identity = str_replace("microserver_","",$value['identity']);
-                if (self::localExist($identity, DEVELOPMENT)) continue;
+                if (self::localExist($identity, DEVELOPMENT) && !$localExist) continue;
                 $service = array(
                     'cover'=>$value['icon'],
                     'identity'=>$identity,
                     'name'=>$value['name'],
-                    'isdelete'=>false,
+                    'is_deleted'=>false,
                     'summary'=>$value['summary'],
                     'upgrade'=>[],
                     'entry'=>'',

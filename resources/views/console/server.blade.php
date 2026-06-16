@@ -74,7 +74,7 @@
                                     <span class="color-default">{{ $service['name'] }}</span>
                                 @endif
                                 <span id="update{{ $service['identity'] }}" class="layui-badge-dot{{ empty($service['upgrade']) ? ' layui-hide' : '' }}" lay-tips="@lang('发现新版本')"></span>
-                                @if($service['isdelete'])
+                                @if($service['is_deleted'])
                                     &nbsp;<span class="layui-badge layui-bg-cyan">@lang('deleted')</span>
                                 @endif
                             </div>

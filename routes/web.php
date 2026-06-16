@@ -74,7 +74,11 @@ Route::group(['prefix'=>'installer', 'middleware'=>['app']],function (){
     Route::post('/database', 'InstallController@dbDetect');
     Route::get('/render', 'InstallController@render');
     Route::post('/render', 'InstallController@install');
-    Route::get('/complete', 'InstallController@complete');
+});
+
+Route::group(['prefix' => 'market', 'middleware' => ['app']], function () {
+    Route::match(['get', 'post'], '/', 'MarketController@index');
+    Route::match(['get', 'post'], '/search', 'MarketController@search');
 });
 
 Auth::routes();
