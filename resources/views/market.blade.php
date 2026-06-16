@@ -3,8 +3,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{{ $title }}</title>
-    <script src="{{ asset('static/tailwind/tailwind3.4.17.js') }}"></script>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="{{ asset('static/tailwind/tailwind3.4.17.js') }}?v={{ QingRelease }}"></script>
+    <script src="{{ asset('static/vue/vue.global.js') }}?v={{ QingRelease }}"></script>
     <link rel="stylesheet" href="{{ asset('static/tailwind/css/font-awesome.all.css') }}?v={{ QingRelease }}">
     <script>
         tailwind.config = {
@@ -72,6 +72,56 @@
             transform: translateY(0);
             box-shadow: inset 4px 4px 8px #d1d9e6, inset -4px -4px 8px #ffffff;
         }
+        /* 模态框样式 */
+        .modal-overlay {
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+        }
+        .modal-content {
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        /* 左侧浮动工具栏 */
+        .float-toolbar {
+            position: fixed;
+            right: 50%;
+            top: 50%;
+            margin-right: -40%;
+            transform: translateY(-50%);
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .float-toolbar .tool-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #ebf0f5;
+            box-shadow: 6px 6px 12px #d1d9e6, -6px -6px 12px #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0f172a;
+            font-size: 20px;
+            transition: all 0.2s;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .float-toolbar .tool-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 8px 8px 16px #d1d9e6, -8px -8px 16px #ffffff;
+            color: #2563eb;
+        }
+        .float-toolbar .tool-btn:active {
+            transform: scale(0.95);
+            box-shadow: inset 4px 4px 8px #d1d9e6, inset -4px -4px 8px #ffffff;
+        }
+        @media (max-width: 1140px) {
+            .float-toolbar {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body class="bg-neo text-slate-700 min-h-screen">
@@ -83,9 +133,9 @@
         <div class="flex items-center justify-start flex-wrap gap-4">
             <div class="flex-1">
                 <div class="relative rounded-full neo-inset overflow-hidden">
-                    <input type="text" placeholder="搜索云应用、AI工具、SaaS服务..." class="w-full bg-transparent px-6 py-3 !pl-12 focus:outline-none" />
+                    <input type="text" v-model="searchKeyword" v-type="search" @confirm="doSearch()" placeholder="搜索云应用、AI工具、SaaS服务..." class="w-full bg-transparent px-6 py-3 !pl-12 focus:outline-none" />
                     <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                    <button type="button" class="px-6 py-2 rounded-full bg-primary text-white absolute right-2 top-1">
+                    <button @click="doSearch()" type="button" class="px-6 py-2 rounded-full bg-primary text-white absolute right-2 top-1">
                         搜索
                     </button>
                 </div>
@@ -95,10 +145,7 @@
         <nav class="mt-6 pt-6 border-t border-slate-200">
             <ul class="flex flex-wrap gap-2">
                 <li>
-                    <a
-                            href="javascript:void(0);"
-                            class="px-6 py-2 rounded-full bg-primary text-white block"
-                    >
+                    <a href="/market/#" class="px-6 py-2 rounded-full bg-primary text-white block">
                         全部
                     </a>
                 </li>
@@ -117,7 +164,7 @@
     <!-- [MODULE] 4k2_主内容区域 -->
     <main>
         <!-- [MODULE] 91x_轮播banner模块 -->
-        <section class="mb-16">
+        <section>
             <div class="rounded-3xl overflow-hidden neo relative">
                 <div class="relative h-[500px] bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
                     <img
@@ -150,10 +197,13 @@
         </section>
         <!-- [/MODULE] 91x_轮播banner模块 -- 大型宣传轮播展示 -->
         <!-- [MODULE] p5s_推荐应用模块 -->
+        <div class="pt-20" id="featured"></div>
         <section>
             <div class="flex items-center justify-between mb-8">
                 <h2 class="text-3xl font-bold text-secondary">精选推荐</h2>
-                <a href="javascript:void(0);"
+                <!-- 精选推荐的【查看更多】绑定 keyword='' featured=1 -->
+                <a href="/market/#featured"
+                   @click.prevent="showMoreApp('', 1)"
                    class="text-primary flex items-center gap-2 hover:underline">
                     查看更多
                     <i class="fas fa-chevron-right"> </i>
@@ -163,20 +213,17 @@
                 <!-- 应用卡片 -->
                 @foreach($plugins as $value)
                     <a href="{{ $value['website'] ?: 'javascript:void(0);' }}" {{ $value['website'] ? 'target="_blank"' : '' }}>
-                        <div class="rounded-2xl p-5 neo bg-neo card-hover content-auto">
-                            <div class="h-40 rounded-xl overflow-hidden mb-4">
-                                <img
-                                        src="{{ $value['cover'] ?? $value['icon'] }}"
-                                        alt="{{ $value['name'] }}"
-                                        class="w-full h-full object-cover"
-                                />
+                        <div class="rounded-2xl p-5 neo bg-neo card-hover content-auto relative">
+                            <div class="w-full aspect-square rounded-xl overflow-hidden mb-4 absolute top-0 left-0">
+                                <img src="{{ $value['cover'] ?? $value['icon'] }}" alt="{{ $value['name'] }}" class="w-full h-full object-cover" />
                             </div>
+                            <div class="block w-full aspect-square mb-10"></div>
                             <div class="flex items-center gap-3 mb-3">
                                 <div class="w-12 h-12 rounded-lg neo-sm flex items-center justify-center from-blue-500 to-purple-600 text-white overflow-hidden">
                                     <img src="{{ $value['icon'] }}" alt="{{ $value['name'] }}" />
                                 </div>
                                 <div>
-                                    <h3 class="font-semibold text-lg text-secondary line-clamp-1">
+                                    <h3 class="font-semibold text-lg text-secondary line-clamp-1" title="{{ $value['name'] }}">
                                         {{ $value['name'] }}
                                     </h3>
                                     <p class="text-sm text-slate-500">{{ $value['author'] }}</p>
@@ -213,7 +260,10 @@
                             <i class="text-primary mr-2 {{ $value['icon'] }}"> </i>
                             {{ $value['title'] }}
                         </h2>
-                        <a href="javascript:void(0);" class="text-primary flex items-center gap-2 hover:underline hide">
+                        <!-- 分类的【查看更多】绑定 keyword=分类标题 featured=null（不传） -->
+                        <a href="/market/#{{ $value['id'] }}"
+                           @click.prevent="showMoreApp('{{ addslashes($value['title']) }}', null)"
+                           class="text-primary flex items-center gap-2 hover:underline">
                             查看更多
                             <i class="fas fa-chevron-right"> </i>
                         </a>
@@ -492,17 +542,17 @@
                     </p>
                     <div class="flex flex-wrap gap-4 justify-center">
                         <a
-                            class="px-8 py-4 bg-white text-primary rounded-full font-semibold text-lg neo-sm btn-hover"
-                            href="https://www.yuque.com/shenwa/qingru/xsi1e1p9d59k5981#ZGk8B"
-                            target="_blank"
+                                class="px-8 py-4 bg-white text-primary rounded-full font-semibold text-lg neo-sm btn-hover"
+                                href="https://www.yuque.com/shenwa/qingru/xsi1e1p9d59k5981#ZGk8B"
+                                target="_blank"
                         >
                             立即入驻
                             <i class="fas fa-rocket ml-2"> </i>
                         </a>
                         <a
-                            class="px-8 py-4 bg-transparent border-2 border-white text-white rounded-full font-semibold text-lg neo-sm btn-hover"
-                            href="https://www.yuque.com/shenwa/qingru/xsi1e1p9d59k5981"
-                            target="_blank"
+                                class="px-8 py-4 bg-transparent border-2 border-white text-white rounded-full font-semibold text-lg neo-sm btn-hover"
+                                href="https://www.yuque.com/shenwa/qingru/xsi1e1p9d59k5981"
+                                target="_blank"
                         >
                             查看开发者文档
                         </a>
@@ -520,6 +570,82 @@
         <!-- [/MODULE] q4w_开发者入驻模块 -- 开发者入驻宣传区块 -->
     </main>
     <!-- [/MODULE] 4k2_主内容区域 -- 包含所有展示内容 -->
+
+    <!-- ========== 新增模态框 ========== -->
+    <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center modal-overlay" @click.self="closeModal">
+        <div class="bg-neo rounded-3xl neo p-6 w-11/12 max-w-4xl modal-content relative">
+            <!-- 关闭按钮 -->
+            <button @click="closeModal" class="absolute top-4 right-4 text-slate-500 hover:text-primary text-2xl">
+                <i class="fas fa-times"></i>
+            </button>
+            <h3 class="text-2xl font-bold text-secondary mb-4 flex items-center gap-2">
+                <span v-if="modalFeatured !== null && modalFeatured !== undefined">精选推荐</span>
+                <span v-else>@{{ modalKeyword }}</span>
+            </h3>
+            <div v-if="loading" class="text-center py-12">
+                <i class="fas fa-spinner fa-spin text-4xl text-primary"></i>
+                <p class="mt-2 text-slate-500">加载中...</p>
+            </div>
+            <div v-else-if="error" class="text-center py-12 text-red-500">
+                <i class="fas fa-exclamation-circle text-3xl"></i>
+                <p class="mt-2">@{{ error }}</p>
+            </div>
+            <div v-else>
+                <div v-if="modalApps.length === 0" class="text-center py-12 text-slate-500">
+                    <i class="fas fa-inbox text-5xl opacity-30"></i>
+                    <p class="mt-2">暂无相关应用</p>
+                </div>
+                <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div v-for="app in modalApps" :key="app.id" class="rounded-xl p-4 neo bg-white card-hover flex flex-col">
+                        <div class="flex items-center gap-3 mb-2">
+                            <img :src="app.icon || app.cover" :alt="app.name" class="w-12 h-12 rounded-lg object-cover neo-sm" />
+                            <div class="flex-1">
+                                <h4 class="font-semibold text-secondary">@{{ app.name }}</h4>
+                                <p class="text-sm text-slate-500">@{{ app.author }}</p>
+                            </div>
+                        </div>
+                        <p class="text-slate-600 text-sm flex-1">@{{ app.summary }}</p>
+                        <div class="flex justify-between items-center mt-3">
+                            <div class="flex text-yellow-500 text-sm">
+                                <i class="fas fa-star"></i>
+                                <span class="ml-1 text-slate-600">@{{ app.rating || '5.0' }}</span>
+                            </div>
+                            <a :href="app.website || 'javascript:void(0)'" target="_blank" class="px-4 py-1 bg-primary text-white rounded-xl neo-sm btn-hover text-sm">
+                                查看详情
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <!-- 分页 -->
+                <div v-if="modalTotal > 0" class="flex justify-between items-center mt-6 pt-4 border-t border-slate-200">
+                    <span class="text-sm text-slate-500">共 @{{ modalTotal }} 条，第 @{{ modalPage }}/@{{ Math.ceil(modalTotal/modalPageSize) }} 页</span>
+                    <div class="flex gap-2">
+                        <button @click="prevPage" :disabled="modalPage <= 1" class="px-4 py-2 neo-sm rounded-xl btn-hover disabled:opacity-50 disabled:cursor-not-allowed">
+                            <i class="fas fa-chevron-left"></i> 上一页
+                        </button>
+                        <button @click="nextPage" :disabled="modalPage * modalPageSize >= modalTotal" class="px-4 py-2 neo-sm rounded-xl btn-hover disabled:opacity-50 disabled:cursor-not-allowed">
+                            下一页 <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- ========== 模态框结束 ========== -->
+
+    <!-- ========== 右侧浮动工具栏 ========== -->
+    <div class="float-toolbar">
+        <!-- 返回顶部按钮 -->
+        <button class="tool-btn" @click="scrollToTop()" title="返回顶部">
+            <i class="fas fa-arrow-up"></i>
+        </button>
+        <!-- 联系客服按钮，跳转企业微信客服 -->
+        <a class="tool-btn" href="https://work.weixin.qq.com/kfid/kfc54a08558b8eecbb3" target="_blank" title="联系客服">
+            <i class="fas fa-headset"></i>
+        </a>
+    </div>
+    <!-- ========== 工具栏结束 ========== -->
+
     <!-- [MODULE] f3a_页脚模块 -->
     <footer class="rounded-2xl p-8 neo bg-neo">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -536,22 +662,10 @@
                     发现优质云应用，连接供需，共创云原生新生态
                 </p>
                 <div class="flex gap-3 mt-4">
-                    <a
-                            href="javascript:void(0);"
-                            class="w-10 h-10 rounded-full neo-sm flex items-center justify-center hover:text-primary transition-colors"
-                    >
-                        <i class="fab fa-weibo"> </i>
-                    </a>
-                    <a
-                            href="javascript:void(0);"
-                            class="w-10 h-10 rounded-full neo-sm flex items-center justify-center hover:text-primary transition-colors"
-                    >
+                    <a href="https://work.weixin.qq.com/kfid/kfc54a08558b8eecbb3" target="_blank" class="w-10 h-10 rounded-full neo-sm flex items-center justify-center hover:text-primary transition-colors">
                         <i class="fab fa-weixin"> </i>
                     </a>
-                    <a
-                            href="javascript:void(0);"
-                            class="w-10 h-10 rounded-full neo-sm flex items-center justify-center hover:text-primary transition-colors"
-                    >
+                    <a href="https://github.com/ShenwaInc/qingwork.git" target="_blank" class="w-10 h-10 rounded-full neo-sm flex items-center justify-center hover:text-primary transition-colors">
                         <i class="fab fa-github"> </i>
                     </a>
                 </div>
@@ -560,13 +674,13 @@
                 <h4 class="font-semibold text-lg mb-4 text-secondary">关于我们</h4>
                 <ul class="space-y-2 text-slate-600">
                     <li>
-                        <a href="/#" class="hover:text-primary">
+                        <a href="https://www.yuque.com/shenwa/qingru/py9q43" target="_blank" class="hover:text-primary">
                             平台介绍
                         </a>
                     </li>
                     <li>
-                        <a href="javascript:void(0);" class="hover:text-primary">
-                            企业服务
+                        <a href="https://www.qingruyun.com/#" target="_blank" class="hover:text-primary">
+                            官方网站
                         </a>
                     </li>
                     <li>
@@ -575,7 +689,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="javascript:void(0);" class="hover:text-primary">
+                        <a href="https://www.yuque.com/shenwa/qingru/xsi1e1p9d59k5981#ZGk8B" target="_blank" class="hover:text-primary">
                             加入我们
                         </a>
                     </li>
@@ -637,24 +751,108 @@
 
     createApp({
         setup() {
-            return {
-                showModal: false,
-                data: ref({
-                    appList: [],
-                    page: 1,
-                    total: 0,
-                    pageSize: 15,
-                    loaded: false
-                }),
-                selector: ref({
-                    keyword: '',
-                    featured: 0,
-                    page: 1
-                }),
-                showMoreApp: function (keyword = '', featured = false) {
-                    //打开弹窗，请求 /market/search ，获取应用列表并展示（支持分页）
+            // 模态框状态
+            const showModal = ref(false);
+            const modalApps = ref([]);
+            const modalTotal = ref(0);
+            const modalPage = ref(1);
+            const modalPageSize = ref(10);
+            const modalKeyword = ref('');
+            const modalFeatured = ref(null);
+            const loading = ref(false);
+            const error = ref('');
+            const searchKeyword = ref('');
+
+            // 请求数据
+            const fetchApps = async () => {
+                loading.value = true;
+                error.value = '';
+                try {
+                    const params = new URLSearchParams({
+                        keyword: modalKeyword.value,
+                        page: modalPage.value,
+                        pageSize: modalPageSize.value,
+                        inajax: 1
+                    });
+                    // 仅当 featured 有值（非 null/undefined）才追加
+                    if (modalFeatured.value !== null && modalFeatured.value !== undefined) {
+                        params.append('featured', modalFeatured.value);
+                    }
+                    const response = await fetch('/market/search?' + params.toString());
+                    const data = await response.json();
+                    // 根据后端返回结构，假设成功时 data.type === "success"
+                    if (data.type === "success") {
+                        modalApps.value = data.data.plugins || [];
+                        modalTotal.value = data.data.total || 0;
+                        modalPage.value = data.data.page || 1;
+                        modalPageSize.value = data.data.pageSize || 10;
+                    } else {
+                        error.value = data.message || '请求失败';
+                    }
+                } catch (e) {
+                    error.value = '网络错误，请稍后重试';
+                } finally {
+                    loading.value = false;
                 }
-            }
+            };
+
+            // 显示更多（供模板调用）
+            const showMoreApp = (keyword = '', featured = null) => {
+                modalKeyword.value = keyword;
+                modalFeatured.value = featured;
+                modalPage.value = 1;          // 重置页码
+                showModal.value = true;
+                fetchApps();
+            };
+
+            const closeModal = () => {
+                showModal.value = false;
+            };
+
+            const prevPage = () => {
+                if (modalPage.value > 1) {
+                    modalPage.value--;
+                    fetchApps();
+                }
+            };
+
+            const nextPage = () => {
+                if (modalPage.value * modalPageSize.value < modalTotal.value) {
+                    modalPage.value++;
+                    fetchApps();
+                }
+            };
+
+            // 返回顶部方法
+            const scrollToTop = () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
+
+            const  doSearch = () => {
+                if(!searchKeyword.value || searchKeyword.value===''){
+                    return;
+                }
+                return showMoreApp(searchKeyword.value);
+            };
+
+            return {
+                showModal,
+                modalApps,
+                modalTotal,
+                modalPage,
+                modalPageSize,
+                modalKeyword,
+                modalFeatured,
+                loading,
+                error,
+                searchKeyword,
+                showMoreApp,
+                closeModal,
+                prevPage,
+                nextPage,
+                scrollToTop,
+                doSearch
+            };
         }
     }).mount('#app')
 </script>

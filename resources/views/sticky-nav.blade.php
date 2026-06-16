@@ -49,6 +49,12 @@
         visibility: hidden;
         transition: opacity 0.3s ease, visibility 0.3s ease;
     }
+
+    @media (min-width: 768px) {
+        .hide-sm {
+            display: none;
+        }
+    }
 </style>
 <header class="sticky-nav bg-white shadow-sm py-3 px-4 md:px-8">
     <div class="container mx-auto flex justify-between items-center">
@@ -82,7 +88,7 @@
                     <a href="/website/app/swa_account.html" target="_blank" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">轻记账-多人协同记账系统</a>
                 </div>
             </div>
-            <div class="relative group">
+            <div class="relative group hide-sm">
                 <a href="javascript:void(0)" data-uuid="website" class="px-3 py-2 text-sm md:text-base flex items-center">
                     集团官网
                     <i class="fas fa-angle-down ml-1"></i>
@@ -100,7 +106,7 @@
             <a href="https://www.yuque.com/shenwa/qingru" data-uuid="featured" target="_blank" class="px-3 py-2 text-sm md:text-base">
                 文档
             </a>
-            <a href="https://bbs.qingruyun.com/forum.php" data-uuid="featured" class="px-3 py-2 text-sm md:text-base">
+            <a href="https://bbs.qingruyun.com/forum.php" data-uuid="featured" class="px-3 py-2 text-sm md:text-base hide-sm">
                 社区
             </a>
             <div class="ml-2 relative group">
