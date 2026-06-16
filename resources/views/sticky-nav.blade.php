@@ -50,7 +50,7 @@
         transition: opacity 0.3s ease, visibility 0.3s ease;
     }
 
-    @media (min-width: 768px) {
+    @media (max-width: 1140px) {
         .hide-sm {
             display: none;
         }

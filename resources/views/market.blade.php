@@ -74,12 +74,46 @@
         }
         /* 模态框样式 */
         .modal-overlay {
-            background: rgba(0,0,0,0.5);
-            backdrop-filter: blur(4px);
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(2px);
         }
         .modal-content {
             max-height: 80vh;
             overflow-y: auto;
+            /* 自定义滚动条 */
+            scrollbar-width: thin;
+            scrollbar-color: #c1c9d6 #ebf0f5;
+            scrollbar-arrow-color: transparent !important;
+        }
+        .modal-content::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .modal-content::-webkit-scrollbar-track {
+            background: #ebf0f5;
+            border-radius: 10px;
+        }
+        .modal-content::-webkit-scrollbar-thumb {
+            background: #c1c9d6;
+            border-radius: 10px;
+            box-shadow: inset 1px 1px 2px rgba(255,255,255,0.8), inset -1px -1px 2px rgba(0,0,0,0.1);
+        }
+        .modal-content::-webkit-scrollbar-thumb:hover {
+            background: #a8b2c0;
+        }
+        .modal-content::-webkit-scrollbar-button{
+            display: none !important;
+            width: 0 !important;
+            height: 0 !important;
+        }
+        /* 弹窗卡片阴影 - 更有质感，减少虚化 */
+        .modal-card {
+            box-shadow: 6px 6px 14px rgba(209, 217, 230, 0.6), -6px -6px 14px rgba(255, 255, 255, 0.8);
+            transition: all 0.3s ease;
+        }
+        .modal-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 8px 8px 20px rgba(209, 217, 230, 0.7), -8px -8px 20px rgba(255, 255, 255, 0.9);
         }
         /* 左侧浮动工具栏 */
         .float-toolbar {
@@ -183,13 +217,13 @@
                             精选全球优质SaaS应用，一键部署，即开即用
                         </p>
                         <div class="flex gap-4">
-                            <button class="px-8 py-4 bg-white text-primary rounded-full font-semibold text-lg neo-sm btn-hover">
-                                立即探索
+                            <a href="https://www.yuque.com/shenwa/qingru/fh03hq5ppxy03fvz" target="_blank" class="px-8 py-4 bg-white text-primary rounded-full font-semibold text-lg neo-sm btn-hover">
+                                应用快速开发指南
                                 <i class="fas fa-arrow-right ml-2"> </i>
-                            </button>
-                            <button class="px-8 py-4 bg-transparent border-2 border-white text-white rounded-full font-semibold text-lg neo-sm btn-hover">
+                            </a>
+                            <a href="https://www.yuque.com/shenwa/qingru/xsi1e1p9d59k5981#ZGk8B" target="_blank" class="px-8 py-4 bg-transparent border-2 border-white text-white rounded-full font-semibold text-lg neo-sm btn-hover">
                                 入驻成为开发者
-                            </button>
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -214,7 +248,7 @@
                 @foreach($plugins as $value)
                     <a href="{{ $value['website'] ?: 'javascript:void(0);' }}" {{ $value['website'] ? 'target="_blank"' : '' }}>
                         <div class="rounded-2xl p-5 neo bg-neo card-hover content-auto relative">
-                            <div class="w-full aspect-square rounded-xl overflow-hidden mb-4 absolute top-0 left-0">
+                            <div class="w-full aspect-square mb-4 absolute top-0 left-0">
                                 <img src="{{ $value['cover'] ?? $value['icon'] }}" alt="{{ $value['name'] }}" class="w-full h-full object-cover" />
                             </div>
                             <div class="block w-full aspect-square mb-10"></div>
@@ -571,11 +605,12 @@
     </main>
     <!-- [/MODULE] 4k2_主内容区域 -- 包含所有展示内容 -->
 
-    <!-- ========== 新增模态框 ========== -->
+    <!-- ========== 优化后的模态框 ========== -->
     <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center modal-overlay" @click.self="closeModal">
-        <div class="bg-neo rounded-3xl neo p-6 w-11/12 max-w-4xl modal-content relative">
+        <!-- 弹窗容器：宽度与主区域一致，左右留边距 -->
+        <div class="bg-neo rounded-3xl p-6 w-full max-w-7xl mx-4 modal-content relative">
             <!-- 关闭按钮 -->
-            <button @click="closeModal" class="absolute top-4 right-4 text-slate-500 hover:text-primary text-2xl">
+            <button @click="closeModal" class="absolute top-4 right-4 text-slate-500 hover:text-primary text-2xl z-10">
                 <i class="fas fa-times"></i>
             </button>
             <h3 class="text-2xl font-bold text-secondary mb-4 flex items-center gap-2">
@@ -595,16 +630,17 @@
                     <i class="fas fa-inbox text-5xl opacity-30"></i>
                     <p class="mt-2">暂无相关应用</p>
                 </div>
-                <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div v-for="app in modalApps" :key="app.id" class="rounded-xl p-4 neo bg-white card-hover flex flex-col">
+                <!-- 每行4列响应式网格 -->
+                <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div v-for="app in modalApps" :key="app.id" class="rounded-xl p-4 bg-white modal-card flex flex-col">
                         <div class="flex items-center gap-3 mb-2">
                             <img :src="app.icon || app.cover" :alt="app.name" class="w-12 h-12 rounded-lg object-cover neo-sm" />
-                            <div class="flex-1">
-                                <h4 class="font-semibold text-secondary">@{{ app.name }}</h4>
-                                <p class="text-sm text-slate-500">@{{ app.author }}</p>
+                            <div class="flex-1 min-w-0">
+                                <h4 class="font-semibold text-secondary truncate">@{{ app.name }}</h4>
+                                <p class="text-sm text-slate-500 truncate">@{{ app.author }}</p>
                             </div>
                         </div>
-                        <p class="text-slate-600 text-sm flex-1">@{{ app.summary }}</p>
+                        <p class="text-slate-600 text-sm flex-1 line-clamp-2">@{{ app.summary }}</p>
                         <div class="flex justify-between items-center mt-3">
                             <div class="flex text-yellow-500 text-sm">
                                 <i class="fas fa-star"></i>
